@@ -1,0 +1,513 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tablero del Evaluador</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap">
+<style>
+  /* Brand kit Novolabs (landing): dark-first, acento #E5442A, radio 14px, píldoras. */
+  :root {
+    --bg: #141414;
+    --bg-2: #1D1D1D;
+    --bg-3: #262626;
+    --ink: #FFFFFF;
+    --ink-2: #B8B8B8;
+    --ink-3: #7A7A7A;
+    --line: rgba(255,255,255,.10);
+    --line-2: rgba(255,255,255,.22);
+    --primary: #E5442A;
+    --primary-dark: #CC3A22;
+    --primary-soft: rgba(229,68,42,.16);
+    --green: #3FBF6A;
+    --green-soft: rgba(63,191,106,.16);
+    --amber: #E8A33D;
+    --amber-soft: rgba(232,163,61,.16);
+    --lime: #EDEDED;
+    --radius: 14px;
+    --font-display: "General Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --font-text: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+      --bg: #FFFFFF; --bg-2: #F2F2F2; --bg-3: #E9E9E9;
+      --ink: #000000; --ink-2: #3A3A3A; --ink-3: #6B6B6B;
+      --line: rgba(0,0,0,.08); --line-2: rgba(0,0,0,.2);
+      --primary-soft: rgba(229,68,42,.10);
+      --green: #2E9C53; --green-soft: rgba(63,191,106,.14);
+      --amber: #B8791A; --amber-soft: rgba(232,163,61,.16);
+      --lime: #000000;
+    }
+  }
+  :root[data-theme="light"] {
+    --bg: #FFFFFF; --bg-2: #F2F2F2; --bg-3: #E9E9E9;
+    --ink: #000000; --ink-2: #3A3A3A; --ink-3: #6B6B6B;
+    --line: rgba(0,0,0,.08); --line-2: rgba(0,0,0,.2);
+    --primary-soft: rgba(229,68,42,.10);
+    --green: #2E9C53; --green-soft: rgba(63,191,106,.14);
+    --amber: #B8791A; --amber-soft: rgba(232,163,61,.16);
+    --lime: #000000;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: var(--font-text); font-size: 16px; line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  main { max-width: 1000px; margin: 0 auto; padding: 36px 20px 80px; }
+  h1, h2, h3, .display { font-family: var(--font-display); font-weight: 600; letter-spacing: -.02em; line-height: 1.1; text-wrap: balance; }
+  h1 { font-size: clamp(2rem, 5vw, 3rem); letter-spacing: -.03em; margin: 8px 0 10px; }
+  h2 { font-size: clamp(1.5rem, 3vw, 2rem); margin: 0 0 8px; }
+  h3 { font-size: 1.05rem; margin: 0 0 8px; }
+  p { margin: .4em 0; }
+  .eyebrow {
+    display: inline-flex; align-items: center; gap: 10px;
+    font-size: .76rem; font-weight: 600; letter-spacing: .16em; text-transform: uppercase;
+    color: var(--primary); margin: 0;
+  }
+  .eyebrow::before { content: ""; width: 26px; height: 1px; background: currentColor; opacity: .7; }
+  .sub { color: var(--ink-2); max-width: 64ch; }
+  .nota { font-size: .85rem; color: var(--ink-2); }
+  .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .86em; }
+  strong { font-weight: 600; color: var(--ink); }
+  a { color: inherit; }
+  :focus-visible { outline: 3px solid var(--primary); outline-offset: 3px; border-radius: 4px; }
+
+  .card { background: var(--bg-2); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px 22px; }
+  .pill { display: inline-block; font-size: .76rem; font-weight: 600; padding: 3px 11px; border-radius: 999px; white-space: nowrap; letter-spacing: .01em; }
+  .pill-ok { background: var(--green-soft); color: var(--green); }
+  .pill-curso { background: var(--primary-soft); color: var(--primary); }
+  .pill-pend { background: var(--bg-3); color: var(--ink-3); }
+  .pill-alerta { background: var(--amber-soft); color: var(--amber); }
+
+  /* Tabs */
+  .tabs {
+    display: flex; gap: 6px; flex-wrap: wrap; margin: 28px 0 32px;
+    padding: 6px; background: var(--bg-2); border: 1px solid var(--line); border-radius: 999px;
+    position: sticky; top: 8px; z-index: 5;
+  }
+  .tab {
+    appearance: none; border: 0; cursor: pointer; background: transparent; color: var(--ink-2);
+    font: 500 .9rem/1 var(--font-text); padding: 10px 16px; border-radius: 999px;
+    transition: background .18s ease, color .18s ease;
+  }
+  .tab:hover { color: var(--ink); background: var(--bg-3); }
+  .tab[aria-selected="true"] { background: var(--primary); color: #fff; font-weight: 600; }
+  .panel { display: none; }
+  .panel.activa { display: block; animation: aparecer .25s ease; }
+  @keyframes aparecer { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+  @media (prefers-reduced-motion: reduce) { .panel.activa { animation: none; } }
+  .panel-head { margin-bottom: 22px; }
+  .panel-head .sub { margin-top: 6px; }
+  .siguiente { margin-top: 36px; display: flex; justify-content: flex-end; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px; cursor: pointer; border: 1px solid var(--line-2);
+    background: transparent; color: var(--ink); font: 600 .9rem var(--font-text); padding: 11px 20px; border-radius: 999px;
+    transition: background .18s ease;
+  }
+  .btn:hover { background: var(--bg-3); }
+  .btn.primario { background: var(--primary); border-color: var(--primary); color: #fff; }
+  .btn.primario:hover { background: var(--primary-dark); }
+
+  /* Resumen */
+  .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; }
+  .kpi .num { font-family: var(--font-display); font-weight: 600; font-size: 2.6rem; letter-spacing: -.03em; line-height: 1; font-variant-numeric: tabular-nums; }
+  .kpi .num small { font-size: 1.1rem; color: var(--ink-3); letter-spacing: 0; }
+  .kpi .label { font-size: .85rem; color: var(--ink-2); margin-top: 8px; }
+  .kpi.acento .num { color: var(--primary); }
+  .kpi.verde .num { color: var(--green); }
+  .hoy { margin-top: 12px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (max-width: 640px) { .hoy { grid-template-columns: 1fr; } }
+  .paso-sig { border-color: var(--primary); }
+  .paso-sig .cmd { margin-top: 6px; }
+
+  /* Progreso */
+  .milestones { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+  .barra { height: 8px; border-radius: 4px; background: var(--bg-3); overflow: hidden; display: flex; gap: 2px; margin: 12px 0 8px; }
+  .barra span { display: block; height: 100%; }
+  .b-ok { background: var(--green); } .b-curso { background: var(--primary); }
+  .spec-lista { display: flex; flex-direction: column; gap: 10px; margin-top: 14px; }
+  .spec { display: grid; grid-template-columns: auto 1fr auto; gap: 4px 14px; align-items: baseline; background: var(--bg-2); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 18px; }
+  .spec.en-curso { border-color: var(--primary); }
+  .spec-id { font-family: var(--font-display); font-weight: 600; font-variant-numeric: tabular-nums; }
+  .spec-dep { grid-column: 2; font-size: .82rem; color: var(--ink-3); }
+  @media (max-width: 560px) { .spec { grid-template-columns: auto 1fr; } .spec .pill { grid-column: 1 / -1; justify-self: start; } .spec-dep { grid-column: 1 / -1; } }
+  .checks { list-style: none; padding: 0; margin: 8px 0 0; font-size: .9rem; color: var(--ink-2); }
+  .checks li { display: flex; gap: 10px; padding: 5px 0; border-top: 1px solid var(--line); }
+  .checks li:first-child { border-top: 0; }
+  .checks .estado { flex: none; width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid var(--line-2); margin-top: 3px; }
+  .checks .estado.hecho { background: var(--green); border-color: var(--green); }
+  .checks .estado.medio { background: linear-gradient(90deg, var(--green) 50%, transparent 50%); border-color: var(--green); }
+
+  /* Ritmo */
+  .fila-barra { display: grid; grid-template-columns: 130px 1fr 78px; gap: 10px; align-items: center; margin: 8px 0; }
+  .fila-barra .nombre { font-size: .88rem; text-align: right; color: var(--ink-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .fila-barra .nombre.mono { font-size: .82rem; }
+  .fila-barra .pista { background: var(--bg-3); border-radius: 4px; height: 18px; position: relative; }
+  .fila-barra .valor { background: var(--primary); border-radius: 4px; height: 18px; min-width: 3px; }
+  .fila-barra .valor.espera { background: repeating-linear-gradient(135deg, var(--ink-3) 0 4px, transparent 4px 8px); opacity: .5; }
+  .fila-barra .cifra { font-size: .85rem; font-variant-numeric: tabular-nums; }
+  @media (max-width: 560px) { .fila-barra { grid-template-columns: 96px 1fr 64px; } .fila-barra .nombre { font-size: .78rem; } }
+  .leyenda { font-size: .78rem; color: var(--ink-3); display: flex; gap: 16px; flex-wrap: wrap; margin-top: 8px; }
+  .leyenda i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; vertical-align: -1px; margin-right: 5px; }
+  .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; }
+  .grid-2.mt { margin-top: 12px; }
+  ol.pasos { margin: 8px 0 0; padding-left: 20px; font-size: .92rem; color: var(--ink-2); }
+  ol.pasos li { margin: 6px 0; }
+
+  /* Técnica */
+  .badges { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+  .badge { font-size: .85rem; font-weight: 500; padding: 5px 13px; border-radius: 999px; background: var(--bg-3); border: 1px solid var(--line); }
+  .modelo { display: flex; align-items: stretch; flex-wrap: wrap; gap: 0; }
+  .entidad { flex: 1 1 180px; border: 1px solid var(--line-2); border-radius: 10px; overflow: hidden; background: var(--bg); }
+  .entidad header { background: var(--primary); color: #fff; font-family: var(--font-display); font-weight: 600; padding: 7px 12px; font-size: .9rem; }
+  .entidad ul { margin: 0; padding: 8px 12px 10px 26px; font-size: .85rem; color: var(--ink-2); }
+  .vinculo { align-self: center; padding: 0 12px; color: var(--ink-3); font-size: .78rem; text-align: center; line-height: 1.3; }
+  .flujo { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 8px; }
+  .paso { font-size: .83rem; padding: 6px 12px; border: 1px solid var(--line-2); border-radius: 999px; background: var(--bg); }
+  .paso.hecho { border-color: var(--green); color: var(--green); }
+  .paso.actual { background: var(--primary); border-color: var(--primary); color: #fff; font-weight: 600; }
+  .paso.apagado { color: var(--ink-3); border-style: dashed; background: transparent; }
+  .flecha { color: var(--ink-3); font-size: .8rem; }
+  .paleta { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  .swatch { width: 74px; }
+  .swatch .color { height: 40px; border-radius: 8px; border: 1px solid var(--line-2); }
+  .swatch .nombre { font-size: .7rem; color: var(--ink-3); margin-top: 3px; line-height: 1.3; }
+
+  /* Equipo */
+  .pipeline { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 12px 0 6px; }
+  .cmd { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .83rem; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--line-2); background: var(--bg); }
+  .cmd.hecho { color: var(--green); border-color: var(--green); }
+  .cmd.actual { background: var(--primary); color: #fff; border-color: var(--primary); font-weight: 600; }
+  .cmd.futuro { color: var(--ink-3); border-style: dashed; background: transparent; }
+  .roles { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 10px; margin-top: 10px; }
+  .rol { padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); }
+  .rol b { font-family: var(--font-display); font-weight: 600; display: block; margin-bottom: 2px; }
+  .rol span { font-size: .84rem; color: var(--ink-2); }
+  .tabla-scroll { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-size: .9rem; }
+  th { text-align: left; font-size: .72rem; text-transform: uppercase; letter-spacing: .12em; color: var(--ink-3); font-weight: 600; padding: 6px 12px 8px 0; border-bottom: 1px solid var(--line-2); }
+  td { padding: 9px 12px 9px 0; border-bottom: 1px solid var(--line); vertical-align: top; color: var(--ink-2); }
+  td.fecha { white-space: nowrap; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+
+  /* Avisos */
+  .avisos { display: flex; flex-direction: column; gap: 10px; }
+  .aviso { border-left: 3px solid var(--amber); }
+  .aviso.info { border-left-color: var(--primary); }
+  .aviso.ok { border-left-color: var(--green); }
+  .aviso h3 { margin-bottom: 4px; }
+  .aviso p { font-size: .92rem; color: var(--ink-2); margin: 0; }
+  .aviso .quien { font-size: .74rem; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); font-weight: 600; margin-bottom: 8px; display: block; }
+
+  footer { margin-top: 56px; padding-top: 16px; border-top: 1px solid var(--line); font-size: .82rem; color: var(--ink-3); }
+</style>
+
+<main>
+  <header>
+    <p class="eyebrow">Tablero del proyecto · Novolabs</p>
+    <h1>Novolabs — Evaluador de Ideas con IA</h1>
+    <p class="sub">Web app donde un emprendedor carga su idea y recibe una evaluación honesta:
+    puntaje, fortalezas, riesgos y el próximo paso concreto para validarla.
+    <strong>El MVP está terminado y en producción.</strong> Foto tomada el
+    18 de agosto de 2026, 17:45 (Buenos Aires).</p>
+    <p class="nota" style="margin-top:8px;">En vivo: <span class="mono">https://curso-ai-app-demo.vercel.app</span></p>
+  </header>
+
+  <div class="tabs" role="tablist" aria-label="Secciones del tablero">
+    <button class="tab" role="tab" id="tab-resumen" aria-controls="p-resumen" aria-selected="true">Resumen</button>
+    <button class="tab" role="tab" id="tab-progreso" aria-controls="p-progreso" aria-selected="false">Progreso</button>
+    <button class="tab" role="tab" id="tab-ritmo" aria-controls="p-ritmo" aria-selected="false">Ritmo</button>
+    <button class="tab" role="tab" id="tab-tecnica" aria-controls="p-tecnica" aria-selected="false">Técnica</button>
+    <button class="tab" role="tab" id="tab-equipo" aria-controls="p-equipo" aria-selected="false">Equipo</button>
+    <button class="tab" role="tab" id="tab-avisos" aria-controls="p-avisos" aria-selected="false">Avisos</button>
+  </div>
+
+  <!-- ================= RESUMEN ================= -->
+  <section class="panel activa" id="p-resumen" role="tabpanel" aria-labelledby="tab-resumen">
+    <div class="panel-head">
+      <h2>El MVP está terminado y online</h2>
+      <p class="sub">Los tres milestones cerrados y verificados. La app está publicada y un desconocido puede completar el recorrido entero —de cargar la idea a releer su informe— desde su teléfono, sin ayuda.</p>
+    </div>
+    <div class="kpis">
+      <div class="card kpi verde"><div class="num">3 <small>de 3</small></div><div class="label">Milestones terminados — el recorrido completo corre en producción</div></div>
+      <div class="card kpi"><div class="num">13/13</div><div class="label">Piezas de trabajo terminadas y verificadas (M1: 5 · M2: 4 · M3: 4)</div></div>
+      <div class="card kpi verde"><div class="num">160/160</div><div class="label">Tests en verde en la última verificación completa (tests, lint y build)</div></div>
+      <div class="card kpi acento"><div class="num">En vivo</div><div class="label">Publicada en <span class="mono">curso-ai-app-demo.vercel.app</span> y probada de punta a punta</div></div>
+    </div>
+    <div class="hoy">
+      <div class="card paso-sig">
+        <p class="eyebrow">El único paso siguiente</p>
+        <h3 style="margin-top:10px;">Compartilo con un emprendedor real</h3>
+        <p class="nota">Para esto se construyó: validar los supuestos del ICP con gente de verdad. Cada informe que vea un emprendedor real es una prueba de si la evaluación se lee con criterio y no «genérica como ChatGPT» (el riesgo #1 del producto).</p>
+        <span class="cmd">curso-ai-app-demo.vercel.app</span>
+      </div>
+      <div class="card">
+        <p class="eyebrow">Lo que te espera a vos</p>
+        <ul class="checks" style="margin-top:10px;">
+          <li><span class="estado"></span><span>Rotar la clave de Claude (<span class="mono">ANTHROPIC_API_KEY</span>) — quedó expuesta en un log de sesión</span></li>
+          <li><span class="estado"></span><span>Mirar los primeros informes reales: ¿distinguen una idea floja de una fuerte?, ¿el emprendedor ejecuta el próximo paso?</span></li>
+          <li><span class="estado"></span><span>Opcional: subir el costo estimado por evaluación para que el freno del código —y no solo el tope de la consola— respete los USD 25</span></li>
+        </ul>
+      </div>
+    </div>
+    <div class="siguiente"><button class="btn primario" data-ir="progreso">Ver el progreso pieza por pieza →</button></div>
+  </section>
+
+  <!-- ================= PROGRESO ================= -->
+  <section class="panel" id="p-progreso" role="tabpanel" aria-labelledby="tab-progreso">
+    <div class="panel-head">
+      <h2>Tres milestones, los tres cerrados</h2>
+      <p class="sub">El MVP era un solo recorrido de valor: cargar la idea → recibir el informe → volver a leerlo. Corre entero en producción. Cada milestone se cerró solo cuando vos lo probaste con tus ojos.</p>
+    </div>
+    <div class="milestones">
+      <div class="card">
+        <span class="pill pill-ok">Terminado</span>
+        <h3 style="margin-top:12px;">M1 · La evaluación existe</h3>
+        <div class="barra"><span class="b-ok" style="width:100%"></span></div>
+        <p class="nota">5 de 5 piezas. Una idea cargada produce un informe con puntaje, fortalezas, riesgos y próximo paso — y las 3 ideas de prueba (floja/regular/fuerte) sacaron puntajes distintos.</p>
+      </div>
+      <div class="card">
+        <span class="pill pill-ok">Terminado</span>
+        <h3 style="margin-top:12px;">M2 · El informe tiene dueño</h3>
+        <div class="barra"><span class="b-ok" style="width:100%"></span></div>
+        <p class="nota">4 de 4 piezas. Cuentas con email, cada uno ve solo lo suyo (probado con dos cuentas reales) y relee sus informes al volver a entrar.</p>
+      </div>
+      <div class="card">
+        <span class="pill pill-ok">Terminado</span>
+        <h3 style="margin-top:12px;">M3 · Listo para el primer emprendedor real</h3>
+        <div class="barra"><span class="b-ok" style="width:100%"></span></div>
+        <p class="nota">4 de 4 piezas. Online, con los estados incómodos resueltos, el pulido anti-prototipo aplicado y el deploy real hecho con tu OK.</p>
+      </div>
+    </div>
+
+    <h3 style="margin-top:30px;">Las 4 piezas de M3 (el último milestone)</h3>
+    <div class="spec-lista">
+      <div class="spec"><span class="spec-id">M3-01</span><span>Landing pública: puerta de entrada para un desconocido (dolor del ICP, promesa, CTA «Evaluá tu idea gratis»)</span><span class="pill pill-ok">Terminada</span></div>
+      <div class="spec"><span class="spec-id">M3-02</span><span>Red anti-pantalla-blanca: ningún camino termina en blanco (errores, sesión expirada, aviso de sin conexión)</span><span class="pill pill-ok">Terminada</span></div>
+      <div class="spec"><span class="spec-id">M3-03</span><span>Pulido presentable: nombre del producto, favicon propio, títulos por pantalla — que no parezca hecho por IA</span><span class="pill pill-ok">Terminada</span></div>
+      <div class="spec"><span class="spec-id">M3-04</span><span>Producción + deploy: Supabase de producción con RLS, claves en Vercel, techo de gasto y deploy real con tu OK</span><span class="pill pill-ok">Terminada</span></div>
+    </div>
+    <p class="nota" style="margin-top:10px;">M1 (5 piezas) y M2 (4 piezas) también están todas ✅. Sus planes y fichas viven en <span class="mono">docs/sdd/…/archive/</span>.</p>
+
+    <div class="card" style="margin-top:14px;">
+      <h3>Qué tenía que pasar para dar M3 por terminado</h3>
+      <ul class="checks">
+        <li><span class="estado hecho"></span><span>La app deployada en una URL pública, con el recorrido completo corriendo en producción</span></li>
+        <li><span class="estado hecho"></span><span>Estados incómodos cubiertos: «evaluando…», error con reintento, nada en pantalla blanca</span></li>
+        <li><span class="estado hecho"></span><span>Una persona ajena completa el recorrido sin ayuda (probado de punta a punta en prod)</span></li>
+        <li><span class="estado hecho"></span><span>Vos lo probaste con tus ojos y confirmaste que está bien</span></li>
+      </ul>
+    </div>
+    <div class="siguiente"><button class="btn" data-ir="ritmo">Ver el ritmo y los números →</button></div>
+  </section>
+
+  <!-- ================= RITMO ================= -->
+  <section class="panel" id="p-ritmo" role="tabpanel" aria-labelledby="tab-ritmo">
+    <div class="panel-head">
+      <h2>De la idea a producción en un día</h2>
+      <p class="sub">Todo el proyecto —método completo, 13 piezas construidas y el deploy— se hizo el 18 de agosto. Estos números salen de los registros reales de tus sesiones de Claude Code.</p>
+    </div>
+
+    <div class="card">
+      <h3>El método, etapa por etapa</h3>
+      <div class="fila-barra"><span class="nombre mono">/icp</span><div class="pista"><div class="valor" style="width:27%"></div></div><span class="cifra">6 min</span></div>
+      <div class="fila-barra"><span class="nombre mono">/solucion</span><div class="pista"><div class="valor" style="width:41%"></div></div><span class="cifra">9 min</span></div>
+      <div class="fila-barra"><span class="nombre mono">/prd</span><div class="pista"><div class="valor" style="width:9%"></div></div><span class="cifra">2 min</span></div>
+      <div class="fila-barra"><span class="nombre mono">/arquitectura</span><div class="pista"><div class="valor" style="width:100%"></div></div><span class="cifra">22 min</span></div>
+      <div class="fila-barra"><span class="nombre mono">/roadmap</span><div class="pista"><div class="valor" style="width:27%"></div></div><span class="cifra">6 min</span></div>
+      <div class="fila-barra"><span class="nombre mono">/specs</span><div class="pista"><div class="valor" style="width:27%"></div></div><span class="cifra">6 min</span></div>
+      <p class="nota" style="margin-top:10px;">/arquitectura fue la etapa más larga y buena parte fue espera de tus respuestas, no trabajo de la máquina. Las fichas de trabajo (/specs) se escribieron en paralelo, en 80–140 segundos cada una.</p>
+    </div>
+
+    <div class="card" style="margin-top:12px;">
+      <h3>Trabajo real de la máquina por pieza construida</h3>
+      <div class="fila-barra"><span class="nombre">M1-01 la base</span><div class="pista"><div class="valor" style="width:44%"></div></div><span class="cifra">8,5 min</span></div>
+      <div class="fila-barra"><span class="nombre">M1-02 formulario</span><div class="pista"><div class="valor" style="width:65%"></div></div><span class="cifra">13 min</span></div>
+      <div class="fila-barra"><span class="nombre">M1-03 evaluación</span><div class="pista"><div class="valor" style="width:41%"></div></div><span class="cifra">8 min</span></div>
+      <div class="fila-barra"><span class="nombre">M1-04 espera+informe</span><div class="pista"><div class="valor" style="width:100%"></div></div><span class="cifra">19 min</span></div>
+      <div class="fila-barra"><span class="nombre">M1-05 calibración</span><div class="pista"><div class="valor" style="width:65%"></div></div><span class="cifra">13 min</span></div>
+      <div class="fila-barra"><span class="nombre">M2-01 login</span><div class="pista"><div class="valor" style="width:59%"></div></div><span class="cifra">12 min</span></div>
+      <div class="fila-barra"><span class="nombre">M2-02 sesión real</span><div class="pista"><div class="valor" style="width:43%"></div></div><span class="cifra">8 min</span></div>
+      <div class="fila-barra"><span class="nombre">M2-03 mis ideas</span><div class="pista"><div class="valor" style="width:48%"></div></div><span class="cifra">9 min</span></div>
+      <div class="fila-barra"><span class="nombre">M2-04 techo global</span><div class="pista"><div class="valor" style="width:20%"></div></div><span class="cifra">4 min</span></div>
+      <div class="fila-barra"><span class="nombre">M3-01 landing</span><div class="pista"><div class="valor" style="width:22%"></div></div><span class="cifra">4 min</span></div>
+      <div class="fila-barra"><span class="nombre">M3-02 anti-blanco</span><div class="pista"><div class="valor" style="width:37%"></div></div><span class="cifra">7 min</span></div>
+      <div class="fila-barra"><span class="nombre">M3-03 pulido</span><div class="pista"><div class="valor" style="width:45%"></div></div><span class="cifra">9 min</span></div>
+      <p class="nota" style="margin-top:10px;">M3-04 (producción + deploy) no fue «construir código»: fue infraestructura y control listo-para-publicar (~7 min de agentes de deploy), así que no entra en esta barra.</p>
+    </div>
+
+    <div class="card" style="margin-top:12px;">
+      <h3>La espera fue casi toda de M1</h3>
+      <div class="fila-barra"><span class="nombre">M1-03 evaluación</span><div class="pista" style="display:flex; gap:2px;"><div class="valor" style="width:11%"></div><div class="valor espera" style="width:89%"></div></div><span class="cifra">8 + 67 min</span></div>
+      <div class="fila-barra"><span class="nombre">M1-05 calibración</span><div class="pista" style="display:flex; gap:2px;"><div class="valor" style="width:18%"></div><div class="valor espera" style="width:82%"></div></div><span class="cifra">13 + 57 min</span></div>
+      <div class="fila-barra"><span class="nombre">M1-04 informe</span><div class="pista" style="display:flex; gap:2px;"><div class="valor" style="width:56%"></div><div class="valor espera" style="width:44%"></div></div><span class="cifra">19 + 16 min</span></div>
+      <div class="leyenda"><span><i style="background:var(--primary)"></i>La máquina trabajando</span><span><i style="background:repeating-linear-gradient(135deg, var(--ink-3) 0 3px, transparent 3px 6px); opacity:.6"></i>Parada, esperándote (permiso, dato o la clave)</span></div>
+      <p class="nota" style="margin-top:10px;">Casi toda la espera del proyecto (unas 2,4 h) se concentró en tres piezas de M1 —esperando un permiso, un dato o la API key—. <strong>M2 y M3 corrieron casi sin espera</strong>: una vez cargadas las claves y con las respuestas listas, la máquina no se frenó.</p>
+    </div>
+
+    <div class="grid-2 mt">
+      <div class="card kpi acento"><div class="num">≈ 10 min</div><div class="label">Trabajo real de la máquina por pieza construida y verificada (114 min / 11 piezas)</div></div>
+      <div class="card kpi"><div class="num">56%</div><div class="label">Del tiempo de construcción fue espera humana — y casi toda cayó en M1</div></div>
+    </div>
+
+    <div class="grid-2 mt">
+      <div class="card">
+        <h3>El resultado</h3>
+        <p class="nota" style="font-size:.92rem;">Un día: del <span class="mono">/icp</span> al deploy en producción, con los tres milestones cerrados y verificados. El trabajo efectivo de la máquina fue <strong>menos de 2 horas</strong> repartidas en 13 piezas; el resto del reloj fue definir el qué y el cómo, y esperar tus respuestas. Es exactamente el patrón que hace que construir sea rápido: cuando el plan está claro, cada pieza sale en ~10 minutos.</p>
+      </div>
+      <div class="card">
+        <h3>Lo que se aprendió (para el próximo)</h3>
+        <ol class="pasos">
+          <li><strong>Que la máquina no espere por vos.</strong> Los huecos grandes fueron esperas humanas: respondé los bloques de preguntas de una vez y dejá las claves cargadas antes de arrancar.</li>
+          <li><strong>La pieza de riesgo se lleva su propia sesión.</strong> La calibración del informe (M1-05) fue la más incierta — reservarle foco vale más que apurarla.</li>
+          <li><strong>Commiteá al cerrar cada etapa.</strong> Esta vez el trabajo de M3 quedó sin guardar hasta el deploy; commits por pieza mantienen todo trazable.</li>
+        </ol>
+      </div>
+    </div>
+    <div class="siguiente"><button class="btn" data-ir="tecnica">Ver la ficha técnica →</button></div>
+  </section>
+
+  <!-- ================= TÉCNICA ================= -->
+  <section class="panel" id="p-tecnica" role="tabpanel" aria-labelledby="tab-tecnica">
+    <div class="panel-head">
+      <h2>Con qué está hecho</h2>
+      <p class="sub">Las decisiones técnicas están tomadas y documentadas (7 documentos en <span class="mono">docs/arquitectura/</span>). Lo esencial, sin jerga:</p>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <h3>El stack</h3>
+        <div class="badges"><span class="badge">Next.js 16</span><span class="badge">TypeScript</span><span class="badge">Tailwind v4</span><span class="badge">Supabase</span><span class="badge">Claude Opus 5</span><span class="badge">Vercel</span></div>
+        <p class="nota" style="margin-top:12px;">Costo fijo: <strong>USD 0</strong> (planes gratuitos, Supabase en São Paulo). La IA es el único costo variable, con techo de <strong>USD 25/mes</strong> y freno antes de gastar, en tres capas: por llamada, por usuario (3 evaluaciones) y global — más el tope externo en la consola de Anthropic.</p>
+      </div>
+      <div class="card">
+        <h3>Los datos</h3>
+        <div class="modelo">
+          <div class="entidad"><header>ideas</header><ul><li>qué es · para quién</li><li>cómo gana plata</li><li>qué existe hoy</li><li>dueño (siempre)</li></ul></div>
+          <div class="vinculo">1 idea<br>→<br>1 evaluación</div>
+          <div class="entidad"><header>evaluaciones</header><ul><li>puntaje + fundamentos</li><li>fortalezas · riesgos</li><li>el próximo paso</li></ul></div>
+        </div>
+        <p class="nota" style="margin-top:12px;">Cada fila nace con dueño obligatorio y la base impide ver lo ajeno (regla #1). En producción se verificó sobre la base real: seguridad activa en las dos tablas y 8 candados por usuario.</p>
+      </div>
+    </div>
+    <div class="card" style="margin-top:12px;">
+      <h3>El recorrido del usuario — todo en vivo</h3>
+      <div class="flujo">
+        <span class="paso hecho">Landing</span><span class="flecha">→</span>
+        <span class="paso hecho">Registro / Entrar</span><span class="flecha">→</span>
+        <span class="paso hecho">Mis ideas</span><span class="flecha">→</span>
+        <span class="paso hecho">Formulario: 4 preguntas + repaso</span><span class="flecha">→</span>
+        <span class="paso hecho">Evaluando…</span><span class="flecha">→</span>
+        <span class="paso hecho">El informe de 4 bloques</span>
+      </div>
+      <p class="nota" style="margin-top:12px;">Los seis pasos corren en producción y se probaron de punta a punta (incluido cerrar sesión, volver a entrar y releer el informe). Todo pensado primero para el celular (regla #6). El informe: puntaje grande con fundamento → fortalezas → riesgos → UN próximo paso destacado.</p>
+    </div>
+    <div class="card" style="margin-top:12px;">
+      <h3>La marca del producto <span class="pill pill-ok" style="margin-left:6px;">En producción</span></h3>
+      <p class="nota">Nombre cerrado con vos: <strong>«Novolabs — Evaluador de Ideas con IA»</strong>. Base «papel» con un solo color de acción (verde petróleo); los semánticos se reservan para el veredicto. Títulos en Fraunces, texto en Inter. Voseo, directo, sin tono de gurú. Lo viste en vivo y lo aprobaste. (Este tablero usa la marca de Novolabs, no la del producto.)</p>
+      <div class="paleta">
+        <div class="swatch"><div class="color" style="background:#FAF9F6;"></div><div class="nombre">Fondo papel</div></div>
+        <div class="swatch"><div class="color" style="background:#1A2E35;"></div><div class="nombre">Tinta</div></div>
+        <div class="swatch"><div class="color" style="background:#0D6E5F;"></div><div class="nombre">Acción</div></div>
+        <div class="swatch"><div class="color" style="background:#2E7D32;"></div><div class="nombre">Fortalezas</div></div>
+        <div class="swatch"><div class="color" style="background:#B26A00;"></div><div class="nombre">Riesgos</div></div>
+        <div class="swatch"><div class="color" style="background:#B3261E;"></div><div class="nombre">Crítico</div></div>
+      </div>
+    </div>
+    <div class="siguiente"><button class="btn" data-ir="equipo">Ver el equipo de agentes →</button></div>
+  </section>
+
+  <!-- ================= EQUIPO ================= -->
+  <section class="panel" id="p-equipo" role="tabpanel" aria-labelledby="tab-equipo">
+    <div class="panel-head">
+      <h2>El método, completo</h2>
+      <p class="sub">Los 8 comandos, en orden. Los recorriste todos: de definir para quién es el producto hasta publicarlo.</p>
+    </div>
+    <div class="card">
+      <div class="pipeline">
+        <span class="cmd hecho">/icp</span><span class="flecha">→</span><span class="cmd hecho">/solucion</span><span class="flecha">→</span><span class="cmd hecho">/prd</span><span class="flecha">→</span><span class="cmd hecho">/arquitectura</span><span class="flecha">→</span><span class="cmd hecho">/roadmap</span><span class="flecha">→</span><span class="cmd hecho">/specs</span><span class="flecha">→</span><span class="cmd hecho">/implementar</span><span class="flecha">→</span><span class="cmd hecho">/deploy</span>
+      </div>
+      <p class="nota">El ciclo está completo. Para el próximo proyecto: <span class="mono">/empezar</span> te dice dónde estás. Antes de un cambio grande: <span class="mono">/save-point</span>. Para refrescar este tablero: <span class="mono">/dashboard</span>.</p>
+    </div>
+    <div class="card" style="margin-top:12px;">
+      <h3>Quién hizo qué</h3>
+      <div class="roles">
+        <div class="rol"><b>Programador</b><span>Construyó las 13 piezas, una por vez y con tests primero — de M1-01 a M3-03.</span></div>
+        <div class="rol"><b>DevOps</b><span>Corrió el control «listo para publicar» y ejecutó el deploy real a producción (M3-04) con tu OK.</span></div>
+        <div class="rol"><b>Diseñador de Producto</b><span>Definió el recorrido y la marca; después auditó que la app no parezca hecha por IA.</span></div>
+        <div class="rol"><b>Investigador de ICP</b><span>Definió para quién es el producto (hoy una hipótesis: 0 entrevistas).</span></div>
+        <div class="rol"><b>Arquitecto de Soluciones</b><span>Definió qué es el producto y su promesa: claridad, no éxito.</span></div>
+        <div class="rol"><b>Vos</b><span>Respondiste los bloques de preguntas, validaste con tus ojos y diste el OK para publicar.</span></div>
+      </div>
+    </div>
+    <div class="grid-2 mt">
+      <div class="card">
+        <h3>Las reglas que cuidan el proyecto</h3>
+        <ul class="checks">
+          <li><span class="estado hecho"></span><span><strong>#1</strong> Cada usuario ve solo lo suyo — verificado en la base de producción</span></li>
+          <li><span class="estado hecho"></span><span><strong>#2</strong> Las claves nunca van en el código — están en Vercel</span></li>
+          <li><span class="estado hecho"></span><span><strong>#3</strong> Techo de gasto antes de gastar — 3 capas + tope en la consola</span></li>
+          <li><span class="estado hecho"></span><span><strong>#4</strong> Nada sale hacia afuera sin tu OK — el deploy pasó por tu confirmación</span></li>
+          <li><span class="estado hecho"></span><span><strong>#5</strong> Terminado = 3 verificaciones en verde</span></li>
+          <li><span class="estado hecho"></span><span><strong>#6</strong> Primero el celular</span></li>
+        </ul>
+        <p class="nota" style="margin-top:8px;">Las seis se aplicaron en el proyecto terminado; la #4 jugó en el deploy de M3.</p>
+      </div>
+      <div class="card">
+        <h3>Últimas decisiones registradas</h3>
+        <div class="tabla-scroll"><table>
+          <tr><th>Cuándo</th><th>Qué se decidió</th></tr>
+          <tr><td class="fecha">18-ago</td><td>Nombre del producto: «Novolabs — Evaluador de Ideas con IA».</td></tr>
+          <tr><td class="fecha">18-ago</td><td>«Olvidé mi contraseña» y dominio propio quedan fuera del MVP.</td></tr>
+          <tr><td class="fecha">18-ago</td><td>Al registrarse va a «Mis ideas» vacío; techo global con función en la base.</td></tr>
+          <tr><td class="fecha">18-ago</td><td>Stack: Next.js + Vercel + Supabase + Claude Opus 5.</td></tr>
+        </table></div>
+        <p class="nota" style="margin-top:8px;">Registro completo con porqués: <span class="mono">DECISIONS.md</span>.</p>
+      </div>
+    </div>
+    <div class="siguiente"><button class="btn" data-ir="avisos">Ver los avisos →</button></div>
+  </section>
+
+  <!-- ================= AVISOS ================= -->
+  <section class="panel" id="p-avisos" role="tabpanel" aria-labelledby="tab-avisos">
+    <div class="panel-head">
+      <h2>Cosas que conviene mirar</h2>
+      <p class="sub">Solo lo vigente. Lo ámbar espera una acción tuya; lo rojo es contexto; lo verde ya está resuelto.</p>
+    </div>
+    <div class="avisos">
+      <div class="card aviso"><span class="quien">Te toca a vos · seguridad</span><h3>Rotá la clave de la API de Claude</h3><p>La <span class="mono">ANTHROPIC_API_KEY</span> quedó impresa en el log de una sesión (un comando que falló al enmascararla). No está en el repo, pero es una clave viva expuesta: lo prolijo es generar una nueva en console.anthropic.com, revocar la vieja y actualizar la variable en Vercel.</p></div>
+      <div class="card aviso"><span class="quien">Te toca a vos · opcional</span><h3>El costo estimado por evaluación subvalúa a Opus</h3><p>El freno del código topea por cantidad (250 evaluaciones/mes) sobre un costo estimado de USD 0,10 que para Claude Opus 5 es optimista. Quien topea de verdad en dólares es el tope de la consola (que ya seteaste). Si querés que el freno del código también respete los USD 25, subimos ese número.</p></div>
+      <div class="card aviso info"><span class="quien">Contexto · lo que sigue</span><h3>El perfil de cliente es una hipótesis, no un hecho</h3><p>El ICP se definió sin entrevistas. Ahora que la app está online, cada informe que le muestres a un emprendedor real es la forma de validarlo: ¿vuelve a evaluar otra idea?, ¿ejecuta el próximo paso? (pregunta abierta #3 del PRD).</p></div>
+      <div class="card aviso info"><span class="quien">Contexto · post-MVP</span><h3>Lo que quedó afuera a propósito</h3><p>Cobro por evaluación (ancla USD 15), «olvidé mi contraseña», dominio propio, compartir el informe y datos de mercado en vivo. Nada de esto frena el MVP; son decisiones para cuando haya señal de usuarios reales.</p></div>
+      <div class="card aviso ok"><span class="quien">Resuelto</span><h3>La app está publicada y probada</h3><p>Deploy real hecho con tu OK, recorrido §2 verificado de punta a punta en producción, RLS y política de contraseña confirmadas en la base real, y el tope de gasto de Anthropic seteado. Milestone M3 cerrado y archivado.</p></div>
+    </div>
+    <div class="siguiente"><button class="btn" data-ir="resumen">← Volver al resumen</button></div>
+  </section>
+
+  <footer>
+    Fuente del estado: no hay plan activo (los tres milestones están en <span class="mono">docs/sdd/roadmaps/archive/</span>) + los registros de sesiones de Claude Code.
+    Para actualizar este tablero: <span class="mono">/dashboard</span>.
+  </footer>
+</main>
+
+<script>
+  (function () {
+    var tabs = Array.prototype.slice.call(document.querySelectorAll('.tab'));
+    var panels = Array.prototype.slice.call(document.querySelectorAll('.panel'));
+    function activar(nombre) {
+      tabs.forEach(function (t) { t.setAttribute('aria-selected', t.id === 'tab-' + nombre ? 'true' : 'false'); t.tabIndex = t.id === 'tab-' + nombre ? 0 : -1; });
+      panels.forEach(function (p) { p.classList.toggle('activa', p.id === 'p-' + nombre); });
+      if (history.replaceState) history.replaceState(null, '', '#' + nombre);
+    }
+    tabs.forEach(function (t, i) {
+      t.addEventListener('click', function () { activar(t.id.replace('tab-', '')); });
+      t.addEventListener('keydown', function (e) {
+        var j = e.key === 'ArrowRight' ? i + 1 : e.key === 'ArrowLeft' ? i - 1 : -1;
+        if (j < 0 && e.key !== 'ArrowLeft') return;
+        j = (j + tabs.length) % tabs.length; tabs[j].focus(); activar(tabs[j].id.replace('tab-', ''));
+      });
+    });
+    document.querySelectorAll('[data-ir]').forEach(function (b) {
+      b.addEventListener('click', function () { activar(b.getAttribute('data-ir')); window.scrollTo({ top: 0, behavior: 'smooth' }); });
+    });
+    var h = location.hash.replace('#', '');
+    if (h && document.getElementById('p-' + h)) activar(h);
+  })();
+</script>
