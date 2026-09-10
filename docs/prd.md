@@ -142,12 +142,14 @@ Lo de abajo **no se construye en el MVP**:
 
 ## 7. El cómo técnico (lo completa `/arquitectura`)
 
-- **Stack, deploy y costo:** `<link a docs/arquitectura/stack.md>`
-- **Modelo de datos:** `<link>`
-- **Secretos:** `<link>`
-- **Recorrido del usuario:** `<link>`
-- **Marca:** `<link>`
-- **Integraciones IA / otros sistemas / auth y permisos:** `<links, o "no aplica — <por qué>">`
+- **Stack, deploy y costo:** [`docs/arquitectura/stack.md`](arquitectura/stack.md) — Next.js + Vercel + Supabase; costo ~US$ 1-57/mes (estimación gruesa; `/costo` da la fina)
+- **Modelo de datos:** [`docs/arquitectura/modelo-de-datos.md`](arquitectura/modelo-de-datos.md) — datos compartidos por todo el equipo; #1 no aplica en sentido estricto
+- **Secretos:** [`docs/arquitectura/secretos.md`](arquitectura/secretos.md) — #2
+- **Recorrido del usuario:** [`docs/arquitectura/user-flow.md`](arquitectura/user-flow.md)
+- **Marca:** [`docs/arquitectura/marca.md`](arquitectura/marca.md)
+- **Integraciones IA:** [`docs/arquitectura/integraciones-ia.md`](arquitectura/integraciones-ia.md) — Claude Sonnet 5 lee los mails; #3, techo US$ 20/mes
+- **Otros sistemas:** [`docs/arquitectura/integraciones.md`](arquitectura/integraciones.md) — Gmail (lectura de casilla + envío a proveedores); #4, aprobación por reserva
+- **Auth y permisos:** [`docs/arquitectura/auth-y-permisos.md`](arquitectura/auth-y-permisos.md) — login con Google restringido al dominio, rol único "operador"
 
 ## 8. La regla de gestión
 

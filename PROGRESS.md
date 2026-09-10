@@ -3,9 +3,27 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
 
 # Dónde retomar
 
-- **Último commit:** (sin commits todavía)
+- **Último commit:** (pendiente de commitear la arquitectura — ver más abajo)
 - **Verificación completa:** no aplica todavía (sin código)
 - **Plan activo:** ninguno todavía
-- **Próximo paso:** correr `/arquitectura` para decidir el cómo técnico a partir de `docs/prd.md`.
-- **Ojo con:** falta armar el listado consolidado de proveedores (nombre + mail) — lo hace el owner.
-  Hay un Make semi-armado y un MVP borrador que el owner puede pasar; se revisan una vez en `/arquitectura`.
+- **Próximo paso:** correr `/roadmap M1` para armar el plan del primer milestone
+  (catálogo + proveedores como datos del sistema, vía el importador que lee los Excel).
+- **Ojo con:**
+  - **Push a GitHub:** requiere que el owner corra `git push` desde una terminal real (login de
+    GitHub). El commit local queda hecho.
+  - **Decisiones abiertas de arquitectura** (no bloquean el roadmap, sí antes de M2):
+    - casilla de mail: cuenta Gmail común nueva vs. dirección `@hitravel.com.ar` (Google Workspace ~US$7/mes).
+    - cuentas Vercel/Supabase/Anthropic: personales vs. de la empresa (recomendado: empresa).
+  - **Riesgo grande:** leer el Excel de paquetes (2218 filas, bloques por columna) es lo más
+    difícil del proyecto; va a necesitar vueltas de preguntas owner↔agente. Anotado en DECISIONS.md.
+  - Make y el Google Sheet MVP quedan **dados de baja** (se apagan al terminar M2); no son parte
+    de la solución. El aprendizaje (campos a extraer, filtro "NEW BOOKING", 36 reservas de prueba)
+    se reusa.
+
+## Estado del método (los 8 comandos)
+
+- ✅ `/prd` — `docs/prd.md` escrito.
+- ✅ `/arquitectura` — 8 documentos en `docs/arquitectura/` (stack, modelo de datos, secretos,
+  user-flow, marca, integraciones-ia, integraciones, auth-y-permisos); constitución con dueños
+  #1-#4; PRD §7 enlazado; decisiones en DECISIONS.md.
+- ⬜ `/roadmap M1` — siguiente.

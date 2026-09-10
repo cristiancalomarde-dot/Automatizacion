@@ -6,22 +6,19 @@
 
 ## Mapa tema → documento
 
-| Tema | Documento | Reglas que numera |
-|---|---|---|
-| Stack y deploy | `stack.md` | — |
-| Modelo de datos (y aislamiento entre usuarios) | `modelo-de-datos.md` | #1 |
-| Secretos y claves | `secretos.md` | #2 |
-| Recorrido del usuario | `user-flow.md` | — |
-| Marca: identidad visual y tono | `marca.md` | — |
-| Integraciones con IA + techo de gasto *(si aplica)* | `integraciones-ia.md` | #3 |
-| Integraciones con otros sistemas *(si aplica)* | `integraciones.md` | #4 |
-| Autenticación y permisos *(si aplica)* | `auth-y-permisos.md` | — |
-| Costo mensual estimado *(lo escribe `/costo`)* | `costos.md` | — |
-| Monitoreo de errores — Sentry *(si se instala, `/instalar-sentry`)* | `sentry.md` | — |
-| Analítica de producto — PostHog *(si se instala, `/instalar-posthog`)* | `posthog.md` | — |
-
-*(`/arquitectura` actualiza esta tabla al escribir: los condicionales que no aplican quedan
-marcados acá con una línea de por qué, sin crear el archivo.)*
+| Tema | Documento | Reglas que numera | Estado |
+|---|---|---|---|
+| Stack y deploy | [`stack.md`](stack.md) | — | ✅ escrito |
+| Modelo de datos (y aislamiento entre usuarios) | [`modelo-de-datos.md`](modelo-de-datos.md) | #1 | ✅ escrito |
+| Secretos y claves | [`secretos.md`](secretos.md) | #2 | ✅ escrito |
+| Recorrido del usuario | [`user-flow.md`](user-flow.md) | — | ✅ escrito |
+| Marca: identidad visual y tono | [`marca.md`](marca.md) | — | ✅ escrito |
+| Integraciones con IA + techo de gasto | [`integraciones-ia.md`](integraciones-ia.md) | #3 | ✅ aplica — Claude lee los mails de reserva y ayuda al importador |
+| Integraciones con otros sistemas | [`integraciones.md`](integraciones.md) | #4 | ✅ aplica — Gmail (lectura de la casilla + envío a proveedores) |
+| Autenticación y permisos | [`auth-y-permisos.md`](auth-y-permisos.md) | — | ✅ aplica — login con Google restringido al dominio, rol único |
+| Costo mensual estimado *(lo escribe `/costo`)* | `costos.md` | — | ⬜ pendiente — estimación gruesa en `stack.md` |
+| Monitoreo de errores — Sentry *(si se instala, `/instalar-sentry`)* | `sentry.md` | — | ⬜ no instalado |
+| Analítica de producto — PostHog *(si se instala, `/instalar-posthog`)* | `posthog.md` | — | ⬜ no instalado |
 
 Reglas de esta carpeta:
 - **Un hecho, un dueño:** si algo ya está explicado en un doc, se linkea, no se copia.
