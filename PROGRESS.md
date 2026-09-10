@@ -3,7 +3,7 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
 
 # Dónde retomar
 
-- **Último commit:** (pendiente de commitear la arquitectura — ver más abajo)
+- **Último commit:** 99ea5a5 (Arquitectura: 8 documentos + decisiones) — local, falta `git push`
 - **Verificación completa:** no aplica todavía (sin código)
 - **Plan activo:** ninguno todavía
 - **Próximo paso:** correr `/roadmap M1` para armar el plan del primer milestone
