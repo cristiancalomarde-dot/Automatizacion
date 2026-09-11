@@ -6,6 +6,28 @@ Formato mínimo por entrada: qué decisión, por qué, alternativa rechazada, co
 
 # Decisiones de diseño
 
+## 2026-09-11: Dedupe afinado (booking_id + producto); PDF adjunto para TourRadar; Ferozo confirmado
+- **Decisión:** (1) el reenvío de Ferozo hacia el Gmail es una regla de servidor confirmada por el
+  owner — funciona 24/7, no depende de Outlook de escritorio. (2) La clave de dedupe **no es el
+  booking_id solo, es booking_id + producto**: un mismo booking_id de Kilroy/Jysk puede cubrir más
+  de una compra si el pax agrega o cambia de producto después. Mismo booking_id + mismo producto →
+  no crea reserva nueva (respuesta del mismo intercambio). Mismo booking_id + producto distinto →
+  sí crea una reserva nueva. Mismo booking_id + mail sin producto identificable → se asocia a la
+  única reserva existente con ese booking_id, o si hay más de una, `para_revision` (no se adivina).
+  (3) La lectura de mails revisa primero si hay un **PDF adjunto** (TourRadar) y lee de ahí con
+  Claude (que lee PDF nativamente); si no hay adjunto, lee el cuerpo del mail (Kilroy/Jysk).
+- **Razón:** (1) elimina el riesgo operativo de una regla de reenvío frágil. (2) el owner dio un
+  caso real (booking DK89725 con un Patagonia Highlights un día y un Overland al otro) donde la
+  regla anterior (booking_id solo) habría bloqueado incorrectamente una reserva legítima. (3) es
+  un dato de hecho sobre cómo llegan los mails de cada agencia piloto, no una elección — Claude ya
+  soporta PDF sin herramientas extra.
+- **Alternativa rechazada:** mantener el dedupe solo por booking_id (de baja probabilidad de
+  fallar, pero el owner confirmó que sí pasa) · convertir el PDF a texto con una herramienta aparte
+  antes de mandarlo a Claude (innecesario, Claude lee PDF directo).
+- **Constraint / consecuencia:** la lógica de ingesta de M2 necesita, además del booking_id, saber
+  a qué reserva existente (si alguna) corresponde el producto detectado antes de decidir
+  crear/asociar — se detalla en la spec de M2 cuando se planifique ese milestone.
+
 ## 2026-09-11: Casilla de mail = Gmail reenviado por Ferozo; dedupe por booking_id
 - **Decisión:** (1) la casilla de mail que lee la app es el Gmail ya existente al que Ferozo
   reenvía automáticamente lo que llega a `sales@hitravel.com.ar` (el mismo que usaba el Make

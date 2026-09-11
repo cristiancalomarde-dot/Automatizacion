@@ -9,9 +9,14 @@
    mails de reserva, y **envía** desde ella los pedidos a proveedores (así las respuestas de los
    proveedores vuelven al mismo lugar). **Resuelto:** es el Gmail ya existente al que Ferozo
    reenvía automáticamente lo que llega a `sales@hitravel.com.ar` — no hace falta tocar la casilla
-   original ni migrar de Ferozo/Outlook. *Pendiente de confirmar: que el reenvío sea una regla del
-   servidor de Ferozo (funciona 24/7) y no una regla de Outlook de escritorio (dependería de que
-   una PC esté prendida) — si es lo segundo, se migra a una regla de servidor antes de M2.*
+   original ni migrar de Ferozo/Outlook. **Confirmado (2026-09-11):** el reenvío es una regla del
+   servidor de Ferozo — funciona 24/7, no depende de Outlook de escritorio ni de que una PC esté
+   prendida.
+3. **PDF adjunto en algunas agencias** — Kilroy/Jysk mandan la reserva en el cuerpo del mail;
+   TourRadar la manda como PDF adjunto. Claude puede leer el PDF directamente (no hace falta
+   convertirlo a texto aparte); la única diferencia es que la lectura revisa primero si hay un PDF
+   adjunto y, si lo hay, extrae de ahí en vez del cuerpo. Detalle en
+   [`integraciones-ia.md`](integraciones-ia.md).
 2. **API de Anthropic (Claude)** — interpreta los mails. Detalle y techo de gasto en
    [`integraciones-ia.md`](integraciones-ia.md).
 

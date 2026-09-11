@@ -75,9 +75,12 @@ detectado, no hay nada que mandarle a un proveedor.
 **Está terminado cuando:**
 - [ ] Un mail de una de las agencias piloto entra al sistema y queda registrado como una reserva.
 - [ ] Si el mail es una respuesta dentro del mismo intercambio de una reserva ya existente (mismo
-      booking_id de la agencia — ej. una agencia pidiendo o mandando datos de vuelo/pasaporte), el
-      sistema **no crea una reserva nueva**. Esto evita duplicar por los ida y vuelta normales de
-      un mail de reserva.
+      booking_id de la agencia **y mismo producto** — ej. piden o mandan datos de vuelo/pasaporte),
+      el sistema **no crea una reserva nueva**. Si el booking_id se repite pero el producto es
+      distinto (un mismo cliente compra algo más después), **sí se crea** una reserva nueva — no
+      alcanza con mirar el booking_id solo.
+- [ ] Si el mail viene como PDF adjunto en vez de en el cuerpo (ej. TourRadar), el sistema lee el
+      PDF igual que leería el cuerpo del mail.
 - [ ] El sistema extrae los datos clave: producto, fechas, cantidad de pasajeros, **datos de
       vuelo (número, aerolínea, horario de llegada/salida) cuando el producto incluye un
       traslado** — sin eso no se le puede pedir el traslado a un proveedor —, y servicios

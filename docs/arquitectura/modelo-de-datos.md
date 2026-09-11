@@ -116,13 +116,20 @@ solo la primera entrada y la última salida del tour completo, con la excepción
 - Emparejado de producto: primero por `codigo_externo` exacto → `producto`. Si no hay código o no
   matchea, la IA propone y, con confianza baja, la reserva va a `para_revision`. Umbral y lógica
   en [`integraciones-ia.md`](integraciones-ia.md).
-- Detección de duplicados, en dos capas:
-  1. **Por `booking_id` (dura, se aplica primero):** si el mail entrante trae el mismo booking_id
-     que una reserva ya existente de esa agencia, **no se crea una reserva nueva** — es una
-     respuesta dentro del mismo intercambio (pedido de datos de vuelo, pasaporte, etc.), no una
-     reserva distinta. Es el mecanismo que ya usaba el Make anterior (buscar el Booking ID antes
+- Detección de duplicados, en tres capas (la clave de identidad es **booking_id + producto**, no
+  el booking_id solo — un mismo booking_id de Kilroy/Jysk puede cubrir más de un producto si el
+  pax compra algo distinto más tarde):
+  1. **Mismo booking_id + mismo producto (dura, se aplica primero):** el mail es una respuesta
+     dentro del mismo intercambio (piden/mandan datos de vuelo, pasaporte, etc.) — **no se crea
+     una reserva nueva**. Es el mecanismo que ya usaba el Make anterior (buscar el Booking ID antes
      de agregar la fila).
-  2. **Por similitud (blanda, red de seguridad):** si no hay booking_id o no matchea ninguno
+  2. **Mismo booking_id + producto distinto:** es una compra distinta y legítima bajo la misma
+     referencia — **sí se crea** una reserva nueva.
+  3. **Mismo booking_id + el mail no identifica un producto con confianza:** si hay una sola
+     reserva existente con ese booking_id, se asocia a ella. Si hay más de una (ya pasó el caso 2
+     antes), **no se adivina a cuál pertenece** — la reserva entrante queda `para_revision` para
+     que una persona la vincule a mano.
+  4. **Por similitud (blanda, red de seguridad):** si no hay booking_id o no matchea ninguno
      existente, match por remitente + código de producto + fechas + pax sobre reservas de los
      últimos ~60 días → flag `posible_duplicada`, **nunca** descarte automático (una persona
      confirma).

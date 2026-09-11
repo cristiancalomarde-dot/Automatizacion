@@ -7,8 +7,12 @@
 
 1. **Leer el mail de reserva.** Cada mail que entra a la casilla se le pasa a Claude, que devuelve
    los datos ordenados: producto y código, fechas de entrada/salida, cantidad de pasajeros,
-   ciudades, habitación/categoría, pedidos especiales. Funciona aunque cada agencia escriba
-   distinto.
+   ciudades, habitación/categoría, datos de vuelo, pedidos especiales. Funciona aunque cada
+   agencia escriba distinto — y aunque la reserva no venga en el cuerpo del mail: **algunas
+   agencias (ej. TourRadar) la mandan como PDF adjunto** en vez de texto (Kilroy/Jysk sí la traen
+   en el cuerpo). La lectura revisa primero si hay un PDF adjunto y, si lo hay, se lo pasa a
+   Claude directamente como documento (Claude lee PDF nativamente, sin convertirlo a texto
+   aparte); si no hay adjunto, usa el cuerpo del mail.
 2. **Ayudar al importador a leer los Excel.** Los Excel de productos son planillas hechas para
    humanos (bloques por columna, filas en blanco a propósito). Cuando el importador no puede sacar
    un producto con reglas simples, le pide a Claude que interprete ese bloque. Lo que la IA
