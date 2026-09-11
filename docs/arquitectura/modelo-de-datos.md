@@ -62,15 +62,22 @@ separación por usuario.
 
 ### Una regla de negocio que hay que aplicar al armar cada componente
 
-Un paquete vendido **solo** suele llevar transfer de entrada y de salida (aeropuerto). Pero
-cuando ese mismo paquete es un **componente de un tour con buses intermedios**, el transfer del
-lado que conecta con un bus **se cae** — no tiene sentido un traslado a una terminal de bus. Por
-eso `producto_componente` no reusa ciegamente los servicios del paquete: para cada componente
-marca qué transfer de ese paquete **no aplica** en este tour (entrada, salida, o ninguno).
+Un paquete vendido **solo** suele llevar transfer de entrada y de salida (aeropuerto). Pero en un
+**tour compuesto** eso no se hereda tal cual — solo llevan transfer las dos puntas del tour
+completo:
+
+- el **transfer IN del primer destino** del tour (donde sea que arranque: RIO, BUE, LPB, CJC…), y
+- el **transfer OUT del último destino** del tour (simétrico al de entrada).
+
+**Todo lo que queda en el medio** — cualquier conexión entre componentes resuelta con un bus
+intermedio — **no lleva transfer**: no tiene sentido un traslado a una terminal de bus.
 
 **Excepción:** en **IGR** (Puerto Iguazú) e **IGU** (Foz do Iguaçu) el transfer a la terminal de
-bus **sí se mantiene**, aunque el paquete esté en el medio de un tour. Es la excepción a la regla
-general, no al revés — al cargar un tour que pase por Iguazú, el transfer de esa punta se deja.
+bus **sí se mantiene**, aunque ese destino esté en el medio del tour.
+
+Por eso `producto_componente` no reusa ciegamente los servicios de transfer del paquete: cada
+componente marca si su transfer de entrada y/o de salida aplican en ese tour puntual (por defecto
+solo la primera entrada y la última salida del tour completo, con la excepción de IGR/IGU).
 
 ### Dos cosas que parecen lo mismo y no lo son
 

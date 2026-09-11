@@ -20,9 +20,10 @@ Formato mínimo por entrada: qué decisión, por qué, alternativa rechazada, co
   servicio propio — sin tramos externos). **Journaway** (mails en alemán/inglés, códigos de
   producto distintos, catálogo propio de 6-7 productos) queda **fuera del MVP**: se suma en un
   milestone posterior, después de validar el circuito con los formatos estándar. **Regla de
-  transfer:** cuando un paquete es componente de un tour con buses intermedios, el transfer del
-  lado que conecta con el bus se cae (no aplica), **excepto en IGR/IGU** (Puerto Iguazú / Foz do
-  Iguaçu), donde el transfer a la terminal de bus se mantiene.
+  transfer (afinada 2026-09-11):** en un tour compuesto solo llevan transfer las dos puntas del
+  tour completo — el IN del primer destino y el OUT del último —; toda conexión intermedia
+  resuelta con bus no lleva transfer, **excepto IGR/IGU** (Puerto Iguazú / Foz do Iguaçu), que lo
+  mantienen aunque estén en el medio.
 - **Razón:** los tours compuestos son "un porcentaje grande" de las reservas reales (Kilroy ya
   manda varias de Overland en los datos de prueba) — dejarlos fuera del MVP haría que el sistema
   no reflejara la demanda real, aunque técnicamente "funcionara". Journaway, en cambio, es bajo
