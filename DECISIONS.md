@@ -19,7 +19,10 @@ Formato mínimo por entrada: qué decisión, por qué, alternativa rechazada, co
   (paquete) + Overland Bolivia (paquete, un solo proveedor, incluye el bus Uyuni→La Paz como
   servicio propio — sin tramos externos). **Journaway** (mails en alemán/inglés, códigos de
   producto distintos, catálogo propio de 6-7 productos) queda **fuera del MVP**: se suma en un
-  milestone posterior, después de validar el circuito con los formatos estándar.
+  milestone posterior, después de validar el circuito con los formatos estándar. **Regla de
+  transfer:** cuando un paquete es componente de un tour con buses intermedios, el transfer del
+  lado que conecta con el bus se cae (no aplica), **excepto en IGR/IGU** (Puerto Iguazú / Foz do
+  Iguaçu), donde el transfer a la terminal de bus se mantiene.
 - **Razón:** los tours compuestos son "un porcentaje grande" de las reservas reales (Kilroy ya
   manda varias de Overland en los datos de prueba) — dejarlos fuera del MVP haría que el sistema
   no reflejara la demanda real, aunque técnicamente "funcionara". Journaway, en cambio, es bajo

@@ -60,6 +60,18 @@ separación por usuario.
   pendiente).
 - un **reserva_pedido** apunta a un **proveedor**.
 
+### Una regla de negocio que hay que aplicar al armar cada componente
+
+Un paquete vendido **solo** suele llevar transfer de entrada y de salida (aeropuerto). Pero
+cuando ese mismo paquete es un **componente de un tour con buses intermedios**, el transfer del
+lado que conecta con un bus **se cae** — no tiene sentido un traslado a una terminal de bus. Por
+eso `producto_componente` no reusa ciegamente los servicios del paquete: para cada componente
+marca qué transfer de ese paquete **no aplica** en este tour (entrada, salida, o ninguno).
+
+**Excepción:** en **IGR** (Puerto Iguazú) e **IGU** (Foz do Iguaçu) el transfer a la terminal de
+bus **sí se mantiene**, aunque el paquete esté en el medio de un tour. Es la excepción a la regla
+general, no al revés — al cargar un tour que pase por Iguazú, el transfer de esa punta se deja.
+
 ### Dos cosas que parecen lo mismo y no lo son
 
 - **Un servicio "Bus" dentro de `producto_servicio`** (ej. el traslado Uyuni→La Paz que da el
