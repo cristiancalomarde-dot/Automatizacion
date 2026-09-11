@@ -184,9 +184,8 @@ Lo de abajo **no se construye en el MVP**:
    [`docs/arquitectura/integraciones-ia.md`](arquitectura/integraciones-ia.md).
 3. ~~¿Desde qué casilla de mail entra y con qué credenciales / permisos?~~ — **resuelto por
    completo:** es el Gmail existente al que Ferozo ya reenvía automáticamente lo que llega a
-   `sales@hitravel.com.ar`, vía Gmail API. Costo US$ 0. *Pendiente de confirmar (no bloquea el
-   roadmap): que ese reenvío sea una regla del servidor de Ferozo y no una regla de Outlook de
-   escritorio — ver [`integraciones.md`](arquitectura/integraciones.md).*
+   `sales@hitravel.com.ar`, vía Gmail API. Costo US$ 0. Confirmado (2026-09-11): el reenvío es
+   una regla del servidor de Ferozo, funciona 24/7.
 4. ~~¿Qué se hace si una reserva de agencia piloto es en realidad un paquete/tour combinado?~~ —
    **resuelto (2026-09-11): entran al alcance del MVP como "tours compuestos"** (secuencia de
    paquetes + a veces tramos de bus externo). Ver §2, M1-M4 y
@@ -197,6 +196,9 @@ Lo de abajo **no se construye en el MVP**:
 6. **El armado exacto del Overland San Pedro–Uyuni y de otros tours compuestos** — el owner lo
    describió en la conversación (ver `DECISIONS.md`), pero se confirma con el detalle real al
    cargar el catálogo en M1.
+7. **Cómo se manda un mail "como" `operations@hitravel.com.ar`** (SMTP de Ferozo vs. servicio
+   transaccional tipo Resend) — *no bloquea M1; se resuelve antes de M3, a confirmar con quien
+   administra el dominio.* Ver [`integraciones.md`](arquitectura/integraciones.md) "Abierto".
 
 ## 7. El cómo técnico (lo completa `/arquitectura`)
 

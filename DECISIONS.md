@@ -6,6 +6,22 @@ Formato mínimo por entrada: qué decisión, por qué, alternativa rechazada, co
 
 # Decisiones de diseño
 
+## 2026-09-11: Los pedidos a proveedores salen como operations@hitravel.com.ar, no desde el Gmail de lectura
+- **Decisión:** el remitente de los mails a proveedores es `operations@hitravel.com.ar` (la
+  casilla que el equipo ya usa y mira hoy), **no** el Gmail dedicado que la app usa para leer las
+  reservas entrantes. El mecanismo técnico exacto (SMTP con las credenciales que ya existen en
+  Ferozo para esa casilla, o un servicio de envío transaccional como Resend configurado con
+  registros DNS del dominio) queda **pendiente** — el owner no lo sabe y lo va a confirmar con
+  quien administra el dominio `hitravel.com.ar`. No bloquea M1; se resuelve antes de M3.
+- **Razón:** el diseño original (enviar desde la misma casilla de lectura) rompía el flujo real de
+  trabajo — las respuestas de los proveedores caerían en un Gmail que nadie mira, en vez de en
+  `operations@hitravel.com.ar`, donde el equipo ya las lee todos los días.
+- **Alternativa rechazada:** mandar desde el Gmail de lectura (más simple técnicamente, pero
+  desconecta a la app del hábito de trabajo real del equipo).
+- **Constraint / consecuencia:** `integraciones.md` y `docs/prd.md` §6 quedan con esta pregunta
+  abierta (mecanismo de envío) hasta que el owner confirme; `secretos.md` va a sumar la credencial
+  correspondiente (SMTP o API key del servicio transaccional) cuando se resuelva.
+
 ## 2026-09-11: Dedupe afinado (booking_id + producto); PDF adjunto para TourRadar; Ferozo confirmado
 - **Decisión:** (1) el reenvío de Ferozo hacia el Gmail es una regla de servidor confirmada por el
   owner — funciona 24/7, no depende de Outlook de escritorio. (2) La clave de dedupe **no es el

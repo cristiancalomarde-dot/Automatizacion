@@ -12,12 +12,20 @@
    original ni migrar de Ferozo/Outlook. **Confirmado (2026-09-11):** el reenvío es una regla del
    servidor de Ferozo — funciona 24/7, no depende de Outlook de escritorio ni de que una PC esté
    prendida.
+2. **El remitente de los pedidos a proveedores no es la casilla de lectura.** Los pedidos tienen
+   que salir como `operations@hitravel.com.ar` — no desde el Gmail dedicado de lectura — para que
+   las respuestas de los proveedores caigan donde el equipo ya las mira siempre. *Pendiente de
+   definir (no bloquea M1, se resuelve antes de M3):* si se manda con las credenciales SMTP que ya
+   existen para esa casilla en Ferozo, o con un servicio de envío transaccional (ej. Resend)
+   configurado para enviar como `operations@hitravel.com.ar` vía registros DNS del dominio —
+   recomendado por confiabilidad y para no depender de límites de envío de un hosting compartido.
+   A confirmar con quien administra el dominio `hitravel.com.ar`.
 3. **PDF adjunto en algunas agencias** — Kilroy/Jysk mandan la reserva en el cuerpo del mail;
    TourRadar la manda como PDF adjunto. Claude puede leer el PDF directamente (no hace falta
    convertirlo a texto aparte); la única diferencia es que la lectura revisa primero si hay un PDF
    adjunto y, si lo hay, extrae de ahí en vez del cuerpo. Detalle en
    [`integraciones-ia.md`](integraciones-ia.md).
-2. **API de Anthropic (Claude)** — interpreta los mails. Detalle y techo de gasto en
+4. **API de Anthropic (Claude)** — interpreta los mails. Detalle y techo de gasto en
    [`integraciones-ia.md`](integraciones-ia.md).
 
 No hay pagos, ni publicación, ni ningún otro sistema externo en el MVP.
@@ -82,5 +90,8 @@ Overland): ese sí genera un pedido a proveedor por mail, como cualquier otro se
 - ~~Casilla: cuenta Gmail común nueva vs. dirección del dominio `hitravel.com.ar`~~ — **resuelto:**
   se usa el Gmail existente al que Ferozo reenvía `sales@hitravel.com.ar`. Confirmar antes de M2
   que ese reenvío es una regla de servidor (ver arriba).
+- **Cómo se manda desde `operations@hitravel.com.ar`:** SMTP de Ferozo vs. servicio transaccional
+  (Resend) con DNS del dominio. El owner no lo sabe todavía — a confirmar con quien administra
+  `hitravel.com.ar`. No bloquea M1; se resuelve antes de M3.
 - ¿Se avisa al equipo (mail/Slack) cuando entra una reserva o cuando algo cae en "para revisión"?
   Posiblemente fuera de alcance del MVP; decidir en el roadmap.
