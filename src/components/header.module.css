@@ -1,0 +1,68 @@
+.header {
+  height: 48px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  background: var(--color-superficie);
+  border-bottom: 1px solid var(--color-borde);
+}
+
+.marca {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.wordmark {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-texto);
+}
+
+.separador {
+  color: var(--color-texto-secundario);
+}
+
+.producto {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-texto);
+}
+
+.usuario {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.nombre {
+  font-size: 13px;
+  color: var(--color-texto-secundario);
+}
+
+.salir {
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 4px;
+  border: 1px solid var(--color-borde-control);
+  background: var(--color-superficie);
+  color: var(--color-texto);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.salir:hover:not(:disabled) {
+  background: var(--color-superficie-alterna);
+}
+
+.salir:disabled {
+  cursor: default;
+  color: var(--color-texto-deshabilitado);
+}
+
+.salir:focus-visible {
+  outline: 2px solid var(--color-foco);
+  outline-offset: 2px;
+}

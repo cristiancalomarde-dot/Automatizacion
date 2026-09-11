@@ -1,0 +1,77 @@
+.pantalla {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: var(--color-fondo);
+}
+
+.tarjeta {
+  width: 100%;
+  max-width: 360px;
+  padding: 32px;
+  background: var(--color-superficie);
+  border: 1px solid var(--color-borde);
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.marca {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-weight: 600;
+  color: var(--color-texto);
+  margin-bottom: 8px;
+}
+
+.wordmark {
+  font-size: 16px;
+}
+
+.separador {
+  color: var(--color-texto-secundario);
+}
+
+.producto {
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--color-texto-secundario);
+}
+
+.error {
+  font-size: 13px;
+  color: var(--color-error-texto);
+  background: var(--color-error-fondo);
+  border-radius: 4px;
+  padding: 8px 12px;
+  margin: 0;
+}
+
+.boton {
+  height: 36px;
+  border-radius: 4px;
+  border: none;
+  background: var(--color-primario);
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.boton:hover:not(:disabled) {
+  background: var(--color-primario-hover);
+}
+
+.boton:disabled {
+  cursor: default;
+  opacity: 0.7;
+}
+
+.boton:focus-visible {
+  outline: 2px solid var(--color-foco);
+  outline-offset: 2px;
+}

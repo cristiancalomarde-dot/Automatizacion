@@ -52,4 +52,6 @@ supabase/.temp/
 
 # === Logs ===
 *.log
-.env*
+# (el bloque "Secrets / entorno" de arriba ya cubre .env* con sus excepciones;
+# no repetir `.env*` acá — una segunda regla sin `!` después de la negación
+# la vuelve a ignorar y esconde `.env.example` del repo.)
