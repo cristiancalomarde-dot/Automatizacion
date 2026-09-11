@@ -129,7 +129,7 @@ producen M2 y M3.
 | 3 | El directorio de proveedores no está listo a tiempo. | M1 no se cierra sin el directorio cargado con nombre y mail. Si al empezar M3 faltan contactos, se completan antes de seguir; no se avanza con huecos. |
 | 4 | El Make semi-armado y el MVP borrador ya existentes condicionan el diseño. | Se revisan una sola vez en `/arquitectura`. Si no sirven como base, se descartan sin intentar rescatarlos. |
 | 5 | Una agencia piloto cambia su formato de mail. | Se trata como bug: se ajusta la lectura de esa agencia. No frena el resto. |
-| 6 | Los tours compuestos (paquetes encadenados + tramos de bus) resultan más difíciles de catalogar de lo esperado. | Se cargan primero los 2-3 tours compuestos de mayor volumen (ej. Patagonia Highlights, Overland San Pedro–Uyuni) como prueba; si toma mucho más tiempo que un producto simple, se ajusta el modelo antes de cargar el resto. |
+| 6 | Los tours compuestos (paquetes encadenados + tramos de bus) resultan más difíciles de catalogar de lo esperado. | Se cargan primero los top-sellers (de memoria del owner, sin auditar contra ventas reales): **CHB31** Overland San Pedro de Atacama→Uyuni→La Paz, **BOCHI04R** el mismo en reversa (La Paz→San Pedro, con transfer final a CJC), **ARCH31** Patagonia Highlights, **ARCH33** Patagonia Trekking Paradise (W Trek), **5C01** 5 Countries Rio de Janeiro→La Paz, **BRARCH26** Rio de Janeiro→Santiago, **AR09** Patagonia Adventure Tour. Si toma mucho más tiempo que un producto simple, se ajusta el modelo antes de cargar el resto. |
 
 ## 5. Fuera de alcance
 
