@@ -23,8 +23,11 @@ separación por usuario.
 - **producto** — un producto de catálogo. Código(s), nombre, ciudad(es), destino. Origen: el
   importador que lee tus Excel.
 - **proveedor** — una empresa que presta o factura un servicio. Nombre (normalizado), mail(s) de
-  contacto, teléfono, país/ciudad, aclaraciones. Origen: el importador (hoja de contactos) +
-  correcciones a mano.
+  contacto, teléfono, país/ciudad, aclaraciones, y **canal de contacto** (`mail` | `whatsapp` —
+  algunos transferistas solo se manejan por WhatsApp). El MVP solo automatiza el canal `mail`; un
+  proveedor `whatsapp` nunca recibe un pedido automático, siempre queda como tarea manual (ver
+  [`integraciones.md`](integraciones.md)). Origen: el importador (hoja de contactos) + correcciones
+  a mano.
 - **producto_servicio** — un servicio dentro de un producto (alojamiento, excursión, traslado,
   bus, crucero…), con su **Service Provider** y su **Booking Supplier**, y la prioridad si hay
   varias opciones separadas por "/". Es lo que decide a qué proveedores se les escribe.
@@ -36,8 +39,10 @@ separación por usuario.
   un **tramo de bus público externo** (una ruta + fecha que HI Travel emite en su propio sistema
   de emisión, fuera de esta app). Ver la distinción con el bus de `producto_servicio` más abajo.
 - **reserva** — una reserva recibida por mail. Agencia, remitente, mail original, producto
-  emparejado, fechas, pax, ciudades, habitación/categoría, pedidos especiales, estado, flags
-  (posible duplicada, pedido incompleto).
+  emparejado, fechas, pax, ciudades, habitación/categoría, **datos de vuelo** (número, aerolínea,
+  horario de llegada/salida — obligatorios si el producto incluye un traslado; si faltan, la
+  reserva va a `para_revision`), pedidos especiales, estado, flags (posible duplicada, pedido
+  incompleto).
 - **reserva_pedido** — un pedido a un proveedor para una reserva. Proveedor, mail enviado (asunto
   + cuerpo), cuándo se envió, quién lo aprobó, resultado.
 - **evento_reserva** — el historial: cada cambio de estado, edición de campo y envío, con autor y

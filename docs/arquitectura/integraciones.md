@@ -46,8 +46,10 @@ Overland): ese sí genera un pedido a proveedor por mail, como cualquier otro se
 
 ## Casos de borde
 
-- **Proveedor sin mail cargado:** su pedido no sale. La reserva pasa a "pedido a proveedor" con
-  flag "pedido incompleto" y un recordatorio hasta que se complete el mail y se reenvíe.
+- **Proveedor sin mail cargado, o que solo se contacta por WhatsApp:** su pedido no sale. Es el
+  mismo caso en ambos: el MVP solo automatiza el canal mail. La reserva pasa a "pedido a
+  proveedor" con flag "pedido incompleto" y un recordatorio hasta que se complete el mail (si es
+  que existe) y se reenvíe, o hasta que una persona confirme que lo hizo por WhatsApp.
 - **Falla el envío de un mail:** se muestra cuál falló, con "reintentar". Si fallan todos, la
   reserva no cambia de estado.
 - **La casilla o la Gmail API no responden:** la ingesta reintenta en la próxima corrida; nada se

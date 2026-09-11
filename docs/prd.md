@@ -74,10 +74,14 @@ detectado, no hay nada que mandarle a un proveedor.
 
 **Está terminado cuando:**
 - [ ] Un mail de una de las agencias piloto entra al sistema y queda registrado como una reserva.
-- [ ] El sistema extrae los datos clave: producto, fechas, cantidad de pasajeros y servicios
+- [ ] El sistema extrae los datos clave: producto, fechas, cantidad de pasajeros, **datos de
+      vuelo (número, aerolínea, horario de llegada/salida) cuando el producto incluye un
+      traslado** — sin eso no se le puede pedir el traslado a un proveedor —, y servicios
       pedidos.
 - [ ] El sistema empareja el producto contra el catálogo de M1. Si no logra emparejarlo con
       confianza, la reserva queda marcada «para revisión» en vez de adivinar.
+- [ ] Si el producto incluye un traslado y el mail no trae datos de vuelo, la reserva también
+      queda «para revisión» hasta que se completen.
 - [ ] Si el producto es un **tour compuesto**, el sistema identifica cada componente (qué paquete,
       qué tramo de bus) por separado.
 - [ ] La reserva queda con un estado inicial visible (ej. «recibida» / «para revisión»).
@@ -97,6 +101,10 @@ con las fechas y servicios específicos.
       nadie**: quedan como una tarea pendiente dentro de la reserva ("emitir boleto: ruta, fecha")
       para que una persona lo haga en su sistema de siempre. La app nunca intenta emitir ni
       reservar el bus.
+- [ ] Si un proveedor de la reserva **solo se contacta por WhatsApp** (no por mail), su pedido
+      tampoco se envía solo: queda como la misma clase de tarea pendiente dentro de la reserva
+      ("contactar por WhatsApp: proveedor, fechas, servicios"). El MVP solo automatiza el canal
+      mail; WhatsApp a proveedores sigue siendo trabajo manual, igual que los tramos de bus.
 - [ ] Los mails se envían a los proveedores. *(Si salen automáticos o con aprobación humana previa
       lo decide `/arquitectura` — efecto externo, regla #4 de la constitución.)*
 - [ ] La reserva pasa a estado «pedido a proveedor» y queda registrado a qué proveedores se
@@ -148,7 +156,15 @@ Lo de abajo **no se construye en el MVP**:
   (Kilroy/Jysk, TourRadar). Detectarlos será por remitente **y** por código de producto, ambos
   distintos a los habituales.
 - **Más de 3 formatos de agencia estándar** — se suman después, con el circuito ya funcionando.
-- **Reservas que llegan por otro canal** que no sea mail (teléfono, WhatsApp, portal).
+- **Reservas que llegan de la agencia por otro canal** que no sea mail (teléfono, WhatsApp,
+  portal).
+- **Pedidos a proveedores por WhatsApp** — el MVP solo automatiza el canal mail. Un proveedor que
+  solo se contacta por WhatsApp queda como tarea manual pendiente (ver M3), no se le escribe desde
+  la app.
+- **Integración con Asana** (crear tareas para que la supervisora asigne casos entre operativos) —
+  candidato claro para un milestone posterior al MVP, una vez que el circuito de reservas esté
+  probado. El MVP tiene un solo rol sin asignación de casos (ver `auth-y-permisos.md`); agregar
+  Asana antes complicaría dos cosas a la vez.
 - **Facturación, pagos, vouchers y documentación al pasajero.**
 
 ## 6. Preguntas abiertas

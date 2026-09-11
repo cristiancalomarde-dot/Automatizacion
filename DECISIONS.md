@@ -6,6 +6,29 @@ Formato mínimo por entrada: qué decisión, por qué, alternativa rechazada, co
 
 # Decisiones de diseño
 
+## 2026-09-11: Datos de vuelo obligatorios para traslados; proveedores por WhatsApp quedan manuales; Asana pospuesto
+- **Decisión:** (1) cuando el producto incluye un traslado, el sistema extrae/exige datos de
+  vuelo (número, aerolínea, horario); si faltan, la reserva va a `para_revision` — sin eso no se
+  le puede pedir el traslado a un proveedor. (2) `proveedor` suma un campo `canal` (`mail` |
+  `whatsapp`); el MVP solo automatiza `mail` — un proveedor `whatsapp` nunca recibe un pedido
+  automático, queda como la misma tarea manual pendiente que un tramo de bus. (3) La integración
+  con Asana (crear una tarea por reserva para que la supervisora asigne casos entre operativos)
+  queda **fuera del MVP**, anotada como candidata a un milestone posterior.
+- **Razón:** (1) sin el vuelo, un pedido de traslado sale incompleto — es un dato crítico, no
+  accesorio. (2) el owner confirmó que varios transferistas solo se manejan por WhatsApp; forzar
+  ese canal en el MVP duplicaría el trabajo de integraciones.md sin necesidad, cuando el patrón de
+  "tarea manual pendiente" ya existe para los buses. (3) Asana es una capa de gestión de equipo
+  (asignación de casos) que el MVP no modela — tiene un solo rol sin asignación; sumarla ahora es
+  construir dos cosas a la vez antes de probar el circuito base.
+- **Alternativa rechazada:** intentar automatizar WhatsApp a proveedores en el MVP (fuera de
+  alcance técnico y de tiempo) · construir la integración con Asana en paralelo al MVP (viola
+  "una cosa a la vez").
+- **Constraint / consecuencia:** `reserva.datos_vuelo` y `proveedor.canal` se suman al modelo de
+  datos (`modelo-de-datos.md`); `integraciones.md` unifica el caso de borde "sin mail" y "solo
+  WhatsApp" bajo el mismo flag `pedido incompleto`. Pasaportes y otros datos sensibles del
+  pasajero, si se necesitan más adelante (ej. para Asana), reabren la regla #1 en serio (hoy no
+  aplica porque no hay datos de terceros).
+
 ## 2026-09-11: Tours compuestos entran al MVP; Journaway se pospone
 - **Decisión:** el catálogo (M1) modela dos tipos de producto: **simple** (como ya estaba) y
   **tour compuesto** — una secuencia ordenada de paquetes de catálogo y, a veces, tramos de bus
