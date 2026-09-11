@@ -130,15 +130,20 @@ Lo de abajo **no se construye en el MVP**:
 
 ## 6. Preguntas abiertas
 
-1. **¿Los mails a proveedores salen automáticos o con aprobación humana previa?** — *cerrar en
-   `/arquitectura` (regla #4, efectos externos).*
-2. **¿El emparejado de producto lo hace una regla simple (código/nombre) o un modelo de IA?** —
-   *cerrar en `/arquitectura`.*
-3. **¿Desde qué casilla de mail entra y con qué credenciales / permisos?** — *cerrar en
-   `/arquitectura`.*
+1. ~~¿Los mails a proveedores salen automáticos o con aprobación humana previa?~~ — **resuelto en
+   `/arquitectura`: aprobación humana, una por reserva.** Ver
+   [`docs/arquitectura/integraciones.md`](arquitectura/integraciones.md).
+2. ~~¿El emparejado de producto lo hace una regla simple (código/nombre) o un modelo de IA?~~ —
+   **resuelto: código primero contra la tabla de códigos; la IA entra solo como respaldo.** Ver
+   [`docs/arquitectura/integraciones-ia.md`](arquitectura/integraciones-ia.md).
+3. ~~¿Desde qué casilla de mail entra y con qué credenciales / permisos?~~ — **resuelto el
+   mecanismo:** casilla de Gmail dedicada vía Gmail API. **Sigue abierto** cuál cuenta puntual
+   (Gmail común vs. dirección `@hitravel.com.ar`) — lo definís antes de M2, ver "Abierto" en
+   [`stack.md`](arquitectura/stack.md).
 4. **¿Qué se hace si una reserva de agencia piloto es en realidad un paquete/tour combinado?** —
-   *cerrar antes de M2 si aparece en las piloto; si no, queda para después del MVP.*
-5. **Los estados exactos del ciclo de vida de una reserva** — *afinar en M4.*
+   *sigue abierta; cerrar antes de M2 si aparece en las piloto, si no queda para después del MVP.*
+5. **Los estados exactos del ciclo de vida de una reserva** — *sigue abierta; hay una propuesta de
+   8 estados en [`user-flow.md`](arquitectura/user-flow.md) §3, se valida y afina en M4.*
 
 ## 7. El cómo técnico (lo completa `/arquitectura`)
 
