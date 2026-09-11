@@ -3,7 +3,7 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
 
 # Dónde retomar
 
-- **Último commit:** (ver `git log` — sumado alcance de tours compuestos) — local, falta `git push`
+- **Último commit:** d2127a3 (Suma tours compuestos al MVP; pospone Journaway) — local, falta `git push`
 - **Verificación completa:** no aplica todavía (sin código)
 - **Plan activo:** ninguno todavía
 - **Próximo paso:** correr `/roadmap M1` para armar el plan del primer milestone
