@@ -7,7 +7,11 @@
 
 1. **Gmail (casilla dedicada de reservas)** — la app **lee** esa casilla cada ~5 minutos buscando
    mails de reserva, y **envía** desde ella los pedidos a proveedores (así las respuestas de los
-   proveedores vuelven al mismo lugar).
+   proveedores vuelven al mismo lugar). **Resuelto:** es el Gmail ya existente al que Ferozo
+   reenvía automáticamente lo que llega a `sales@hitravel.com.ar` — no hace falta tocar la casilla
+   original ni migrar de Ferozo/Outlook. *Pendiente de confirmar: que el reenvío sea una regla del
+   servidor de Ferozo (funciona 24/7) y no una regla de Outlook de escritorio (dependería de que
+   una PC esté prendida) — si es lo segundo, se migra a una regla de servidor antes de M2.*
 2. **API de Anthropic (Claude)** — interpreta los mails. Detalle y techo de gasto en
    [`integraciones-ia.md`](integraciones-ia.md).
 
@@ -70,7 +74,8 @@ Overland): ese sí genera un pedido a proveedor por mail, como cualquier otro se
 
 ## Abierto
 
-- Casilla: cuenta Gmail común nueva vs. dirección del dominio `hitravel.com.ar` (Google Workspace,
-  ~US$ 7/mes). Definir antes de M2.
+- ~~Casilla: cuenta Gmail común nueva vs. dirección del dominio `hitravel.com.ar`~~ — **resuelto:**
+  se usa el Gmail existente al que Ferozo reenvía `sales@hitravel.com.ar`. Confirmar antes de M2
+  que ese reenvío es una regla de servidor (ver arriba).
 - ¿Se avisa al equipo (mail/Slack) cuando entra una reserva o cuando algo cae en "para revisión"?
   Posiblemente fuera de alcance del MVP; decidir en el roadmap.

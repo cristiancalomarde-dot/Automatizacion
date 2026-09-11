@@ -39,8 +39,8 @@ Una aplicación web hecha con **Next.js**, que corre en **Vercel**, con base de 
 | Vercel | US$ 0 (plan Hobby) | US$ 20 (plan Pro, si se necesita por el equipo) |
 | Supabase | US$ 0 (plan Free) | US$ 25 (plan Pro, si se supera el límite gratis) |
 | API de Anthropic (Claude) | ~US$ 1 | ~US$ 5 (con reintentos y corridas del importador) |
-| Casilla de Gmail | US$ 0 (cuenta Gmail común) | ~US$ 7 (casilla en el dominio hitravel.com.ar con Google Workspace) |
-| **Total** | **~US$ 1 / mes** | **~US$ 57 / mes** |
+| Casilla de Gmail | US$ 0 (la que ya existe, recibe el reenvío de Ferozo) | US$ 0 |
+| **Total** | **~US$ 1 / mes** | **~US$ 50 / mes** |
 
 A este volumen la IA cuesta centavos y los planes gratis alcanzan, así que el costo real casi
 seguro cae en la parte baja. Correr `/costo` con la arquitectura cerrada para la estimación con
@@ -63,7 +63,8 @@ supuestos explícitos.
 
 ## Abierto
 
-- ¿La casilla de mail es una cuenta Gmail común nueva o una del dominio `hitravel.com.ar`? Afecta
-  el costo (US$ 0 vs ~US$ 7/mes) y el alta de OAuth. Definir antes de M2.
+- ~~¿La casilla de mail es una cuenta Gmail común nueva o del dominio `hitravel.com.ar`?~~ —
+  **resuelto: US$ 0.** Es el Gmail común ya existente al que Ferozo reenvía `sales@hitravel.com.ar`
+  (ver [`integraciones.md`](integraciones.md)); no hace falta Google Workspace para esto.
 - ¿Vercel, Supabase y Anthropic quedan en una cuenta personal o en una cuenta de la empresa?
   Recomendado: **cuenta de la empresa** desde el día uno, con 2FA.

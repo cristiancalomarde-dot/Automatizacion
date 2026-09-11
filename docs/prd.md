@@ -74,6 +74,10 @@ detectado, no hay nada que mandarle a un proveedor.
 
 **Está terminado cuando:**
 - [ ] Un mail de una de las agencias piloto entra al sistema y queda registrado como una reserva.
+- [ ] Si el mail es una respuesta dentro del mismo intercambio de una reserva ya existente (mismo
+      booking_id de la agencia — ej. una agencia pidiendo o mandando datos de vuelo/pasaporte), el
+      sistema **no crea una reserva nueva**. Esto evita duplicar por los ida y vuelta normales de
+      un mail de reserva.
 - [ ] El sistema extrae los datos clave: producto, fechas, cantidad de pasajeros, **datos de
       vuelo (número, aerolínea, horario de llegada/salida) cuando el producto incluye un
       traslado** — sin eso no se le puede pedir el traslado a un proveedor —, y servicios
@@ -175,10 +179,11 @@ Lo de abajo **no se construye en el MVP**:
 2. ~~¿El emparejado de producto lo hace una regla simple (código/nombre) o un modelo de IA?~~ —
    **resuelto: código primero contra la tabla de códigos; la IA entra solo como respaldo.** Ver
    [`docs/arquitectura/integraciones-ia.md`](arquitectura/integraciones-ia.md).
-3. ~~¿Desde qué casilla de mail entra y con qué credenciales / permisos?~~ — **resuelto el
-   mecanismo:** casilla de Gmail dedicada vía Gmail API. **Sigue abierto** cuál cuenta puntual
-   (Gmail común vs. dirección `@hitravel.com.ar`) — lo definís antes de M2, ver "Abierto" en
-   [`stack.md`](arquitectura/stack.md).
+3. ~~¿Desde qué casilla de mail entra y con qué credenciales / permisos?~~ — **resuelto por
+   completo:** es el Gmail existente al que Ferozo ya reenvía automáticamente lo que llega a
+   `sales@hitravel.com.ar`, vía Gmail API. Costo US$ 0. *Pendiente de confirmar (no bloquea el
+   roadmap): que ese reenvío sea una regla del servidor de Ferozo y no una regla de Outlook de
+   escritorio — ver [`integraciones.md`](arquitectura/integraciones.md).*
 4. ~~¿Qué se hace si una reserva de agencia piloto es en realidad un paquete/tour combinado?~~ —
    **resuelto (2026-09-11): entran al alcance del MVP como "tours compuestos"** (secuencia de
    paquetes + a veces tramos de bus externo). Ver §2, M1-M4 y

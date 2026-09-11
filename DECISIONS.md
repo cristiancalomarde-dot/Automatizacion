@@ -6,6 +6,28 @@ Formato mínimo por entrada: qué decisión, por qué, alternativa rechazada, co
 
 # Decisiones de diseño
 
+## 2026-09-11: Casilla de mail = Gmail reenviado por Ferozo; dedupe por booking_id
+- **Decisión:** (1) la casilla de mail que lee la app es el Gmail ya existente al que Ferozo
+  reenvía automáticamente lo que llega a `sales@hitravel.com.ar` (el mismo que usaba el Make
+  anterior) — no se toca la casilla original ni se migra de Ferozo/Outlook. Costo US$ 0. (2) Cada
+  reserva guarda el `booking_id` que la agencia pone en el asunto; antes de crear una reserva
+  nueva, el sistema busca si ya existe una con ese mismo booking_id — si existe, el mail es una
+  respuesta dentro del mismo intercambio (piden/mandan datos de vuelo, pasaporte, etc.) y **no se
+  crea una reserva duplicada**. El chequeo blando por remitente+producto+fechas+pax queda como red
+  de seguridad aparte, para cuando no hay booking_id reconocible.
+- **Razón:** (1) el reenvío ya existe y está probado (funcionaba con Make); conectar directo a
+  Ferozo/Outlook sería otro protocolo sin ganar nada. (2) un mail de reserva típico tiene varios
+  ida y vuelta (pedir datos de vuelo, pasaporte); sin este chequeo cada respuesta generaría una
+  reserva nueva. Es el mismo mecanismo que ya tenía el Make (buscar el Booking ID antes de agregar
+  la fila), formalizado como regla dura en vez de heurística blanda.
+- **Alternativa rechazada:** migrar la ingesta a IMAP/Graph API directo sobre Ferozo/Outlook (más
+  trabajo, sin beneficio real) · confiar solo en el chequeo blando de "posible duplicada" para las
+  respuestas de un mismo hilo (generaría falsos positivos/negativos innecesarios cuando sí hay un
+  identificador exacto disponible).
+- **Constraint / consecuencia:** pendiente confirmar que el reenvío de Ferozo es una regla de
+  servidor (24/7) y no una regla de Outlook de escritorio (dependería de una PC prendida) — se
+  confirma antes de M2. `reserva.booking_id` se suma al modelo de datos.
+
 ## 2026-09-11: Datos de vuelo obligatorios para traslados; proveedores por WhatsApp quedan manuales; Asana pospuesto
 - **Decisión:** (1) cuando el producto incluye un traslado, el sistema extrae/exige datos de
   vuelo (número, aerolínea, horario); si faltan, la reserva va a `para_revision` — sin eso no se

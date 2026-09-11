@@ -38,11 +38,12 @@ separación por usuario.
   **producto** de catálogo (un paquete, con sus propios `producto_servicio` y proveedores), o bien
   un **tramo de bus público externo** (una ruta + fecha que HI Travel emite en su propio sistema
   de emisión, fuera de esta app). Ver la distinción con el bus de `producto_servicio` más abajo.
-- **reserva** — una reserva recibida por mail. Agencia, remitente, mail original, producto
-  emparejado, fechas, pax, ciudades, habitación/categoría, **datos de vuelo** (número, aerolínea,
-  horario de llegada/salida — obligatorios si el producto incluye un traslado; si faltan, la
-  reserva va a `para_revision`), pedidos especiales, estado, flags (posible duplicada, pedido
-  incompleto).
+- **reserva** — una reserva recibida por mail. Agencia, remitente, mail original, **booking_id de
+  la agencia** (el identificador que trae en el asunto, ej. `DK1531608` — es la clave que evita
+  duplicar por los ida y vuelta del mail, ver más abajo), producto emparejado, fechas, pax,
+  ciudades, habitación/categoría, **datos de vuelo** (número, aerolínea, horario de
+  llegada/salida — obligatorios si el producto incluye un traslado; si faltan, la reserva va a
+  `para_revision`), pedidos especiales, estado, flags (posible duplicada, pedido incompleto).
 - **reserva_pedido** — un pedido a un proveedor para una reserva. Proveedor, mail enviado (asunto
   + cuerpo), cuándo se envió, quién lo aprobó, resultado.
 - **evento_reserva** — el historial: cada cambio de estado, edición de campo y envío, con autor y
@@ -115,8 +116,16 @@ solo la primera entrada y la última salida del tour completo, con la excepción
 - Emparejado de producto: primero por `codigo_externo` exacto → `producto`. Si no hay código o no
   matchea, la IA propone y, con confianza baja, la reserva va a `para_revision`. Umbral y lógica
   en [`integraciones-ia.md`](integraciones-ia.md).
-- Detección de duplicados: match por remitente + código de producto + fechas + pax sobre reservas
-  de los últimos ~60 días → flag `posible_duplicada`, **nunca** descarte automático.
+- Detección de duplicados, en dos capas:
+  1. **Por `booking_id` (dura, se aplica primero):** si el mail entrante trae el mismo booking_id
+     que una reserva ya existente de esa agencia, **no se crea una reserva nueva** — es una
+     respuesta dentro del mismo intercambio (pedido de datos de vuelo, pasaporte, etc.), no una
+     reserva distinta. Es el mecanismo que ya usaba el Make anterior (buscar el Booking ID antes
+     de agregar la fila).
+  2. **Por similitud (blanda, red de seguridad):** si no hay booking_id o no matchea ninguno
+     existente, match por remitente + código de producto + fechas + pax sobre reservas de los
+     últimos ~60 días → flag `posible_duplicada`, **nunca** descarte automático (una persona
+     confirma).
 - RLS: policy única — `authenticated` puede `select/insert/update`; `delete` deshabilitado salvo
   mantenimiento (los estados `cerrada`/`descartada` reemplazan el borrado).
 
