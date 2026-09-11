@@ -6,8 +6,8 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
 - **Último commit:** (ver `git log` — plan de M1 recién escrito) — local, falta `git push`
 - **Verificación completa:** no aplica todavía (sin código)
 - **Plan activo:** `docs/sdd/roadmaps/active/m1-catalogo-y-proveedores.md` — 6 piezas, todas ⬜ pendientes
-- **Próximo paso:** correr `/specs` para escribir la ficha detallada de cada una de las 6 piezas
-  de M1, y después `/implementar M1-01` para arrancar a construir.
+- **Próximo paso:** correr `/implementar M1-01` para arrancar a construir (las 6 fichas de M1 ya
+  están escritas en `docs/sdd/specs/`).
 - **Ojo con:**
   - **Push a GitHub:** requiere que el owner corra `git push` desde una terminal real (login de
     GitHub). Los commits locales quedan hechos, se van acumulando.
@@ -35,4 +35,5 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
   user-flow, marca, integraciones-ia, integraciones, auth-y-permisos); constitución con dueños
   #1-#4; PRD §7 enlazado; decisiones en DECISIONS.md.
 - ✅ `/roadmap M1` — plan con 6 piezas en `docs/sdd/roadmaps/active/`.
-- ⬜ `/specs` — siguiente: la ficha detallada de cada pieza de M1.
+- ✅ `/specs` — las 6 fichas escritas en `docs/sdd/specs/` (M1-01 a M1-06).
+- ⬜ `/implementar M1-01` — siguiente: construir la primera pieza.
