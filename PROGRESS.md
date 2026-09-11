@@ -3,7 +3,7 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
 
 # Dónde retomar
 
-- **Último commit:** 99ea5a5 (Arquitectura: 8 documentos + decisiones) — local, falta `git push`
+- **Último commit:** (ver `git log` — sumado alcance de tours compuestos) — local, falta `git push`
 - **Verificación completa:** no aplica todavía (sin código)
 - **Plan activo:** ninguno todavía
 - **Próximo paso:** correr `/roadmap M1` para armar el plan del primer milestone
@@ -19,6 +19,10 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
   - Make y el Google Sheet MVP quedan **dados de baja** (se apagan al terminar M2); no son parte
     de la solución. El aprendizaje (campos a extraer, filtro "NEW BOOKING", 36 reservas de prueba)
     se reusa.
+  - **Alcance sumado (2026-09-11):** los **tours compuestos** (paquetes encadenados + a veces
+    tramos de bus externo, ej. Patagonia Highlights, Overland San Pedro–Uyuni) entran al MVP desde
+    M1. **Journaway** queda pospuesto a un milestone posterior (formato en alemán/inglés, catálogo
+    propio chico). Detalle en `DECISIONS.md` (2026-09-11) y `docs/prd.md` §2-§6.
 
 ## Estado del método (los 8 comandos)
 

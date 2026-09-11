@@ -30,6 +30,11 @@ separación por usuario.
   varias opciones separadas por "/". Es lo que decide a qué proveedores se les escribe.
 - **codigo_externo** — mapea un código de una agencia/partner (Kilroy, TourRadar, etc.) al código
   interno de HI Travel. El mail de reserva trae uno de estos; acá se traduce.
+- **producto_componente** — solo para **tours compuestos** (ej. Patagonia Highlights, Overland San
+  Pedro–Uyuni): la secuencia ordenada de lo que arma el tour. Cada fila es, en orden, o bien otro
+  **producto** de catálogo (un paquete, con sus propios `producto_servicio` y proveedores), o bien
+  un **tramo de bus público externo** (una ruta + fecha que HI Travel emite en su propio sistema
+  de emisión, fuera de esta app). Ver la distinción con el bus de `producto_servicio` más abajo.
 - **reserva** — una reserva recibida por mail. Agencia, remitente, mail original, producto
   emparejado, fechas, pax, ciudades, habitación/categoría, pedidos especiales, estado, flags
   (posible duplicada, pedido incompleto).
@@ -46,9 +51,24 @@ separación por usuario.
 - un **producto** tiene muchos **producto_servicio**; cada uno apunta a uno o dos **proveedor**
   (service + booking).
 - un **producto** tiene muchos **codigo_externo**.
+- un **producto** (cuando es un tour compuesto) tiene muchos **producto_componente**, en orden;
+  cada componente o bien apunta a **otro producto** (un paquete), o bien describe un tramo de bus
+  externo (ruta, sin proveedor).
 - una **reserva** apunta a un **producto** (cuando emparejó) y tiene muchos **reserva_pedido** y
-  muchos **evento_reserva**.
+  muchos **evento_reserva**. Si el producto es un tour compuesto, la reserva también tiene un
+  **estado por componente** (qué paquete está en qué estado, qué tramo de bus está emitido o
+  pendiente).
 - un **reserva_pedido** apunta a un **proveedor**.
+
+### Dos cosas que parecen lo mismo y no lo son
+
+- **Un servicio "Bus" dentro de `producto_servicio`** (ej. el traslado Uyuni→La Paz que da el
+  mismo proveedor boliviano del Overland) **sí** genera un pedido a proveedor por mail, como
+  cualquier otro servicio — es parte de un paquete normal.
+- **Un tramo de bus público en `producto_componente`** (ej. los buses entre El Chaltén, El
+  Calafate y Puerto Natales de Patagonia Highlights) **nunca** genera un mail a nadie — lo emite
+  una persona en el sistema de emisión de pasajes de HI Travel, por fuera de esta app. La app solo
+  lo lista como tarea pendiente. Ver [`integraciones.md`](integraciones.md).
 
 ## Qué NO se guarda en el MVP
 

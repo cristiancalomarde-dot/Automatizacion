@@ -6,6 +6,34 @@ Formato mínimo por entrada: qué decisión, por qué, alternativa rechazada, co
 
 # Decisiones de diseño
 
+## 2026-09-11: Tours compuestos entran al MVP; Journaway se pospone
+- **Decisión:** el catálogo (M1) modela dos tipos de producto: **simple** (como ya estaba) y
+  **tour compuesto** — una secuencia ordenada de paquetes de catálogo y, a veces, tramos de bus
+  público que HI Travel emite en su propio sistema de emisión, fuera de esta app. Los tramos de
+  bus externos **nunca** generan un mail a un proveedor (no es un efecto hacia afuera de la app,
+  regla #4 no aplica); quedan como tarea pendiente ("emitir boleto") dentro de la reserva. Un
+  servicio de bus que es parte del producto de UN proveedor (ej. Uyuni→La Paz, incluido en el
+  Overland boliviano) sí genera pedido por mail como cualquier servicio. Ejemplos de referencia
+  dados por el owner: *Patagonia Highlights* = El Chaltén (paquete) + bus + El Calafate (paquete)
+  + bus + Puerto Natales (paquete); *Overland San Pedro–Uyuni* = San Pedro de Atacama Explorer
+  (paquete) + Overland Bolivia (paquete, un solo proveedor, incluye el bus Uyuni→La Paz como
+  servicio propio — sin tramos externos). **Journaway** (mails en alemán/inglés, códigos de
+  producto distintos, catálogo propio de 6-7 productos) queda **fuera del MVP**: se suma en un
+  milestone posterior, después de validar el circuito con los formatos estándar.
+- **Razón:** los tours compuestos son "un porcentaje grande" de las reservas reales (Kilroy ya
+  manda varias de Overland en los datos de prueba) — dejarlos fuera del MVP haría que el sistema
+  no reflejara la demanda real, aunque técnicamente "funcionara". Journaway, en cambio, es bajo
+  volumen (6-7 productos) y de formato tan distinto (idioma, remitente, códigos) que mezclarlo con
+  el piloto inicial complica sin necesidad — se ataca mejor como su propio milestone acotado.
+- **Alternativa rechazada:** mantener la exclusión original de "paquetes y tours combinados" del
+  PRD (habría dejado el MVP probando una minoría del tráfico real) · incluir Journaway desde el
+  arranque junto con las agencias estándar (formato demasiado distinto, sin necesidad de resolverlo
+  ahora).
+- **Constraint / consecuencia:** el modelo de datos suma `producto_componente` (ver
+  `docs/arquitectura/modelo-de-datos.md`) y `integraciones.md` deja explícito que un tramo de bus
+  externo no pasa por la regla #4. El armado exacto de cada tour compuesto se termina de confirmar
+  al cargar el catálogo real en M1 (PRD §6, pregunta 6).
+
 ## 2026-09-09: Stack — app propia con Next.js + Vercel + Supabase; Make se da de baja
 - **Decisión:** el producto se construye como una aplicación web propia (Next.js en Vercel, base de datos y login en Supabase, lectura/envío de mail vía Gmail API sobre una casilla dedicada, Claude para interpretar los mails). Make y el Google Sheet "Bookings Automation MVP" dejan de ser parte de la solución: se apagan cuando la app ingiere los mails (fin de M2).
 - **Razón:** el MVP necesita una vista interna con estado editable y compartido (M4) y, a futuro, un módulo de costos — Make no tiene capa de interfaz y obligaría a apoyarse en Airtable/Sheets y a mantener dos herramientas. El "desarrollo a medida impagable" era con equipo humano; acá el desarrollo lo hace la IA con el método del repo. A ~12 reservas/semana los planes gratis de Vercel/Supabase alcanzan y la IA cuesta centavos.

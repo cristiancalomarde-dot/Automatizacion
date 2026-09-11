@@ -34,6 +34,16 @@ como evaluación futura: recién se considera si la extracción demuestra menos 
 corrección manual sostenida, y cambiarla exige editar esta regla y anotarlo en
 [`DECISIONS.md`](../../DECISIONS.md). Ver PRD §6.1.
 
+## Tours compuestos: los tramos de bus público nunca son un efecto hacia afuera de la app
+
+Un tour compuesto (ej. Patagonia Highlights) puede incluir **tramos de bus público** entre sus
+paquetes-componente. Esos tramos **no pasan por la regla #4 porque la app no ejecuta ninguna
+acción sobre ellos**: no se le escribe a nadie, no se reserva, no se emite nada desde acá. La app
+solo los muestra como una tarea pendiente ("emitir boleto: ruta, fecha") dentro de la reserva,
+para que una persona lo haga en el sistema de emisión de pasajes que ya usa HI Travel. Distinto es
+un servicio de bus que forma parte del producto de un proveedor (ej. el traslado Uyuni→La Paz del
+Overland): ese sí genera un pedido a proveedor por mail, como cualquier otro servicio.
+
 ## Casos de borde
 
 - **Proveedor sin mail cargado:** su pedido no sale. La reserva pasa a "pedido a proveedor" con

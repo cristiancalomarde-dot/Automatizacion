@@ -3,7 +3,7 @@
 > **Este documento manda sobre el *qué*: qué construimos, en qué orden, y qué significa
 > «terminado».** El *cómo* técnico vive en `docs/arquitectura/` (un documento por tema) y no se decide acá.
 >
-> **Última revisión:** 2026-09-06
+> **Última revisión:** 2026-09-11
 
 ---
 
@@ -58,6 +58,12 @@ escribirle. Todo lo demás lo llama.
 - [ ] El directorio de proveedores está cargado con, como mínimo, nombre y mail de contacto por
       proveedor. *(Este listado hay que armarlo — hoy no existe consolidado.)*
 - [ ] Dado un producto de catálogo, el sistema devuelve sus proveedores con sus mails.
+- [ ] El catálogo representa tanto **productos simples** (un producto, sus servicios, sus
+      proveedores) como **tours compuestos**: una secuencia ordenada de paquetes de catálogo y,
+      a veces, tramos de bus público que HI Travel emite por fuera del sistema (ej. *Patagonia
+      Highlights* = El Chaltén + bus + El Calafate + bus + Puerto Natales; *Overland San Pedro–
+      Uyuni* = SPA Explorer + Overland Bolivia, sin tramos externos porque el traslado va
+      incluido en el servicio del proveedor boliviano).
 
 ### M2 — Entrada de reservas por mail y detección del producto
 
@@ -72,6 +78,8 @@ detectado, no hay nada que mandarle a un proveedor.
       pedidos.
 - [ ] El sistema empareja el producto contra el catálogo de M1. Si no logra emparejarlo con
       confianza, la reserva queda marcada «para revisión» en vez de adivinar.
+- [ ] Si el producto es un **tour compuesto**, el sistema identifica cada componente (qué paquete,
+      qué tramo de bus) por separado.
 - [ ] La reserva queda con un estado inicial visible (ej. «recibida» / «para revisión»).
 
 ### M3 — Pedido automático a los proveedores
@@ -83,6 +91,12 @@ con las fechas y servicios específicos.
 **Está terminado cuando:**
 - [ ] Para una reserva con producto detectado, el sistema arma un mail por cada proveedor de ese
       producto, con las fechas y los servicios pedidos.
+- [ ] Para un **tour compuesto**, se arma un pedido por cada paquete-componente, a sus propios
+      proveedores. Los **tramos de bus público externos** (los que HI Travel emite en su propio
+      sistema de emisión, no el bus incluido en el servicio de un proveedor) **no generan mail a
+      nadie**: quedan como una tarea pendiente dentro de la reserva ("emitir boleto: ruta, fecha")
+      para que una persona lo haga en su sistema de siempre. La app nunca intenta emitir ni
+      reservar el bus.
 - [ ] Los mails se envían a los proveedores. *(Si salen automáticos o con aprobación humana previa
       lo decide `/arquitectura` — efecto externo, regla #4 de la constitución.)*
 - [ ] La reserva pasa a estado «pedido a proveedor» y queda registrado a qué proveedores se
@@ -98,10 +112,13 @@ producen M2 y M3.
 **Está terminado cuando:**
 - [ ] Una pantalla lista las reservas con: agencia, producto, fechas, pasajeros, proveedores
       contactados y estado actual.
-- [ ] Una persona puede cambiar el estado de una reserva a mano (ej. confirmado / con cambios /
-      rechazado / cerrado) y el cambio se guarda.
+- [ ] Una reserva de **tour compuesto** muestra cada componente (paquete o tramo de bus) con su
+      propio estado, además del estado general de la reserva.
+- [ ] Una persona puede cambiar el estado de una reserva (o de un componente) a mano (ej.
+      confirmado / con cambios / rechazado / cerrado / boleto emitido) y el cambio se guarda.
 - [ ] El estado actualizado lo ve todo el equipo (no queda en la máquina de quien lo cambió).
-- [ ] El recorrido completo del §2 se puede ver corriendo con una reserva real.
+- [ ] El recorrido completo del §2 se puede ver corriendo con una reserva real — al menos una vez
+      con un producto simple y una vez con un tour compuesto.
 
 ## 4. Riesgos, con su límite aceptado
 
@@ -112,6 +129,7 @@ producen M2 y M3.
 | 3 | El directorio de proveedores no está listo a tiempo. | M1 no se cierra sin el directorio cargado con nombre y mail. Si al empezar M3 faltan contactos, se completan antes de seguir; no se avanza con huecos. |
 | 4 | El Make semi-armado y el MVP borrador ya existentes condicionan el diseño. | Se revisan una sola vez en `/arquitectura`. Si no sirven como base, se descartan sin intentar rescatarlos. |
 | 5 | Una agencia piloto cambia su formato de mail. | Se trata como bug: se ajusta la lectura de esa agencia. No frena el resto. |
+| 6 | Los tours compuestos (paquetes encadenados + tramos de bus) resultan más difíciles de catalogar de lo esperado. | Se cargan primero los 2-3 tours compuestos de mayor volumen (ej. Patagonia Highlights, Overland San Pedro–Uyuni) como prueba; si toma mucho más tiempo que un producto simple, se ajusta el modelo antes de cargar el resto. |
 
 ## 5. Fuera de alcance
 
@@ -122,9 +140,14 @@ Lo de abajo **no se construye en el MVP**:
 - **Lectura automática de las respuestas de los proveedores** — las lee y carga una persona.
 - **Respuesta automática a la agencia cliente** — la confirmación/rechazo a la agencia la sigue
   mandando una persona por fuera.
-- **Paquetes y tours armados que combinan varios productos** (incluidos buses públicos, en sus 2
-  archivos aparte) — el MVP cubre productos de catálogo simples.
-- **Más de 3 formatos de agencia** — se suman después, con el circuito ya funcionando.
+- **Emitir o gestionar boletos de bus desde la app** — la emisión de los tramos de bus público
+  sigue haciéndose en el sistema de emisión existente; la app solo la marca como pendiente.
+- **Productos y mails de Journaway** — formato propio (alemán mezclado con inglés), códigos de
+  producto distintos, catálogo separado de solo 6-7 productos (varios son excursiones de un día).
+  Se suman en un milestone posterior, una vez validado el circuito con los formatos estándar
+  (Kilroy/Jysk, TourRadar). Detectarlos será por remitente **y** por código de producto, ambos
+  distintos a los habituales.
+- **Más de 3 formatos de agencia estándar** — se suman después, con el circuito ya funcionando.
 - **Reservas que llegan por otro canal** que no sea mail (teléfono, WhatsApp, portal).
 - **Facturación, pagos, vouchers y documentación al pasajero.**
 
@@ -140,10 +163,16 @@ Lo de abajo **no se construye en el MVP**:
    mecanismo:** casilla de Gmail dedicada vía Gmail API. **Sigue abierto** cuál cuenta puntual
    (Gmail común vs. dirección `@hitravel.com.ar`) — lo definís antes de M2, ver "Abierto" en
    [`stack.md`](arquitectura/stack.md).
-4. **¿Qué se hace si una reserva de agencia piloto es en realidad un paquete/tour combinado?** —
-   *sigue abierta; cerrar antes de M2 si aparece en las piloto, si no queda para después del MVP.*
+4. ~~¿Qué se hace si una reserva de agencia piloto es en realidad un paquete/tour combinado?~~ —
+   **resuelto (2026-09-11): entran al alcance del MVP como "tours compuestos"** (secuencia de
+   paquetes + a veces tramos de bus externo). Ver §2, M1-M4 y
+   [`DECISIONS.md`](../DECISIONS.md).
 5. **Los estados exactos del ciclo de vida de una reserva** — *sigue abierta; hay una propuesta de
-   8 estados en [`user-flow.md`](arquitectura/user-flow.md) §3, se valida y afina en M4.*
+   8 estados en [`user-flow.md`](arquitectura/user-flow.md) §3, se valida y afina en M4. Con tours
+   compuestos, además hay que afinar el estado por componente (§3 M4).*
+6. **El armado exacto del Overland San Pedro–Uyuni y de otros tours compuestos** — el owner lo
+   describió en la conversación (ver `DECISIONS.md`), pero se confirma con el detalle real al
+   cargar el catálogo en M1.
 
 ## 7. El cómo técnico (lo completa `/arquitectura`)
 
