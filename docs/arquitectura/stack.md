@@ -46,9 +46,20 @@ A este volumen la IA cuesta centavos y los planes gratis alcanzan, así que el c
 seguro cae en la parte baja. Correr `/costo` con la arquitectura cerrada para la estimación con
 supuestos explícitos.
 
+## Textos de la interfaz: centralizados, listos para sumar un idioma después
+
+El MVP es **solo en español** (`marca.md` §5) — no se construye inglés "por las dudas" (regla de
+"base primero"). Pero los textos de la interfaz **no se escriben sueltos en cada pantalla**: viven
+centralizados en un solo lugar del código. Así, si el día de mañana una agencia usa la herramienta
+y hace falta inglés, agregar el idioma es una spec chica (un segundo archivo de textos), no una
+reescritura de la app.
+
 ## Anexo técnico
 
 - Next.js App Router; Server Actions o Route Handlers para la lógica de servidor. TypeScript.
+- Textos de interfaz en un módulo central de strings (ej. un diccionario `es.ts`), nunca literales
+  sueltos en los componentes — sin librería de i18n en el MVP (un solo idioma activo), pero con la
+  estructura lista para agregar `en.ts` el día que haga falta.
 - Supabase: Postgres + Auth (proveedor Google, dominio restringido). RLS activada aunque el
   modelo sea de datos compartidos (defensa en profundidad); ver [`modelo-de-datos.md`](modelo-de-datos.md).
 - Ingesta Gmail: Route Handler protegido, disparado por Vercel Cron (`*/5 * * * *`), que usa la

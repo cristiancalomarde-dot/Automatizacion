@@ -6,6 +6,23 @@ Formato mínimo por entrada: qué decisión, por qué, alternativa rechazada, co
 
 # Decisiones de diseño
 
+## 2026-09-14: Desktop-first confirmado; textos de interfaz centralizados (i18n-ready, español único)
+- **Decisión:** (1) se confirma desktop-first (ya estaba en `user-flow.md`/`marca.md`, el owner
+  preguntó si el harness pedía mobile-first — no es el caso; se reafirma explícitamente).
+  (2) El idioma activo del MVP sigue siendo español, pero los textos de interfaz se escriben en un
+  módulo central de strings (no literales sueltos en cada componente), para que agregar inglés más
+  adelante sea una spec chica y no una reescritura.
+- **Razón:** (1) la herramienta es de uso diario con tablas densas — se opera mejor en pantalla
+  grande; el equipo trabaja desde escritorio. (2) construir en inglés "por si escala" ahora violaría
+  "base primero" (no hay demanda real de otro idioma todavía) y arriesgaría errores de traducción
+  de dominio, porque quien construye y prueba piensa en español. Centralizar los textos captura el
+  beneficio de escalar sin pagar el costo de construir doble desde ya.
+- **Alternativa rechazada:** construir la interfaz en inglés desde el día uno pensando en agencias
+  futuras (alcance sin demanda real) · dejar los textos sueltos por simplicidad inmediata (encarece
+  mucho agregar un idioma después).
+- **Constraint / consecuencia:** `stack.md` documenta el módulo de strings como parte del stack;
+  no se instala ninguna librería de i18n en el MVP (un solo idioma activo no la necesita).
+
 ## 2026-09-11: Los pedidos a proveedores salen como operations@hitravel.com.ar, no desde el Gmail de lectura
 - **Decisión:** el remitente de los mails a proveedores es `operations@hitravel.com.ar` (la
   casilla que el equipo ya usa y mira hoy), **no** el Gmail dedicado que la app usa para leer las
