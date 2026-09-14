@@ -57,7 +57,7 @@ estados exactos del ciclo de vida quedan por afinar en M4 — `prd.md` §6.5.)
 | **con cambios** | El/los proveedor(es) confirmaron con diferencias (fechas, servicios, categoría). | Persona |
 | **rechazada** | El/los proveedor(es) no pueden prestar el servicio. | Persona |
 | **cerrada** | La gestión terminó; la reserva se archiva del trabajo diario. | Persona |
-| **descartada** | El mail no era una reserva de catálogo (spam, consulta, paquete combinado). Archivada aparte. | Persona |
+| **descartada** | El mail no era una reserva de catálogo (spam, consulta), o es un armado que el sistema todavía no sabe modelar (distinto de un tour compuesto reconocido, que sí se procesa normal). Archivada aparte. | Persona |
 
 **Marcas (flags) que se apilan sobre el estado, no lo reemplazan:**
 - `posible duplicada` — enlaza a la reserva original; se resuelve confirmando "es duplicada" (→
@@ -247,10 +247,16 @@ Tres zonas:
   lectura de esa agencia (`prd.md` §4 riesgo 5). La UI solo lo hace **visible** (filtro por
   agencia + por motivo).
 
-### g. Reserva que en realidad es un paquete / tour combinado
+### g. Reserva de un tour compuesto (varios paquetes + buses intermedios)
 
-- Fuera de alcance del MVP (`prd.md` §5 y §6.4). Si aparece: el operador la marca `descartada` con
-  motivo "Paquete combinado — fuera de MVP".
+- **Esto SÍ entra al MVP** (`prd.md` §2-§3, sumado 2026-09-11) — no se descarta. Sigue el mismo
+  recorrido que cualquier reserva: si el sistema reconoce el tour y sus componentes, pasa a
+  `recibida`; si algo no matchea, a `para revisión` como cualquier otro caso de emparejado
+  incierto (§6.b). Ver M1-M4 y `DECISIONS.md`.
+- `descartada` con motivo "Armado no soportado" queda reservada para lo genuinamente fuera de
+  alcance: un combo de productos que **no** sigue ningún patrón de tour compuesto que el sistema
+  ya sabe modelar (ej. algo ad-hoc que no es ninguno de los formatos cargados). Es distinto de un
+  tour compuesto reconocido, que nunca se descarta solo por ser compuesto.
 
 ## 7. Estados de carga / error / vacío de los momentos críticos
 

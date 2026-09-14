@@ -6,6 +6,18 @@ Formato mínimo por entrada: qué decisión, por qué, alternativa rechazada, co
 
 # Decisiones de diseño
 
+## 2026-09-14: Fix — user-flow.md tenía texto viejo que descartaba los tours compuestos
+- **Decisión:** corregidos §3 (tabla de estados) y §6.g de `user-flow.md`, que todavía decían que
+  un "paquete/tour combinado" se marca `descartada` por estar fuera de alcance. Ahora dicen
+  explícitamente que un tour compuesto reconocido sigue el recorrido normal (recibida / para
+  revisión), y que `descartada` queda solo para un armado que ningún patrón soportado cubre.
+- **Razón:** el owner detectó la inconsistencia — ese texto quedó de la versión del PRD anterior a
+  la decisión del 2026-09-11 que sumó los tours compuestos al alcance, y no se había propagado a
+  `user-flow.md` en ese momento.
+- **Alternativa rechazada:** ninguna, es una corrección de consistencia, no una decisión nueva.
+- **Constraint / consecuencia:** ninguna — el modelo de datos, `integraciones.md` y el PRD ya
+  estaban alineados; solo faltaba este documento.
+
 ## 2026-09-14: Desktop-first confirmado; textos de interfaz centralizados (i18n-ready, español único)
 - **Decisión:** (1) se confirma desktop-first (ya estaba en `user-flow.md`/`marca.md`, el owner
   preguntó si el harness pedía mobile-first — no es el caso; se reafirma explícitamente).
