@@ -199,6 +199,16 @@ Lo de abajo **no se construye en el MVP**:
 7. **Cómo se manda un mail "como" `operations@hitravel.com.ar`** (SMTP de Ferozo vs. servicio
    transaccional tipo Resend) — *no bloquea M1; se resuelve antes de M3, a confirmar con quien
    administra el dominio.* Ver [`integraciones.md`](arquitectura/integraciones.md) "Abierto".
+8. **¿El filtro de spam de Ferozo puede retener un mail de reserva antes del reenvío al Gmail?**
+   Si el spam actúa sobre la bandeja de entrada de `sales@hitravel.com.ar` antes de que corra la
+   regla de reenvío, un mail marcado como spam nunca llegaría al Gmail — se perdería en silencio.
+   *No bloquea M1; se confirma antes de M2 revisando la config de Ferozo o mandando un mail de
+   prueba y chequeando la carpeta de spam de esa casilla después de unos días.*
+9. **Códigos de producto explícitos por columna en `RutasenBus2020...xlsm`.** Hoy el importador de
+   tours compuestos (M1-05) infiere qué paquete es cada bloque por el texto/orden de las columnas;
+   si cada columna trajera su código de producto (ej. "OD010A") de forma explícita, el matcheo
+   sería más confiable y menos frágil ante cambios de orden. *Mejora sugerida por el owner
+   (2026-09-14) — no bloquea nada; se evalúa aplicar al Excel antes de construir M1-05.*
 
 ## 7. El cómo técnico (lo completa `/arquitectura`)
 
