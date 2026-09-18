@@ -9,23 +9,51 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
   que todavía no existen (ver abajo). Sin eso no hay build para levantar y "probar vos".
 - **Plan activo:** `docs/sdd/roadmaps/active/m1-catalogo-y-proveedores.md` — M1-01 🔵 en curso
   (bloqueada en V3), M1-02 a M1-06 ⬜ pendientes.
-- **Próximo paso — 3 cuentas que solo el owner puede crear** (no soy yo quien puede darlas de
-  alta):
-  1. **Proyecto en [supabase.com](https://supabase.com)** (recomendado: cuenta de la empresa).
-     De ahí salen `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` y
-     `SUPABASE_SERVICE_ROLE_KEY` (Project Settings → API). Después: pegar el contenido de
-     `supabase/migrations/0001_usuario.sql` en el SQL Editor del panel, y habilitar el proveedor
-     **Google** en Authentication → Providers.
-  2. **Cliente OAuth en [console.cloud.google.com](https://console.cloud.google.com)** (tipo "Web
-     application") → da `GOOGLE_OAUTH_CLIENT_ID` y `GOOGLE_OAUTH_CLIENT_SECRET`. Estos se pegan en
-     el panel de Supabase (Authentication → Providers → Google), no en la app. El "redirect URI"
-     autorizado es el que muestra esa pantalla de Supabase.
-  3. **Proyecto en [vercel.com](https://vercel.com)** conectado al repo de GitHub — **ojo, antes
-     hace falta el `git push`** que sigue pendiente (ver abajo). Ahí se cargan las 5 variables de
-     arriba + `NEXT_PUBLIC_ALLOWED_EMAIL_DOMAIN` (el dominio a restringir, confirmar el literal
-     exacto — se asumió `hitravel.com.ar`).
+- **Próximo paso — 3 cuentas externas, avance real al 2026-09-18** (retomado en bus Bilbao→Madrid,
+  cortado por batería de la notebook, sin riesgo — todo lo hecho vive en la nube de
+  Google/Supabase, no en la máquina):
+  1. ✅ **Cuenta creada en [vercel.com](https://vercel.com)** — plan Hobby, con
+     `ccalomarde@hitravel.com.ar`. Falta: crear el proyecto conectado al repo + cargar variables
+     (paso 3 de más abajo).
+  2. ✅ **Proyecto Supabase creado y funcionando** — nombre "Automatizacion Hi Travel", región
+     Canada (Central), status Healthy, project ref `uhwkifqmexdktaseaxxo`.
+     - ✅ Las 3 claves ya copiadas por el owner a una nota personal (no viven en este repo, están
+       en su nota de celular): `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`,
+       `SUPABASE_SECRET_KEY` (Supabase renombró `service_role` → `secret key` / `anon` →
+       `publishable key` en su UI nueva — mismos valores, usar el nombre de variable que pide
+       `.env.example`, no el que muestra Supabase).
+     - ✅ Migración `0001_usuario.sql` corrida a mano en el SQL Editor de Supabase — la tabla
+       `usuario` con RLS ya existe en la base real.
+     - ⬜ **Falta: habilitar el proveedor Google en Authentication → Providers** — depende del
+       paso 2 de abajo (necesita el Client ID/Secret de Google Cloud).
+  3. 🔵 **Google Cloud — en curso, cortado acá:** proyecto `HI Travel Automatizacion` ya creado en
+     console.cloud.google.com con `ccalomarde@hitravel.com.ar`. **Falta desde cero:**
+     a. Configurar la **pantalla de consentimiento OAuth** (APIs & Services → OAuth consent
+        screen): tipo **External**, nombre de la app "HI Travel - Reservas de Catálogo", mail de
+        soporte y de contacto `ccalomarde@hitravel.com.ar`. Scopes por defecto (no tocar nada).
+        Publicar la app (no dejarla en modo "Testing" — evita tener que agregar a cada persona del
+        equipo como "test user" a mano).
+     b. Crear la **credencial OAuth** (APIs & Services → Credentials → Create Credentials → OAuth
+        client ID → tipo **Web application**, nombre "HI Travel Supabase Auth"). **Redirect URI
+        autorizado** (copiar tal cual):
+        `https://uhwkifqmexdktaseaxxo.supabase.co/auth/v1/callback`
+     c. Copiar el **Client ID** y el **Client Secret** que Google muestra al crear la credencial
+        (a la misma nota personal, nunca acá).
+     d. Volver a Supabase → Authentication → Providers → Google → activar → pegar Client ID y
+        Client Secret → guardar. (Cierra el punto 2 de arriba.)
+  4. ⬜ **Proyecto en Vercel conectado al repo de GitHub** — depende de que el `git push` esté al
+     día (ver "Ojo con" abajo — probablemente hay commits nuevos sin subir desde la última vez).
+     Variables a cargar en Vercel (Project Settings → Environment Variables), usando los nombres
+     de `.env.example`, con los valores de la nota del owner:
+     - `NEXT_PUBLIC_SUPABASE_URL`
+     - `NEXT_PUBLIC_SUPABASE_ANON_KEY` (es el valor que Supabase llama "publishable key")
+     - `SUPABASE_SERVICE_ROLE_KEY` (es el valor que Supabase llama "secret key")
+     - `NEXT_PUBLIC_ALLOWED_EMAIL_DOMAIN` = `hitravel.com.ar` (confirmar el literal exacto)
+     - (Google Client ID/Secret NO van en Vercel — viven solo en la config de Google del panel de
+       Supabase, paso 3.d de arriba.)
 
-  Cuando estén las 3, avisame y cerramos M1-01 (V3) juntos.
+  **Retomar exactamente desde:** paso 3.a (la pantalla de consentimiento de Google Cloud). Nada
+  se rompe ni se pierde por la pausa — el proyecto de Google Cloud ya creado sigue ahí esperando.
 - **Ojo con:**
   - **Push a GitHub:** sigue pendiente — correr `git push` desde una terminal real. Vercel necesita
     esto para conectar el repo.
