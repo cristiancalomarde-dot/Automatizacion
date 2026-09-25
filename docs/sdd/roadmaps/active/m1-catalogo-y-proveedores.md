@@ -59,7 +59,7 @@ resuelven. Quedan dos cosas para resolver **antes de construir M1-01** (no antes
 
 | ID | Pieza | Estado | Depende de | Ficha |
 |---|---|---|---|---|
-| M1-01 | Base de la app: Next.js + Supabase + login con Google (dominio restringido) + deploy en Vercel | 🔵 en curso — código y tests en verde (V1+V2); falta V3, bloqueada por 3 cuentas externas reales (ver `PROGRESS.md`) | — | `docs/sdd/specs/M1-01-base-de-la-app.md` |
+| M1-01 | Base de la app: Next.js + Supabase + login con Google (dominio restringido) + deploy en Vercel | ✅ terminada — V1, V2 y V3 en verde (recorrido real confirmado en `https://automatizacion-dun.vercel.app` con `operations@hitravel.com.ar`) | — | `docs/sdd/specs/M1-01-base-de-la-app.md` |
 | M1-02 | Esquema de datos del catálogo (producto, proveedor, producto_servicio, producto_componente, codigo_externo, importacion) | ⬜ pendiente | M1-01 | `docs/sdd/specs/M1-02-esquema-de-catalogo.md` |
 | M1-03 | Importador: directorio de proveedores (desde el Excel de proveedores) | ⬜ pendiente | M1-02 | `docs/sdd/specs/M1-03-importador-proveedores.md` |
 | M1-04 | Importador: productos simples + sus servicios y proveedores (Iguazú, piloto) | ⬜ pendiente | M1-03 | `docs/sdd/specs/M1-04-importador-productos-simples.md` |

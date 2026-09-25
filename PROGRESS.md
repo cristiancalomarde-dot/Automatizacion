@@ -3,15 +3,20 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
 
 # Dónde retomar
 
-- **Último commit:** 650ed78 (M1-01: base de la app) — local, falta `git push`
-- **Verificación completa:** M1-01 tiene V1 (tests+linter) y V2 (integración con mocks) en
-  **verde**. V3 (recorrido real de punta a punta) **no corrida** — depende de 3 cuentas externas
-  que todavía no existen (ver abajo). Sin eso no hay build para levantar y "probar vos".
-- **Plan activo:** `docs/sdd/roadmaps/active/m1-catalogo-y-proveedores.md` — M1-01 🔵 en curso
-  (bloqueada en V3), M1-02 a M1-06 ⬜ pendientes.
-- **Próximo paso — 3 cuentas externas, avance real al 2026-09-18** (retomado en bus Bilbao→Madrid,
-  cortado por batería de la notebook, sin riesgo — todo lo hecho vive en la nube de
-  Google/Supabase, no en la máquina):
+- **Último commit en GitHub:** `5b98fa9` (push hecho el 2026-09-23). Los cambios de hoy
+  (`PROGRESS.md`, tabla del plan) todavía no están commiteados — hacerlo antes de arrancar M1-02.
+- **Verificación completa:** M1-01 **terminada** — V1 (tests+linter), V2 (integración con mocks) y
+  V3 (recorrido real de punta a punta) las 3 en **verde**. V3 se confirmó el 2026-09-25 en
+  `https://automatizacion-dun.vercel.app`, entrando con `operations@hitravel.com.ar` (se ve
+  "Damian" en el header + botón Salir). También se confirmó el caso de rechazo: una cuenta fuera
+  del dominio (`hitravelargentina@gmail.com`) es rechazada correctamente.
+- **Plan activo:** `docs/sdd/roadmaps/active/m1-catalogo-y-proveedores.md` — M1-01 ✅ **terminada**,
+  M1-02 a M1-06 ⬜ pendientes. **Próximo paso: `/implementar M1-02`** (esquema de datos del
+  catálogo).
+- **App en vivo:** `https://automatizacion-dun.vercel.app` (proyecto Vercel bajo la cuenta
+  `ccalomarde@hitravel.com.ar`, conectado al repo de GitHub).
+
+## Cómo quedaron armadas las 3 cuentas externas (para referencia futura)
   1. ✅ **Cuenta creada en [vercel.com](https://vercel.com)** — plan Hobby, con
      `ccalomarde@hitravel.com.ar`. Falta: crear el proyecto conectado al repo + cargar variables
      (paso 3 de más abajo).
@@ -26,34 +31,43 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
        `usuario` con RLS ya existe en la base real.
      - ⬜ **Falta: habilitar el proveedor Google en Authentication → Providers** — depende del
        paso 2 de abajo (necesita el Client ID/Secret de Google Cloud).
-  3. 🔵 **Google Cloud — en curso, cortado acá:** proyecto `HI Travel Automatizacion` ya creado en
-     console.cloud.google.com con `ccalomarde@hitravel.com.ar`. **Falta desde cero:**
-     a. Configurar la **pantalla de consentimiento OAuth** (APIs & Services → OAuth consent
-        screen): tipo **External**, nombre de la app "HI Travel - Reservas de Catálogo", mail de
-        soporte y de contacto `ccalomarde@hitravel.com.ar`. Scopes por defecto (no tocar nada).
-        Publicar la app (no dejarla en modo "Testing" — evita tener que agregar a cada persona del
-        equipo como "test user" a mano).
-     b. Crear la **credencial OAuth** (APIs & Services → Credentials → Create Credentials → OAuth
-        client ID → tipo **Web application**, nombre "HI Travel Supabase Auth"). **Redirect URI
-        autorizado** (copiar tal cual):
-        `https://uhwkifqmexdktaseaxxo.supabase.co/auth/v1/callback`
-     c. Copiar el **Client ID** y el **Client Secret** que Google muestra al crear la credencial
-        (a la misma nota personal, nunca acá).
-     d. Volver a Supabase → Authentication → Providers → Google → activar → pegar Client ID y
-        Client Secret → guardar. (Cierra el punto 2 de arriba.)
-  4. ⬜ **Proyecto en Vercel conectado al repo de GitHub** — depende de que el `git push` esté al
-     día (ver "Ojo con" abajo — probablemente hay commits nuevos sin subir desde la última vez).
-     Variables a cargar en Vercel (Project Settings → Environment Variables), usando los nombres
-     de `.env.example`, con los valores de la nota del owner:
-     - `NEXT_PUBLIC_SUPABASE_URL`
-     - `NEXT_PUBLIC_SUPABASE_ANON_KEY` (es el valor que Supabase llama "publishable key")
-     - `SUPABASE_SERVICE_ROLE_KEY` (es el valor que Supabase llama "secret key")
-     - `NEXT_PUBLIC_ALLOWED_EMAIL_DOMAIN` = `hitravel.com.ar` (confirmar el literal exacto)
-     - (Google Client ID/Secret NO van en Vercel — viven solo en la config de Google del panel de
-       Supabase, paso 3.d de arriba.)
+  3. ✅ **Google Cloud — resuelto el 2026-09-23, con otra cuenta:** `ccalomarde@hitravel.com.ar`
+     quedó bloqueada por una sesión de Google forzada a nivel equipo/navegador (se abría
+     `hitravelargentina@gmail.com` incluso en incógnito). Se decidió seguir con
+     **`hitravelargentina@gmail.com`** en su lugar — en `ccalomarde` solo existía el proyecto
+     vacío, nada configurado, así que no se perdió ni se duplicó trabajo. Proyecto de Google Cloud:
+     "Automatizacion HI Travel" (bajo `hitravelargentina@gmail.com`).
+     - ✅ Pantalla de consentimiento OAuth configurada y publicada (tipo External).
+     - ✅ Credencial OAuth creada ("HI Travel Supabase Auth", Web application) con el redirect URI
+       `https://uhwkifqmexdktaseaxxo.supabase.co/auth/v1/callback` cargado en **"URIs de
+       redireccionamiento autorizados"** (ojo: NO en "Orígenes autorizados de JavaScript" — ese
+       campo no acepta rutas con `/` y tira error si se pega ahí).
+     - ✅ Client ID y Client Secret copiados a la nota personal del owner.
+     - ✅ Activado en Supabase → Authentication → Providers → Google, con esas claves. (Cierra el
+       punto 2 de arriba.)
+  4. ✅ **Proyecto en Vercel conectado al repo de GitHub**, con las 4 variables cargadas
+     (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`,
+     `NEXT_PUBLIC_ALLOWED_EMAIL_DOMAIN=hitravel.com.ar`). Deploy funcionando en
+     `https://automatizacion-dun.vercel.app`.
+  5. ✅ **Cuenta de Google creada para `operations@hitravel.com.ar`** (usada para probar el login,
+     2026-09-25) — como los mails de `hitravel.com.ar` viven en Ferozo (no son Google Workspace),
+     hubo que crearle una cuenta de Google de cero vía "Crear cuenta → Usar mi dirección de correo
+     actual". Sirve como cuenta real del dominio para futuras pruebas de login. La contraseña la
+     tiene el owner.
 
-  **Retomar exactamente desde:** paso 3.a (la pantalla de consentimiento de Google Cloud). Nada
-  se rompe ni se pierde por la pausa — el proyecto de Google Cloud ya creado sigue ahí esperando.
+  **Dos trampas que costaron tiempo, documentadas para no repetirlas:**
+  - **Cuenta de Google `ccalomarde@hitravel.com.ar` inutilizable en este equipo:** el navegador (y
+    hasta el celular) fuerza siempre la sesión de `hitravelargentina@gmail.com` al intentar
+    loguearse con `ccalomarde`, incluso en incógnito, con la contraseña cambiada y sin mail de
+    recuperación. Causa exacta sin confirmar (algo a nivel cuenta de Google, no del dispositivo).
+    Se resolvió evitando esa cuenta: Google Cloud quedó bajo `hitravelargentina@gmail.com`, y para
+    probar el login de la app se usó `operations@hitravel.com.ar` (cuenta nueva, sin ese lío).
+  - **Client Secret de Google mal transcrito → login fallaba con "Unable to exchange external
+    code":** el secreto se había copiado a mano desde una captura de pantalla (un carácter
+    ambiguo, `O` vs `0`). Se resolvió generando un secreto nuevo en Google Cloud (Credentials →
+    el cliente OAuth → botón **"Add secret"**, no hay botón "Reset" en la UI nueva) y copiándolo
+    con el ícono de copiar, nunca a mano. Lección: cualquier secreto de Google siempre copiar con
+    el botón, jamás transcribir desde una imagen.
 - **Ojo con:**
   - **Push a GitHub:** sigue pendiente — correr `git push` desde una terminal real. Vercel necesita
     esto para conectar el repo.
@@ -87,5 +101,5 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
 - ✅ `/arquitectura` — 8 documentos en `docs/arquitectura/`; constitución con dueños #1-#4.
 - ✅ `/roadmap M1` — plan con 6 piezas en `docs/sdd/roadmaps/active/`.
 - ✅ `/specs` — las 6 fichas escritas en `docs/sdd/specs/` (M1-01 a M1-06).
-- 🔵 `/implementar M1-01` — código y tests listos; **bloqueada en V3** por las 3 cuentas externas
-  de arriba. Siguiente pieza cuando se resuelva: `/implementar M1-02`.
+- ✅ `/implementar M1-01` — terminada, las 3 verificaciones en verde, app real desplegada y
+  probada en `https://automatizacion-dun.vercel.app`. Siguiente pieza: `/implementar M1-02`.
