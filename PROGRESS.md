@@ -3,18 +3,38 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
 
 # Dónde retomar
 
-- **Último commit en GitHub:** `5b98fa9` (push hecho el 2026-09-23). Los cambios de hoy
-  (`PROGRESS.md`, tabla del plan) todavía no están commiteados — hacerlo antes de arrancar M1-02.
-- **Verificación completa:** M1-01 **terminada** — V1 (tests+linter), V2 (integración con mocks) y
-  V3 (recorrido real de punta a punta) las 3 en **verde**. V3 se confirmó el 2026-09-25 en
-  `https://automatizacion-dun.vercel.app`, entrando con `operations@hitravel.com.ar` (se ve
-  "Damian" en el header + botón Salir). También se confirmó el caso de rechazo: una cuenta fuera
-  del dominio (`hitravelargentina@gmail.com`) es rechazada correctamente.
-- **Plan activo:** `docs/sdd/roadmaps/active/m1-catalogo-y-proveedores.md` — M1-01 ✅ **terminada**,
-  M1-02 a M1-06 ⬜ pendientes. **Próximo paso: `/implementar M1-02`** (esquema de datos del
-  catálogo).
+- **Último commit en GitHub:** `6fa8a53` (push hecho el 2026-09-23). Los cambios de M1-02
+  todavía no están commiteados — hacerlo antes de arrancar M1-03.
+- **Verificación completa:** M1-01 y **M1-02 terminadas**, las 3 verificaciones en verde en ambas,
+  corridas contra el proyecto Supabase real (no mocks).
+  - M1-01: V3 confirmada el 2026-09-25 en `https://automatizacion-dun.vercel.app`, entrando con
+    `operations@hitravel.com.ar` (se ve "Damian" en el header + botón Salir). También se confirmó
+    el caso de rechazo: una cuenta fuera del dominio (`hitravelargentina@gmail.com`) es rechazada.
+  - M1-02 (2026-09-26): las 6 tablas del catálogo (`proveedor`, `producto`, `producto_servicio`,
+    `codigo_externo`, `producto_componente`, `importacion`) aplicadas con RLS activa; 52/52 tests
+    en verde, incluido el recorrido completo (producto → servicios → proveedores → tour compuesto
+    → código externo → importación, leído de punta a punta).
+- **Plan activo:** `docs/sdd/roadmaps/active/m1-catalogo-y-proveedores.md` — M1-01 y M1-02
+  ✅ **terminadas**, M1-03 a M1-06 ⬜ pendientes. **Próximo paso: `/implementar M1-03`**
+  (importador del directorio de proveedores).
 - **App en vivo:** `https://automatizacion-dun.vercel.app` (proyecto Vercel bajo la cuenta
   `ccalomarde@hitravel.com.ar`, conectado al repo de GitHub).
+
+## Cómo se resolvió M1-02 — dos trampas técnicas de infraestructura (para no repetirlas)
+
+- **La conexión "directa" a Postgres (`db.<ref>.supabase.co:5432`) solo resuelve IPv6, y esta red
+  bloquea ese tráfico saliente** (probable firewall). El CLI de Supabase (`db push`/`migration
+  repair`) fallaba con timeouts de conexión que parecían un problema de contraseña, pero no lo
+  eran. Solución: usar el **connection pooler** de Supabase en su lugar —
+  `aws-0-ca-central-1.pooler.supabase.com:5432`, con usuario `postgres.<project-ref>` (no
+  `postgres` a secas) — que sí resuelve por IPv4 y conecta bien. Si en el futuro el CLI de
+  Supabase falla con "Connection terminated unexpectedly" al conectar a la base real, probar
+  primero con el pooler antes de sospechar de la contraseña.
+- **La migración `0001_usuario.sql` (aplicada a mano en el SQL Editor durante M1-01) nunca quedó
+  registrada en el historial de migraciones del CLI.** Al correr `supabase db push` por primera
+  vez, el CLI intentaba reaplicar `0001` (fallaría por policy duplicada) antes de llegar a `0002`.
+  Se reparó con `supabase migration repair 0001 --status applied` (comando estándar del CLI, solo
+  actualiza la tabla de tracking, no toca el esquema) antes de aplicar migraciones nuevas.
 
 ## Cómo quedaron armadas las 3 cuentas externas (para referencia futura)
   1. ✅ **Cuenta creada en [vercel.com](https://vercel.com)** — plan Hobby, con
@@ -102,4 +122,6 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
 - ✅ `/roadmap M1` — plan con 6 piezas en `docs/sdd/roadmaps/active/`.
 - ✅ `/specs` — las 6 fichas escritas en `docs/sdd/specs/` (M1-01 a M1-06).
 - ✅ `/implementar M1-01` — terminada, las 3 verificaciones en verde, app real desplegada y
-  probada en `https://automatizacion-dun.vercel.app`. Siguiente pieza: `/implementar M1-02`.
+  probada en `https://automatizacion-dun.vercel.app`.
+- ✅ `/implementar M1-02` — terminada, esquema del catálogo aplicado al proyecto real, 52/52 tests
+  en verde. Siguiente pieza: `/implementar M1-03`.
