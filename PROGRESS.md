@@ -109,6 +109,31 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
     (`C:\Users\gs\dev\hi-travel-automatizacion`) y volcando el código verificado al repo real —
     quien siga construyendo debería hacer lo mismo, o mejor, considerar mover el proyecto fuera de
     una carpeta sincronizada por Drive más adelante (Git/GitHub ya es el respaldo real).
+  - **PDF de TourRadar (4 ejemplos en `Insumos/`, revisados 2026-09-27) — insumo para M2:**
+    - Traen: nombre del tour, fecha de salida, TourRadar Reference ID (= booking id), nombre del
+      cliente, a veces "HI Travel booking ID" tipo "Nombre x2", y líneas de detalle con cantidad
+      (ej. "2 × tour", "DOUBLE Hostel", "Dorm Hostel", "Hotel La Aldea 4* SGL", "Other").
+    - **NO traen el código TR del producto** (160955, etc.): el emparejado tiene que ser por
+      **nombre del tour**, que coincide exacto con la columna "Nombre en Tourradar" del Excel
+      de códigos TR. Por eso ese nombre hay que guardarlo, no solo el código.
+    - **NO traen datos de vuelo** ni los demás pasajeros: están en el dashboard de TR y el equipo
+      se los pide al pax por la conversación interna. **Decisión del owner:** el pedido al
+      proveedor sale igual con "Vuelos: por confirmar" (o queda preparado para que el operativo
+      complete el dato antes de aprobar). Esto matiza la regla "vuelo obligatorio con traslado"
+      de `DECISIONS.md` para TR — registrarlo al planear M2.
+    - Un mismo Reference ID recibe **varios statements**: la reserva original, **agregados
+      posteriores** (ej. un statement con solo "Other") y **cancelaciones** ("BOOKING
+      CANCELLATION STATEMENT", montos negativos). M2 agrupa por Reference ID y trata los
+      siguientes como cambios a la reserva, no como reservas nuevas.
+    - Las líneas extra cambian el pedido al proveedor:
+      - **Nivel de alojamiento** elegido por el pax: Hostel / Hotel 3* (El Pueblito) / Hotel 4*
+        (La Aldea) en Iguazú; más el tipo de habitación (Dorm/Double/Single). Cada nivel tiene
+        su propio proveedor → M1-04 los carga como niveles separados.
+      - **Opcionales** (ej. "Optional Whales Watching Sailing", "Optional Punta Tombo Penguin
+        Colony") → servicios extra a pedir.
+      - **Reemplazos** (ej. "Supplement Flight El Calafate to Ushuaia instead of the bus") → se
+        saca el bus del pedido; el vuelo se gestiona aparte.
+      - "Other" solo, sin descripción → para revisar.
   - **Alcance de M1-04 confirmado (2026-09-27):** 5 productos de Iguazú — OD010A/B/C/D + OD011
     (Iguazu Glamping) — vendidos por Kilroy y TourRadar. Ficha actualizada.
   - **Riesgo grande:** leer el Excel de paquetes (2218 filas, bloques por columna) es lo más
