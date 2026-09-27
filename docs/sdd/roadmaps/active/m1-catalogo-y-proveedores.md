@@ -34,6 +34,8 @@ resuelven. Quedan dos cosas para resolver **antes de construir M1-01** (no antes
 2. **Alcance exacto de productos simples de Iguazú a cargar en M1-04:** asumo los que aparecen en
    la muestra de reservas (`OD010A/B/C/D`, variantes de Iguazú Falls). Si hay otros que sabés que
    la agencia piloto pide seguido, decímelo antes de esa spec y los sumamos sin costo extra.
+   **Resuelto (2026-09-27):** son 5 — `OD010A/B/C/D` + `OD011` (Iguazu Glamping), vendidos por
+   Kilroy y TourRadar. La ficha M1-04 ya lo refleja.
 
 **Riesgos (heredados del PRD, aplicados a este plan):**
 

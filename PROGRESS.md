@@ -109,8 +109,8 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
     (`C:\Users\gs\dev\hi-travel-automatizacion`) y volcando el código verificado al repo real —
     quien siga construyendo debería hacer lo mismo, o mejor, considerar mover el proyecto fuera de
     una carpeta sincronizada por Drive más adelante (Git/GitHub ya es el respaldo real).
-  - **Antes de M1-04:** confirmar el alcance exacto de productos simples de Iguazú a cargar (se
-    asumió lo que aparece en la muestra de reservas de Kilroy — OD010A/B/C/D).
+  - **Alcance de M1-04 confirmado (2026-09-27):** 5 productos de Iguazú — OD010A/B/C/D + OD011
+    (Iguazu Glamping) — vendidos por Kilroy y TourRadar. Ficha actualizada.
   - **Riesgo grande:** leer el Excel de paquetes (2218 filas, bloques por columna) es lo más
     difícil del proyecto — es su propia spec (M1-05, ya escrita) después de probar con productos
     simples (M1-04).

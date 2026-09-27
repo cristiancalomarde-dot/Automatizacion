@@ -6,6 +6,12 @@ Formato mínimo por entrada: qué decisión, por qué, alternativa rechazada, co
 
 # Decisiones de diseño
 
+## 2026-09-27: Piloto de Iguazú = 5 productos (se suma OD011 Iguazu Glamping)
+- **Decisión:** M1-04 carga OD010A, OD010B, OD010C, OD010D y OD011 (Iguazu Glamping). Los 5 se venden por Kilroy y TourRadar.
+- **Razón:** el owner confirmó que el Glamping también se vende (poco) por los mismos partners; en el Excel está en el mismo bloque de Iguazú, pero con código OD011, que el filtro original por "OD010" dejaba afuera.
+- **Alternativa rechazada:** cargar solo los OD010 que aparecían en la muestra de Kilroy, porque una reserva de Glamping llegaría en M2 sin producto para emparejar.
+- **Constraint:** el importador filtra por esta lista explícita de 5 códigos, no por un patrón de texto.
+
 ## 2026-09-14: Fix — user-flow.md tenía texto viejo que descartaba los tours compuestos
 - **Decisión:** corregidos §3 (tabla de estados) y §6.g de `user-flow.md`, que todavía decían que
   un "paquete/tour combinado" se marca `descartada` por estar fuera de alcance. Ahora dicen
