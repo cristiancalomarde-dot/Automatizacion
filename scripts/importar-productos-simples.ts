@@ -6,7 +6,9 @@
  *   npm run importar:productos -- "<ruta al .xlsm de paquetes>" "<ruta al .xlsx de códigos TourRadar>"
  *
  * Por defecto usa los archivos de `Insumos/` (hoja "Analisis a Mayo 2026" y
- * "Codigos Productos Tourradar.xlsx").
+ * "Codigos Productos Tourradar.xlsx"), y los niveles confirmados por el owner
+ * de `data/niveles-confirmados.csv` (M1-04b). Las equivalencias de
+ * proveedores se leen de la base (`npm run importar:equivalencias`).
  *
  * Variables de entorno (regla #2 — nunca en el código; en local se leen de
  * `.env.local`): NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY y,
@@ -17,7 +19,7 @@
  * No es una pantalla ni un endpoint público: lo corre el equipo de
  * construcción (spec §5, m1-catalogo-y-proveedores.md §2).
  */
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import Anthropic from "@anthropic-ai/sdk";
 import { createClient } from "@supabase/supabase-js";
@@ -25,9 +27,11 @@ import { mesActual } from "@/lib/ia/techo-gasto";
 import { crearRegistroUsoIASupabase } from "@/lib/ia/registro-uso-ia-supabase";
 import { crearConsultorIABloque } from "@/lib/importador-productos/ia-bloque";
 import { importarProductosSimples } from "@/lib/importador-productos/importar";
+import { parsearNivelesConfirmados } from "@/lib/importador-productos/niveles-confirmados";
 
 const PAQUETES_POR_DEFECTO = "Insumos/Construccion de Paquetes 2019 con 3 y 4 estrellas para IA.xlsm";
 const CODIGOS_TR_POR_DEFECTO = "Insumos/Codigos Productos Tourradar.xlsx";
+const NIVELES_CONFIRMADOS = "data/niveles-confirmados.csv";
 
 function variable(nombre: string): string {
   const valor = process.env[nombre];
@@ -47,6 +51,7 @@ async function main() {
 
   const rutaPaquetes = archivo(process.argv[2], PAQUETES_POR_DEFECTO);
   const rutaCodigosTourRadar = archivo(process.argv[3], CODIGOS_TR_POR_DEFECTO);
+  const nivelesConfirmados = parsearNivelesConfirmados(readFileSync(archivo(undefined, NIVELES_CONFIRMADOS), "utf-8"));
 
   const admin = createClient(variable("NEXT_PUBLIC_SUPABASE_URL"), variable("SUPABASE_SERVICE_ROLE_KEY"), {
     auth: { autoRefreshToken: false, persistSession: false },
@@ -70,6 +75,7 @@ async function main() {
     rutaCodigosTourRadar,
     interpretarIA: consultor?.interpretar ?? null,
     estadisticasIA: consultor?.estadisticas,
+    nivelesConfirmados,
   });
 
   console.log(JSON.stringify(resumen, null, 2));

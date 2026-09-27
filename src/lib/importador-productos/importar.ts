@@ -4,6 +4,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import * as XLSX from "xlsx";
 import type { CorreccionAplicada, LineaDudosa } from "./bloque";
 import { leerCodigosTourRadar } from "./codigos-tourradar";
+import type { NivelConfirmado } from "./niveles-confirmados";
 import { planificarProductos, type InterpretarBloque, type NivelParaRevisar } from "./plan";
 import { armarFilasServicio, crearIndiceProveedores, type FilaServicio } from "./proveedores";
 
@@ -25,6 +26,10 @@ import { armarFilasServicio, crearIndiceProveedores, type FilaServicio } from ".
  * - Un proveedor resuelto a mano (M1-06) no se pisa mientras el Excel siga
  *   escribiendo el mismo nombre que el importador no sabe emparejar.
  * - Nunca inserta en `proveedor` (spec §3 #7).
+ *
+ * M1-04b: el emparejado busca el nombre exacto y después las equivalencias
+ * revisadas por el owner (`proveedor_alias`); los niveles confirmados
+ * (`data/niveles-confirmados.csv`) los pasa quien llama.
  */
 
 export const HOJA_PAQUETES = "Analisis a Mayo 2026";
@@ -40,6 +45,18 @@ export interface EstadisticasIA {
   llamadas: number;
   cortadasPorTecho: number;
   errores: number;
+}
+
+export interface ProveedorParaRevisar {
+  codigo: string;
+  fila_excel: number | null;
+  orden: number;
+  prioridad: number;
+  service_provider_nombre: string;
+  booking_supplier_nombre: string | null;
+  /** true = el alias trae proveedor (asignado, falta confirmar); false = sin resolver. */
+  asignado: boolean;
+  nota: string | null;
 }
 
 export interface ProveedorSinResolver {
@@ -66,6 +83,7 @@ export interface ResumenProducto {
   nivelesParaRevisar: NivelParaRevisar[];
   lineasParaRevisar: LineaDudosa[];
   correcciones: CorreccionAplicada[];
+  nivelesConfirmadosSinLinea: NivelConfirmado[];
 }
 
 export interface ResumenImportacionProductos {
@@ -78,9 +96,14 @@ export interface ResumenImportacionProductos {
   productosActualizados: number;
   servicios: { creados: number; actualizados: number; sinCambios: number; eliminados: number };
   codigosExternos: { creados: number; actualizados: number; sinCambios: number };
+  /** Booking Suppliers sin emparejar (el servicio no sabe a quién pedirle la reserva). */
   proveedoresSinResolver: ProveedorSinResolver[];
-  /** Nombres distintos del Excel que no matchearon ningún proveedor, tal cual. */
+  /** Servicios emparejados (o no) por un alias que el owner todavía tiene que confirmar. */
+  proveedoresParaRevisar: ProveedorParaRevisar[];
+  /** Nombres distintos de Booking Supplier del Excel que no matchearon ningún proveedor, tal cual. */
   nombresSinResolver: string[];
+  /** Service Providers sin emparejar: se quedan con su nombre de texto; no marcan revisión (M1-04b §5). */
+  serviceProvidersSinEmparejar: string[];
   codigosTourRadarSinProducto: Array<{ codigo: string; nombre: string; nuestroCodigo: string }>;
   bloquesQueNecesitanIA: string[];
   lineasDescartadasPorIA: Array<{ codigo: string; fila: number; texto: string }>;
@@ -102,6 +125,8 @@ const CAMPOS_SERVICIO: Array<keyof FilaServicio> = [
   "service_provider_id",
   "booking_supplier_id",
   "proveedor_sin_resolver",
+  "proveedor_para_revisar",
+  "proveedor_nota",
 ];
 
 function leerHoja(ruta: string, hoja: string | null): unknown[][] {
@@ -134,7 +159,7 @@ function conservarResolucionManual(nueva: FilaServicio, existente: FilaServicioD
   ) {
     fila.booking_supplier_id = existente.booking_supplier_id;
   }
-  fila.proveedor_sin_resolver = fila.service_provider_id === null || fila.booking_supplier_id === null;
+  fila.proveedor_sin_resolver = fila.booking_supplier_id === null;
   return fila;
 }
 
@@ -151,6 +176,8 @@ export async function importarProductosSimples(opciones: {
   estadisticasIA?: () => EstadisticasIA;
   destino?: string;
   codigos?: string[];
+  /** Niveles confirmados por el owner (data/niveles-confirmados.csv, M1-04b). */
+  nivelesConfirmados?: NivelConfirmado[];
 }): Promise<ResumenImportacionProductos> {
   const { admin } = opciones;
   const destino = opciones.destino ?? DESTINO_PILOTO;
@@ -161,6 +188,7 @@ export async function importarProductosSimples(opciones: {
     destino,
     codigos,
     interpretarIA: opciones.interpretarIA,
+    nivelesConfirmados: opciones.nivelesConfirmados,
   });
   const codigosTR = opciones.rutaCodigosTourRadar
     ? leerCodigosTourRadar(leerHoja(opciones.rutaCodigosTourRadar, null))
@@ -172,7 +200,13 @@ export async function importarProductosSimples(opciones: {
     .select("id, nombre_normalizado")
     .range(0, 9999);
   if (errorProveedores) throw new Error(`No se pudo leer proveedor: ${errorProveedores.message}`);
-  const indice = crearIndiceProveedores(proveedores ?? []);
+  // Equivalencias revisadas por el owner (M1-04b). Solo se leen.
+  const { data: alias, error: errorAlias } = await admin
+    .from("proveedor_alias")
+    .select("alias_normalizado, proveedor_id, estado, nota")
+    .range(0, 9999);
+  if (errorAlias) throw new Error(`No se pudo leer proveedor_alias: ${errorAlias.message}`);
+  const indice = crearIndiceProveedores(proveedores ?? [], alias ?? []);
 
   const ahora = new Date().toISOString();
   const creados = { productos: 0, servicios: 0, codigos: 0 };
@@ -180,6 +214,8 @@ export async function importarProductosSimples(opciones: {
   const servicios = { creados: 0, actualizados: 0, sinCambios: 0, eliminados: 0 };
   const codigosExternos = { creados: 0, actualizados: 0, sinCambios: 0 };
   const proveedoresSinResolver: ProveedorSinResolver[] = [];
+  const proveedoresParaRevisar: ProveedorParaRevisar[] = [];
+  const serviceProvidersSinEmparejar = new Set<string>();
   const resumenProductos: ResumenProducto[] = [];
   const idPorCodigo = new Map<string, string>();
 
@@ -283,17 +319,20 @@ export async function importarProductosSimples(opciones: {
       }
 
       for (const f of filas) {
-        if (f.service_provider_id === null) {
-          proveedoresSinResolver.push({
+        if (f.service_provider_id === null) serviceProvidersSinEmparejar.add(f.service_provider_nombre);
+        if (f.proveedor_para_revisar) {
+          proveedoresParaRevisar.push({
             codigo: producto.codigo,
             fila_excel: f.fila_excel,
             orden: f.orden,
             prioridad: f.prioridad,
-            rol: "service_provider",
-            nombre: f.service_provider_nombre,
+            service_provider_nombre: f.service_provider_nombre,
+            booking_supplier_nombre: f.booking_supplier_nombre,
+            asignado: f.booking_supplier_id !== null,
+            nota: f.proveedor_nota,
           });
         }
-        if (f.booking_supplier_id === null) {
+        if (f.proveedor_sin_resolver) {
           proveedoresSinResolver.push({
             codigo: producto.codigo,
             fila_excel: f.fila_excel,
@@ -323,6 +362,7 @@ export async function importarProductosSimples(opciones: {
       nivelesParaRevisar: producto.nivelesParaRevisar,
       lineasParaRevisar: producto.lineasParaRevisar,
       correcciones: producto.correcciones,
+      nivelesConfirmadosSinLinea: producto.nivelesConfirmadosSinLinea,
     });
   }
 
@@ -350,11 +390,18 @@ export async function importarProductosSimples(opciones: {
   const nombresSinResolver = [
     ...new Set(proveedoresSinResolver.map((p) => p.nombre).filter((n): n is string => n !== null)),
   ].sort((a, b) => a.localeCompare(b));
-  const serviciosSinResolver = new Set(proveedoresSinResolver.map((p) => `${p.codigo}:${p.orden}:${p.prioridad}`)).size;
+  const serviciosParaRevisar = new Set(
+    [...proveedoresSinResolver, ...proveedoresParaRevisar].map((p) => `${p.codigo}:${p.orden}:${p.prioridad}`),
+  ).size;
   const filasParaRevisar =
-    serviciosSinResolver +
+    serviciosParaRevisar +
     resumenProductos.reduce(
-      (n, p) => n + p.lineasParaRevisar.length + p.nivelesParaRevisar.length + (p.bloqueParaRevisar ? 1 : 0),
+      (n, p) =>
+        n +
+        p.lineasParaRevisar.length +
+        p.nivelesParaRevisar.length +
+        p.nivelesConfirmadosSinLinea.length +
+        (p.bloqueParaRevisar ? 1 : 0),
       0,
     ) +
     codigosTourRadarSinProducto.length;
@@ -393,7 +440,11 @@ export async function importarProductosSimples(opciones: {
         },
         por_producto: resumenProductos,
         proveedores_sin_resolver: proveedoresSinResolver,
+        proveedores_para_revisar: proveedoresParaRevisar,
         nombres_sin_resolver: nombresSinResolver,
+        service_providers_sin_emparejar: [...serviceProvidersSinEmparejar].sort((a, b) => a.localeCompare(b)),
+        alias_cargados: (alias ?? []).length,
+        niveles_confirmados: opciones.nivelesConfirmados?.length ?? 0,
         codigos_tourradar_sin_producto: codigosTourRadarSinProducto,
         bloques_que_necesitan_ia: plan.bloquesQueNecesitanIA,
         lineas_descartadas_por_ia: plan.lineasDescartadasPorIA,
@@ -417,7 +468,9 @@ export async function importarProductosSimples(opciones: {
     servicios,
     codigosExternos,
     proveedoresSinResolver,
+    proveedoresParaRevisar,
     nombresSinResolver,
+    serviceProvidersSinEmparejar: [...serviceProvidersSinEmparejar].sort((a, b) => a.localeCompare(b)),
     codigosTourRadarSinProducto,
     bloquesQueNecesitanIA: plan.bloquesQueNecesitanIA,
     lineasDescartadasPorIA: plan.lineasDescartadasPorIA,
