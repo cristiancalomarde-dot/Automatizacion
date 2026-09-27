@@ -36,20 +36,33 @@ exotismo turístico ni postales.
 | Texto secundario | `#5A6470` |
 | Texto deshabilitado / placeholder | `#94A0AC` |
 | Fila hover | `#F0F2F5` |
-| Fila seleccionada | `#E7EFF6` |
+| Fila seleccionada | `#E9EFF7` |
 
 ### Marca y acción
 
 | Uso | Hex |
 |---|---|
-| Primario (botón principal, enlaces, foco) | `#1F5F8B` |
-| Primario hover / activo | `#184C6F` |
-| Primario tenue (fondo de selección, badges neutros) | `#E7EFF6` |
-| Anillo de foco | `#2F80C2` (2px, con 2px de offset) |
+| Primario (botón principal, enlaces, foco) | `#3B659B` |
+| Primario hover / activo | `#2D4D76` |
+| Primario tenue (fondo de selección, badges neutros) | `#E9EFF7` |
+| Anillo de foco | `#4E7CBA` (2px, con 2px de offset) |
 | Destructivo (texto y borde; fondo blanco) | `#B42318` |
 
-Sin degradés. Sin color de acento "de marketing". El azul primario es el único color de marca;
-todo lo demás es neutro o estado.
+Sin degradés. Sin color de acento "de marketing". El azul primario es el único color de marca en
+la interfaz; todo lo demás es neutro o estado.
+
+### Colores del logo (actualizado 2026-09-27, con el logo real)
+
+Sacados del archivo del logo, `Logo Hi Travel 2025 definitivo solo.png`:
+
+| Color del logo | Hex | Uso en la app |
+|---|---|---|
+| Azul "travel / South America" | `#4E7CBA` | Solo en el logo y como anillo de foco. Con texto blanco da 4.27:1, por debajo de AA, así que no se usa en botones ni texto. |
+| Naranja del triángulo "hi" | `#DC9912` | **Solo dentro del logo.** Nunca en botones, fondos ni chips: se confundiría con el ámbar de "para revisión" (y con texto blanco da 2.44:1). |
+
+El primario de la interfaz (`#3B659B`) es el **mismo tono que el azul del logo, oscurecido** para
+que se lea bien: 5.96:1 con texto blanco. El hover (`#2D4D76`) y el tenue (`#E9EFF7`) salen del
+mismo tono. Así la app combina con la marca sin perder legibilidad.
 
 ### Colores de estado de reserva (uno por estado)
 
@@ -62,7 +75,7 @@ color.
 |---|---|---|---|---|
 | **recibida** | `#3F4C5A` | `#EBEEF1` | — | neutro, recién llegó |
 | **para revisión** | `#8A5300` | `#FBF0DB` | triángulo | ámbar: necesita a una persona |
-| **pedido a proveedor** | `#1F5F8B` | `#E7EFF6` | flecha | azul: en curso, esperando afuera |
+| **pedido a proveedor** | `#3B659B` | `#E9EFF7` | flecha | azul: en curso, esperando afuera |
 | **confirmada** | `#1E7B4F` | `#E3F2EA` | check | verde |
 | **con cambios** | `#6B4BA3` | `#EFEBF8` | check-punteado | violeta: confirmada con diferencias |
 | **rechazada** | `#B42318` | `#FBEAE8` | cruz | rojo |
@@ -79,7 +92,7 @@ también.
 | Error | `#B42318` | `#FBEAE8` |
 | Aviso / atención | `#8A5300` | `#FBF0DB` |
 | Éxito | `#1E7B4F` | `#E3F2EA` |
-| Info | `#1F5F8B` | `#E7EFF6` |
+| Info | `#3B659B` | `#E9EFF7` |
 
 ## 2. Tipografía
 
@@ -126,20 +139,27 @@ también.
 ## 4. Componentes — lineamientos rápidos
 
 - **Botones:** alto 32px (compacto) / 36px (normal).
-  - Primario: fondo `#1F5F8B`, texto `#FFFFFF`, hover `#184C6F`.
+  - Primario: fondo `#3B659B`, texto `#FFFFFF`, hover `#2D4D76`.
   - Secundario: fondo `#FFFFFF`, borde `#C6CCD3`, texto `#1B2430`, hover fondo `#F0F2F5`.
   - Destructivo: texto y borde `#B42318`, fondo blanco; siempre con confirmación.
-  - Terciario / enlace: sin fondo, texto `#1F5F8B`, subrayado al hover.
+  - Terciario / enlace: sin fondo, texto `#3B659B`, subrayado al hover.
 - **Chips de estado:** texto + fondo de la tabla §1; alto 20px, padding `2px 8px`, radio completo,
   etiqueta siempre escrita, ícono en los terminales.
-- **Inputs:** borde `#C6CCD3`, foco con anillo `#2F80C2`; label **siempre visible arriba** del
+- **Inputs:** borde `#C6CCD3`, foco con anillo `#4E7CBA`; label **siempre visible arriba** del
   campo; error debajo, en `#B42318`, empezando por qué corregir.
 - **Tablas:** ordenables por columna; fila entera clickeable para ir al detalle.
 - **Iconografía:** set lineal simple (estilo Lucide / Feather), trazo 1.5–2px, 16px en botones y
   celdas, 20px en encabezados. Sin ilustraciones, sin mascotas. **Sin emojis en la interfaz.**
-- **Marca en el header:** wordmark tipográfico `HI Travel` + separador + `Reservas de Catálogo`,
-  en `#1B2430`, peso 600. Si existe un manual de marca corporativo de HI Travel, ese manda sobre
-  esta paleta.
+- **Marca en el header:** el **logo real** de HI Travel (sin espacio vacío alrededor) + separador +
+  `Reservas de Catálogo` en `#1B2430`, peso 600. El logo va a 28–32px de alto en el header y más
+  grande en la pantalla de login, siempre sobre fondo blanco o claro: las letras "hi" son
+  transparentes y toman el color del fondo. No se recolorea, no se estira y no se le agrega
+  sombra.
+  - **Archivo fuente:** `Insumos/Logo Hi Travel 2025 definitivo solo.png` (1920×1080, fondo
+    transparente, con mucho margen; el dibujo ocupa aprox. x 42–1866, y 142–914). En M1-06 se
+    recorta y se copia a `public/marca/` (versión web liviana + favicon con el triángulo "hi").
+    Si aparece la versión SVG, reemplaza al PNG.
+  - Si existe un manual de marca corporativo de HI Travel, ese manda sobre esta paleta.
 - **Modo oscuro:** fuera de alcance del MVP.
 
 ## 5. Voz de los textos de interfaz

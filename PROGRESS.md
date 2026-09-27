@@ -28,19 +28,23 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
     aplicada). En total quedaron 29 filas de servicio, con niveles (Hostel/3*/4*/Glamping) y
     prioridades "/", y 15 códigos externos (HI Travel + Kilroy + TourRadar con su nombre).
     205/205 tests. Se corre con `npm run importar:productos`.
-    - **Bloqueante antes de M1-06/M2:** las 29 filas quedaron con el proveedor sin resolver,
-      porque los nombres del Excel ("Beer", "Cuenca del Plata", "Taroba"…) no coinciden
-      exacto con el directorio ("Cuenca Del Plata (Natalia )", "HOTEL TAROBA"…) y la spec
-      prohíbe emparejar por parecido. Además hay un typo, "Cuenca del Plana" (OD010C/D).
-    - **Niveles sin etiqueta para confirmar con el owner:** OD010B fila 10 (Dann Inn Foz) y fila
-      16 (Taroba 3* sup/4); OD010C filas 5/12/15; OD010D filas 12/15.
-    - 3 líneas quedaron para revisar hasta tener la IA: "Green + Dann Inn", "Dann Inn + Green"
-      y "Extra glamping x pax".
+  - M1-04b (2026-09-27, commit `7e8dea3`, migración 0005): equivalencias de proveedores
+    (`data/equivalencias-proveedores.csv` → tabla `proveedor_alias`) y niveles confirmados
+    (`data/niveles-confirmados.csv`). Los 29 servicios quedaron con Booking Supplier y mail,
+    salvo 2 casos. 243/243 tests.
+    - **A confirmar con operaciones (owner):** Beer → Tangoinn (`beerhotel@tangoinn.com`) y
+      Tetris (¿WhatsApp?). Para cambiarlos: editar el CSV y correr
+      `npm run importar:equivalencias` y después `npm run importar:productos`.
+    - "Extra glamping x pax" (OD011) queda para revisar hasta tener la IA.
+    - Conviene borrar del Excel las líneas obsoletas "Green + Dann Inn" y "Dann Inn + Green".
+    - Ahora "proveedor sin resolver" mira solo el Booking Supplier, que es a quien va el mail.
     - El traslado incluido solo figura como texto ("Includes: Transfer in + Out") en la
       descripción del paquete de excursiones: decidir cómo representarlo al planear M2.
-- **Plan activo:** `docs/sdd/roadmaps/active/m1-catalogo-y-proveedores.md` — M1-01 a M1-04
-  ✅ **terminadas**, M1-05 y M1-06 ⬜ pendientes. Próximo paso: resolver con el owner cómo
-  emparejar los nombres de proveedor del Excel con el directorio; después, `/implementar M1-05`.
+- **Plan activo:** `docs/sdd/roadmaps/active/m1-catalogo-y-proveedores.md` — M1-01 a M1-04b
+  ✅ **terminadas**, M1-05 y M1-06 ⬜ pendientes. **Próximo paso: `/implementar M1-05`**
+  (tours compuestos; reusa las equivalencias y los niveles confirmados como datos).
+  - `marca.md` actualizado con los colores del logo real. El logo entra en M1-06 (requisito
+    #13 de su ficha).
   - El clon `C:\Users\gs\dev\hi-travel-automatizacion` tiene los commits de M1-04 pero no los
     de docs del repo real: resincronizarlo antes de construir.
 - **App en vivo:** `https://automatizacion-dun.vercel.app` (proyecto Vercel bajo la cuenta
