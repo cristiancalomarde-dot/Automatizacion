@@ -12,6 +12,7 @@ import {
   type NivelSinProveedor,
 } from "./bloque";
 import { nivelDeAlojamiento, type ServicioLeido, type TipoServicio } from "./linea";
+import { aplicarNivelesConfirmados, type NivelConfirmado } from "./niveles-confirmados";
 
 /**
  * De la hoja a "qué productos y servicios cargar" (spec M1-04 §3 #1, #3,
@@ -71,6 +72,8 @@ export interface ProductoPlaneado {
   nivelesNoOfrecidos: string[];
   /** Correcciones de tipeo aplicadas por las reglas (ej. "7" leído como "/"). */
   correcciones: CorreccionAplicada[];
+  /** Niveles confirmados (M1-04b) de este producto cuya línea no apareció en el bloque: para revisar el archivo. */
+  nivelesConfirmadosSinLinea: NivelConfirmado[];
   origen: "reglas" | "ia" | "reglas+ia";
 }
 
@@ -170,8 +173,11 @@ export async function planificarProductos(opciones: {
   destino: string;
   codigos: string[];
   interpretarIA: InterpretarBloque | null;
+  /** Niveles confirmados por el owner (data/niveles-confirmados.csv, spec M1-04b). */
+  nivelesConfirmados?: NivelConfirmado[];
 }): Promise<Plan> {
   const { filas, codigos, interpretarIA } = opciones;
+  const nivelesConfirmados = opciones.nivelesConfirmados ?? [];
   const rango = ubicarDestino(filas, opciones.destino);
   if (!rango) {
     return {
@@ -190,7 +196,12 @@ export async function planificarProductos(opciones: {
 
   // Secuencial a propósito: cada llamada de IA pasa por el techo de gasto de a una.
   for (const bloque of bloques) {
-    const lectura = leerSeccion1(filas, bloque, rango);
+    const leida = leerSeccion1(filas, bloque, rango);
+    // Niveles confirmados antes de la IA: las líneas de un nivel no ofrecido
+    // ni se le preguntan (M1-04b).
+    const confirmados = aplicarNivelesConfirmados(bloque.codigo, leida, nivelesConfirmados);
+    const lectura = { ...leida, servicios: confirmados.servicios, dudosas: confirmados.dudosas };
+    const usados = new Set(confirmados.usados);
     const producto: ProductoPlaneado = {
       codigo: bloque.codigo,
       nombre: bloque.nombre,
@@ -202,6 +213,7 @@ export async function planificarProductos(opciones: {
       nivelesParaRevisar: [],
       nivelesNoOfrecidos: [],
       correcciones: lectura.correcciones,
+      nivelesConfirmadosSinLinea: [],
       origen: "reglas",
     };
 
@@ -256,14 +268,32 @@ export async function planificarProductos(opciones: {
     }
 
     if (!producto.bloqueParaRevisar) {
+      // Lo que interpretó la IA también recibe su nivel confirmado.
+      const trasIA = aplicarNivelesConfirmados(
+        bloque.codigo,
+        { servicios: producto.servicios, dudosas: [] },
+        nivelesConfirmados,
+      );
+      producto.servicios = trasIA.servicios;
+      trasIA.usados.forEach((c) => usados.add(c));
+      const noOfrecidosConfirmados = [...confirmados.nivelesNoOfrecidos, ...trasIA.nivelesNoOfrecidos];
+
       const niveles = clasificarNiveles(
         producto.servicios,
         lectura.nivelesSinProveedor,
         nivelesDelResumen(filas, bloque, rango, lectura.filaFin),
       );
-      producto.nivelesParaRevisar = niveles.paraRevisar;
-      producto.nivelesNoOfrecidos = niveles.noOfrecidos;
+      producto.nivelesParaRevisar = niveles.paraRevisar.filter(
+        (n) => !(n.fila === null && n.nivel !== null && noOfrecidosConfirmados.includes(n.nivel)),
+      );
+      const cargados = new Set(producto.servicios.map((s) => s.nivel));
+      producto.nivelesNoOfrecidos = [
+        ...new Set([...niveles.noOfrecidos, ...noOfrecidosConfirmados.filter((n) => !cargados.has(n))]),
+      ];
     }
+    producto.nivelesConfirmadosSinLinea = nivelesConfirmados.filter(
+      (c) => c.producto === bloque.codigo && !usados.has(c),
+    );
     productos.push(producto);
   }
 

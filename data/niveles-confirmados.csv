@@ -1,0 +1,10 @@
+producto,texto_linea,nivel,ofrecido,nota
+OD010B,Accommodation: Dann Inn Foz. Booking Supplier: Nacional Inn,Budget Hotel,si,Confirmado por el owner (2026-09-27): Budget Hotel solo existe en OD010B
+OD010B,Accommodation: Taroba Hotel 3* sup/4. Booking Supplier: Taroba,Hotel 4*,si,Confirmado por el owner (2026-09-27)
+OD010C,Accommodation 2 Nights Beer + 1 night Bambu. Booking Supplier Beer + Bambu,Hostel,si,Confirmado por el owner (2026-09-27)
+OD010C,Accommodation: 2 Nights El Pueblito + 1 night Nacional inn Foz. Booking Supplier: Cuenca del Plana + Nacional Inn,Hotel 3*,si,Confirmado por el owner (2026-09-27)
+OD010C,Accommodation: 2 Nights La Aldea + 1 night Taroba. Booking Supplier: Cuenca del Plata + Taroba,Hotel 4*,si,Confirmado por el owner (2026-09-27)
+OD010C,Green + Dann Inn,Budget Hotel,no,"Resto obsoleto: el Budget ya no se ofrece en los combinados (se usaba Green, se dejó por problemas). El Excel todavía tiene la línea"
+OD010D,Accommodation: 2 Nights Nacional inn Foz + 1 Night El Pueblito. Booking Supplier: Nacional Inn + Cuenca del Plana,Hotel 3*,si,Confirmado por el owner (2026-09-27)
+OD010D,Accommodation: 2 Nights Taroba + 1 night La Aldea. Booking Supplier: Taroba + Cuenca del Plata,Hotel 4*,si,Confirmado por el owner (2026-09-27)
+OD010D,Dann Inn + Green,Budget Hotel,no,"Resto obsoleto: el Budget ya no se ofrece en los combinados (se usaba Green, se dejó por problemas). El Excel todavía tiene la línea"

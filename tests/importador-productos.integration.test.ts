@@ -16,6 +16,11 @@
 // V3 (recorrido completo): el script real dos veces seguidas sobre el mismo
 //     archivo — la segunda corrida no agrega nada y su `importacion` lo refleja.
 //
+// M1-04b (mismo archivo, por la misma razón: todo en orden): carga de las
+// equivalencias de proveedores (idempotente, error si el proveedor no
+// existe, RLS), re-corrida con alias + niveles confirmados, y en V3 el
+// recorrido servicio → nivel → opción → Booking Supplier → mail.
+//
 // Las filas de `importacion` de estas corridas de prueba se borran al final;
 // los productos reales NO: el importador es idempotente y el estado que deja
 // es el de la carga real. Lo creado por el libro de prueba (B) sí se borra.
@@ -34,11 +39,15 @@ import {
   type ResumenImportacionProductos,
 } from "@/lib/importador-productos/importar";
 import type { InterpretarBloque } from "@/lib/importador-productos/plan";
+import { cargarEquivalencias } from "@/lib/importador-productos/equivalencias";
+import { parsearNivelesConfirmados } from "@/lib/importador-productos/niveles-confirmados";
 import { credencialesSupabaseDisponibles } from "./helpers/entorno-supabase";
 
 const RAIZ = resolve(__dirname, "..");
 const RUTA_PAQUETES = resolve(RAIZ, "Insumos/Construccion de Paquetes 2019 con 3 y 4 estrellas para IA.xlsm");
 const RUTA_TR = resolve(RAIZ, "Insumos/Codigos Productos Tourradar.xlsx");
+const RUTA_EQUIVALENCIAS = resolve(RAIZ, "data/equivalencias-proveedores.csv");
+const NIVELES_CONFIRMADOS = parsearNivelesConfirmados(readFileSync(resolve(RAIZ, "data/niveles-confirmados.csv"), "utf-8"));
 const CORRE = credencialesSupabaseDisponibles() && existsSync(RUTA_PAQUETES) && existsSync(RUTA_TR);
 const TIMEOUT = 240_000;
 
@@ -56,6 +65,8 @@ interface FilaServicioDB {
   service_provider_nombre: string;
   booking_supplier_nombre: string | null;
   proveedor_sin_resolver: boolean;
+  proveedor_para_revisar: boolean;
+  proveedor_nota: string | null;
 }
 
 (CORRE ? describe : describe.skip)("importador de productos simples contra Supabase real (spec M1-04)", () => {
@@ -102,6 +113,65 @@ interface FilaServicioDB {
     }
   });
 
+  describe("V2 M1-04b — equivalencias de proveedores en la base (§3 #1, #2)", () => {
+    async function contarAlias(): Promise<number> {
+      const { count, error } = await admin.from("proveedor_alias").select("id", { count: "exact", head: true });
+      expect(error).toBeNull();
+      return count ?? 0;
+    }
+
+    it("#1 cargar la lista real deja 15 alias, todos con proveedor existente salvo Tetris; una segunda carga deja 15", async () => {
+      const texto = readFileSync(RUTA_EQUIVALENCIAS, "utf-8");
+      const primera = await cargarEquivalencias({ admin, textoCsv: texto });
+      expect(primera.total).toBe(15);
+      expect(await contarAlias()).toBe(15);
+
+      const { data, error } = await admin
+        .from("proveedor_alias")
+        .select("alias, alias_normalizado, estado, nota, proveedor_id, proveedor:proveedor_id(id, nombre)");
+      expect(error).toBeNull();
+      const conId = data!.filter((a) => a.proveedor_id !== null);
+      expect(conId).toHaveLength(14);
+      expect(conId.every((a) => a.proveedor !== null)).toBe(true); // apuntan a un proveedor existente
+      const tetris = data!.find((a) => a.alias_normalizado === "tetris")!;
+      expect(tetris).toMatchObject({ estado: "para_revisar", proveedor_id: null });
+      expect(tetris.nota).toContain("WhatsApp");
+      const plana = data!.find((a) => a.alias_normalizado === "cuenca del plana")!;
+      expect((plana.proveedor as unknown as { nombre: string }).nombre).toBe("Cuenca Del Plata (Natalia )");
+
+      const segunda = await cargarEquivalencias({ admin, textoCsv: texto });
+      expect(segunda).toMatchObject({ total: 15, creados: 0, actualizados: 0, sinCambios: 15 });
+      expect(await contarAlias()).toBe(15);
+    }, TIMEOUT);
+
+    it("#2 un CSV que nombra un proveedor inexistente falla con un mensaje claro: 0 proveedores y 0 alias nuevos", async () => {
+      const proveedoresAntes = await contarProveedores();
+      const aliasAntes = await contarAlias();
+      const inexistente = `Proveedor Inexistente ${randomUUID().slice(0, 8)}`;
+      const csv =
+        "nombre_en_excel,proveedor_en_directorio,estado,nota\n" +
+        `Alias de prueba ${randomUUID().slice(0, 8)},HOTEL TAROBA,confirmado,\n` +
+        `Otro alias de prueba,${inexistente},confirmado,\n`;
+      await expect(cargarEquivalencias({ admin, textoCsv: csv })).rejects.toThrow(
+        new RegExp(`no se cargó nada.*${inexistente}.*no existe en el directorio`),
+      );
+      expect(await contarProveedores()).toBe(proveedoresAntes);
+      expect(await contarAlias()).toBe(aliasAntes);
+    }, TIMEOUT);
+
+    it("#1 RLS: sin sesión (anon) no se lee ni se escribe proveedor_alias", async () => {
+      const anonimo = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, {
+        auth: { autoRefreshToken: false, persistSession: false },
+      });
+      const { data } = await anonimo.from("proveedor_alias").select("*").limit(5);
+      expect(data ?? []).toEqual([]);
+      const { error } = await anonimo
+        .from("proveedor_alias")
+        .insert({ alias: "anon", alias_normalizado: `anon-${randomUUID()}`, estado: "para_revisar" });
+      expect(error).not.toBeNull();
+    });
+  });
+
   describe("V2-A — el Excel real (puntos 1-9 y 11)", () => {
     let resumen: ResumenImportacionProductos;
     let proveedoresAntes: number;
@@ -136,6 +206,7 @@ interface FilaServicioDB {
         rutaPaquetes: RUTA_PAQUETES,
         rutaCodigosTourRadar: RUTA_TR,
         interpretarIA: iaQueInventa,
+        nivelesConfirmados: NIVELES_CONFIRMADOS,
       });
       importacionesDePrueba.push(resumen.importacionId);
     }, TIMEOUT);
@@ -214,14 +285,81 @@ interface FilaServicioDB {
       expect(dann.booking_supplier_nombre).toBe("Nacional Inn");
     });
 
-    it("#7 sin resolver: flag + ids null + nombre del Excel; ningún proveedor nuevo", async () => {
+    it("#7 sin resolver = Booking Supplier sin emparejar (M1-04b); nombre del Excel guardado; ningún proveedor nuevo", async () => {
       expect(await contarProveedores()).toBe(proveedoresAntes);
       for (const codigo of CODIGOS_PILOTO) {
         for (const f of await serviciosDe((await productoPorCodigo(codigo)).id)) {
-          expect(f.proveedor_sin_resolver).toBe(f.service_provider_id === null || f.booking_supplier_id === null);
+          expect(f.proveedor_sin_resolver).toBe(f.booking_supplier_id === null);
+          expect(f.booking_supplier_nombre).not.toBeNull();
         }
       }
       expect(resumen.proveedoresSinResolver.length).toBeGreaterThan(0);
+    }, TIMEOUT);
+
+    async function todasLasFilas(): Promise<Array<FilaServicioDB & { codigo: string }>> {
+      const porProducto = await Promise.all(
+        CODIGOS_PILOTO.map(async (c) => (await serviciosDe((await productoPorCodigo(c)).id)).map((f) => ({ ...f, codigo: c }))),
+      );
+      return porProducto.flat();
+    }
+
+    it("M1-04b #3 el typo 'Cuenca del Plana' (OD010C/D) queda emparejado con Cuenca Del Plata (Natalia )", async () => {
+      const { data: cuenca } = await admin.from("proveedor").select("id").eq("nombre", "Cuenca Del Plata (Natalia )").single();
+      const plana = (await todasLasFilas()).filter((f) => f.booking_supplier_nombre === "Cuenca del Plana");
+      expect(plana.map((f) => f.codigo)).toEqual(["OD010C", "OD010D"]);
+      for (const f of plana) {
+        expect(f).toMatchObject({ booking_supplier_id: cuenca!.id, proveedor_sin_resolver: false, proveedor_para_revisar: false });
+      }
+    }, TIMEOUT);
+
+    it("M1-04b #4 Beer asignado a Tangoinn y marcado para revisar; Tetris sin resolver con su nota", async () => {
+      const { data: tango } = await admin.from("proveedor").select("id").eq("nombre", "Tangoinn Bed & Brewery IGR").single();
+      const todas = await todasLasFilas();
+      const beer = todas.filter((f) => ["Beer", "Beer Hostel"].includes(f.booking_supplier_nombre ?? ""));
+      expect(beer.map((f) => f.codigo)).toEqual(["OD010A", "OD010C", "OD010D"]);
+      for (const f of beer) {
+        expect(f).toMatchObject({ booking_supplier_id: tango!.id, proveedor_sin_resolver: false, proveedor_para_revisar: true });
+        expect(f.proveedor_nota).toContain("Tangoinn");
+      }
+      const tetris = todas.filter((f) => f.booking_supplier_nombre === "Tetris");
+      expect(tetris).toHaveLength(1);
+      expect(tetris[0]).toMatchObject({ booking_supplier_id: null, proveedor_sin_resolver: true, proveedor_para_revisar: true });
+      expect(tetris[0].proveedor_nota).toContain("WhatsApp");
+    }, TIMEOUT);
+
+    it("M1-04b #6 todos los Booking Suppliers de las 29 filas quedan resueltos salvo Tetris", async () => {
+      const todas = await todasLasFilas();
+      expect(todas).toHaveLength(29);
+      expect(todas.filter((f) => f.booking_supplier_id === null).map((f) => f.booking_supplier_nombre)).toEqual(["Tetris"]);
+      expect(resumen.nombresSinResolver).toEqual(["Tetris"]);
+      expect(resumen.proveedoresParaRevisar.map((p) => [p.codigo, p.booking_supplier_nombre, p.asignado])).toEqual([
+        ["OD010A", "Beer Hostel", true],
+        ["OD010B", "Tetris", false],
+        ["OD010C", "Beer", true],
+        ["OD010D", "Beer", true],
+      ]);
+    }, TIMEOUT);
+
+    it("M1-04b #5 niveles confirmados: OD010C/D con Hostel, Hotel 3* y Hotel 4* (2 alojamientos cada uno); OD010B Taroba 4* y Dann Inn Budget", async () => {
+      for (const codigo of ["OD010C", "OD010D"]) {
+        const aloj = (await serviciosDe((await productoPorCodigo(codigo)).id)).filter((f) => f.tipo_servicio === "alojamiento");
+        const porNivel: Record<string, number> = {};
+        for (const f of aloj) porNivel[String(f.nivel)] = (porNivel[String(f.nivel)] ?? 0) + 1;
+        expect(porNivel).toEqual({ Hostel: 2, "Hotel 3*": 2, "Hotel 4*": 2 });
+        const p = resumen.productos.find((x) => x.codigo === codigo)!;
+        expect(p.nivelesParaRevisar).toEqual([]);
+        expect(p.lineasParaRevisar).toEqual([]); // "Green + Dann Inn" / "Dann Inn + Green": nivel no ofrecido
+        expect(p.nivelesNoOfrecidos).toEqual(["Budget Hotel"]);
+        expect(p.nivelesConfirmadosSinLinea).toEqual([]);
+      }
+      const b = await serviciosDe((await productoPorCodigo("OD010B")).id);
+      expect(b.find((f) => f.service_provider_nombre === "Taroba Hotel 3* sup/4")!.nivel).toBe("Hotel 4*");
+      expect(b.find((f) => f.service_provider_nombre === "Dann Inn Foz")!.nivel).toBe("Budget Hotel");
+      const pb = resumen.productos.find((x) => x.codigo === "OD010B")!;
+      expect(pb.nivelesParaRevisar).toEqual([]);
+      expect([...pb.nivelesCargados].sort()).toEqual(["Budget Hotel", "Hostel", "Hotel 3*", "Hotel 4*"]);
+      // IA: ya no se le pregunta por las líneas de nivel no ofrecido de los combinados.
+      expect(resumen.bloquesQueNecesitanIA).toEqual(["OD011"]);
     }, TIMEOUT);
 
     it("#8 códigos externos: HI Travel + Kilroy (nuestro código) + TourRadar (con su nombre) por producto", async () => {
@@ -266,6 +404,9 @@ interface FilaServicioDB {
       expect(data.filas_para_revisar).toBe(resumen.filasParaRevisar);
       expect(data.detalle.productos.procesados).toBe(5);
       expect(data.detalle.proveedores_sin_resolver.length).toBe(resumen.proveedoresSinResolver.length);
+      expect(data.detalle.proveedores_para_revisar).toHaveLength(4);
+      expect(data.detalle.nombres_sin_resolver).toEqual(["Tetris"]);
+      expect(data.detalle.alias_cargados).toBe(15);
       expect(data.detalle.bloques_que_necesitan_ia).toEqual(resumen.bloquesQueNecesitanIA);
     });
   });
@@ -348,7 +489,8 @@ interface FilaServicioDB {
         service_provider_id: null,
         service_provider_nombre: `Hotel 3*: ${fantasma}`,
         booking_supplier_id: proveedoresDePrueba[1],
-        proveedor_sin_resolver: true,
+        // M1-04b §5: con el Booking Supplier resuelto, un Service Provider sin emparejar no marca revisión.
+        proveedor_sin_resolver: false,
         nivel: "Hotel 3*",
       });
 
@@ -407,6 +549,7 @@ interface FilaServicioDB {
         rutaPaquetes: ruta,
         rutaCodigosTourRadar: RUTA_TR,
         interpretarIA: null,
+        nivelesConfirmados: NIVELES_CONFIRMADOS,
       });
       importacionesDePrueba.push(r.importacionId);
       expect(r.productos.map((p) => p.bloqueParaRevisar)).toEqual([false, false, false, false, false]);
@@ -415,7 +558,7 @@ interface FilaServicioDB {
     }, TIMEOUT);
   });
 
-  describe("V3 — recorrido completo: el script real dos veces seguidas (#12)", () => {
+  describe("V3 — recorrido completo: el script real dos veces seguidas (#12; M1-04b #6, #7)", () => {
     function correrScript(): ResumenImportacionProductos {
       const tsx = resolve(RAIZ, "node_modules", "tsx", "dist", "cli.mjs");
       const salida = execFileSync(
@@ -457,6 +600,59 @@ interface FilaServicioDB {
       expect(data!.detalle.productos.creados).toBe(0);
       expect(data!.detalle.servicios.creados).toBe(0);
       expect(data!.detalle.codigos_externos.creados).toBe(0);
+    }, TIMEOUT);
+
+    it("M1-04b recorrido: servicio → nivel → opción → Booking Supplier → mail; solo Tetris queda sin mail", async () => {
+      const corrida = correrScript();
+      importacionesDePrueba.push(corrida.importacionId);
+      expect(corrida.servicios).toMatchObject({ creados: 0, eliminados: 0 });
+
+      const sinMail: string[] = [];
+      const recorrido: string[] = [];
+      for (const codigo of CODIGOS_PILOTO) {
+        const producto = await productoPorCodigo(codigo);
+        const { data, error } = await admin
+          .from("producto_servicio")
+          .select(
+            "orden, prioridad, nivel, service_provider_nombre, booking_supplier_nombre, proveedor_para_revisar, bs:booking_supplier_id(nombre, mails, canal)",
+          )
+          .eq("producto_id", producto.id)
+          .order("orden")
+          .order("prioridad");
+        expect(error).toBeNull();
+        for (const f of data!) {
+          const bs = f.bs as unknown as { nombre: string; mails: string[]; canal: string | null } | null;
+          const mail = bs?.canal === "mail" ? bs.mails[0] : null;
+          recorrido.push(
+            `${codigo} ${f.orden}.${f.prioridad} ${f.nivel ?? "-"} ${f.service_provider_nombre} → ${bs?.nombre ?? "(sin resolver)"} → ${mail ?? "SIN MAIL"}${f.proveedor_para_revisar ? " [revisar]" : ""}`,
+          );
+          if (!mail) sinMail.push(`${codigo}:${f.booking_supplier_nombre}`);
+        }
+      }
+      console.log(recorrido.join("\n"));
+      expect(recorrido).toHaveLength(29);
+      expect(sinMail).toEqual(["OD010B:Tetris"]);
+    }, TIMEOUT);
+
+    it("M1-04b #7 re-correr no pisa un Booking Supplier resuelto a mano (mismo nombre en el Excel)", async () => {
+      const od010b = await productoPorCodigo("OD010B");
+      const tetris = (await serviciosDe(od010b.id)).find((f) => f.booking_supplier_nombre === "Tetris")!;
+      const { data: bambu } = await admin.from("proveedor").select("id").eq("nombre", "Bambu hostel").single();
+      try {
+        await admin
+          .from("producto_servicio")
+          .update({ booking_supplier_id: bambu!.id, proveedor_sin_resolver: false })
+          .eq("id", tetris.id);
+        const corrida = correrScript();
+        importacionesDePrueba.push(corrida.importacionId);
+        const despues = (await serviciosDe(od010b.id)).find((f) => f.id === tetris.id)!;
+        expect(despues).toMatchObject({ booking_supplier_id: bambu!.id, proveedor_sin_resolver: false });
+      } finally {
+        await admin
+          .from("producto_servicio")
+          .update({ booking_supplier_id: null, proveedor_sin_resolver: true })
+          .eq("id", tetris.id);
+      }
     }, TIMEOUT);
   });
 });

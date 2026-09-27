@@ -69,7 +69,7 @@ describe("armarFilasServicio — emparejado de proveedores (spec M1-04 §3 #6)",
 });
 
 describe("armarFilasServicio — proveedor sin resolver (spec M1-04 §3 #7)", () => {
-  it("Service Provider inexistente → id null + flag para revisión; el nombre del Excel queda guardado", () => {
+  it("Service Provider inexistente → id null y el nombre del Excel queda guardado; con el Booking Supplier resuelto NO marca revisión (M1-04b §5)", () => {
     const [fila] = armarFilasServicio(
       [servicio({ opciones: [{ prioridad: 1, serviceProvider: "Hotel Fantasma", bookingSupplier: "Cuenca del Plata" }] })],
       crearIndiceProveedores(PROVEEDORES),
@@ -78,7 +78,7 @@ describe("armarFilasServicio — proveedor sin resolver (spec M1-04 §3 #7)", ()
       service_provider_id: null,
       service_provider_nombre: "Hotel Fantasma",
       booking_supplier_id: "p-cuenca",
-      proveedor_sin_resolver: true,
+      proveedor_sin_resolver: false,
     });
   });
 
@@ -124,5 +124,65 @@ describe("armarFilasServicio — proveedor sin resolver (spec M1-04 §3 #7)", ()
         expect(id === null || idsValidos.has(id)).toBe(true);
       }
     }
+  });
+});
+
+// Spec M1-04b §3 #3-#4: después del nombre exacto, la lista de equivalencias
+// (`proveedor_alias`) revisada por el owner.
+describe("armarFilasServicio — equivalencias de proveedores (spec M1-04b)", () => {
+  const ALIAS = [
+    { alias_normalizado: "cuenca del plana", proveedor_id: "p-cuenca", estado: "confirmado" as const, nota: "Typo" },
+    // un alias que choca con un nombre exacto: gana el exacto
+    { alias_normalizado: "nacional inn", proveedor_id: "p-otro", estado: "confirmado" as const, nota: null },
+    { alias_normalizado: "beer", proveedor_id: "p-tangoinn", estado: "para_revisar" as const, nota: "Cambió de nombre" },
+    { alias_normalizado: "tetris", proveedor_id: null, estado: "para_revisar" as const, nota: "Por WhatsApp" },
+  ];
+  const indice = crearIndiceProveedores(PROVEEDORES, ALIAS);
+
+  function una(sp: string, bs: string | null) {
+    return armarFilasServicio([servicio({ opciones: [{ prioridad: 1, serviceProvider: sp, bookingSupplier: bs }] })], indice)[0];
+  }
+
+  it("el typo 'Cuenca del Plana' se resuelve por alias a Cuenca del Plata (confirmado: sin flags)", () => {
+    expect(una("El Pueblito", "Cuenca del  PLANA")).toMatchObject({
+      booking_supplier_id: "p-cuenca",
+      booking_supplier_nombre: "Cuenca del  PLANA",
+      proveedor_sin_resolver: false,
+      proveedor_para_revisar: false,
+      proveedor_nota: null,
+    });
+  });
+
+  it("primero el nombre exacto, después el alias", () => {
+    expect(una("Dann Inn Foz", "Nacional Inn").booking_supplier_id).toBe("p-nacional");
+  });
+
+  it("alias para_revisar con proveedor → lo asigna, pero deja el flag de revisión y la nota", () => {
+    expect(una("Beer", "Beer")).toMatchObject({
+      service_provider_id: "p-tangoinn",
+      booking_supplier_id: "p-tangoinn",
+      proveedor_sin_resolver: false,
+      proveedor_para_revisar: true,
+      proveedor_nota: "Cambió de nombre",
+    });
+  });
+
+  it("alias sin proveedor → el servicio queda sin resolver, con la nota visible", () => {
+    expect(una("Tetris", "Tetris")).toMatchObject({
+      service_provider_id: null,
+      booking_supplier_id: null,
+      proveedor_sin_resolver: true,
+      proveedor_para_revisar: true,
+      proveedor_nota: "Por WhatsApp",
+    });
+  });
+
+  it("nombre sin exacto ni alias → sin resolver, sin nota", () => {
+    expect(una("Hotel Fantasma", "Hotel Fantasma")).toMatchObject({
+      booking_supplier_id: null,
+      proveedor_sin_resolver: true,
+      proveedor_para_revisar: false,
+      proveedor_nota: null,
+    });
   });
 });
