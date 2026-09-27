@@ -1,0 +1,16 @@
+nombre_en_excel,proveedor_en_directorio,estado,nota
+Cuenca del Plata,Cuenca Del Plata (Natalia ),confirmado,"No es ""Cuenca del Plata, +"" (sin mail)"
+Cuenca del Plana,Cuenca Del Plata (Natalia ),confirmado,Typo del Excel de paquetes (OD010C/D)
+Nacional Inn,nacional inn foz,confirmado,No es Nacional inn Copacabana
+Nacional inn Foz,nacional inn foz,confirmado,
+Nacional Inn Foz 3*,nacional inn foz,confirmado,
+Dann Inn Foz,nacional inn foz,confirmado,Dan Inn es del grupo Nacional Inn: se reserva con el mail de Nacional Inn Foz
+Taroba,HOTEL TAROBA,confirmado,
+Taroba Express,HOTEL TAROBA,confirmado,
+Taroba Hotel 3* sup/4,HOTEL TAROBA,confirmado,
+Bambu,Bambu hostel,confirmado,
+Bambu Foz,Bambu hostel,confirmado,
+Bambu Hostel Foz,Bambu hostel,confirmado,
+Beer,Tangoinn Bed & Brewery IGR,para_revisar,"Cambió de nombre de Tangoinn Bed & Brewery a Beer; el mail sería el mismo. El owner lo confirma con operaciones"
+Beer Hostel,Tangoinn Bed & Brewery IGR,para_revisar,"Cambió de nombre de Tangoinn Bed & Brewery a Beer; el mail sería el mismo. El owner lo confirma con operaciones"
+Tetris,,para_revisar,No está en el directorio; probablemente se reserva por WhatsApp. El owner lo confirma con operaciones
