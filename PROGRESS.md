@@ -126,7 +126,8 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
       CANCELLATION STATEMENT", montos negativos). M2 agrupa por Reference ID y trata los
       siguientes como cambios a la reserva, no como reservas nuevas.
     - Las líneas extra cambian el pedido al proveedor:
-      - **Nivel de alojamiento** elegido por el pax: Hostel / Hotel 3* (El Pueblito) / Hotel 4*
+      - **Nivel de alojamiento** elegido por el pax (hasta 4: Hostel / Budget Hotel / Hotel 3* / Hotel 4*;
+        en Iguazú 3* = El Pueblito, 4*
         (La Aldea) en Iguazú; más el tipo de habitación (Dorm/Double/Single). Cada nivel tiene
         su propio proveedor → M1-04 los carga como niveles separados.
       - **Opcionales** (ej. "Optional Whales Watching Sailing", "Optional Punta Tombo Penguin
