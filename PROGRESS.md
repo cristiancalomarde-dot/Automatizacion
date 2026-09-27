@@ -3,9 +3,9 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
 
 # Dónde retomar
 
-- **Último commit en GitHub:** `6fa8a53` (push hecho el 2026-09-23). Los cambios de M1-02
-  todavía no están commiteados — hacerlo antes de arrancar M1-03.
-- **Verificación completa:** M1-01 y **M1-02 terminadas**, las 3 verificaciones en verde en ambas,
+- **Último push a GitHub:** `711cded` (M1-02). Los commits de M1-03 están solo en local:
+  **falta `git push`**.
+- **Verificación completa:** M1-01, M1-02 y **M1-03 terminadas**, las 3 verificaciones en verde,
   corridas contra el proyecto Supabase real (no mocks).
   - M1-01: V3 confirmada el 2026-09-25 en `https://automatizacion-dun.vercel.app`, entrando con
     `operations@hitravel.com.ar` (se ve "Damian" en el header + botón Salir). También se confirmó
@@ -14,9 +14,21 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
     `codigo_externo`, `producto_componente`, `importacion`) aplicadas con RLS activa; 52/52 tests
     en verde, incluido el recorrido completo (producto → servicios → proveedores → tour compuesto
     → código externo → importación, leído de punta a punta).
-- **Plan activo:** `docs/sdd/roadmaps/active/m1-catalogo-y-proveedores.md` — M1-01 y M1-02
-  ✅ **terminadas**, M1-03 a M1-06 ⬜ pendientes. **Próximo paso: `/implementar M1-03`**
-  (importador del directorio de proveedores).
+  - M1-03 (2026-09-27): importador del directorio de proveedores. En la base real quedaron 214
+    proveedores (182 con mail, 8 por WhatsApp, 24 sin mail) y 4 celdas ambiguas, que quedaron
+    sin mail. 132/132 tests en verde. Se corre con `npm run importar:proveedores`. Creó la tabla
+    `uso_ia` (migración 0003, ya aplicada) para el techo de gasto (#3). El destino del proveedor
+    se guarda en `proveedor.ciudad`.
+    - **Pendiente:** el respaldo de IA nunca se llamó de verdad porque falta `ANTHROPIC_API_KEY`.
+      Primero rotar la clave que quedó expuesta en un log, después cargarla en `.env.local` y
+      volver a correr el importador.
+    - **Ojo para M1-06:** re-correr el importador pisa los mails, el canal y las aclaraciones
+      corregidos a mano.
+- **Plan activo:** `docs/sdd/roadmaps/active/m1-catalogo-y-proveedores.md` — M1-01, M1-02 y
+  M1-03 ✅ **terminadas**, M1-04 a M1-06 ⬜ pendientes. **Próximo paso: `/implementar M1-04`**
+  (productos simples de Iguazú).
+  - Antes de arrancar, resincronizar el clon `C:\Users\gs\dev\hi-travel-automatizacion`: tiene
+    los archivos de M1-03 sin commitear y un stash con copias de M1-02 que se puede descartar.
 - **App en vivo:** `https://automatizacion-dun.vercel.app` (proyecto Vercel bajo la cuenta
   `ccalomarde@hitravel.com.ar`, conectado al repo de GitHub).
 
@@ -124,4 +136,6 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
 - ✅ `/implementar M1-01` — terminada, las 3 verificaciones en verde, app real desplegada y
   probada en `https://automatizacion-dun.vercel.app`.
 - ✅ `/implementar M1-02` — terminada, esquema del catálogo aplicado al proyecto real, 52/52 tests
-  en verde. Siguiente pieza: `/implementar M1-03`.
+  en verde.
+- ✅ `/implementar M1-03` — terminada, 214 proveedores cargados, 132/132 tests en verde.
+  Siguiente pieza: `/implementar M1-04`.

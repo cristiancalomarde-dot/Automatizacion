@@ -61,7 +61,7 @@ resuelven. Quedan dos cosas para resolver **antes de construir M1-01** (no antes
 |---|---|---|---|---|
 | M1-01 | Base de la app: Next.js + Supabase + login con Google (dominio restringido) + deploy en Vercel | ✅ terminada — V1, V2 y V3 en verde (recorrido real confirmado en `https://automatizacion-dun.vercel.app` con `operations@hitravel.com.ar`) | — | `docs/sdd/specs/M1-01-base-de-la-app.md` |
 | M1-02 | Esquema de datos del catálogo (producto, proveedor, producto_servicio, producto_componente, codigo_externo, importacion) | ✅ terminada — 6 tablas + RLS aplicadas al proyecto real, 52/52 tests en verde | M1-01 | `docs/sdd/specs/M1-02-esquema-de-catalogo.md` |
-| M1-03 | Importador: directorio de proveedores (desde el Excel de proveedores) | 🔵 en curso | M1-02 | `docs/sdd/specs/M1-03-importador-proveedores.md` |
+| M1-03 | Importador: directorio de proveedores (desde el Excel de proveedores) | ✅ terminada — 214 proveedores cargados en la base real (182 con mail, 8 WhatsApp, 24 sin mail), 132/132 tests en verde; respaldo de IA probado sin llamada real (falta `ANTHROPIC_API_KEY`) | M1-02 | `docs/sdd/specs/M1-03-importador-proveedores.md` |
 | M1-04 | Importador: productos simples + sus servicios y proveedores (Iguazú, piloto) | ⬜ pendiente | M1-03 | `docs/sdd/specs/M1-04-importador-productos-simples.md` |
 | M1-05 | Importador: tours compuestos + regla de transfers (los 7 top-seller) | ⬜ pendiente | M1-04 | `docs/sdd/specs/M1-05-importador-tours-compuestos.md` |
 | M1-06 | Pantallas de Catálogo y Directorio (listar, buscar, detalle con proveedores/mails, colas "sin mail" / "para revisar") | ⬜ pendiente | M1-04, M1-05 | `docs/sdd/specs/M1-06-pantallas-catalogo-y-directorio.md` |
