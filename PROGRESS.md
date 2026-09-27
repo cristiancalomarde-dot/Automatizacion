@@ -32,8 +32,11 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
     (`data/equivalencias-proveedores.csv` → tabla `proveedor_alias`) y niveles confirmados
     (`data/niveles-confirmados.csv`). Los 29 servicios quedaron con Booking Supplier y mail,
     salvo 2 casos. 243/243 tests.
-    - **A confirmar con operaciones (owner):** Beer → Tangoinn (`beerhotel@tangoinn.com`) y
-      Tetris (¿WhatsApp?). Para cambiarlos: editar el CSV y correr
+    - **Beer = Tangoinn, confirmado por el owner:** los pedidos van a 2 mails,
+      `beerhotel@tangoinn.com` y `beerhotel@cervezaholy.com`. El segundo mail se cargó
+      **directo en la base**: si se vuelve a correr `importar:proveedores` sin haberlo agregado
+      antes al Excel de proveedores, se pierde (en la celda Mail/web, separado con `//`).
+    - **A confirmar con operaciones (owner):** Tetris (¿WhatsApp?). Para cambiarlos: editar el CSV y correr
       `npm run importar:equivalencias` y después `npm run importar:productos`.
     - "Extra glamping x pax" (OD011) queda para revisar hasta tener la IA.
     - Conviene borrar del Excel las líneas obsoletas "Green + Dann Inn" y "Dann Inn + Green".
