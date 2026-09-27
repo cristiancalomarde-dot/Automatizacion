@@ -54,7 +54,7 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
   (tours compuestos; reusa las equivalencias y los niveles confirmados como datos).
   - `marca.md` actualizado con los colores del logo real. El logo entra en M1-06 (requisito
     #13 de su ficha).
-  - El clon `C:\Users\gs\dev\hi-travel-automatizacion` tiene los commits de M1-04 pero no los
+  - El clon `C:\Users\gs\dev\hi-travel-automatizacion` quedó sincronizado al cierre del
     2026-09-27; igual hacer `git pull` antes de construir.
 - **App en vivo:** `https://automatizacion-dun.vercel.app` (proyecto Vercel bajo la cuenta
   `ccalomarde@hitravel.com.ar`, conectado al repo de GitHub).
