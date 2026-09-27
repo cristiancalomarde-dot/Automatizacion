@@ -34,8 +34,15 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
     salvo 2 casos. 243/243 tests.
     - **Beer = Tangoinn, confirmado por el owner:** los pedidos van a 2 mails,
       `beerhotel@tangoinn.com` y `beerhotel@cervezaholy.com`. El segundo mail se cargó
-      **directo en la base**: si se vuelve a correr `importar:proveedores` sin haberlo agregado
-      antes al Excel de proveedores, se pierde (en la celda Mail/web, separado con `//`).
+      **directo en la base**, y ya se perdió una vez: **los tests de integración de M1-03
+      re-importan el Excel de proveedores sobre la base real** y lo pisaron. Se volvió a cargar.
+      **Al retomar:** confirmar que el owner lo agregó al Excel de proveedores (celda Mail/web de
+      Tangoinn: `beerhotel@tangoinn.com // beerhotel@cervezaholy.com`), copiar ese Excel al
+      `Insumos/` del clon y correr `npm run importar:proveedores`. Recién ahí queda fijo.
+    - **Ojo, trampa:** correr `npm test` re-importa los Excel sobre la base de producción. Todo
+      dato cargado a mano que no esté en los Excel se pierde. Lo mismo va a pasar con las
+      correcciones que permita M1-06 → decidirlo al planear M1-06 (base de test separada, o que
+      el importador no pise ediciones manuales).
     - **A confirmar con operaciones (owner):** Tetris (¿WhatsApp?). Para cambiarlos: editar el CSV y correr
       `npm run importar:equivalencias` y después `npm run importar:productos`.
     - "Extra glamping x pax" (OD011) queda para revisar hasta tener la IA.
