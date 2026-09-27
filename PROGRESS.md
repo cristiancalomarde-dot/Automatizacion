@@ -42,7 +42,9 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
       dato cargado a mano que no esté en los Excel se pierde. Lo mismo va a pasar con las
       correcciones que permita M1-06 → decidirlo al planear M1-06 (base de test separada, o que
       el importador no pise ediciones manuales).
-    - **A confirmar con operaciones (owner):** Tetris (¿WhatsApp?). Para cambiarlos: editar el CSV y correr
+    - **Tetris se reserva por WhatsApp** (confirmado 2026-09-27). Falta que el owner lo sume al
+      Excel de proveedores (nombre + WhatsApp); al retomar: re-importar proveedores, en el CSV
+      poner `Tetris,Tetris,confirmado` y correr
       `npm run importar:equivalencias` y después `npm run importar:productos`.
     - "Extra glamping x pax" (OD011) queda para revisar hasta tener la IA.
     - Conviene borrar del Excel las líneas obsoletas "Green + Dann Inn" y "Dann Inn + Green".
