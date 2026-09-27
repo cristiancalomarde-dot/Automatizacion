@@ -41,6 +41,10 @@ export interface FilaServicio {
   orden: number;
   prioridad: number;
   tipo_servicio: TipoServicio;
+  /** Nivel de alojamiento (Hostel, Hotel 3*…); null en no-alojamientos o si el Excel no lo escribe. */
+  nivel: string | null;
+  /** Fila del Excel de la línea; los tramos "+" de una misma línea comparten fila (y nivel). */
+  fila_excel: number | null;
   descripcion: string;
   service_provider_nombre: string;
   booking_supplier_nombre: string | null;
@@ -59,6 +63,8 @@ export function armarFilasServicio(servicios: ServicioLeido[], indice: IndicePro
         orden: i + 1,
         prioridad: opcion.prioridad,
         tipo_servicio: servicio.tipo,
+        nivel: servicio.nivel,
+        fila_excel: servicio.fila > 0 ? servicio.fila : null,
         descripcion: servicio.descripcion,
         service_provider_nombre: opcion.serviceProvider,
         booking_supplier_nombre: opcion.bookingSupplier,

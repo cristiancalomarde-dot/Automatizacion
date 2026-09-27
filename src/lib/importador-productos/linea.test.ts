@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { clasificarLinea } from "./linea";
+import { clasificarLinea, nivelDeAlojamiento } from "./linea";
 
 // Spec M1-04 §3 #5, #6, #9 y Anexo técnico (reglas de lectura de la hoja
 // "Readme AI"): cómo se lee UNA celda de la columna de la sección 1 de un
@@ -136,8 +136,65 @@ describe("clasificarLinea — lo que no es un servicio (spec M1-04 §3 #2, #9)",
   });
 
   it("texto libre que no calza con ningún patrón → dudosa (para IA o para revisar)", () => {
-    for (const t of ["Budget Hotel", "Green + Dann Inn", "Extra glamping x pax", "Hostel"]) {
+    for (const t of ["Green + Dann Inn", "Dann Inn + Green", "Extra glamping x pax"]) {
       expect(clasificarLinea(t).clase, t).toBe("dudosa");
     }
+  });
+
+  it("una línea que es solo la etiqueta de un nivel (\"Budget Hotel\", \"Hostel\") → nivel sin proveedor", () => {
+    expect(clasificarLinea("Budget Hotel ")).toEqual({ clase: "nivel_sin_proveedor", nivel: "Budget Hotel" });
+    expect(clasificarLinea("Hostel")).toEqual({ clase: "nivel_sin_proveedor", nivel: "Hostel" });
+  });
+});
+
+describe("clasificarLinea — \"7\" mal tipeado por \"/\" (misma tecla con Shift; indicación del owner)", () => {
+  it("\"El Pueblito 7  Botanica\" en una línea de alojamiento → 2 opciones, y queda anotada la corrección", () => {
+    const r = clasificarLinea("Accommodation Hotel 3* El Pueblito 7  Botanica. Booking Supplier: Cuenca del Plata");
+    if (r.clase !== "servicio") throw new Error(r.clase);
+    expect(r.servicios[0].opciones.map((o) => o.serviceProvider)).toEqual(["Hotel 3* El Pueblito", "Botanica"]);
+    expect(r.correcciones).toEqual(["\"7\" leído como \"/\""]);
+  });
+
+  it("un 7 que no está suelto entre dos nombres no se toca", () => {
+    for (const t of [
+      "Accommodation: Hotel 7 Lagos. Booking Supplier: X", // antes del 7 hay una sola palabra: es parte del nombre
+      "Accommodation: Casa 77 Norte. Booking Supplier: X",
+      "Excursion: Ruta 7 Tour. Booking Supplier: X",
+    ]) {
+      const r = clasificarLinea(t);
+      if (r.clase !== "servicio") throw new Error(r.clase);
+      expect(r.servicios[0].opciones, t).toHaveLength(1);
+      expect(r.correcciones, t).toEqual([]);
+    }
+  });
+});
+
+describe("nivelDeAlojamiento — niveles alternativos que elige el pasajero (pedido del owner, 2026-09-27)", () => {
+  it("etiqueta solo cuando la línea la dice explícitamente", () => {
+    expect(nivelDeAlojamiento("Beer Hostel")).toBe("Hostel");
+    expect(nivelDeAlojamiento("Bambu Hostel Foz / Tetris")).toBe("Hostel");
+    expect(nivelDeAlojamiento("Hotel 3* El Pueblito 7 Botanica")).toBe("Hotel 3*");
+    expect(nivelDeAlojamiento("Hotel 4*: La Aldea de la Selva")).toBe("Hotel 4*");
+    expect(nivelDeAlojamiento("Nacional Inn Foz 3* / Taroba Express")).toBe("Hotel 3*");
+    expect(nivelDeAlojamiento("Glamping Selva Iguazu c/desay")).toBe("Glamping c/desayuno");
+    expect(nivelDeAlojamiento("Glamping Selva Iguazu c/MAP")).toBe("Glamping c/MAP");
+    expect(nivelDeAlojamiento("Budget Hotel Centro")).toBe("Budget Hotel");
+    expect(nivelDeAlojamiento("Budget Hotel DBL")).toBe("Budget Hotel");
+  });
+
+  it("sin etiqueta escrita o ambigua → null (para revisar, no se deduce)", () => {
+    expect(nivelDeAlojamiento("2 Nights Beer + 1 night Bambu")).toBeNull();
+    expect(nivelDeAlojamiento("Dann Inn Foz")).toBeNull();
+    expect(nivelDeAlojamiento("Taroba Hotel 3* sup/4")).toBeNull(); // ¿3* superior o 4*?
+    expect(nivelDeAlojamiento("Hotel 3* + Hotel 4*")).toBeNull();
+  });
+
+  it("clasificarLinea: cada tramo \"+\" de una línea queda en el mismo nivel (el de la línea)", () => {
+    const r = clasificarLinea("Accommodation: 2 Nights Hostel A + 1 night Hostel B. Booking Supplier: A + B");
+    if (r.clase !== "servicio") throw new Error(r.clase);
+    expect(r.servicios.map((s) => s.nivel)).toEqual(["Hostel", "Hostel"]);
+    const exc = clasificarLinea("Excursion: Paquete Receptvo 105 Premium. Booking Supplier: Cuenca del Plata");
+    if (exc.clase !== "servicio") throw new Error(exc.clase);
+    expect(exc.servicios[0].nivel).toBeNull(); // solo los alojamientos tienen nivel
   });
 });

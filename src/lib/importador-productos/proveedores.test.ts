@@ -16,20 +16,27 @@ const PROVEEDORES = [
 ];
 
 function servicio(parcial: Partial<ServicioLeido> & Pick<ServicioLeido, "opciones">): ServicioLeido {
-  return { tipo: "alojamiento", descripcion: "línea del Excel", noches: null, fila: 10, ...parcial };
+  return { tipo: "alojamiento", descripcion: "línea del Excel", noches: null, nivel: null, fila: 10, ...parcial };
 }
 
 describe("armarFilasServicio — emparejado de proveedores (spec M1-04 §3 #6)", () => {
   it("Booking Supplier distinto del Service Provider → dos proveedores distintos, no fusionados", () => {
     const indice = crearIndiceProveedores(PROVEEDORES);
     const [fila] = armarFilasServicio(
-      [servicio({ opciones: [{ prioridad: 1, serviceProvider: "Dann Inn  Foz", bookingSupplier: "NACIONAL INN" }] })],
+      [
+        servicio({
+          nivel: "Hotel 3*",
+          opciones: [{ prioridad: 1, serviceProvider: "Dann Inn  Foz", bookingSupplier: "NACIONAL INN" }],
+        }),
+      ],
       indice,
     );
     expect(fila).toMatchObject({
       orden: 1,
       prioridad: 1,
       tipo_servicio: "alojamiento",
+      nivel: "Hotel 3*",
+      fila_excel: 10,
       service_provider_id: "p-dann",
       booking_supplier_id: "p-nacional",
       service_provider_nombre: "Dann Inn  Foz",
