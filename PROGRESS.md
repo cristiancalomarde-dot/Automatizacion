@@ -4,7 +4,7 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
 # Dónde retomar
 
 - **Último push a GitHub:** 2026-09-27, todo lo de la sesión (M1-03, M1-04, M1-04b, marca).
-- **Verificación completa:** M1-01, M1-02 y **M1-03 terminadas**, las 3 verificaciones en verde,
+- **Verificación completa:** **M1-01 a M1-04b terminadas**, 243/243 tests + lint en verde (2026-09-27),
   corridas contra el proyecto Supabase real (no mocks).
   - M1-01: V3 confirmada el 2026-09-25 en `https://automatizacion-dun.vercel.app`, entrando con
     `operations@hitravel.com.ar` (se ve "Damian" en el header + botón Salir). También se confirmó
@@ -55,7 +55,7 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
   - `marca.md` actualizado con los colores del logo real. El logo entra en M1-06 (requisito
     #13 de su ficha).
   - El clon `C:\Users\gs\dev\hi-travel-automatizacion` tiene los commits de M1-04 pero no los
-    de docs del repo real: resincronizarlo antes de construir.
+    2026-09-27; igual hacer `git pull` antes de construir.
 - **App en vivo:** `https://automatizacion-dun.vercel.app` (proyecto Vercel bajo la cuenta
   `ccalomarde@hitravel.com.ar`, conectado al repo de GitHub).
 
