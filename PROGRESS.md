@@ -3,8 +3,7 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
 
 # Dónde retomar
 
-- **Último push a GitHub:** `711cded` (M1-02). Los commits de M1-03 están solo en local:
-  **falta `git push`**.
+- **Último push a GitHub:** 2026-09-27, todo lo de la sesión (M1-03, M1-04, M1-04b, marca).
 - **Verificación completa:** M1-01, M1-02 y **M1-03 terminadas**, las 3 verificaciones en verde,
   corridas contra el proyecto Supabase real (no mocks).
   - M1-01: V3 confirmada el 2026-09-25 en `https://automatizacion-dun.vercel.app`, entrando con
