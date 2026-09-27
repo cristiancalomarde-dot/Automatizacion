@@ -265,3 +265,55 @@ describe("planificarProductos — niveles de alojamiento (pedido del owner, 2026
     expect(p.nivelesNoOfrecidos).toEqual([]);
   });
 });
+
+describe("planificarProductos — niveles confirmados por el owner (spec M1-04b §3 #5)", () => {
+  const LINEA_HOSTEL = "Accommodation 2 Nights Beer + 1 night Bambu. Booking Supplier Beer + Bambu";
+  const LINEA_3 =
+    "Accommodation: 2 Nights El Pueblito + 1 night Nacional inn Foz. Booking Supplier: Cuenca del Plana + Nacional Inn";
+  const filas = grilla({
+    A3: "IGR",
+    S3: "Iguazu Falls Combined (2 Nts ARG + 1 Nt BRA) OD010C",
+    W3: "Iguazu Falls Combined (2 Nts ARG + 1 Nt BRA) OD010C",
+    S5: LINEA_HOSTEL,
+    S9: "Green + Dann Inn",
+    S12: LINEA_3,
+    S20: "Excursion: Paquete Receptvo 105 Premium. Booking Supplier: Cuenca del Plata",
+    S24: "Paquete Iguazu Combined 2 Nights Argentina 1 night Brazil",
+    W10: "Beer + Bambu Dorm",
+    W15: "Budget Hotel DBL",
+    W17: "Hotel 3*  DBL ",
+  });
+  const nivelesConfirmados = [
+    { producto: "OD010C", texto_linea: LINEA_HOSTEL, nivel: "Hostel", ofrecido: true },
+    { producto: "OD010C", texto_linea: LINEA_3, nivel: "Hotel 3*", ofrecido: true },
+    { producto: "OD010C", texto_linea: "Green + Dann Inn", nivel: "Budget Hotel", ofrecido: false },
+    { producto: "OD010C", texto_linea: "Una línea que el Excel ya no tiene", nivel: "Hotel 4*", ofrecido: true },
+  ];
+
+  it("aplica los niveles confirmados, descarta la línea de un nivel no ofrecido sin preguntarle a la IA y reporta el confirmado sin línea", async () => {
+    const ia = vi.fn<InterpretarBloque>();
+    const plan = await planificarProductos({ filas, destino: "IGR", codigos: ["OD010C"], interpretarIA: ia, nivelesConfirmados });
+    const p = plan.productos[0];
+    expect(ia).not.toHaveBeenCalled();
+    expect(plan.bloquesQueNecesitanIA).toEqual([]);
+    expect(p.servicios.filter((s) => s.tipo === "alojamiento").map((s) => [s.fila, s.opciones[0].serviceProvider, s.nivel])).toEqual([
+      [5, "Beer", "Hostel"],
+      [5, "Bambu", "Hostel"],
+      [12, "El Pueblito", "Hotel 3*"],
+      [12, "Nacional inn Foz", "Hotel 3*"],
+    ]);
+    expect(p.lineasParaRevisar).toEqual([]);
+    expect(p.nivelesParaRevisar).toEqual([]);
+    expect(p.nivelesNoOfrecidos).toEqual(["Budget Hotel"]);
+    expect(p.nivelesConfirmadosSinLinea).toEqual([
+      { producto: "OD010C", texto_linea: "Una línea que el Excel ya no tiene", nivel: "Hotel 4*", ofrecido: true },
+    ]);
+  });
+
+  it("sin niveles confirmados se comporta como M1-04 (líneas sin etiqueta y 'Green + Dann Inn' para revisar)", async () => {
+    const plan = await planificarProductos({ filas, destino: "IGR", codigos: ["OD010C"], interpretarIA: null });
+    const p = plan.productos[0];
+    expect(p.lineasParaRevisar.map((l) => l.texto)).toEqual(["Green + Dann Inn"]);
+    expect(p.nivelesParaRevisar.filter((n) => n.fila !== null).map((n) => n.fila)).toEqual([5, 12]);
+  });
+});
