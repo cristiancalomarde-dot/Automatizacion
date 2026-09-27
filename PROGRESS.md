@@ -24,11 +24,25 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
       volver a correr el importador.
     - **Ojo para M1-06:** re-correr el importador pisa los mails, el canal y las aclaraciones
       corregidos a mano.
-- **Plan activo:** `docs/sdd/roadmaps/active/m1-catalogo-y-proveedores.md` — M1-01, M1-02 y
-  M1-03 ✅ **terminadas**, M1-04 a M1-06 ⬜ pendientes. **Próximo paso: `/implementar M1-04`**
-  (productos simples de Iguazú).
-  - Antes de arrancar, resincronizar el clon `C:\Users\gs\dev\hi-travel-automatizacion`: tiene
-    los archivos de M1-03 sin commitear y un stash con copias de M1-02 que se puede descartar.
+  - M1-04 (2026-09-27): 5 productos de Iguazú cargados (commit `a42aac3`, migración 0004
+    aplicada). En total quedaron 29 filas de servicio, con niveles (Hostel/3*/4*/Glamping) y
+    prioridades "/", y 15 códigos externos (HI Travel + Kilroy + TourRadar con su nombre).
+    205/205 tests. Se corre con `npm run importar:productos`.
+    - **Bloqueante antes de M1-06/M2:** las 29 filas quedaron con el proveedor sin resolver,
+      porque los nombres del Excel ("Beer", "Cuenca del Plata", "Taroba"…) no coinciden
+      exacto con el directorio ("Cuenca Del Plata (Natalia )", "HOTEL TAROBA"…) y la spec
+      prohíbe emparejar por parecido. Además hay un typo, "Cuenca del Plana" (OD010C/D).
+    - **Niveles sin etiqueta para confirmar con el owner:** OD010B fila 10 (Dann Inn Foz) y fila
+      16 (Taroba 3* sup/4); OD010C filas 5/12/15; OD010D filas 12/15.
+    - 3 líneas quedaron para revisar hasta tener la IA: "Green + Dann Inn", "Dann Inn + Green"
+      y "Extra glamping x pax".
+    - El traslado incluido solo figura como texto ("Includes: Transfer in + Out") en la
+      descripción del paquete de excursiones: decidir cómo representarlo al planear M2.
+- **Plan activo:** `docs/sdd/roadmaps/active/m1-catalogo-y-proveedores.md` — M1-01 a M1-04
+  ✅ **terminadas**, M1-05 y M1-06 ⬜ pendientes. Próximo paso: resolver con el owner cómo
+  emparejar los nombres de proveedor del Excel con el directorio; después, `/implementar M1-05`.
+  - El clon `C:\Users\gs\dev\hi-travel-automatizacion` tiene los commits de M1-04 pero no los
+    de docs del repo real: resincronizarlo antes de construir.
 - **App en vivo:** `https://automatizacion-dun.vercel.app` (proyecto Vercel bajo la cuenta
   `ccalomarde@hitravel.com.ar`, conectado al repo de GitHub).
 
@@ -109,6 +123,31 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
     (`C:\Users\gs\dev\hi-travel-automatizacion`) y volcando el código verificado al repo real —
     quien siga construyendo debería hacer lo mismo, o mejor, considerar mover el proyecto fuera de
     una carpeta sincronizada por Drive más adelante (Git/GitHub ya es el respaldo real).
+  - **PDF de TourRadar (4 ejemplos en `Insumos/`, revisados 2026-09-27) — insumo para M2:**
+    - Traen: nombre del tour, fecha de salida, TourRadar Reference ID (= booking id), nombre del
+      cliente, a veces "HI Travel booking ID" tipo "Nombre x2", y líneas de detalle con cantidad
+      (ej. "2 × tour", "DOUBLE Hostel", "Dorm Hostel", "Hotel La Aldea 4* SGL", "Other").
+    - **NO traen el código TR del producto** (160955, etc.): el emparejado tiene que ser por
+      **nombre del tour**, que coincide exacto con la columna "Nombre en Tourradar" del Excel
+      de códigos TR. Por eso ese nombre hay que guardarlo, no solo el código.
+    - **NO traen datos de vuelo** ni los demás pasajeros: están en el dashboard de TR y el equipo
+      se los pide al pax por la conversación interna. **Decisión del owner:** el pedido al
+      proveedor sale igual con "Vuelos: por confirmar" (o queda preparado para que el operativo
+      complete el dato antes de aprobar). Esto matiza la regla "vuelo obligatorio con traslado"
+      de `DECISIONS.md` para TR — registrarlo al planear M2.
+    - Un mismo Reference ID recibe **varios statements**: la reserva original, **agregados
+      posteriores** (ej. un statement con solo "Other") y **cancelaciones** ("BOOKING
+      CANCELLATION STATEMENT", montos negativos). M2 agrupa por Reference ID y trata los
+      siguientes como cambios a la reserva, no como reservas nuevas.
+    - Las líneas extra cambian el pedido al proveedor:
+      - **Nivel de alojamiento** elegido por el pax (hasta 4: Hostel / Budget Hotel / Hotel 3* / Hotel 4*;
+        en Iguazú 3* = El Pueblito, 4* = La Aldea); más el tipo de habitación (Dorm/Double/Single). Cada nivel tiene
+        su propio proveedor → M1-04 los carga como niveles separados.
+      - **Opcionales** (ej. "Optional Whales Watching Sailing", "Optional Punta Tombo Penguin
+        Colony") → servicios extra a pedir.
+      - **Reemplazos** (ej. "Supplement Flight El Calafate to Ushuaia instead of the bus") → se
+        saca el bus del pedido; el vuelo se gestiona aparte.
+      - "Other" solo, sin descripción → para revisar.
   - **Alcance de M1-04 confirmado (2026-09-27):** 5 productos de Iguazú — OD010A/B/C/D + OD011
     (Iguazu Glamping) — vendidos por Kilroy y TourRadar. Ficha actualizada.
   - **Riesgo grande:** leer el Excel de paquetes (2218 filas, bloques por columna) es lo más

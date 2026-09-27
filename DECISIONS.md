@@ -6,6 +6,13 @@ Formato mínimo por entrada: qué decisión, por qué, alternativa rechazada, co
 
 # Decisiones de diseño
 
+## 2026-09-27: Alojamiento = niveles de precio con opciones en orden de prioridad
+- **Decisión:** cada producto tiene hasta 4 niveles de alojamiento (Hostel / Budget Hotel / Hotel 3* / Hotel 4*; Glamping tiene los suyos). Un nivel puede estar vacante (ej. Budget Hotel en OD010A, sacado por mala calidad) o tener varias opciones. Dentro de un nivel, las opciones separadas por "/" se piden en el orden en que están escritas: solo si la 1ª no tiene lugar se pasa a la 2ª, y así en todo el Excel. En la celda B12 del Excel de paquetes, "El Pueblito 7 Botanica" es un typo de "/".
+- **Razón:** el pax elige el nivel al reservar (TourRadar manda "Hotel La Aldea 4* SGL"), y cada nivel tiene su propio proveedor. Si se mezclan niveles y prioridades, se le pide al proveedor equivocado.
+- **Alternativa rechazada:** tratar todos los alojamientos del bloque como una sola lista de prioridad.
+- **Constraint:** un nivel que figura solo en la tabla de precios, sin línea "Accommodation: … Booking Supplier", no se ofrece: no se carga ni va a revisión.
+- **Niveles confirmados por el owner para las líneas sin etiqueta:** en OD010B, "Taroba Hotel 3* sup/4" es Hotel 4*. En los combinados OD010C y OD010D, Hostel es Beer + Bambu, Hotel 3* es El Pueblito + Nacional Inn y Hotel 4* es La Aldea + Taroba. Falta confirmar si Dann Inn Foz (OD010B) va en Hotel 3* o en Budget Hotel.
+
 ## 2026-09-27: Piloto de Iguazú = 5 productos (se suma OD011 Iguazu Glamping)
 - **Decisión:** M1-04 carga OD010A, OD010B, OD010C, OD010D y OD011 (Iguazu Glamping). Los 5 se venden por Kilroy y TourRadar.
 - **Razón:** el owner confirmó que el Glamping también se vende (poco) por los mismos partners; en el Excel está en el mismo bloque de Iguazú, pero con código OD011, que el filtro original por "OD010" dejaba afuera.
