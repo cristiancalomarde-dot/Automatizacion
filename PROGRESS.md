@@ -72,8 +72,8 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
   - **Criterio del owner (2026-09-28):** los paquetes que solo existen como componentes de
     un tour (no se venden solos) **también llevan código**, para que todo quede normalizado.
     Cada componente en `RutasenBus` apunta a un código del Excel de paquetes o del "resumen
-    NewTours". Falta confirmar si ese resumen es `New 2019 Rates para IA` (hoja "New Rates"):
-    no hay ninguna hoja llamada NewTours en `Insumos/`.
+    NewTours", que es `Insumos/New 2019 Rates para IA.xlsx` (hoja "New Rates"; confirmado
+    por el owner 2026-09-28).
   - **Próximo paso:** con los códigos completos, `/roadmap` para sumar la pieza (o piezas)
     nuevas al plan de M1 y escribir sus fichas. Después, M1-05.
   - `marca.md` actualizado con los colores del logo real. El logo entra en M1-06 (requisito
