@@ -52,8 +52,25 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
     - El traslado incluido solo figura como texto ("Includes: Transfer in + Out") en la
       descripción del paquete de excursiones: decidir cómo representarlo al planear M2.
 - **Plan activo:** `docs/sdd/roadmaps/active/m1-catalogo-y-proveedores.md` — M1-01 a M1-04b
-  ✅ **terminadas**, M1-05 y M1-06 ⬜ pendientes. **Próximo paso: `/implementar M1-05`**
-  (tours compuestos; reusa las equivalencias y los niveles confirmados como datos).
+  ✅ **terminadas**, M1-05 y M1-06 ⬜ pendientes.
+  - **Hueco detectado (2026-09-28): M1-05 no puede correr así como está.** Los 7 tours
+    compuestos se arman con paquetes de un destino que no están cargados (solo está Iguazú).
+    **Decisión del owner:** antes de M1-05 va una pieza nueva que carga **solo los paquetes
+    de un destino que forman los 7 tours** (~15 destinos, reusando el importador de M1-04). No
+    se suman otros destinos (Salta, Bariloche, etc.): el resto del catálogo va después del MVP.
+    Conviene partirla por región.
+  - **Antes de escribir esa pieza, el owner completa los códigos** (propuesta suya del
+    2026-09-14, PRD §6 punto 9). Casi ningún paquete de un destino tiene código en el Excel
+    de paquetes: solo Iguazú, Mendoza (OD019), Ushuaia (OD022/023) y El Calafate
+    (OD013-016, AR34). Borrador para completar: `Insumos/Borrador codigos tours featured.xlsx`,
+    con cada columna de cada tour de la hoja "Tours 2027". Pasos:
+    1. Poner el código en el título de cada paquete, en el Excel de paquetes.
+    2. Agregar una fila "Códigos:" en cada tour del Excel de rutas.
+    Faltan aclarar: dónde está armado BOCHI04R (no aparece en "Tours 2027"); si
+    "SPA+UYU end LPB" en 5C01 es el CHB31 entero; y si São Paulo, Valparaíso, W Trek y
+    Colonia tienen un bloque de paquete propio.
+  - **Próximo paso:** con los códigos completos, `/roadmap` para sumar la pieza (o piezas)
+    nuevas al plan de M1 y escribir sus fichas. Después, M1-05.
   - `marca.md` actualizado con los colores del logo real. El logo entra en M1-06 (requisito
     #13 de su ficha).
   - El clon `C:\Users\gs\dev\hi-travel-automatizacion` quedó sincronizado al cierre del
