@@ -74,6 +74,11 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
     Cada componente en `RutasenBus` apunta a un código del Excel de paquetes o del "resumen
     NewTours", que es `Insumos/New 2019 Rates para IA.xlsx` (hoja "New Rates"; confirmado
     por el owner 2026-09-28).
+  - **En paralelo, no bloquea M1 (acordado 2026-09-28):** el owner va a dejar en `Insumos/` 2 o 3
+    mails reales que el equipo manda hoy a proveedores (ej. Cuenca del Plata, Nacional Inn Foz
+    en portugués, un hostel), como PDF. Con eso se arma un **boceto visual** de la pantalla
+    "Revisar y enviar pedidos" (user-flow §5.4) con un caso real de Iguazú, para validar el
+    formato del mail antes de M3.
   - **Próximo paso:** con los códigos completos, `/roadmap` para sumar la pieza (o piezas)
     nuevas al plan de M1 y escribir sus fichas. Después, M1-05.
   - `marca.md` actualizado con los colores del logo real. El logo entra en M1-06 (requisito
