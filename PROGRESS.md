@@ -19,7 +19,7 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
     `uso_ia` (migración 0003, ya aplicada) para el techo de gasto (#3). El destino del proveedor
     se guarda en `proveedor.ciudad`.
     - **Pendiente:** el respaldo de IA nunca se llamó de verdad porque falta `ANTHROPIC_API_KEY`.
-      Primero rotar la clave que quedó expuesta en un log, después cargarla en `.env.local` y
+      Crear una clave de Claude, cargarla en `.env.local` y
       volver a correr el importador.
     - **Ojo para M1-06:** re-correr el importador pisa los mails, el canal y las aclaraciones
       corregidos a mano.
