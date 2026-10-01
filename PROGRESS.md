@@ -79,6 +79,19 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
     en portugués, un hostel), como PDF. Con eso se arma un **boceto visual** de la pantalla
     "Revisar y enviar pedidos" (user-flow §5.4) con un caso real de Iguazú, para validar el
     formato del mail antes de M3.
+  - **Pedido nuevo del owner (2026-10-01), cambio de alcance pendiente de decidir:** al
+    recibir una reserva (Kilroy, Jysk, TR), saber **quién la originó** (sucursal / vendedor,
+    ej. DK tiene muchas) para mandarle un "recibido". Hoy el modelo guarda agencia +
+    remitente + booking_id, no sucursal ni vendedor, y el PRD §5 deja **fuera** cualquier
+    respuesta a la agencia. Propuesta: extraer el originador en M2 y dejar el "recibido" como
+    borrador con aprobación (#4), en M3 o al final de M2. Falta que el owner deje en
+    `Insumos/` 2-3 mails de Kilroy/Jysk de sucursales distintas y aclare quién manda hoy ese
+    "recibido" y a qué dirección. Cuando se decida: actualizar `prd.md` y `DECISIONS.md`.
+  - **Estado de los Excel (2026-10-01):** el owner ya tiene en sus originales los códigos de
+    paquetes base y componentes en RutasenBus. Falta copiarlos a `Insumos/` (Explorador, sin
+    "Guardar como") y decir sus nombres. El Excel de proveedores ya está actualizado en
+    `Insumos/`: tiene los 2 mails de Beer separados con "/", que el importador lee bien. Falta
+    la fila de Tetris.
   - **Próximo paso:** con los códigos completos, `/roadmap` para sumar la pieza (o piezas)
     nuevas al plan de M1 y escribir sus fichas. Después, M1-05.
   - `marca.md` actualizado con los colores del logo real. El logo entra en M1-06 (requisito
