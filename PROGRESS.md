@@ -87,6 +87,12 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
     borrador con aprobación (#4), en M3 o al final de M2. Falta que el owner deje en
     `Insumos/` 2-3 mails de Kilroy/Jysk de sucursales distintas y aclare quién manda hoy ese
     "recibido" y a qué dirección. Cuando se decida: actualizar `prd.md` y `DECISIONS.md`.
+  - **Ejemplos de pedidos a proveedores (2026-10-01):** 8 `.docx` en `Insumos/` ("Pedido
+    Proveedor - <proveedor> <código>"): Cuenca del Plata OD010A y OD010B, Beer Hostel OD010A,
+    Milhouse, Grupo Summa y La Bicicleta Naranja OD018, Rancho Grande + Chalten Travel OD033 y
+    Chalten Travel OD016. Todavía **sin revisar**. El owner va a sumar más, además de los
+    mails de reserva de Kilroy/Jysk.
+  - **TourRadar no lleva "recibido" por mail:** se maneja desde el dashboard de TR.
   - **Aclaración del owner sobre el "recibido":** es un **reply al mail original**. El
     remitente suele ser el vendedor y a veces la casilla de operaciones de la agencia. No hace
     falta un registro de sucursales ni vendedores: alcanza con responder en el mismo hilo.
