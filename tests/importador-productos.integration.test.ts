@@ -312,14 +312,13 @@ interface FilaServicioDB {
       }
     }, TIMEOUT);
 
-    it("M1-04b #4 Beer asignado a Tangoinn y marcado para revisar; Tetris sin resolver con su nota", async () => {
+    it("M1-04b #4 Beer asignado a Tangoinn (confirmado por el owner 2026-09-27, ya sin marca); Tetris sin resolver con su nota", async () => {
       const { data: tango } = await admin.from("proveedor").select("id").eq("nombre", "Tangoinn Bed & Brewery IGR").single();
       const todas = await todasLasFilas();
       const beer = todas.filter((f) => ["Beer", "Beer Hostel"].includes(f.booking_supplier_nombre ?? ""));
       expect(beer.map((f) => f.codigo)).toEqual(["OD010A", "OD010C", "OD010D"]);
       for (const f of beer) {
-        expect(f).toMatchObject({ booking_supplier_id: tango!.id, proveedor_sin_resolver: false, proveedor_para_revisar: true });
-        expect(f.proveedor_nota).toContain("Tangoinn");
+        expect(f).toMatchObject({ booking_supplier_id: tango!.id, proveedor_sin_resolver: false, proveedor_para_revisar: false });
       }
       const tetris = todas.filter((f) => f.booking_supplier_nombre === "Tetris");
       expect(tetris).toHaveLength(1);
@@ -333,10 +332,7 @@ interface FilaServicioDB {
       expect(todas.filter((f) => f.booking_supplier_id === null).map((f) => f.booking_supplier_nombre)).toEqual(["Tetris"]);
       expect(resumen.nombresSinResolver).toEqual(["Tetris"]);
       expect(resumen.proveedoresParaRevisar.map((p) => [p.codigo, p.booking_supplier_nombre, p.asignado])).toEqual([
-        ["OD010A", "Beer Hostel", true],
         ["OD010B", "Tetris", false],
-        ["OD010C", "Beer", true],
-        ["OD010D", "Beer", true],
       ]);
     }, TIMEOUT);
 
@@ -404,7 +400,7 @@ interface FilaServicioDB {
       expect(data.filas_para_revisar).toBe(resumen.filasParaRevisar);
       expect(data.detalle.productos.procesados).toBe(5);
       expect(data.detalle.proveedores_sin_resolver.length).toBe(resumen.proveedoresSinResolver.length);
-      expect(data.detalle.proveedores_para_revisar).toHaveLength(4);
+      expect(data.detalle.proveedores_para_revisar).toHaveLength(1);
       expect(data.detalle.nombres_sin_resolver).toEqual(["Tetris"]);
       expect(data.detalle.alias_cargados).toBe(15);
       expect(data.detalle.bloques_que_necesitan_ia).toEqual(resumen.bloquesQueNecesitanIA);

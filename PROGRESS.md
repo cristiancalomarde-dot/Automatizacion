@@ -3,9 +3,8 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
 
 # Dónde retomar
 
-- **Último push a GitHub:** `711cded` (M1-02). Los commits de M1-03 están solo en local:
-  **falta `git push`**.
-- **Verificación completa:** M1-01, M1-02 y **M1-03 terminadas**, las 3 verificaciones en verde,
+- **Último push a GitHub:** 2026-09-27, todo lo de la sesión (M1-03, M1-04, M1-04b, marca).
+- **Verificación completa:** **M1-01 a M1-04b terminadas**, 243/243 tests + lint en verde (2026-09-27),
   corridas contra el proyecto Supabase real (no mocks).
   - M1-01: V3 confirmada el 2026-09-25 en `https://automatizacion-dun.vercel.app`, entrando con
     `operations@hitravel.com.ar` (se ve "Damian" en el header + botón Salir). También se confirmó
@@ -20,7 +19,7 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
     `uso_ia` (migración 0003, ya aplicada) para el techo de gasto (#3). El destino del proveedor
     se guarda en `proveedor.ciudad`.
     - **Pendiente:** el respaldo de IA nunca se llamó de verdad porque falta `ANTHROPIC_API_KEY`.
-      Primero rotar la clave que quedó expuesta en un log, después cargarla en `.env.local` y
+      Crear una clave de Claude, cargarla en `.env.local` y
       volver a correr el importador.
     - **Ojo para M1-06:** re-correr el importador pisa los mails, el canal y las aclaraciones
       corregidos a mano.
@@ -34,9 +33,18 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
     salvo 2 casos. 243/243 tests.
     - **Beer = Tangoinn, confirmado por el owner:** los pedidos van a 2 mails,
       `beerhotel@tangoinn.com` y `beerhotel@cervezaholy.com`. El segundo mail se cargó
-      **directo en la base**: si se vuelve a correr `importar:proveedores` sin haberlo agregado
-      antes al Excel de proveedores, se pierde (en la celda Mail/web, separado con `//`).
-    - **A confirmar con operaciones (owner):** Tetris (¿WhatsApp?). Para cambiarlos: editar el CSV y correr
+      **directo en la base**, y ya se perdió una vez: **los tests de integración de M1-03
+      re-importan el Excel de proveedores sobre la base real** y lo pisaron. Se volvió a cargar.
+      **Al retomar:** confirmar que el owner lo agregó al Excel de proveedores (celda Mail/web de
+      Tangoinn: `beerhotel@tangoinn.com // beerhotel@cervezaholy.com`), copiar ese Excel al
+      `Insumos/` del clon y correr `npm run importar:proveedores`. Recién ahí queda fijo.
+    - **Ojo, trampa:** correr `npm test` re-importa los Excel sobre la base de producción. Todo
+      dato cargado a mano que no esté en los Excel se pierde. Lo mismo va a pasar con las
+      correcciones que permita M1-06 → decidirlo al planear M1-06 (base de test separada, o que
+      el importador no pise ediciones manuales).
+    - **Tetris se reserva por WhatsApp** (confirmado 2026-09-27). Falta que el owner lo sume al
+      Excel de proveedores (nombre + WhatsApp); al retomar: re-importar proveedores, en el CSV
+      poner `Tetris,Tetris,confirmado` y correr
       `npm run importar:equivalencias` y después `npm run importar:productos`.
     - "Extra glamping x pax" (OD011) queda para revisar hasta tener la IA.
     - Conviene borrar del Excel las líneas obsoletas "Green + Dann Inn" y "Dann Inn + Green".
@@ -44,12 +52,39 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
     - El traslado incluido solo figura como texto ("Includes: Transfer in + Out") en la
       descripción del paquete de excursiones: decidir cómo representarlo al planear M2.
 - **Plan activo:** `docs/sdd/roadmaps/active/m1-catalogo-y-proveedores.md` — M1-01 a M1-04b
-  ✅ **terminadas**, M1-05 y M1-06 ⬜ pendientes. **Próximo paso: `/implementar M1-05`**
-  (tours compuestos; reusa las equivalencias y los niveles confirmados como datos).
+  ✅ **terminadas**, M1-05 y M1-06 ⬜ pendientes.
+  - **Hueco detectado (2026-09-28): M1-05 no puede correr así como está.** Los 7 tours
+    compuestos se arman con paquetes de un destino que no están cargados (solo está Iguazú).
+    **Decisión del owner:** antes de M1-05 va una pieza nueva que carga **solo los paquetes
+    de un destino que forman los 7 tours** (~15 destinos, reusando el importador de M1-04). No
+    se suman otros destinos (Salta, Bariloche, etc.): el resto del catálogo va después del MVP.
+    Conviene partirla por región.
+  - **Antes de escribir esa pieza, el owner completa los códigos** (propuesta suya del
+    2026-09-14, PRD §6 punto 9). Casi ningún paquete de un destino tiene código en el Excel
+    de paquetes: solo Iguazú, Mendoza (OD019), Ushuaia (OD022/023) y El Calafate
+    (OD013-016, AR34). Borrador para completar: `Insumos/Borrador codigos tours featured.xlsx`,
+    con cada columna de cada tour de la hoja "Tours 2027". Pasos:
+    1. Poner el código en el título de cada paquete, en el Excel de paquetes.
+    2. Agregar una fila "Códigos:" en cada tour del Excel de rutas.
+    Faltan aclarar: dónde está armado BOCHI04R (no aparece en "Tours 2027"); si
+    "SPA+UYU end LPB" en 5C01 es el CHB31 entero; y si São Paulo, Valparaíso, W Trek y
+    Colonia tienen un bloque de paquete propio.
+  - **Criterio del owner (2026-09-28):** los paquetes que solo existen como componentes de
+    un tour (no se venden solos) **también llevan código**, para que todo quede normalizado.
+    Cada componente en `RutasenBus` apunta a un código del Excel de paquetes o del "resumen
+    NewTours", que es `Insumos/New 2019 Rates para IA.xlsx` (hoja "New Rates"; confirmado
+    por el owner 2026-09-28).
+  - **En paralelo, no bloquea M1 (acordado 2026-09-28):** el owner va a dejar en `Insumos/` 2 o 3
+    mails reales que el equipo manda hoy a proveedores (ej. Cuenca del Plata, Nacional Inn Foz
+    en portugués, un hostel), como PDF. Con eso se arma un **boceto visual** de la pantalla
+    "Revisar y enviar pedidos" (user-flow §5.4) con un caso real de Iguazú, para validar el
+    formato del mail antes de M3.
+  - **Próximo paso:** con los códigos completos, `/roadmap` para sumar la pieza (o piezas)
+    nuevas al plan de M1 y escribir sus fichas. Después, M1-05.
   - `marca.md` actualizado con los colores del logo real. El logo entra en M1-06 (requisito
     #13 de su ficha).
-  - El clon `C:\Users\gs\dev\hi-travel-automatizacion` tiene los commits de M1-04 pero no los
-    de docs del repo real: resincronizarlo antes de construir.
+  - El clon `C:\Users\gs\dev\hi-travel-automatizacion` quedó sincronizado al cierre del
+    2026-09-27; igual hacer `git pull` antes de construir.
 - **App en vivo:** `https://automatizacion-dun.vercel.app` (proyecto Vercel bajo la cuenta
   `ccalomarde@hitravel.com.ar`, conectado al repo de GitHub).
 

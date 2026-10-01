@@ -9,7 +9,7 @@ Regenerá el tablero visual de estado del proyecto y republicalo como Artifact. 
 loop principal. El resultado es para un owner NO técnico: lenguaje llano, voseo, cero jerga.
 
 **URL del artefacto (fijo — republicar siempre acá, nunca crear uno nuevo):**
-`<pendiente — se crea en la primera publicación; pegá acá el URL que devuelva Artifact>`
+`https://claude.ai/artifact/LMvVQRWhd9q6tgbaB7k2hx`
 **Archivo fuente:** `docs/sdd/dashboard/tablero.html` (mismo path siempre; cambiar el path crea otro artefacto).
 
 ## Fuentes de verdad (releer en cada corrida)
