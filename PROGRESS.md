@@ -87,9 +87,26 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
     borrador con aprobación (#4), en M3 o al final de M2. Falta que el owner deje en
     `Insumos/` 2-3 mails de Kilroy/Jysk de sucursales distintas y aclare quién manda hoy ese
     "recibido" y a qué dirección. Cuando se decida: actualizar `prd.md` y `DECISIONS.md`.
-  - **Estado de los Excel (2026-10-01):** el owner ya tiene en sus originales los códigos de
-    paquetes base y componentes en RutasenBus. Falta copiarlos a `Insumos/` (Explorador, sin
-    "Guardar como") y decir sus nombres. El Excel de proveedores ya está actualizado en
+  - **Aclaración del owner sobre el "recibido":** es un **reply al mail original**. El
+    remitente suele ser el vendedor y a veces la casilla de operaciones de la agencia. No hace
+    falta un registro de sucursales ni vendedores: alcanza con responder en el mismo hilo.
+  - **Excel con códigos, ya en `Insumos/` (2026-10-01), revisados:**
+    `Construccion de Paquetes 2019 con 3 y 4 estrellas.xls`, `New 2019 Rates.xlsx` y
+    `RutasenBus2020.xls`. Son los nuevos; los "para IA" quedan como versiones viejas.
+    - En RutasenBus, cada tour tiene una **fila de códigos justo arriba de "Net Prices:"**, con
+      el código sobre la columna de cada paquete. Las columnas de bus quedan vacías.
+    - Los **19 códigos usados existen** en el Excel de paquetes (y la mayoría también en
+      New Rates): OD010A/D, OD013, OD016, OD017, OD018, OD019, OD020, OD022, OD025, OD029,
+      OD030, OD031, OD032, OD033, CH10, COMPCH01, COMPBO20 y CHB31.
+    - **Faltan:** el código de la columna "SAO 2 n" (São Paulo) en 5C01, y BOCHI04R, que
+      sigue sin aparecer en "Tours 2027".
+    - **Para el diseño de las piezas nuevas:**
+      - Hay anotaciones de variante: "OD019 (menos 1 noche)" y "OD016 (mas 1 noche)".
+      - Hay paquetes que incluyen otro servicio: "(esta incluido en CH10)" para el W Trek.
+      - Hay un **tour dentro de otro tour**: el 5C01 usa CHB31 entero como componente.
+      - Los paquetes de un destino a cargar son unos 16 códigos: OD013, OD016, OD017, OD018,
+        OD019, OD020, OD022, OD025, OD029, OD030, OD031, OD032, OD033, CH10, COMPCH01 y
+        COMPBO20 (OD010A/D ya están cargados). El Excel de proveedores ya está actualizado en
     `Insumos/`: tiene los 2 mails de Beer separados con "/", que el importador lee bien. Falta
     la fila de Tetris.
   - **Próximo paso:** con los códigos completos, `/roadmap` para sumar la pieza (o piezas)
