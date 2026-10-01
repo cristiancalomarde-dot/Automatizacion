@@ -99,7 +99,16 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
       New Rates): OD010A/D, OD013, OD016, OD017, OD018, OD019, OD020, OD022, OD025, OD029,
       OD030, OD031, OD032, OD033, CH10, COMPCH01, COMPBO20 y CHB31.
     - **Faltan:** el código de la columna "SAO 2 n" (São Paulo) en 5C01, y BOCHI04R, que
-      sigue sin aparecer en "Tours 2027".
+      sigue sin aparecer en "Tours 2027". **Acordado con el owner (2026-10-01):**
+      - **São Paulo** (son 2 noches sueltas): el owner crea un paquete componente con código
+        (estilo COMPCH01), con su línea "Accommodation … Booking Supplier", y lo pone en la
+        columna "SAO 2 n".
+      - **BOCHI04R** tiene los mismos proveedores que CHB31, en orden inverso. El owner agrega un
+        bloque mínimo en RutasenBus con la fila de códigos en el orden del viaje (COMPBO20 →
+        OD030) y anota al lado cualquier diferencia (ej. el transfer final a Calama).
+      - **"(menos/mas N noche/s)":** el sistema usa la anotación de texto, no la fórmula de
+        precio, para ajustar las noches que se le piden al proveedor. El owner las escribe
+        siempre con ese formato.
     - **Para el diseño de las piezas nuevas:**
       - Hay anotaciones de variante: "OD019 (menos 1 noche)" y "OD016 (mas 1 noche)".
       - Hay paquetes que incluyen otro servicio: "(esta incluido en CH10)" para el W Trek.
