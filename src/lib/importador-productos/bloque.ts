@@ -136,6 +136,27 @@ export function ubicarBloques(
   return { bloques, noEncontrados };
 }
 
+function soloLetrasYNumeros(texto: string): string {
+  return texto
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "");
+}
+
+/**
+ * En el Excel vigente (.xls, spec M1-04c) la sección 2 no siempre empieza con
+ * "Paquete(s) …": a veces su título repite el código del bloque ("Buenos
+ * Aires, Tango City OD018") o solo el nombre del paquete ("Mendoza Mountains
+ * and Wineries"). Cualquiera de los dos también cierra la sección 1.
+ */
+function esTituloDeSeccion2(texto: string, bloque: BloqueProducto): boolean {
+  if (!texto) return false;
+  if (reCodigo(bloque.codigo).test(texto)) return true;
+  const nombre = soloLetrasYNumeros(bloque.nombre);
+  return nombre.length > 0 && soloLetrasYNumeros(texto) === nombre;
+}
+
 export function leerSeccion1(filas: Filas, bloque: BloqueProducto, rango: RangoDestino): LecturaSeccion1 {
   const servicios: ServicioLeido[] = [];
   const dudosas: LineaDudosa[] = [];
@@ -147,7 +168,7 @@ export function leerSeccion1(filas: Filas, bloque: BloqueProducto, rango: RangoD
   for (let r = rango.desde + 1; r < rango.hasta; r++) {
     const texto = limpiarNombre(celda(filas, r, bloque.columna));
     const linea = clasificarLinea(texto);
-    if (linea.clase === "fin_seccion") {
+    if (linea.clase === "fin_seccion" || esTituloDeSeccion2(texto, bloque)) {
       filaFin = r;
       break;
     }
@@ -229,4 +250,209 @@ export function textoDelBloque(filas: Filas, bloque: BloqueProducto, rango: Rang
     if (celdas.length) lineas.push(celdas.join(" | "));
   }
   return lineas.join("\n");
+}
+
+// ---------------------------------------------------------------------------
+// Excel vigente (.xls, spec M1-04c): ubicar cada paquete por su código en
+// toda la hoja, no solo en la fila de encabezado de su destino.
+// ---------------------------------------------------------------------------
+
+export interface PaqueteAUbicar {
+  codigo: string;
+  /** Destino según la lista de paquetes (data/paquetes-piloto.csv). */
+  destino: string;
+}
+
+export interface BloqueUbicado {
+  bloque: BloqueProducto;
+  /** Desde la fila del título del bloque hasta el próximo destino (columna A). */
+  rango: RangoDestino;
+  /** Celda del título del bloque ("B480"). */
+  celda: string;
+  /** Destino que dice la columna A en la fila del título; null si no dice ninguno. */
+  destinoExcel: string | null;
+}
+
+export interface AparicionCodigo {
+  celda: string;
+  texto: string;
+}
+
+export interface CodigoNoUbicado {
+  codigo: string;
+  motivo: string;
+  /** Celdas donde aparece el código (si aparece). */
+  apariciones: AparicionCodigo[];
+  /** Texto de alrededor de la primera aparición, para que el owner ubique de qué se trata. */
+  contexto: AparicionCodigo[];
+}
+
+export interface CodigoDuplicado {
+  codigo: string;
+  celdaUsada: string;
+  /** Títulos de otros bloques con el mismo código. */
+  otrasCeldas: string[];
+}
+
+export const MOTIVO_CODIGO_AUSENTE = "el código no aparece en la hoja";
+export const MOTIVO_CODIGO_SIN_TITULO =
+  "aparece solo el código, sin el nombre del paquete: no parece el título de un bloque";
+
+function referencia(fila: number, col: number): string {
+  return `${letraColumna(col)}${fila + 1}`;
+}
+
+/** El texto de la celda sin el código: si queda algo con letras, la celda es un título con nombre. */
+function nombreSinCodigo(texto: string, re: RegExp): string {
+  return limpiarNombre(texto.replace(new RegExp(re.source, "g"), " "));
+}
+
+function tieneNombre(texto: string, re: RegExp): boolean {
+  return /\p{L}/u.test(nombreSinCodigo(texto, re));
+}
+
+function esNumero(texto: string): boolean {
+  return /^[-\d\s.,$%]+$/.test(texto);
+}
+
+/** Apariciones del mismo bloque: columnas de la sección 1 + resumen, dentro de las filas del bloque. */
+function mismoBloque(titulo: { r: number; c: number }, otra: { r: number; c: number }): boolean {
+  return (
+    otra.c >= titulo.c &&
+    otra.c < titulo.c + 2 * ANCHO_SECCION_1 &&
+    otra.r >= titulo.r &&
+    otra.r < titulo.r + FILAS_MAXIMAS_BLOQUE
+  );
+}
+
+export function ubicarBloquesEnHoja(
+  filas: Filas,
+  paquetes: PaqueteAUbicar[],
+): { ubicados: BloqueUbicado[]; noUbicados: CodigoNoUbicado[]; duplicados: CodigoDuplicado[] } {
+  const ubicados: BloqueUbicado[] = [];
+  const noUbicados: CodigoNoUbicado[] = [];
+  const duplicados: CodigoDuplicado[] = [];
+
+  for (const { codigo, destino } of paquetes) {
+    const re = reCodigo(codigo);
+    const apariciones: Array<{ r: number; c: number; texto: string }> = [];
+    filas.forEach((fila, r) =>
+      fila.forEach((_, c) => {
+        const texto = celda(filas, r, c);
+        if (re.test(texto)) apariciones.push({ r, c, texto: limpiarNombre(texto) });
+      }),
+    );
+    if (apariciones.length === 0) {
+      noUbicados.push({ codigo, motivo: MOTIVO_CODIGO_AUSENTE, apariciones: [], contexto: [] });
+      continue;
+    }
+
+    const titulos = apariciones.filter((a) => tieneNombre(a.texto, re));
+    if (titulos.length === 0) {
+      const [primera] = apariciones;
+      const contexto: AparicionCodigo[] = [];
+      for (let r = Math.max(0, primera.r - 1); r <= primera.r + 1; r++) {
+        for (let c = Math.max(0, primera.c - 2); c < primera.c; c++) {
+          const texto = limpiarNombre(celda(filas, r, c));
+          if (texto && !esNumero(texto) && !re.test(texto)) contexto.push({ celda: referencia(r, c), texto });
+        }
+      }
+      noUbicados.push({
+        codigo,
+        motivo: MOTIVO_CODIGO_SIN_TITULO,
+        apariciones: apariciones.map((a) => ({ celda: referencia(a.r, a.c), texto: a.texto })),
+        contexto,
+      });
+      continue;
+    }
+
+    const titulo = titulos[0];
+    const delBloque = apariciones.filter((a) => mismoBloque(titulo, a));
+    const otros = titulos.filter((a) => !mismoBloque(titulo, a));
+    if (otros.length) {
+      duplicados.push({
+        codigo,
+        celdaUsada: referencia(titulo.r, titulo.c),
+        otrasCeldas: otros.map((a) => referencia(a.r, a.c)),
+      });
+    }
+
+    // Resumen (sección 3): la primera aparición a la derecha del título. Si
+    // trae solo el código, el nombre y la tabla están en la celda de su izquierda.
+    const resumen = delBloque.filter((a) => a.c > titulo.c).sort((a, b) => a.r - b.r || a.c - b.c)[0];
+    let columnaResumen: number | null = null;
+    let textoNombre = titulo.texto;
+    if (resumen) {
+      columnaResumen = resumen.c;
+      if (tieneNombre(resumen.texto, re)) {
+        textoNombre = resumen.texto;
+      } else {
+        const izquierda = limpiarNombre(celda(filas, resumen.r, resumen.c - 1));
+        if (resumen.c - 1 > titulo.c && izquierda && !esNumero(izquierda)) {
+          columnaResumen = resumen.c - 1;
+          textoNombre = izquierda;
+        }
+      }
+    }
+
+    let columnaFin = titulo.c + ANCHO_SECCION_1;
+    for (let c = titulo.c + 1; c < columnaFin; c++) {
+      const otrosCodigos = (celda(filas, titulo.r, c).match(CODIGO_PRODUCTO) ?? []).filter((x) => x !== codigo);
+      if (otrosCodigos.length) {
+        columnaFin = c;
+        break;
+      }
+    }
+
+    let hasta = filas.length;
+    for (let r = titulo.r + 1; r < filas.length; r++) {
+      if (CODIGO_DESTINO.test(celda(filas, r, 0).trim())) {
+        hasta = r;
+        break;
+      }
+    }
+    const columnaA = celda(filas, titulo.r, 0).trim();
+
+    ubicados.push({
+      bloque: {
+        codigo,
+        nombre: nombreSinCodigo(textoNombre, re),
+        destino,
+        columna: titulo.c,
+        columnaFin,
+        columnaResumen,
+      },
+      rango: { desde: titulo.r, hasta },
+      celda: referencia(titulo.r, titulo.c),
+      destinoExcel: CODIGO_DESTINO.test(columnaA) ? columnaA : null,
+    });
+  }
+
+  return { ubicados, noUbicados, duplicados };
+}
+
+/**
+ * De los niveles que nombra la tabla de precios del resumen, los que tienen
+ * un precio de verdad en la columna de al lado (no "-", 0 ni vacío). Un nivel
+ * con precio pero sin línea "Accommodation … Booking Supplier" es una
+ * contradicción para confirmar; uno sin precio es un nivel vacante (como el
+ * Budget Hotel de OD010A). Spec M1-04c §3 #5.
+ */
+export function nivelesConPrecioEnResumen(
+  filas: Filas,
+  bloque: BloqueProducto,
+  rango: RangoDestino,
+  hastaFila: number | null,
+): string[] {
+  if (bloque.columnaResumen === null) return [];
+  const niveles = new Set<string>();
+  const hasta = Math.min(rango.hasta, hastaFila ?? rango.hasta);
+  for (let r = rango.desde + 1; r < hasta; r++) {
+    const texto = limpiarNombre(celda(filas, r, bloque.columnaResumen));
+    if (!/\b(dbl|sgl|dorm)\b/i.test(texto) || /supplement/i.test(texto)) continue;
+    const nivel = nivelDeAlojamiento(texto);
+    const precio = Number(limpiarNombre(celda(filas, r, bloque.columnaResumen + 1)).replace(/[,$\s]/g, ""));
+    if (nivel && Number.isFinite(precio) && precio > 0) niveles.add(nivel);
+  }
+  return [...niveles];
 }
