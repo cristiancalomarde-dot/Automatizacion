@@ -18,8 +18,10 @@ quién escribirle. Ver `docs/prd.md` M1.
 - **Todo el catálogo completo (2218 filas del Excel de paquetes)** — M1 carga el directorio de
   proveedores completo (es un solo listado, barato de hacer entero) pero el catálogo de
   *productos* se acota a lo que el piloto necesita: los productos simples de Iguazú que ya
-  aparecieron en la muestra de reservas de Kilroy, y los 7 tours compuestos top-seller del riesgo
-  #6 del PRD. El resto del catálogo se carga cuando se sumen más agencias/productos (`prd.md` §5).
+  aparecieron en la muestra de reservas de Kilroy, los 7 tours compuestos top-seller del riesgo
+  #6 del PRD y **los paquetes de un destino que forman esos 7 tours** (agregado 2026-10-02:
+  sin ellos los tours no se pueden armar). No se suman otros destinos (Salta, Bariloche, etc.):
+  el resto del catálogo se carga cuando se sumen más agencias/productos (`prd.md` §5).
 - **Journaway y su hoja propia de productos** — pospuesto (`prd.md` §5).
 - **Costos, márgenes, precios** — no se guardan (`modelo-de-datos.md`).
 
@@ -37,6 +39,32 @@ resuelven. Quedan dos cosas para resolver **antes de construir M1-01** (no antes
    **Resuelto (2026-09-27):** son 5 — `OD010A/B/C/D` + `OD011` (Iguazu Glamping), vendidos por
    Kilroy y TourRadar. La ficha M1-04 ya lo refleja.
 
+**Ampliación del 2026-10-02 (piezas M1-04c y M1-04d).** Al revisar M1-05 apareció un hueco:
+los 7 tours se arman con paquetes de un destino que no estaban cargados (solo Iguazú). Sin
+preguntas bloqueantes: el owner ya dejó todo lo que hacía falta en `Insumos/`:
+- **Los códigos:** cada componente de los 7 tours tiene su código en `RutasenBus2020.xls`, en la
+  fila de arriba de "Net Prices:". Los 19 códigos existen en el Excel de paquetes, incluidos
+  COMPBR10 (São Paulo) y BOCHI04R.
+- **Los itinerarios día por día:** los 4 Word de catálogo ("One / Two / Multi Destination /
+  Unique Tours … .docx") traen las noches por lugar y qué buses son nocturnos. Se usan en M1-05.
+- **Los paquetes a cargar son 17:** OD013, OD016, OD017, OD018, OD019, OD020, OD022, OD025,
+  OD029, OD030, OD031, OD032, OD033, CH10, COMPCH01, COMPBO20 y COMPBR10 (OD010A/D ya están).
+
+**Por qué en dos piezas, y no una por región:** con Iguazú, lo caro no fue el código sino las
+preguntas al owner (equivalencias, niveles, líneas viejas). Por eso **M1-04c hace primero un
+diagnóstico de los 17 paquetes sin escribir en la base** y junta todas las dudas en una sola
+lista. El owner la responde de una vez y **M1-04d carga todo con los datos ya confirmados**. Si
+el diagnóstico muestra que algún destino trae mucho lío, M1-04d se parte por región ahí.
+
+**Abierto, no bloquea este plan:**
+- **La ficha de M1-05 hay que reescribirla antes de construirla:** cambió su fuente. Ahora tiene
+  códigos explícitos en RutasenBus y fechas desde los Word. Además apareció un tour dentro de otro
+  (5C01 usa CHB31 entero), noches de más o de menos ("OD019 (menos 1 noche)"), servicios
+  incluidos en otro paquete ("(esta incluido en CH10)") y tours que se pueden hacer al revés.
+  Se hace con `/specs M1-05` cuando M1-04d esté terminada.
+- **Kilroy no siempre usa nuestros códigos** (`DECISIONS.md` 2026-10-02): las filas
+  "Kilroy = OD0xx" de `codigo_externo` se revisan en M2, no en M1.
+
 **Riesgos (heredados del PRD, aplicados a este plan):**
 
 | Riesgo | Cómo se maneja en M1 |
@@ -44,6 +72,8 @@ resuelven. Quedan dos cosas para resolver **antes de construir M1-01** (no antes
 | Los tours compuestos son más difíciles de catalogar de lo esperado (PRD riesgo #6). | M1-05 es su propia spec, después de probar el importador con productos simples en M1-04. Si un tour top-seller tarda mucho más que un producto simple, se ajusta el modelo ahí, antes de seguir con los otros 6. |
 | El directorio de proveedores no está listo a tiempo (PRD riesgo #3). | Mitigado: tu Excel de proveedores ya tiene ~200 contactos con mail. M1-03 carga eso completo; lo que quede sin mail reconocible entra a la cola "sin mail" de la pantalla de Directorio (M1-06), visible para completar. |
 | El Excel de paquetes es una planilla para humanos (fórmulas, bloques por columna), frágil de leer. | M1-04 y M1-05 usan IA como respaldo para interpretar bloques que las reglas simples no resuelven (`integraciones-ia.md`); lo que no se entiende con confianza queda en la cola de revisión, nunca se inventa. |
+| Los 17 paquetes nuevos traen proveedores con nombres distintos al directorio, o que no están en él (como pasó con Tetris). | M1-04c los lista todos antes de cargar. El loop principal propone las equivalencias (como en M1-04b) y el owner las confirma de una vez. Lo que no tenga proveedor queda "sin resolver" y visible en M1-06, nunca inventado. |
+| Correr las pruebas vuelve a importar los Excel sobre la base real y pisa lo cargado a mano. | Hasta M1-06 todo sale de los Excel y de los archivos de `data/`, así que no se pierde nada. M1-06 decide cómo proteger las correcciones manuales antes de habilitarlas. |
 
 ## 4. Reglas del proyecto que toca este milestone
 
@@ -66,8 +96,10 @@ resuelven. Quedan dos cosas para resolver **antes de construir M1-01** (no antes
 | M1-03 | Importador: directorio de proveedores (desde el Excel de proveedores) | ✅ terminada — 214 proveedores cargados en la base real (182 con mail, 8 WhatsApp, 24 sin mail), 132/132 tests en verde; respaldo de IA probado sin llamada real (falta `ANTHROPIC_API_KEY`) | M1-02 | `docs/sdd/specs/M1-03-importador-proveedores.md` |
 | M1-04 | Importador: productos simples + sus servicios y proveedores (Iguazú, piloto) | ✅ terminada — 5 productos, 29 filas de servicio con niveles y prioridades, 15 códigos externos (incl. TourRadar); 205/205 tests. **Ojo:** 29/29 servicios con proveedor sin resolver (los nombres del Excel no coinciden con el directorio): se resuelve antes de M1-06 | M1-03 | `docs/sdd/specs/M1-04-importador-productos-simples.md` |
 | M1-04b | Equivalencias de proveedores (nombres del Excel ↔ directorio) + niveles confirmados de Iguazú | ✅ terminada — 15 equivalencias; los 29 servicios con Booking Supplier y mail salvo Tetris (sin mail) y Beer (asignado a Tangoinn, a confirmar con ops); 243/243 tests | M1-04 | `docs/sdd/specs/M1-04b-equivalencias-de-proveedores.md` |
-| M1-05 | Importador: tours compuestos + regla de transfers (los 7 top-seller) | ⬜ pendiente | M1-04b | `docs/sdd/specs/M1-05-importador-tours-compuestos.md` |
-| M1-06 | Pantallas de Catálogo y Directorio (listar, buscar, detalle con proveedores/mails, colas "sin mail" / "para revisar") | ⬜ pendiente | M1-04, M1-05 | `docs/sdd/specs/M1-06-pantallas-catalogo-y-directorio.md` |
+| M1-04c | Diagnóstico de los 17 paquetes de un destino de los 7 tours: el importador acepta cualquier lista de códigos y corre en modo "solo leer". Entrega un reporte por paquete (servicios, niveles, proveedores sin emparejar, líneas que no entiende) sin escribir en la base | ⬜ pendiente | M1-04b | `docs/sdd/specs/M1-04c-diagnostico-paquetes-de-los-tours.md` (a escribir con `/specs`) |
+| M1-04d | Carga de los 17 paquetes con sus equivalencias y niveles confirmados por el owner (si el diagnóstico lo pide, se parte por región) | ⬜ pendiente | M1-04c + respuestas del owner al diagnóstico | `docs/sdd/specs/M1-04d-carga-paquetes-de-los-tours.md` (a escribir con `/specs`) |
+| M1-05 | Importador: tours compuestos + regla de transfers (los 7 top-seller). **La ficha se reescribe antes de construir** (ver §3: códigos de RutasenBus, fechas desde los Word, tour dentro de otro tour) | ⬜ pendiente | M1-04d | `docs/sdd/specs/M1-05-importador-tours-compuestos.md` |
+| M1-06 | Pantallas de Catálogo y Directorio (listar, buscar, detalle con proveedores/mails, colas "sin mail" / "para revisar") | ⬜ pendiente | M1-04d, M1-05 | `docs/sdd/specs/M1-06-pantallas-catalogo-y-directorio.md` |
 
 ## 6. Cuándo está terminado el milestone
 
