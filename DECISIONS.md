@@ -6,6 +6,19 @@ Formato mínimo por entrada: qué decisión, por qué, alternativa rechazada, co
 
 # Decisiones de diseño
 
+## 2026-10-02: Códigos de Kilroy: se extrae el nuestro del suyo; Overland por ciudad de inicio
+- **Decisión:** el "Tour code" de Kilroy tiene la forma `HI_ARGENTINA_<nuestro código>-677` o `HI_TRAVEL_<nuestro código>-677` (677 es HI Travel como proveedor de Kilroy). Para emparejar, el sistema saca nuestro código de ahí y normaliza los guiones bajos internos (`ARCH_33` → `ARCH33`, después de quitar el prefijo `W_TREK_`). Excepciones:
+  - `HI_ARGENTINA_OVERLAND_7DAYS-677` no contiene código. Se decide por la ciudad de inicio: si arranca en Calama/San Pedro es **CHB31**; si arranca en La Paz es **BOCHI04R**.
+  - Las reservas en formato viejo, tipo hotel, sin "Tour code" (ej. "HI - Rio de Janeiro Starter Package"), se emparejan por nombre, y si no coinciden van a revisión.
+- **Razón:** el owner observó que casi todos los códigos de Kilroy contienen el nuestro. Una regla más una lista corta de excepciones es más barata que mantener un listado completo.
+- **Alternativa rechazada:** pedirle a Kilroy un listado completo de códigos. Queda como respaldo: el owner va a hablar del Overland con Kilroy.
+- **Constraint:** las excepciones viven como datos (igual que las equivalencias de proveedores), no como condiciones en el código. Las filas actuales "Kilroy = OD0xx" en `codigo_externo` se revisan al construir M2.
+
+## 2026-10-02: Pedidos a proveedores salen desde operations@; Jysk queda fuera del piloto
+- **Decisión:** los pedidos salen desde `operations@hitravel.com.ar` (lo confirma el owner). El piloto de reservas por mail es Kilroy y TourRadar. Jysk casi no reserva productos de catálogo (vende sobre todo a medida), así que no entra en los formatos del MVP.
+- **Razón:** confirmado por el owner al revisar los ejemplos reales.
+- **Constraint:** si aparece una reserva de catálogo de Jysk, va a revisión manual hasta que haya ejemplos para sumar su formato.
+
 ## 2026-09-27: Alojamiento = niveles de precio con opciones en orden de prioridad
 - **Decisión:** cada producto tiene hasta 4 niveles de alojamiento (Hostel / Budget Hotel / Hotel 3* / Hotel 4*; Glamping tiene los suyos). Un nivel puede estar vacante (ej. Budget Hotel en OD010A, sacado por mala calidad) o tener varias opciones. Dentro de un nivel, las opciones separadas por "/" se piden en el orden en que están escritas: solo si la 1ª no tiene lugar se pasa a la 2ª, y así en todo el Excel. En la celda B12 del Excel de paquetes, "El Pueblito 7 Botanica" es un typo de "/".
 - **Razón:** el pax elige el nivel al reservar (TourRadar manda "Hotel La Aldea 4* SGL"), y cada nivel tiene su propio proveedor. Si se mezclan niveles y prioridades, se le pide al proveedor equivocado.
