@@ -173,8 +173,12 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
     - Los **19 códigos usados existen** en el Excel de paquetes (y la mayoría también en
       New Rates): OD010A/D, OD013, OD016, OD017, OD018, OD019, OD020, OD022, OD025, OD029,
       OD030, OD031, OD032, OD033, CH10, COMPCH01, COMPBO20 y CHB31.
-    - **Faltan:** el código de la columna "SAO 2 n" (São Paulo) en 5C01, y BOCHI04R, que
-      sigue sin aparecer en "Tours 2027". **Acordado con el owner (2026-10-01):**
+    - **São Paulo y BOCHI04R, resueltos (2026-10-02):** la columna "SAO 2 n" del 5C01 tiene
+      **COMPBR10** ("Sao Paulo 2 nights": Soos Hotel / Nacional Inn Jaraguá, BS Sooz Hotel /
+      Nacionalinn; va a necesitar su propia equivalencia y su mail, distinto del de Foz).
+      BOCHI04R tiene su bloque al final de RutasenBus (fila ~840) con OD030 + COMPBO20, en el
+      orden de columnas del CHB31. El orden real del viaje sale del Word, no del Excel.
+      Historial de lo acordado: **Acordado con el owner (2026-10-01):**
       - **São Paulo** (son 2 noches sueltas): el owner crea un paquete componente con código
         (estilo COMPCH01), con su línea "Accommodation … Booking Supplier", y lo pone en la
         columna "SAO 2 n".
