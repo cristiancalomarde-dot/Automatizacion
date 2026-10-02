@@ -93,6 +93,54 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
     Chalten Travel OD016. Todavía **sin revisar**. El owner va a sumar más, además de los
     mails de reserva de Kilroy/Jysk.
   - **TourRadar no lleva "recibido" por mail:** se maneja desde el dashboard de TR.
+  - **Revisión de los ejemplos (2026-10-02):** 8 pedidos a proveedores y 6 reservas de Kilroy
+    (Aarhus, Copenhague, Oslo, UK). Todavía no hay ninguno de **Jysk**.
+    - **CORRECCIÓN a M1-04:** Kilroy **no siempre usa nuestros códigos**. Su "Tour code" es,
+      por ejemplo:
+      - `HI_ARGENTINA_OD010D-677` (contiene el nuestro)
+      - `HI_ARGENTINA_ARCH31-677`
+      - `HI_TRAVEL_5C01-677`
+      - `HI_ARGENTINA_W_TREK_ARCH_33-677` (con guion bajo en el medio)
+      - `HI_ARGENTINA_OVERLAND_7DAYS-677` para CHB31 (no contiene nuestro código)
+      - el formato viejo, tipo hotel, que no trae código: "HI - Rio de Janeiro Starter
+        Package (Cabanacopa Hostel)"
+
+      Las filas "Kilroy = OD0xx" de `codigo_externo` son una suposición. Hace falta un listado
+      de códigos Kilroy, como el de TR, o una regla más el listado para las excepciones.
+    - **Kilroy, quién originó la reserva:** el remitente es la casilla de la sucursal
+      (`aarhus@kilroy.dk`, `copenhagen@kilroy.dk`, `oslo@kilroy.no`,
+      `travels@kilroy.co.uk`) o un vendedor "en nombre de" la sucursal. El vendedor firma al
+      final. El cuerpo dice explícitamente "Please reply with your confirmation … on
+      <dirección>" y "Your reply mail should include this message". El "recibido" es un
+      reply a esa dirección citando el mail.
+    - **Kilroy, formato:** "Tour name / Type / Tour code / Start–End city y date / KILROY
+      Reference" y una lista de pasajeros (nombre, nacionalidad, género, fecha de nacimiento,
+      email; pasaporte casi nunca).
+      - "Type" da el nivel y la habitación ("Dormitory - Hostel", "Double Room - Hostel",
+        "Dormitory - Hostel and W-Trek Tent").
+      - Un mail puede traer **2 reservas** (TOUR 1 + TOUR 2) con los mismos pasajeros y la
+        misma referencia.
+      - "Flight info" casi siempre viene vacío.
+    - **Pedidos a proveedores, patrón actual:**
+      - **Remitente:** sale de `operaciones1@` (el operativo) o de `operations@`. CC a
+        `operations@` y `ccalomarde@`.
+      - **Asunto:** "Reserva <titular> x<pax>".
+      - **Cuerpo:** "Buen dia! como estas? Quisiera solicitar la siguiente reserva:"; los
+        servicios numerados si son varios; después los pasajeros y la firma ("Quedo atenta,
+        Saludos!" + Instagram + teléfono de guardia).
+      - **Bloques tipo:**
+        - Alojamiento: nombre, IN, OUT, N PAX, "Hab doble/single/triple con desayuno".
+        - Excursión: servicio con fecha, N PAX, idioma y "Alojamiento: <hotel>" para el
+          pickup.
+        - Paquete de Cuenca: "PKT 105 en Premium regular x IGR/Foz", con TRF IN (bus o vuelo
+          + hora), lado arg, lado bra, TRF OUT y "Tiene alojamiento en: X (reservado aparte)".
+      - Los datos que se piden de cada pasajero varían según el proveedor (pasaporte, fecha de
+        nacimiento, nacionalidad, teléfono; género para el seguro del bike tour). Lo que falta
+        se escribe "pendiente" ("Vuelo pendiente aun", "cuando me pasen pasaportes…").
+      - Los agregados posteriores van como reply en el mismo hilo.
+      - El proveedor contesta con un número de confirmación (ej. IP5048) y una liquidación o
+        voucher adjunto.
+      - Todavía no hay ningún ejemplo en portugués.
   - **Aclaración del owner sobre el "recibido":** es un **reply al mail original**. El
     remitente suele ser el vendedor y a veces la casilla de operaciones de la agencia. No hace
     falta un registro de sucursales ni vendedores: alcanza con responder en el mismo hilo.
