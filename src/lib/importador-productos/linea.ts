@@ -75,11 +75,14 @@ const TIPOS: Array<[RegExp, TipoServicio]> = [
 
 const PREFIJO_SERVICIO =
   /^(accommodations?|excursions?|transfers?|bus(?:es)?|cruises?|ferry|ferries|car rentals?|other services?)\b\s*:?\s*(.*)$/i;
-const ETIQUETA = /^(tarifas|net rates|netos usd|agency net)$/i;
+/** Títulos de la tabla de costos (incluye los del Excel vigente: "Excursions Net Rates", "Net Prices"). */
+const ETIQUETA = /^(tarifas|net rates|net prices|netos usd|agency net|excursions? net (rates|prices)|net (rates|prices) excursions?)$/i;
 const TARIFA = /^(dorm|dbl|sgl|twn|twin|tpl|triple|single|double|matrimonial)\b/i;
 const INCLUYE = /^includes?\s*:/i;
 const FIN_SECCION = /^paquetes?\b/i;
 const BOOKING_SUPPLIER = /\.?\s*booking supplier\b\s*:?\s*/i;
+/** Lo que queda antes del "Booking Supplier" no puede nombrar a "Book…": sería un "Booking Supplier" mal escrito. */
+const BOOKING_MAL_ESCRITO = /\bbook/i;
 const SEPARADOR_OPCIONES = /\s+\/\s*|\s*\/\s+/;
 const SEPARADOR_TRAMOS = /\s*\+\s*/;
 const NOCHES = /^(\d+)\s*nights?\b\s*/i;
@@ -142,6 +145,7 @@ export function clasificarLinea(celda: string): LineaClasificada {
 
   const partes = resto.split(BOOKING_SUPPLIER);
   if (partes.length > 2) return { clase: "dudosa", motivo: "más de un \"Booking Supplier\"" };
+  if (BOOKING_MAL_ESCRITO.test(partes[0])) return { clase: "dudosa", motivo: "\"Booking Supplier\" mal escrito" };
 
   const correcciones: string[] = [];
   if (tipo === "alojamiento") {

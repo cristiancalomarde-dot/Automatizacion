@@ -198,3 +198,22 @@ describe("nivelDeAlojamiento — niveles alternativos que elige el pasajero (ped
     expect(exc.servicios[0].nivel).toBeNull(); // solo los alojamientos tienen nivel
   });
 });
+
+describe("clasificarLinea — formatos del Excel vigente (.xls, spec M1-04c)", () => {
+  it("\"Booking Supplier\" mal escrito → dudosa (nunca se lee la palabra como parte del nombre)", () => {
+    for (const t of [
+      "Transfers: Remis Mendoza. Booking Booking Supplier: Remis Mendoza",
+      "Excursion: Tierra del Fuego National Park half Day. Bookind Supplier: Rumbo Sur",
+      "Accommodation: Hotel Don Raul / La Casa de Don Tomas. Booking Suplier: Hotel Don Raul / La Casa de Don Tomas",
+      "Transfer REL - accommodation. Bookinkg Supplier: All Peninsula",
+    ]) {
+      expect(clasificarLinea(t), t).toEqual({ clase: "dudosa", motivo: "\"Booking Supplier\" mal escrito" });
+    }
+  });
+
+  it("los títulos de la tabla de costos (\"Excursions Net Rates\", \"Net Prices\"…) son etiquetas, no servicios", () => {
+    for (const t of ["Excursions Net Rates", "Net Prices", "Net Prices Excursions", "Net Rates"]) {
+      expect(clasificarLinea(t).clase, t).toBe("etiqueta");
+    }
+  });
+});
