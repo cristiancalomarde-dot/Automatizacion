@@ -1,0 +1,411 @@
+<title>Boceto Pedidos a Proveedores</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400&display=swap">
+<style>
+/* Marca de la app (docs/arquitectura/marca.md). La app es solo tema claro en el MVP. */
+:root{
+  color-scheme:light;
+  --fondo:#F6F7F9; --sup:#FFFFFF; --sup2:#F1F3F5; --borde:#E1E4E8; --borde-ctrl:#C6CCD3;
+  --tx:#1B2430; --tx2:#5A6470; --tx3:#94A0AC; --hover:#F0F2F5;
+  --pri:#3B659B; --pri-h:#2D4D76; --pri-t:#E9EFF7; --foco:#4E7CBA;
+  --ok:#1E7B4F; --ok-f:#E3F2EA; --aviso:#8A5300; --aviso-f:#FBF0DB; --err:#B42318; --err-f:#FBEAE8;
+  --neutro:#3F4C5A; --neutro-f:#EBEEF1;
+  --sombra:0 1px 2px rgba(16,24,40,.06),0 2px 6px rgba(16,24,40,.10);
+  --ui:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Consolas,"Liberation Mono",Menlo,monospace;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--fondo);color:var(--tx);font-family:var(--ui);font-size:14px;line-height:1.5;font-feature-settings:"tnum" 1}
+.mono{font-family:var(--mono);font-size:13px}
+.sec{color:var(--tx2)}
+button,textarea,input{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--foco);outline-offset:2px}
+
+.boceto{background:var(--aviso-f);color:var(--aviso);border-bottom:1px solid #EBD3A6;padding:8px 16px;font-size:13px;font-weight:500;text-align:center}
+
+.top{background:var(--sup);border-bottom:1px solid var(--borde);height:52px;display:flex;align-items:center;justify-content:space-between;padding-inline:16px;gap:12px}
+.marca{display:flex;align-items:center;gap:12px;min-width:0}
+.marca img{height:30px;width:auto;display:block}
+.marca .sep{width:1px;height:22px;background:var(--borde)}
+.marca .prod{font-weight:600;white-space:nowrap}
+.user{display:flex;align-items:center;gap:12px;color:var(--tx2);font-size:13px}
+.btn{height:32px;padding:0 12px;border-radius:4px;border:1px solid var(--borde-ctrl);background:var(--sup);cursor:pointer;font-weight:500;font-size:13px;white-space:nowrap}
+.btn:hover{background:var(--hover)}
+.btn-pri{background:var(--pri);border-color:var(--pri);color:#fff;height:36px;padding:0 16px;font-size:14px}
+.btn-pri:hover{background:var(--pri-h);border-color:var(--pri-h)}
+.btn-pri:disabled{background:var(--tx3);border-color:var(--tx3);cursor:not-allowed}
+.link{background:none;border:0;padding:0;color:var(--pri);cursor:pointer;font-weight:500}
+.link:hover{text-decoration:underline}
+
+.layout{display:grid;grid-template-columns:200px minmax(0,1fr);min-height:calc(100vh - 52px)}
+.lateral{background:var(--sup);border-right:1px solid var(--borde);padding:12px 8px;display:flex;flex-direction:column;gap:2px}
+.lateral a{display:block;padding:8px 12px;border-radius:4px;color:var(--tx2);text-decoration:none;font-weight:500}
+.lateral a.on{background:var(--pri-t);color:var(--pri)}
+.lateral a .c{float:right;font-size:12px;color:var(--tx3)}
+main{padding-block:20px 120px;padding-inline:24px;max-width:1180px;width:100%}
+@media (max-width:820px){.layout{grid-template-columns:1fr}.lateral{display:none}main{padding-inline:16px}.top{padding-inline:16px}.marca .prod{display:none}}
+
+.miga{font-size:13px;color:var(--tx2);display:flex;gap:6px;flex-wrap:wrap}
+.miga a{color:var(--pri);text-decoration:none}
+h1{font-size:20px;line-height:1.3;font-weight:600;margin:6px 0 0}
+h2{font-size:16px;font-weight:600;margin:0}
+
+.chip{display:inline-flex;align-items:center;gap:6px;height:20px;padding:2px 8px;border-radius:999px;font-size:12px;font-weight:600;white-space:nowrap}
+.chip.recibida{background:var(--neutro-f);color:var(--neutro)}
+.chip.aviso{background:var(--aviso-f);color:var(--aviso)}
+.chip.info{background:var(--pri-t);color:var(--pri)}
+.chip.ok{background:var(--ok-f);color:var(--ok)}
+.chip svg{width:12px;height:12px}
+
+.cabecera{background:var(--sup);border:1px solid var(--borde);border-radius:6px;margin-top:16px}
+.cab-top{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:12px 16px;border-bottom:1px solid var(--borde)}
+.datos{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:16px;padding:12px 16px}
+.datos dt{font-size:12px;color:var(--tx2);font-weight:600}
+.datos dd{margin:2px 0 0;font-size:13px}
+@media (max-width:1000px){.datos{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+.nota-flujo{margin-top:16px;font-size:13px;color:var(--tx2);max-width:80ch}
+
+.pedidos{display:grid;gap:16px;margin-top:16px}
+.tarjeta{background:var(--sup);border:1px solid var(--borde);border-radius:6px}
+.tarjeta.fuera{background:var(--sup2)}
+.tarjeta.fuera .cuerpo-t{opacity:.55}
+.t-cab{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--borde)}
+.t-tit{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.t-tit .tipo{font-size:12px;color:var(--tx2)}
+.incluir{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:500;cursor:pointer;user-select:none}
+.sw{position:relative;width:32px;height:18px;flex:none}
+.sw input{position:absolute;inset:0;opacity:0;margin:0;cursor:pointer}
+.sw span{position:absolute;inset:0;border-radius:999px;background:var(--borde-ctrl);transition:background .15s}
+.sw span::after{content:"";position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:#fff;transition:transform .15s}
+.sw input:checked + span{background:var(--pri)}
+.sw input:checked + span::after{transform:translateX(14px)}
+.sw input:focus-visible + span{outline:2px solid var(--foco);outline-offset:2px}
+
+.cuerpo-t{display:grid;grid-template-columns:minmax(0,1fr) 260px;gap:0}
+@media (max-width:900px){.cuerpo-t{grid-template-columns:1fr}}
+.mail{padding:12px 16px;display:grid;gap:8px;min-width:0}
+.campos{display:grid;grid-template-columns:64px minmax(0,1fr);gap:4px 12px;font-size:13px}
+.campos dt{color:var(--tx2);font-weight:600}
+.campos dd{margin:0;overflow-wrap:anywhere}
+.campos .a-conf{color:var(--aviso);font-size:12px;font-weight:500}
+label.lbl{font-size:12px;color:var(--tx2);font-weight:600;margin-top:4px}
+textarea{width:100%;min-height:300px;resize:vertical;border:1px solid var(--borde-ctrl);border-radius:4px;padding:10px 12px;font-family:var(--mono);font-size:13px;line-height:1.5;background:var(--sup)}
+.pend{background:var(--aviso-f)}
+.porque{border-left:1px solid var(--borde);padding:12px 16px;background:var(--sup2);font-size:13px;display:grid;gap:10px;align-content:start}
+@media (max-width:900px){.porque{border-left:0;border-top:1px solid var(--borde)}}
+.porque h3{font-size:12px;font-weight:600;color:var(--tx2);margin:0}
+.porque p{margin:0}
+.porque ul{margin:0;padding-left:16px}
+
+.barra{position:fixed;left:0;right:0;bottom:0;background:var(--sup);border-top:1px solid var(--borde);box-shadow:var(--sombra);padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px));display:flex;justify-content:flex-end;align-items:center;gap:16px;z-index:5}
+.barra .res{font-size:13px;color:var(--tx2)}
+
+.revisar{margin-top:32px;background:var(--sup);border:1px solid var(--borde);border-radius:6px;padding:16px}
+.revisar ol{margin:10px 0 0;padding-left:20px;display:grid;gap:6px;max-width:90ch}
+
+.velo{position:fixed;inset:0;background:rgba(27,36,48,.45);display:grid;place-items:center;padding:16px;z-index:10}
+.modal{background:var(--sup);border-radius:6px;box-shadow:var(--sombra);width:min(520px,100%);padding:20px;display:grid;gap:12px}
+.modal ul{margin:0;padding-left:18px;display:grid;gap:4px}
+.modal .acc{display:flex;justify-content:flex-end;gap:8px;margin-top:4px}
+.resultado{display:grid;gap:6px;margin:0;padding:0;list-style:none}
+.resultado li{display:flex;gap:8px;align-items:center}
+</style>
+
+<div class="boceto">Boceto para validar · datos de ejemplo (pasajeros inventados) · nada se envía de verdad</div>
+
+<header class="top">
+  <div class="marca">
+    <img src="data:image/png;base64,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" alt="HI Travel South America">
+    <span class="sep" aria-hidden="true"></span>
+    <span class="prod">Reservas de Catálogo</span>
+  </div>
+  <div class="user"><span>Valentina</span><button class="btn" type="button">Salir</button></div>
+</header>
+
+<div class="layout">
+  <nav class="lateral" aria-label="Secciones">
+    <a href="#" class="on">Reservas <span class="c">12</span></a>
+    <a href="#">Catálogo</a>
+    <a href="#">Proveedores</a>
+  </nav>
+
+  <main>
+    <div class="miga"><a href="#">Reservas</a><span>›</span><a href="#">DK1500123/abcd</a><span>›</span><span>Revisar y enviar</span></div>
+    <h1>Revisar y enviar pedidos</h1>
+
+    <section class="cabecera" aria-label="Datos de la reserva">
+      <div class="cab-top">
+        <span class="chip recibida">recibida</span>
+        <span class="chip aviso"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M8 2 1.5 13.5h13Z"/><path d="M8 6.5v3M8 11.5v.01"/></svg>vuelo por confirmar</span>
+        <span class="chip aviso"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M8 2 1.5 13.5h13Z"/><path d="M8 6.5v3M8 11.5v.01"/></svg>pasaportes pendientes</span>
+      </div>
+      <dl class="datos">
+        <div><dt>Agencia</dt><dd>Kilroy Aarhus<br><span class="sec">vendedora: Carla F.</span></dd></div>
+        <div><dt>Producto</dt><dd><span class="mono">OD010D</span><br>Iguazu Falls Combined (2 Nts BRA + 1 Nt ARG)</dd></div>
+        <div><dt>Nivel</dt><dd>Hostel · habitación doble<br><span class="sec">de «Type: Double Room - Hostel»</span></dd></div>
+        <div><dt>Fechas</dt><dd>6 – 9 sep 2026<br><span class="sec">3 noches</span></dd></div>
+        <div><dt>Pasajeros</dt><dd>2 adultos<br><span class="sec">Dinamarca</span></dd></div>
+      </dl>
+    </section>
+
+    <p class="nota-flujo">El sistema armó un mail por cada proveedor del nivel Hostel de OD010D y la respuesta de «recibido» a la agencia. Podés editar cualquier texto o sacar un mail con el interruptor. Nada sale hasta que confirmes.</p>
+
+    <div class="pedidos" id="pedidos">
+
+      <!-- Recibido a la agencia -->
+      <article class="tarjeta" data-nombre="Kilroy Aarhus (recibido)" data-dest="aarhus@kilroy.dk">
+        <div class="t-cab">
+          <div class="t-tit"><h2>Kilroy Aarhus</h2><span class="chip info">recibido a la agencia</span><span class="tipo">reply en el mismo hilo</span></div>
+          <label class="incluir"><span class="sw"><input type="checkbox" id="inc-0" checked><span></span></span>Incluir este mail</label>
+        </div>
+        <div class="cuerpo-t">
+          <div class="mail">
+            <dl class="campos">
+              <dt>Desde</dt><dd>sales@hitravel.com.ar <span class="a-conf">· ¿o operations@? a confirmar</span></dd>
+              <dt>Para</dt><dd>aarhus@kilroy.dk</dd>
+              <dt>Asunto</dt><dd>RE: DK1500123/abcd - Iguazu Falls Combined (2 nights in Brazil + 1 night in Argentina) - KILROY booking request</dd>
+            </dl>
+            <label class="lbl" for="txt-0">Cuerpo</label>
+            <textarea id="txt-0" style="min-height:250px">Hi Carla,
+
+Thank you for booking DK1500123/abcd – Iguazu Falls Combined (2 nights in Brazil + 1 night in Argentina), 06–09 Sep 2026, 2 pax.
+
+We have received it and we are now booking the services with our suppliers. We will send you the confirmation as soon as possible.
+
+Kind regards,
+Hi Travel South America
+On duty phone: +54 9 11 5588-9443
+www.hitravel.com.ar
+
+&gt; From: aarhus@kilroy.dk
+&gt; NEW BOOKING
+&gt; Tour name: Iguazu Falls Combined (2 nights in Brazil 1 night in Argentina)
+&gt; …(mensaje original completo, como pide Kilroy)</textarea>
+          </div>
+          <aside class="porque">
+            <h3>Por qué este mail</h3>
+            <p>El mail de Kilroy dice: «Please reply with your confirmation … on aarhus@kilroy.dk» y «Your reply mail should include this message».</p>
+            <p>Sale como respuesta al mail original, citándolo.</p>
+          </aside>
+        </div>
+      </article>
+
+      <!-- Bambu -->
+      <article class="tarjeta" data-nombre="Bambu Hostel" data-dest="hostelsbambu@gmail.com">
+        <div class="t-cab">
+          <div class="t-tit"><h2>Bambu Hostel</h2><span class="tipo">alojamiento · Foz do Iguaçu · en portugués</span></div>
+          <label class="incluir"><span class="sw"><input type="checkbox" id="inc-1" checked><span></span></span>Incluir este pedido</label>
+        </div>
+        <div class="cuerpo-t">
+          <div class="mail">
+            <dl class="campos">
+              <dt>Desde</dt><dd>operations@hitravel.com.ar</dd>
+              <dt>Para</dt><dd>hostelsbambu@gmail.com</dd>
+              <dt>CC</dt><dd>operations@hitravel.com.ar · ccalomarde@hitravel.com.ar</dd>
+              <dt>Asunto</dt><dd>Reserva Julia Holm x2</dd>
+            </dl>
+            <label class="lbl" for="txt-1">Cuerpo</label>
+            <textarea id="txt-1">Bom dia! Tudo bem?
+Gostaria de solicitar a seguinte reserva:
+
+BAMBU HOSTEL FOZ
+IN: 6 set 2026
+OUT: 8 set 2026
+2 PAX
+Quarto duplo com café da manhã
+
+PAX 1: Julia Holm
+Nacionalidade: Dinamarca
+Data de nascimento: 30/12/2003
+Passaporte: pendente
+
+PAX 2: Astrid Lund
+Nacionalidade: Dinamarca
+Data de nascimento: 19/01/2005
+Passaporte: pendente
+
+Fico no aguardo,
+Abraços!
+
+Hi Travel South America
+On duty phone: +54 9 11 5588-9443
+www.hitravel.com.ar</textarea>
+          </div>
+          <aside class="porque">
+            <h3>Por qué este proveedor</h3>
+            <p>Nivel <b>Hostel</b> de OD010D, tramo 1: 2 noches en Foz.</p>
+            <p>Opción única de ese tramo (no hay 2ª opción).</p>
+            <h3>Datos pendientes</h3>
+            <ul><li>Pasaportes: no vienen en el mail de Kilroy.</li></ul>
+          </aside>
+        </div>
+      </article>
+
+      <!-- Beer -->
+      <article class="tarjeta" data-nombre="Beer Hotel (Tangoinn)" data-dest="beerhotel@tangoinn.com, beerhotel@cervezaholy.com">
+        <div class="t-cab">
+          <div class="t-tit"><h2>Beer Hotel</h2><span class="tipo">alojamiento · Puerto Iguazú</span></div>
+          <label class="incluir"><span class="sw"><input type="checkbox" id="inc-2" checked><span></span></span>Incluir este pedido</label>
+        </div>
+        <div class="cuerpo-t">
+          <div class="mail">
+            <dl class="campos">
+              <dt>Desde</dt><dd>operations@hitravel.com.ar</dd>
+              <dt>Para</dt><dd>beerhotel@tangoinn.com · beerhotel@cervezaholy.com</dd>
+              <dt>CC</dt><dd>operations@hitravel.com.ar · ccalomarde@hitravel.com.ar</dd>
+              <dt>Asunto</dt><dd>Reserva Julia Holm x2</dd>
+            </dl>
+            <label class="lbl" for="txt-2">Cuerpo</label>
+            <textarea id="txt-2">Buen dia! como estas?
+Quisiera solicitar la siguiente reserva:
+
+BEER HOTEL
+IN: 8 Sep 2026
+OUT: 9 Sep 2026
+2 PAX
+Hab doble con desayuno
+
+PAX 1: Julia Holm
+Nationality: Denmark
+Date of Birth: 30/12/2003
+Passport number: pendiente
+
+PAX 2: Astrid Lund
+Nationality: Denmark
+Date of Birth: 19/01/2005
+Passport number: pendiente
+
+Quedo atenta,
+Saludos!
+
+Hi Travel South America
+On duty phone: +54 9 11 5588-9443
+www.hitravel.com.ar</textarea>
+          </div>
+          <aside class="porque">
+            <h3>Por qué este proveedor</h3>
+            <p>Nivel <b>Hostel</b> de OD010D, tramo 2: 1 noche en Puerto Iguazú.</p>
+            <p>Va a los 2 mails del directorio, porque nunca se sabe desde cuál responden.</p>
+          </aside>
+        </div>
+      </article>
+
+      <!-- Cuenca -->
+      <article class="tarjeta" data-nombre="Cuenca del Plata" data-dest="reservas3@cuencadelplata.com">
+        <div class="t-cab">
+          <div class="t-tit"><h2>Cuenca del Plata</h2><span class="tipo">traslados y excursiones · Paquete 105</span></div>
+          <label class="incluir"><span class="sw"><input type="checkbox" id="inc-3" checked><span></span></span>Incluir este pedido</label>
+        </div>
+        <div class="cuerpo-t">
+          <div class="mail">
+            <dl class="campos">
+              <dt>Desde</dt><dd>operations@hitravel.com.ar</dd>
+              <dt>Para</dt><dd>reservas3@cuencadelplata.com</dd>
+              <dt>CC</dt><dd>operations@hitravel.com.ar · ccalomarde@hitravel.com.ar</dd>
+              <dt>Asunto</dt><dd>Reserva Julia Holm x2</dd>
+            </dl>
+            <label class="lbl" for="txt-3">Cuerpo</label>
+            <textarea id="txt-3">Buen dia! como estas?
+Quisiera solicitar la siguiente reserva:
+
+1)PKT 105 en Premium regular x Foz
+
+TRF IN, Regular: 6 Sep 2026
+Llegada: por confirmar (vuelo o bus)
+Lado Bra, Regular en INGLES: 7 Sep 2026
+Lado Arg, Regular en INGLES: 8 Sep 2026
+TRF OUT, Regular: 9 Sep 2026
+Vuelo: por confirmar
+
+Tiene alojamiento en: Bambu Hostel Foz (6 al 8 Sep) y Beer Hotel Puerto Iguazu (8 al 9 Sep), reservados aparte.
+
+PAX 1: Julia Holm
+Nationality: Denmark
+Date of Birth: 30/12/2003
+
+PAX 2: Astrid Lund
+Nationality: Denmark
+Date of Birth: 19/01/2005
+
+Quedo atenta,
+Saludos!
+
+Hi Travel South America
+On duty phone: +54 9 11 5588-9443
+www.hitravel.com.ar</textarea>
+          </div>
+          <aside class="porque">
+            <h3>Por qué este proveedor</h3>
+            <p>Booking Supplier del Paquete 105 (traslados + lado argentino y brasileño) de OD010D.</p>
+            <h3>Datos pendientes</h3>
+            <ul><li>Llegada (vuelo o bus) y vuelo de salida: Kilroy no los mandó.</li></ul>
+          </aside>
+        </div>
+      </article>
+    </div>
+
+    <section class="revisar" aria-labelledby="rev-t">
+      <h2 id="rev-t">Qué te pido que revises</h2>
+      <ol>
+        <li>¿El saludo, la forma de pedir y la firma son los que usan hoy? ¿Falta algo (Instagram, nombre del operativo)?</li>
+        <li>¿Los datos de pasajeros que se le mandan a cada proveedor alcanzan, o algún proveedor pide otros (por ejemplo, género para un seguro)?</li>
+        <li>El mail a Bambu está en portugués: ¿se escribe así, o les escriben en español?</li>
+        <li>Cuenca del Plata: ¿el cambio de hostel de Foz a Puerto Iguazú el 8/9 se pide a ellos o va aparte?</li>
+        <li>El «recibido» a Kilroy: ¿sale desde sales@ (donde llegó la reserva) o desde operations@? ¿Así está bien el texto?</li>
+      </ol>
+    </section>
+  </main>
+</div>
+
+<div class="barra">
+  <span class="res" id="res">4 mails listos · 0 fuera</span>
+  <button class="btn-pri btn" type="button" id="enviar">Enviar 4 mails</button>
+</div>
+
+<div class="velo" id="velo" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="m-t">
+    <h2 id="m-t">¿Confirmás el envío?</h2>
+    <div id="m-cuerpo"></div>
+    <div class="acc" id="m-acc"></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var cards=[].slice.call(document.querySelectorAll('.tarjeta'));
+  var btn=document.getElementById('enviar'),res=document.getElementById('res');
+  var velo=document.getElementById('velo'),mc=document.getElementById('m-cuerpo'),ma=document.getElementById('m-acc');
+  function incluidas(){return cards.filter(function(c){return c.querySelector('input[type=checkbox]').checked})}
+  function actualizar(){
+    var n=incluidas().length,f=cards.length-n;
+    cards.forEach(function(c){c.classList.toggle('fuera',!c.querySelector('input[type=checkbox]').checked)});
+    btn.textContent=n?('Enviar '+n+(n===1?' mail':' mails')):'Nada para enviar';
+    btn.disabled=!n;
+    res.textContent=n+(n===1?' mail listo':' mails listos')+' · '+f+' fuera';
+  }
+  cards.forEach(function(c){c.querySelector('input[type=checkbox]').addEventListener('change',actualizar)});
+  function el(t,txt){var e=document.createElement(t);if(txt!=null)e.textContent=txt;return e}
+  function cerrar(){velo.hidden=true;btn.focus()}
+  btn.addEventListener('click',function(){
+    var lista=incluidas();mc.innerHTML='';ma.innerHTML='';
+    mc.appendChild(el('p','Se van a enviar '+lista.length+(lista.length===1?' mail:':' mails:')));
+    var ul=el('ul');lista.forEach(function(c){var li=el('li');var b=el('b',c.dataset.nombre);li.appendChild(b);li.appendChild(document.createTextNode(' — '+c.dataset.dest));ul.appendChild(li)});mc.appendChild(ul);
+    var no=el('button','Volver');no.className='btn';no.type='button';no.onclick=cerrar;
+    var si=el('button','Confirmar envío');si.className='btn btn-pri';si.type='button';
+    si.onclick=function(){
+      mc.innerHTML='';ma.innerHTML='';document.getElementById('m-t').textContent='Resultado del envío';
+      var r=el('ul');r.className='resultado';
+      lista.forEach(function(c){var li=el('li');var ch=el('span','enviado');ch.className='chip ok';li.appendChild(ch);li.appendChild(document.createTextNode(c.dataset.nombre));r.appendChild(li)});
+      mc.appendChild(r);mc.appendChild(el('p','En el boceto no sale nada. En la app real, la reserva pasa a «pedido a proveedor».')).className='sec';
+      var ok=el('button','Volver a la reserva');ok.className='btn btn-pri';ok.type='button';ok.onclick=function(){document.getElementById('m-t').textContent='¿Confirmás el envío?';cerrar()};
+      ma.appendChild(ok);ok.focus();
+    };
+    ma.appendChild(no);ma.appendChild(si);velo.hidden=false;si.focus();
+  });
+  velo.addEventListener('click',function(e){if(e.target===velo)cerrar()});
+  document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!velo.hidden)cerrar()});
+  actualizar();
+})();
+</script>

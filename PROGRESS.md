@@ -79,6 +79,124 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
     en portugués, un hostel), como PDF. Con eso se arma un **boceto visual** de la pantalla
     "Revisar y enviar pedidos" (user-flow §5.4) con un caso real de Iguazú, para validar el
     formato del mail antes de M3.
+  - **Pedido nuevo del owner (2026-10-01), cambio de alcance pendiente de decidir:** al
+    recibir una reserva (Kilroy, Jysk, TR), saber **quién la originó** (sucursal / vendedor,
+    ej. DK tiene muchas) para mandarle un "recibido". Hoy el modelo guarda agencia +
+    remitente + booking_id, no sucursal ni vendedor, y el PRD §5 deja **fuera** cualquier
+    respuesta a la agencia. Propuesta: extraer el originador en M2 y dejar el "recibido" como
+    borrador con aprobación (#4), en M3 o al final de M2. Falta que el owner deje en
+    `Insumos/` 2-3 mails de Kilroy/Jysk de sucursales distintas y aclare quién manda hoy ese
+    "recibido" y a qué dirección. Cuando se decida: actualizar `prd.md` y `DECISIONS.md`.
+  - **Ejemplos de pedidos a proveedores (2026-10-01):** 8 `.docx` en `Insumos/` ("Pedido
+    Proveedor - <proveedor> <código>"): Cuenca del Plata OD010A y OD010B, Beer Hostel OD010A,
+    Milhouse, Grupo Summa y La Bicicleta Naranja OD018, Rancho Grande + Chalten Travel OD033 y
+    Chalten Travel OD016. Todavía **sin revisar**. El owner va a sumar más, además de los
+    mails de reserva de Kilroy/Jysk.
+  - **TourRadar no lleva "recibido" por mail:** se maneja desde el dashboard de TR.
+  - **Boceto "Revisar y enviar pedidos" publicado (2026-10-02):**
+    https://claude.ai/artifact/AKMKXxY6wRxAFY4qhEwp48 (fuente:
+    `docs/arquitectura/bocetos/revisar-y-enviar-pedidos.html`, con pasajeros inventados).
+    Caso: Kilroy OD010D, nivel Hostel, con 4 mails: el recibido a Kilroy, Bambu en portugués,
+    Beer a sus 2 mails y Cuenca Paquete 105. Espera las 5 respuestas del owner que lista el
+    propio boceto.
+  - **Encadenado de fechas en tours largos (M1-05) — resuelto con los Word de catálogo
+    (2026-10-02).** El owner subió 4 Word ("One / Two / Multi Destination / Unique Tours 1 Jun
+    2026 - 31 Dec 2027.docx", fuente de Wetu) con todos los tours, menos Easter Island.
+    - Cada tour trae el código en el título ("ARCH31- Patagonia Highlights (8 nights)"), un
+      itinerario "DAY N: lugar" y un "What's Included" con "N nights Accommodation in X" y
+      "Night Bus from A to B".
+    - Ejemplo, 5C01: "overnight bus" de São Paulo a Foz (17 h), de Iguazú a Buenos Aires, de
+      Buenos Aires a Mendoza y de Valparaíso a Calama (20 h).
+    - **Están los 7 del piloto**, incluido **BOCHI04R** ("OVERLAND UYUNI TO SAN PEDRO DE
+      ATACAMA BEGINNING IN LA PAZ (7 DAYS)").
+    - Ya **no hace falta** la columna "Nocturno sí/no" en la hoja de buses.
+    - **Cómo se usa:** el Word da la secuencia de días, las noches y los buses nocturnos; el
+      Excel da los códigos y los proveedores. Si los dos no coinciden, el tour va a revisión.
+      El resultado se controla contra las fechas de inicio y fin que manda la agencia.
+    - Ojo: algunos tours dicen "Tour can be done vice versa".
+  - **Revisión de los ejemplos (2026-10-02):** 8 pedidos a proveedores y 6 reservas de Kilroy
+    (Aarhus, Copenhague, Oslo, UK). Todavía no hay ninguno de **Jysk**.
+    - **CORRECCIÓN a M1-04:** Kilroy **no siempre usa nuestros códigos**. Su "Tour code" es,
+      por ejemplo:
+      - `HI_ARGENTINA_OD010D-677` (contiene el nuestro)
+      - `HI_ARGENTINA_ARCH31-677`
+      - `HI_TRAVEL_5C01-677`
+      - `HI_ARGENTINA_W_TREK_ARCH_33-677` (con guion bajo en el medio)
+      - `HI_ARGENTINA_OVERLAND_7DAYS-677` para CHB31 (no contiene nuestro código)
+      - el formato viejo, tipo hotel, que no trae código: "HI - Rio de Janeiro Starter
+        Package (Cabanacopa Hostel)"
+
+      Las filas "Kilroy = OD0xx" de `codigo_externo` son una suposición. Hace falta un listado
+      de códigos Kilroy, como el de TR, o una regla más el listado para las excepciones.
+    - **Kilroy, quién originó la reserva:** el remitente es la casilla de la sucursal
+      (`aarhus@kilroy.dk`, `copenhagen@kilroy.dk`, `oslo@kilroy.no`,
+      `travels@kilroy.co.uk`) o un vendedor "en nombre de" la sucursal. El vendedor firma al
+      final. El cuerpo dice explícitamente "Please reply with your confirmation … on
+      <dirección>" y "Your reply mail should include this message". El "recibido" es un
+      reply a esa dirección citando el mail.
+    - **Kilroy, formato:** "Tour name / Type / Tour code / Start–End city y date / KILROY
+      Reference" y una lista de pasajeros (nombre, nacionalidad, género, fecha de nacimiento,
+      email; pasaporte casi nunca).
+      - "Type" da el nivel y la habitación ("Dormitory - Hostel", "Double Room - Hostel",
+        "Dormitory - Hostel and W-Trek Tent").
+      - Un mail puede traer **2 reservas** (TOUR 1 + TOUR 2) con los mismos pasajeros y la
+        misma referencia.
+      - "Flight info" casi siempre viene vacío.
+    - **Pedidos a proveedores, patrón actual:**
+      - **Remitente:** sale de `operaciones1@` (el operativo) o de `operations@`. CC a
+        `operations@` y `ccalomarde@`.
+      - **Asunto:** "Reserva <titular> x<pax>".
+      - **Cuerpo:** "Buen dia! como estas? Quisiera solicitar la siguiente reserva:"; los
+        servicios numerados si son varios; después los pasajeros y la firma ("Quedo atenta,
+        Saludos!" + Instagram + teléfono de guardia).
+      - **Bloques tipo:**
+        - Alojamiento: nombre, IN, OUT, N PAX, "Hab doble/single/triple con desayuno".
+        - Excursión: servicio con fecha, N PAX, idioma y "Alojamiento: <hotel>" para el
+          pickup.
+        - Paquete de Cuenca: "PKT 105 en Premium regular x IGR/Foz", con TRF IN (bus o vuelo
+          + hora), lado arg, lado bra, TRF OUT y "Tiene alojamiento en: X (reservado aparte)".
+      - Los datos que se piden de cada pasajero varían según el proveedor (pasaporte, fecha de
+        nacimiento, nacionalidad, teléfono; género para el seguro del bike tour). Lo que falta
+        se escribe "pendiente" ("Vuelo pendiente aun", "cuando me pasen pasaportes…").
+      - Los agregados posteriores van como reply en el mismo hilo.
+      - El proveedor contesta con un número de confirmación (ej. IP5048) y una liquidación o
+        voucher adjunto.
+      - Todavía no hay ningún ejemplo en portugués.
+  - **Aclaración del owner sobre el "recibido":** es un **reply al mail original**. El
+    remitente suele ser el vendedor y a veces la casilla de operaciones de la agencia. No hace
+    falta un registro de sucursales ni vendedores: alcanza con responder en el mismo hilo.
+  - **Excel con códigos, ya en `Insumos/` (2026-10-01), revisados:**
+    `Construccion de Paquetes 2019 con 3 y 4 estrellas.xls`, `New 2019 Rates.xlsx` y
+    `RutasenBus2020.xls`. Son los nuevos; los "para IA" quedan como versiones viejas.
+    - En RutasenBus, cada tour tiene una **fila de códigos justo arriba de "Net Prices:"**, con
+      el código sobre la columna de cada paquete. Las columnas de bus quedan vacías.
+    - Los **19 códigos usados existen** en el Excel de paquetes (y la mayoría también en
+      New Rates): OD010A/D, OD013, OD016, OD017, OD018, OD019, OD020, OD022, OD025, OD029,
+      OD030, OD031, OD032, OD033, CH10, COMPCH01, COMPBO20 y CHB31.
+    - **São Paulo y BOCHI04R, resueltos (2026-10-02):** la columna "SAO 2 n" del 5C01 tiene
+      **COMPBR10** ("Sao Paulo 2 nights": Soos Hotel / Nacional Inn Jaraguá, BS Sooz Hotel /
+      Nacionalinn; va a necesitar su propia equivalencia y su mail, distinto del de Foz).
+      BOCHI04R tiene su bloque al final de RutasenBus (fila ~840) con OD030 + COMPBO20, en el
+      orden de columnas del CHB31. El orden real del viaje sale del Word, no del Excel.
+      Historial de lo acordado: **Acordado con el owner (2026-10-01):**
+      - **São Paulo** (son 2 noches sueltas): el owner crea un paquete componente con código
+        (estilo COMPCH01), con su línea "Accommodation … Booking Supplier", y lo pone en la
+        columna "SAO 2 n".
+      - **BOCHI04R** tiene los mismos proveedores que CHB31, en orden inverso. El owner agrega un
+        bloque mínimo en RutasenBus con la fila de códigos en el orden del viaje (COMPBO20 →
+        OD030) y anota al lado cualquier diferencia (ej. el transfer final a Calama).
+      - **"(menos/mas N noche/s)":** el sistema usa la anotación de texto, no la fórmula de
+        precio, para ajustar las noches que se le piden al proveedor. El owner las escribe
+        siempre con ese formato.
+    - **Para el diseño de las piezas nuevas:**
+      - Hay anotaciones de variante: "OD019 (menos 1 noche)" y "OD016 (mas 1 noche)".
+      - Hay paquetes que incluyen otro servicio: "(esta incluido en CH10)" para el W Trek.
+      - Hay un **tour dentro de otro tour**: el 5C01 usa CHB31 entero como componente.
+      - Los paquetes de un destino a cargar son unos 16 códigos: OD013, OD016, OD017, OD018,
+        OD019, OD020, OD022, OD025, OD029, OD030, OD031, OD032, OD033, CH10, COMPCH01 y
+        COMPBO20 (OD010A/D ya están cargados). El Excel de proveedores ya está actualizado en
+    `Insumos/`: tiene los 2 mails de Beer separados con "/", que el importador lee bien. Falta
+    la fila de Tetris.
   - **Próximo paso:** con los códigos completos, `/roadmap` para sumar la pieza (o piezas)
     nuevas al plan de M1 y escribir sus fichas. Después, M1-05.
   - `marca.md` actualizado con los colores del logo real. El logo entra en M1-06 (requisito
