@@ -6,7 +6,9 @@ import {
   textoDelBloque,
   ubicarBloques,
   ubicarDestino,
+  type BloqueProducto,
   type Filas,
+  type RangoDestino,
   type LineaDudosa,
   type CorreccionAplicada,
   type NivelSinProveedor,
@@ -190,12 +192,34 @@ export async function planificarProductos(opciones: {
   }
 
   const { bloques, noEncontrados } = ubicarBloques(filas, rango, codigos);
+  const planeados = await planificarBloques({
+    filas,
+    bloques: bloques.map((bloque) => ({ bloque, rango })),
+    interpretarIA,
+    nivelesConfirmados,
+  });
+  return { destinoEncontrado: true, codigosNoEncontrados: noEncontrados, ...planeados };
+}
+
+/**
+ * Lo mismo que `planificarProductos` sobre bloques ya ubicados (cada uno con
+ * su rango de filas). Lo usa el diagnóstico de M1-04c, que ubica los paquetes
+ * por su código en toda la hoja.
+ */
+export async function planificarBloques(opciones: {
+  filas: Filas;
+  bloques: Array<{ bloque: BloqueProducto; rango: RangoDestino }>;
+  interpretarIA: InterpretarBloque | null;
+  nivelesConfirmados?: NivelConfirmado[];
+}): Promise<Pick<Plan, "productos" | "bloquesQueNecesitanIA" | "lineasDescartadasPorIA">> {
+  const { filas, interpretarIA } = opciones;
+  const nivelesConfirmados = opciones.nivelesConfirmados ?? [];
   const productos: ProductoPlaneado[] = [];
   const bloquesQueNecesitanIA: string[] = [];
   const lineasDescartadasPorIA: Plan["lineasDescartadasPorIA"] = [];
 
   // Secuencial a propósito: cada llamada de IA pasa por el techo de gasto de a una.
-  for (const bloque of bloques) {
+  for (const { bloque, rango } of opciones.bloques) {
     const leida = leerSeccion1(filas, bloque, rango);
     // Niveles confirmados antes de la IA: las líneas de un nivel no ofrecido
     // ni se le preguntan (M1-04b).
@@ -297,11 +321,5 @@ export async function planificarProductos(opciones: {
     productos.push(producto);
   }
 
-  return {
-    destinoEncontrado: true,
-    productos,
-    codigosNoEncontrados: noEncontrados,
-    bloquesQueNecesitanIA,
-    lineasDescartadasPorIA,
-  };
+  return { productos, bloquesQueNecesitanIA, lineasDescartadasPorIA };
 }
