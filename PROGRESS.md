@@ -93,6 +93,18 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
     Chalten Travel OD016. Todavía **sin revisar**. El owner va a sumar más, además de los
     mails de reserva de Kilroy/Jysk.
   - **TourRadar no lleva "recibido" por mail:** se maneja desde el dashboard de TR.
+  - **Boceto "Revisar y enviar pedidos" publicado (2026-10-02):**
+    https://claude.ai/artifact/AKMKXxY6wRxAFY4qhEwp48 (fuente:
+    `docs/arquitectura/bocetos/revisar-y-enviar-pedidos.html`, con pasajeros inventados).
+    Caso: Kilroy OD010D, nivel Hostel, con 4 mails: el recibido a Kilroy, Bambu en portugués,
+    Beer a sus 2 mails y Cuenca Paquete 105. Espera las 5 respuestas del owner que lista el
+    propio boceto.
+  - **Pregunta abierta para M1-05 (owner, 2026-10-02): cómo encadenar las fechas** de los
+    paquetes dentro de un tour largo y cómo saber si un bus es nocturno o diurno. Hoy no hay
+    un dato estructurado: "Buses para Tours" tiene rutas, precios y a veces días ("RGL-USH
+    lu-mie-vie"), pero no horarios ni si es nocturno. Propuesta: una columna "Nocturno sí/no"
+    (y la duración en días) por ruta en esa hoja, mantenida por el owner. Se cruza con las
+    noches de cada paquete y se controla contra las fechas de inicio y fin que manda la agencia.
   - **Revisión de los ejemplos (2026-10-02):** 8 pedidos a proveedores y 6 reservas de Kilroy
     (Aarhus, Copenhague, Oslo, UK). Todavía no hay ninguno de **Jysk**.
     - **CORRECCIÓN a M1-04:** Kilroy **no siempre usa nuestros códigos**. Su "Tour code" es,
