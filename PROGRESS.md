@@ -99,12 +99,21 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
     Caso: Kilroy OD010D, nivel Hostel, con 4 mails: el recibido a Kilroy, Bambu en portugués,
     Beer a sus 2 mails y Cuenca Paquete 105. Espera las 5 respuestas del owner que lista el
     propio boceto.
-  - **Pregunta abierta para M1-05 (owner, 2026-10-02): cómo encadenar las fechas** de los
-    paquetes dentro de un tour largo y cómo saber si un bus es nocturno o diurno. Hoy no hay
-    un dato estructurado: "Buses para Tours" tiene rutas, precios y a veces días ("RGL-USH
-    lu-mie-vie"), pero no horarios ni si es nocturno. Propuesta: una columna "Nocturno sí/no"
-    (y la duración en días) por ruta en esa hoja, mantenida por el owner. Se cruza con las
-    noches de cada paquete y se controla contra las fechas de inicio y fin que manda la agencia.
+  - **Encadenado de fechas en tours largos (M1-05) — resuelto con los Word de catálogo
+    (2026-10-02).** El owner subió 4 Word ("One / Two / Multi Destination / Unique Tours 1 Jun
+    2026 - 31 Dec 2027.docx", fuente de Wetu) con todos los tours, menos Easter Island.
+    - Cada tour trae el código en el título ("ARCH31- Patagonia Highlights (8 nights)"), un
+      itinerario "DAY N: lugar" y un "What's Included" con "N nights Accommodation in X" y
+      "Night Bus from A to B".
+    - Ejemplo, 5C01: "overnight bus" de São Paulo a Foz (17 h), de Iguazú a Buenos Aires, de
+      Buenos Aires a Mendoza y de Valparaíso a Calama (20 h).
+    - **Están los 7 del piloto**, incluido **BOCHI04R** ("OVERLAND UYUNI TO SAN PEDRO DE
+      ATACAMA BEGINNING IN LA PAZ (7 DAYS)").
+    - Ya **no hace falta** la columna "Nocturno sí/no" en la hoja de buses.
+    - **Cómo se usa:** el Word da la secuencia de días, las noches y los buses nocturnos; el
+      Excel da los códigos y los proveedores. Si los dos no coinciden, el tour va a revisión.
+      El resultado se controla contra las fechas de inicio y fin que manda la agencia.
+    - Ojo: algunos tours dicen "Tour can be done vice versa".
   - **Revisión de los ejemplos (2026-10-02):** 8 pedidos a proveedores y 6 reservas de Kilroy
     (Aarhus, Copenhague, Oslo, UK). Todavía no hay ninguno de **Jysk**.
     - **CORRECCIÓN a M1-04:** Kilroy **no siempre usa nuestros códigos**. Su "Tour code" es,
