@@ -51,6 +51,10 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
     - Ahora "proveedor sin resolver" mira solo el Booking Supplier, que es a quien va el mail.
     - El traslado incluido solo figura como texto ("Includes: Transfer in + Out") en la
       descripción del paquete de excursiones: decidir cómo representarlo al planear M2.
+- **M1-04c terminada (2026-10-03):** diagnóstico de los 17 paquetes de los 7 tours, sin escribir en la base. El reporte está en `docs/sdd/diagnosticos/M1-04c-paquetes-de-los-tours.md` (+ `.json`) y se corre con `npm run diagnosticar:paquetes`. La lista de códigos vive en `data/paquetes-piloto.csv`. Suite 302/302 (el test de M1-03 ahora admite más de 220 proveedores, porque el directorio ya tiene 227).
+  - **Esperando al owner:** `Insumos/Borrador respuestas diagnostico paquetes.xlsx`, con 44 proveedores (18 de confianza alta), 4 renglones sin proveedor, 18 alojamientos sin categoría y 9 casos sueltos. Con eso se escribe la ficha de M1-04d.
+  - **Hallazgo para M1-04d:** las equivalencias tienen que depender del destino. "Nacional Inn" en Río (OD032) quedó emparejado con Nacional Inn Foz y debería ser Nacional inn Copacabana. Además, el lector tiene que tolerar los typos de "Booking Supplier" (Bookind, Suplier, Booking Booking) y las "Optional Excursion".
+  - El builder se colgó 3 veces por el watchdog (esperando la suite completa sin salida). El cierre lo hizo el loop principal.
 - **Plan activo:** `docs/sdd/roadmaps/active/m1-catalogo-y-proveedores.md` — M1-01 a M1-04b
   ✅ **terminadas**, M1-05 y M1-06 ⬜ pendientes.
   - **Hueco detectado (2026-09-28): M1-05 no puede correr así como está.** Los 7 tours
