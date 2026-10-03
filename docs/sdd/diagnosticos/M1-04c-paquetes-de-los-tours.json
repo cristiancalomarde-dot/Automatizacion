@@ -1,0 +1,3223 @@
+{
+  "generado": "2026-10-03T09:49:57.934Z",
+  "archivo": "Construccion de Paquetes 2019 con 3 y 4 estrellas.xls",
+  "hoja": "Analisis a Mayo 2026",
+  "paquetes": [
+    {
+      "codigo": "OD013",
+      "destino": "FTE",
+      "destinoExcel": "FTE",
+      "encontrado": true,
+      "nombre": "El Calafate & Torres del Paine. Glaciers in Patagonia",
+      "celda": "B214",
+      "bloqueNoCalza": false,
+      "servicios": [
+        {
+          "fila": 216,
+          "tipo": "alojamiento",
+          "nivel": "Hostel",
+          "noches": null,
+          "linea": "Accommodation: Hostel del Glaciar Pioneros / Calafate Hostel. Booking Supplier: Del Glaciar / Always Glaciers",
+          "opciones": [
+            {
+              "prioridad": 1,
+              "serviceProvider": "Hostel del Glaciar Pioneros",
+              "bookingSupplier": "Del Glaciar",
+              "emparejado": "sin_emparejar",
+              "proveedorDirectorio": null,
+              "nota": null
+            },
+            {
+              "prioridad": 2,
+              "serviceProvider": "Calafate Hostel",
+              "bookingSupplier": "Always Glaciers",
+              "emparejado": "sin_emparejar",
+              "proveedorDirectorio": null,
+              "nota": null
+            }
+          ]
+        },
+        {
+          "fila": 221,
+          "tipo": "alojamiento",
+          "nivel": "Budget Hotel",
+          "noches": null,
+          "linea": "Accommodation: Budget Hotel Del Glaciar Libertador / Hosteria HI / Puerto San Julian. Booking Supplier: Del Glaciar / Always Glaciers / Patagonian Group",
+          "opciones": [
+            {
+              "prioridad": 1,
+              "serviceProvider": "Budget Hotel Del Glaciar Libertador",
+              "bookingSupplier": "Del Glaciar",
+              "emparejado": "sin_emparejar",
+              "proveedorDirectorio": null,
+              "nota": null
+            },
+            {
+              "prioridad": 2,
+              "serviceProvider": "Hosteria HI",
+              "bookingSupplier": "Always Glaciers",
+              "emparejado": "sin_emparejar",
+              "proveedorDirectorio": null,
+              "nota": null
+            },
+            {
+              "prioridad": 3,
+              "serviceProvider": "Puerto San Julian",
+              "bookingSupplier": "Patagonian Group",
+              "emparejado": "sin_emparejar",
+              "proveedorDirectorio": null,
+              "nota": null
+            }
+          ]
+        },
+        {
+          "fila": 226,
+          "tipo": "alojamiento",
+          "nivel": "Hotel 3*",
+          "noches": null,
+          "linea": "Accommodation: Holtel 3* Rincon del Calafate / Hotel * Sent Calafate. Booking Supplier: Tremun / Tremun",
+          "opciones": [
+            {
+              "prioridad": 1,
+              "serviceProvider": "Holtel 3* Rincon del Calafate",
+              "bookingSupplier": "Tremun",
+              "emparejado": "sin_emparejar",
+              "proveedorDirectorio": null,
+              "nota": null
+            },
+            {
+              "prioridad": 2,
+              "serviceProvider": "Hotel * Sent Calafate",
+              "bookingSupplier": "Tremun",
+              "emparejado": "sin_emparejar",
+              "proveedorDirectorio": null,
+              "nota": null
+            }
+          ]
+        },
+        {
+          "fila": 231,
+          "tipo": "alojamiento",
+          "nivel": "Hotel 4*",
+          "noches": null,
+          "linea": "Accommodation: Hotel 4* Mirador del Lago / Hotel 4* Calafate Parque. Booking Supplier: Tremun / Tremun",
+          "opciones": [
+            {
+              "prioridad": 1,
+              "serviceProvider": "Hotel 4* Mirador del Lago",
+              "bookingSupplier": "Tremun",
+              "emparejado": "sin_emparejar",
+              "proveedorDirectorio": null,
+              "nota": null
+            },
+            {
+              "prioridad": 2,
+              "serviceProvider": "Hotel 4* Calafate Parque",
+              "bookingSupplier": "Tremun",
+              "emparejado": "sin_emparejar",
+              "proveedorDirectorio": null,
+              "nota": null
+            }
+          ]
+        },
+        {
+          "fila": 238,
+          "tipo": "traslado",
+          "nivel": null,
+          "noches": null,
+          "linea": "Transfer Round Trip. Booking Supplier: Chalten Travel",
+          "opciones": [
+            {
+              "prioridad": 1,
+              "serviceProvider": "Round Trip",
+              "bookingSupplier": "Chalten Travel",
+              "emparejado": "exacto",
+              "proveedorDirectorio": "Chalten Travel",
+              "nota": null
+            }
+          ]
+        },
+        {
+          "fila": 239,
+          "tipo": "excursion",
+          "nivel": null,
+          "noches": null,
+          "linea": "Excursion: Perito Moreno Glaciar Excursion. Booking Supplier: Chalten Travel",
+          "opciones": [
+            {
+              "prioridad": 1,
+              "serviceProvider": "Perito Moreno Glaciar Excursion",
+              "bookingSupplier": "Chalten Travel",
+              "emparejado": "exacto",
+              "proveedorDirectorio": "Chalten Travel",
+              "nota": null
+            }
+          ]
+        },
+        {
+          "fila": 240,
+          "tipo": "excursion",
+          "nivel": null,
+          "noches": null,
+          "linea": "Excursion:Torres del Paine Full Day from El Calafate. Booking Supplier: South Road",
+          "opciones": [
+            {
+              "prioridad": 1,
+              "serviceProvider": "Torres del Paine Full Day from El Calafate",
+              "bookingSupplier": "South Road",
+              "emparejado": "exacto",
+              "proveedorDirectorio": "South Road",
+              "nota": null
+            }
+          ]
+        }
+      ],
+      "nivelesNoOfrecidos": [],
+      "correcciones": [],
+      "enRutasEnBus": true
+    },
+    {
+      "codigo": "OD016",
+      "destino": "FTE",
+      "destinoExcel": "FTE",
+      "encontrado": true,
+      "nombre": "El Calafate Starter Package",
+      "celda": "Z214",
+      "bloqueNoCalza": false,
+      "servicios": [
+        {
+          "fila": 216,
+          "tipo": "alojamiento",
+          "nivel": "Hostel",
+          "noches": null,
+          "linea": "Accommodation: Hostel del Glaciar Pioneros / Calafate Hostel. Booking Supplier: Del Glaciar / Always Glaciers",
+          "opciones": [
+            {
+              "prioridad": 1,
+              "serviceProvider": "Hostel del Glaciar Pioneros",
+              "bookingSupplier": "Del Glaciar",
+              "emparejado": "sin_emparejar",
+              "proveedorDirectorio": null,
+              "nota": null
+            },
+            {
+              "prioridad": 2,
+              "serviceProvider": "Calafate Hostel",
+              "bookingSupplier": "Always Glaciers",
+              "emparejado": "sin_emparejar",
+              "proveedorDirectorio": null,
+              "nota": null
+            }
+          ]
+        },
+        {
+          "fila": 221,
+          "tipo": "alojamiento",
+          "nivel": "Budget Hotel",
+          "noches": null,
+          "linea": "Accommodation: Budget Hotel Del Glaciar Libertador / Hosteria HI / Puerto San Julian. Booking Supplier: Del Glaciar / Always Glaciers / Patagonian Group",
+          "opciones": [
+            {
+              "prioridad": 1,
+              "serviceProvider": "Budget Hotel Del Glaciar Libertador",
+              "bookingSupplier": "Del Glaciar",
+              "emparejado": "sin_emparejar",
+              "proveedorDirectorio": null,
+              "nota": null
+            },
+            {
+              "prioridad": 2,
+              "serviceProvider": "Hosteria HI",
+              "bookingSupplier": "Always Glaciers",
+              "emparejado": "sin_emparejar",
+              "proveedorDirectorio": null,
+              "nota": null
+            },
+            {
+              "prioridad": 3,
+              "serviceProvider": "Puerto San Julian",
+              "bookingSupplier": "Patagonian Group",
+              "emparejado": "sin_emparejar",
+              "proveedorDirectorio": null,
+              "nota": null
+            }
+          ]
+        },
+        {
+          "fila": 226,
+          "tipo": "alojamiento",
+          "nivel": "Hotel 3*",
+          "noches": null,
+          "linea": "Accommodation: Holtel 3* Rincon del Calafate / Hotel * Sent Calafate. Booking Supplier: Tremun / Tremun",
+          "opciones": [
+            {
+              "prioridad": 1,
+              "serviceProvider": "Holtel 3* Rincon del Calafate",
+              "bookingSupplier": "Tremun",
+              "emparejado": "sin_emparejar",
+              "proveedorDirectorio": null,
+              "nota": null
+            },
+            {
+              "prioridad": 2,
+              "serviceProvider": "Hotel * Sent Calafate",
+              "bookingSupplier": "Tremun",
+              "emparejado": "sin_emparejar",
+              "proveedorDirectorio": null,
+              "nota": null
+            }
+          ]
+        },
+        {
+          "fila": 231,
+          "tipo": "alojamiento",
+          "nivel": "Hotel 4*",
+          "noches": null,
+          "linea": "Accommodation: Hotel 4* Mirador del Lago / Hotel 4* Calafate Parque. Booking Supplier: Tremun / Tremun",
+          "opciones": [
+            {
+              "prioridad": 1,
+              "serviceProvider": "Hotel 4* Mirador del Lago",
+              "bookingSupplier": "Tremun",
+              "emparejado": "sin_emparejar",
+              "proveedorDirectorio": null,
+              "nota": null
+            },
+            {
+              "prioridad": 2,
+              "serviceProvider": "Hotel 4* Calafate Parque",
+              "bookingSupplier": "Tremun",
+              "emparejado": "sin_emparejar",
+              "proveedorDirectorio": null,
+              "nota": null
+            }
+          ]
+        },
+        {
+          "fila": 238,
+          "tipo": "traslado",
+          "nivel": null,
+          "noches": null,
+          "linea": "Transfer El Calafate Accommodation - FTE Airport. Booking Supplier: Chalten Travel",
+          "opciones": [
+            {
+              "prioridad": 1,
+              "serviceProvider": "El Calafate Accommodation - FTE Airport",
+              "bookingSupplier": "Chalten Travel",
+              "emparejado": "exacto",
+              "proveedorDirectorio": "Chalten Travel",
+              "nota": null
+            }
+          ]
+        },
+        {
+          "fila": 239,
+          "tipo": "excursion",
+          "nivel": null,
+          "noches": null,
+          "linea": "Excursion: Perito Moreno Glaciar Excursion. Booking Supplier: Chalten Travel",
+          "opciones": [
+            {
+              "prioridad": 1,
+              "serviceProvider": "Perito Moreno Glaciar Excursion",
+              "bookingSupplier": "Chalten Travel",
+              "emparejado": "exacto",
+              "proveedorDirectorio": "Chalten Travel",
+              "nota": null
+            }
+          ]
+        }
+      ],
+      "nivelesNoOfrecidos": [],
+      "correcciones": [],
+      "enRutasEnBus": true
+    },
+    {
+      "codigo": "OD017",
+      "destino": "PNT",
+      "destinoExcel": "PNT",
+      "encontrado": true,
+      "nombre": "Puerto Natales & Torres del Paine Adventure",
+      "celda": "B729",
+      "bloqueNoCalza": false,
+      "servicios": [
+        {
+          "fila": 731,
+          "tipo": "alojamiento",
+          "nivel": "Hostel",
+          "noches": null,
+          "linea": "Accommodation: Puma Hostel / Last Hope / Factoria. Booking Supplier: Puma Hostel / Last Hope / Vertice",
+          "opciones": [
+            {
+              "prioridad": 1,
+              "serviceProvider": "Puma Hostel",
+              "bookingSupplier": "Puma Hostel",
+              "emparejado": "sin_emparejar",
+              "proveedorDirectorio": null,
+              "nota": null
+            },
+            {
+              "prioridad": 2,
+              "serviceProvider": "Last Hope",
+              "bookingSupplier": "Last Hope",
+              "emparejado": "exacto",
+              "proveedorDirectorio": "Last Hope",
+              "nota": null
+            },
+            {
+              "prioridad": 3,
+              "serviceProvider": "Factoria",
+              "bookingSupplier": "Vertice",
+              "emparejado": "sin_emparejar",
+              "proveedorDirectorio": null,
+              "nota": null
+            }
+          ]
+        },
+        {
+          "fila": 737,
+          "tipo": "alojamiento",
+          "nivel": null,
+          "noches": null,
+          "linea": "Accommodation: Big Sur / Loreto Belen / Darwin / Pristine Patagonia / Vendaval. Booking Supplier: Big Sur / Loreto Belen / CL Mundo / CL Mundo / Vendaval",
+          "opciones": [
+            {
+              "prioridad": 1,
+              "serviceProvider": "Big Sur",
+              "bookingSupplier": "Big Sur",
+              "emparejado": "sin_emparejar",
+              "proveedorDirectorio": null,
+              "nota": null
+            },
+            {
+              "prioridad": 2,
+              "serviceProvider": "Loreto Belen",
+              "bookingSupplier": "Loreto Belen",
+              "emparejado": "exacto",
+              "proveedorDirectorio": "LORETO BELEN",
+              "nota": null
+            },
+            {
+              "prioridad": 3,
+              "serviceProvider": "Darwin",
+              "bookingSupplier": "CL Mundo",
+              "emparejado": "exacto",
+              "proveedorDirectorio": "Cl mundo",
+              "nota": null
+            },
+            {
+              "prioridad": 4,
+              "serviceProvider": "Pristine Patagonia",
+              "bookingSupplier": "CL Mundo",
+              "emparejado": "exacto",
+              "proveedorDirectorio": "Cl mundo",
+              "nota": null
+            },
+            {
+              "prioridad": 5,
+              "serviceProvider": "Vendaval",
+              "bookingSupplier": "Vendaval",
+              "emparejado": "sin_emparejar",
+              "proveedorDirectorio": null,
+              "nota": null
+            }
+          ]
+        },
+        {
+          "fila": 742,
+          "tipo": "excursion",
+          "nivel": null,
+          "noches": null,
+          "linea": "Excursions en Natales",
+          "opciones": [
+            {
+              "prioridad": 1,
+              "serviceProvider": "en Natales",
+              "bookingSupplier": null,
+              "emparejado": "sin_booking_supplier",
+              "proveedorDirectorio": null,
+              "nota": null
+            }
+          ]
+        },
+        {
+          "fila": 743,
+          "tipo": "bus",
+          "nivel": null,
+          "noches": null,
+          "linea": "Bus Punta Arenas - Puerto Natales. Booking Supplier: Kupos",
+          "opciones": [
+            {
+              "prioridad": 1,
+              "serviceProvider": "Punta Arenas - Puerto Natales",
+              "bookingSupplier": "Kupos",
+              "emparejado": "sin_emparejar",
+              "proveedorDirectorio": null,
+              "nota": null
+            }
+          ]
+        },
+        {
+          "fila": 744,
+          "tipo": "excursion",
+          "nivel": null,
+          "noches": null,
+          "linea": "Excursion. Torres del Paine Full Day from Puerto Natales: Booking Supplier: Patagonia Planet",
+          "opciones": [
+            {
+              "prioridad": 1,
+              "serviceProvider": ". Torres del Paine Full Day from Puerto Natales:",
+              "bookingSupplier": "Patagonia Planet",
+              "emparejado": "exacto",
+              "proveedorDirectorio": "Patagonia planet",
+              "nota": null
+            }
+          ]
+        }
+      ],
+      "nivelesNoOfrecidos": [],
+      "correcciones": [],
+      "enRutasEnBus": true
+    },
+    {
+      "codigo": "OD018",
+      "destino": "BUE",
+      "destinoExcel": "BUE",
+      "encontrado": true,
+      "nombre": "Buenos Aires, Tango City",
+      "celda": "B480",
+      "bloqueNoCalza": false,
+      "servicios": [
+        {
+          "fila": 482,
+          "tipo": "alojamiento",
+          "nivel": null,
+          "noches": null,
+          "linea": "Accommodation: Milhouse Avenue. Booking Supplier: Milhouse",
+          "opciones": [
+            {
+              "prioridad": 1,
+              "serviceProvider": "Milhouse Avenue",
+              "bookingSupplier": "Milhouse",
+              "emparejado": "sin_emparejar",
+              "proveedorDirectorio": null,
+              "nota": null
+            }
+          ]
+        },
+        {
+          "fila": 486,
+          "tipo": "alojamiento",
+          "nivel": null,
+          "noches": null,
+          "linea": "Accommodation:Merit San Telmo / Loi Flats / Rochester Concept. Booking Supplier: Merit / Loi Suites / Rochester",
+          "opciones": [
+            {
+              "prioridad": 1,
+              "serviceProvider": "Merit San Telmo",
+              "bookingSupplier": "Merit",
+              "emparejado": "sin_emparejar",
+              "proveedorDirectorio": null,
+              "nota": null
+            },
+            {
+              "prioridad": 2,
+              "serviceProvider": "Loi Flats",
+              "bookingSupplier": "Loi Suites",
+              "emparejado": "sin_emparejar",
+              "proveedorDirectorio": null,
+              "nota": null
+            },
+            {
+              "prioridad": 3,
+              "serviceProvider": "Rochester Concept",
+              "bookingSupplier": "Rochester",
+              "emparejado": "sin_emparejar",
+              "proveedorDirectorio": null,
+              "nota": null
+            }
+          ]
+        },
+        {
+          "fila": 489,
+          "tipo": "alojamiento",
+          "nivel": null,
+          "noches": null,
+          "linea": "Accommodation: Dazzler Maipu / San Martin / Patios de San Telmo. Booking Supplier: Dazzler / Dazzler / Up Hoteles",
+          "opciones": [
+            {
+              "prioridad": 1,
+              "serviceProvider": "Dazzler Maipu",
+              "bookingSupplier": "Dazzler",
+              "emparejado": "sin_emparejar",
+              "proveedorDirectorio": null,
+              "nota": null
+            },
+            {
+              "prioridad": 2,
+              "serviceProvider": "San Martin",
+              "bookingSupplier": "Dazzler",
+              "emparejado": "sin_emparejar",
+              "proveedorDirectorio": null,
+              "nota": null
+            },
+            {
+              "prioridad": 3,
+              "serviceProvider": "Patios de San Telmo",
+              "bookingSupplier": "Up Hoteles",
+              "emparejado": "sin_emparejar",
+              "proveedorDirectorio": null,
+              "nota": null
+            }
+          ]
+        },
+        {
+          "fila": 492,
+          "tipo": "alojamiento",
+          "nivel": null,
+          "noches": null,
+          "linea": "Accommodation: Hotel Grand Brizo / Gran Brizo Bel Air / NH Buenos Aires City. Booking Supplier: Alvarez Arguelles / Alvarez Arguelles / NH City",
+          "opciones": [
+            {
+              "prioridad": 1,
+              "serviceProvider": "Hotel Grand Brizo",
+              "bookingSupplier": "Alvarez Arguelles",
+              "emparejado": "sin_emparejar",
+              "proveedorDirectorio": null,
+              "nota": null
+            },
+            {
+              "prioridad": 2,
+              "serviceProvider": "Gran Brizo Bel Air",
+              "bookingSupplier": "Alvarez Arguelles",
+              "emparejado": "sin_emparejar",
+              "proveedorDirectorio": null,
+              "nota": null
+            },
+            {
+              "prioridad": 3,
+              "serviceProvider": "NH Buenos Aires City",
+              "bookingSupplier": "NH City",
+              "emparejado": "sin_emparejar",
+              "proveedorDirectorio": null,
+              "nota": null
+            }
+          ]
+        },
+        {
+          "fila": 498,
+          "tipo": "excursion",
+          "nivel": null,
+          "noches": null,
+          "linea": "Excursion: City Tour / Bike Tour. Booking Supplier: Grupo Summa / La Bicicleta Naranja",
+          "opciones": [
+            {
+              "prioridad": 1,
+              "serviceProvider": "City Tour",
+              "bookingSupplier": "Grupo Summa",
+              "emparejado": "exacto",
+              "proveedorDirectorio": "Grupo Summa",
+              "nota": null
+            },
+            {
+              "prioridad": 2,
+              "serviceProvider": "Bike Tour",
+              "bookingSupplier": "La Bicicleta Naranja",
+              "emparejado": "exacto",
+              "proveedorDirectorio": "La Bicicleta Naranja",
+              "nota": null
+            }
+          ]
+        },
+        {
+          "fila": 499,
+          "tipo": "traslado",
+          "nivel": null,
+          "noches": null,
+          "linea": "Transfer EZE o AEP - Hotel - EZE o AEP. Booking Supplier: Greeters",
+          "opciones": [
+            {
+              "prioridad": 1,
+              "serviceProvider": "EZE o AEP - Hotel - EZE o AEP",
+              "bookingSupplier": "Greeters",
+              "emparejado": "exacto",
+              "proveedorDirectorio": "GREETERS",
+              "nota": null
+            }
+          ]
+        },
+        {
+          "fila": 500,
+          "tipo": "excursion",
+          "nivel": null,
+          "noches": null,
+          "linea": "Excursion: Tango Show with dinner, drinks and transfers. Booking Supplier: Madero Tango",
+          "opciones": [
+            {
+              "prioridad": 1,
+              "serviceProvider": "Tango Show with dinner, drinks and transfers",
+              "bookingSupplier": "Madero Tango",
+              "emparejado": "exacto",
+              "proveedorDirectorio": "Madero tango",
+              "nota": null
+            }
+          ]
+        }
+      ],
+      "nivelesNoOfrecidos": [],
+      "correcciones": [],
+      "enRutasEnBus": true
+    },
+    {
+      "codigo": "OD019",
+      "destino": "MDZ",
+      "destinoExcel": "MDZ",
+      "encontrado": true,
+      "nombre": "Mendoza Mountains and Wineries",
+      "celda": "B73",
+      "bloqueNoCalza": false,
+      "servicios": [
+        {
+          "fila": 75,
+          "tipo": "alojamiento",
+          "nivel": "Hostel",
+          "noches": null,
+          "linea": "Accommodation: Lagares Hostel. Booking Supplier: Lagares Hostel",
+          "opciones": [
+            {
+              "prioridad": 1,
+              "serviceProvider": "Lagares Hostel",
+              "bookingSupplier": "Lagares Hostel",
+              "emparejado": "sin_emparejar",
+              "proveedorDirectorio": null,
+              "nota": null
+            }
+          ]
+        },
+        {
+          "fila": 79,
+          "tipo": "alojamiento",
+          "nivel": "Hotel 3*",
+          "noches": null,
+          "linea": "Accommodation: 3* Hotel Argentino. Booking Supplier: Hotel Argentino Mendoza",
+          "opciones": [
+            {
+              "prioridad": 1,
+              "serviceProvider": "3* Hotel Argentino",
+              "bookingSupplier": "Hotel Argentino Mendoza",
+              "emparejado": "sin_emparejar",
+              "proveedorDirectorio": null,
+              "nota": null
+            }
+          ]
+        },
+        {
+          "fila": 83,
+          "tipo": "alojamiento",
+          "nivel": "Hotel 4*",
+          "noches": null,
+          "linea": "Accommodation: 4* NH Cordillera / Hotel MOD. Booking Supplier: NH Cordillera / Hotel MOD",
+          "opciones": [
+            {
+              "prioridad": 1,
+              "serviceProvider": "4* NH Cordillera",
+              "bookingSupplier": "NH Cordillera",
+              "emparejado": "sin_emparejar",
+              "proveedorDirectorio": null,
+              "nota": null
+            },
+            {
+              "prioridad": 2,
+              "serviceProvider": "Hotel MOD",
+              "bookingSupplier": "Hotel MOD",
+              "emparejado": "sin_emparejar",
+              "proveedorDirectorio": null,
+              "nota": null
+            }
+          ]
+        }
+      ],
+      "nivelesNoOfrecidos": [],
+      "correcciones": [],
+      "enRutasEnBus": true
+    },
+    {
+      "codigo": "OD020",
+      "destino": "BUE",
+      "destinoExcel": "BUE",
+      "encontrado": true,
+      "nombre": "Buenos Aires + Uruguay",
+      "celda": "R480",
+      "bloqueNoCalza": false,
+      "servicios": [
+        {
+          "fila": 482,
+          "tipo": "alojamiento",
+          "nivel": null,
+          "noches": null,
+          "linea": "Accommodation: Milhouse Avenue. Booking Supplier: Milhouse",
+          "opciones": [
+            {
+              "prioridad": 1,
+              "serviceProvider": "Milhouse Avenue",
+              "bookingSupplier": "Milhouse",
+              "emparejado": "sin_emparejar",
+              "proveedorDirectorio": null,
+              "nota": null
+            }
+          ]
+        },
+        {
+          "fila": 486,
+          "tipo": "alojamiento",
+          "nivel": null,
+          "noches": null,
+          "linea": "Accommodation:Merit San Telmo / Loi Flats / Rochester Concept. Booking Supplier: Merit / Loi Suites / Rochester",
+          "opciones": [
+            {
+              "prioridad": 1,
+              "serviceProvider": "Merit San Telmo",
+              "bookingSupplier": "Merit",
+              "emparejado": "sin_emparejar",
+              "proveedorDirectorio": null,
+              "nota": null
+            },
+            {
+              "prioridad": 2,
+              "serviceProvider": "Loi Flats",
+              "bookingSupplier": "Loi Suites",
+              "emparejado": "sin_emparejar",
+              "proveedorDirectorio": null,
+              "nota": null
+            },
+            {
+              "prioridad": 3,
+              "serviceProvider": "Rochester Concept",
+              "bookingSupplier": "Rochester",
+              "emparejado": "sin_emparejar",
+              "proveedorDirectorio": null,
+              "nota": null
+            }
+          ]
+        },
+        {
+          "fila": 489,
+          "tipo": "alojamiento",
+          "nivel": null,
+          "noches": null,
+          "linea": "Accommodation: Dazzler Maipu / San Martin / Patios de San Telmo. Booking Supplier: Dazzler / Dazzler / Up Hoteles",
+          "opciones": [
+            {
+              "prioridad": 1,
+              "serviceProvider": "Dazzler Maipu",
+              "bookingSupplier": "Dazzler",
+              "emparejado": "sin_emparejar",
+              "proveedorDirectorio": null,
+              "nota": null
+            },
+            {
+              "prioridad": 2,
+              "serviceProvider": "San Martin",
+              "bookingSupplier": "Dazzler",
+              "emparejado": "sin_emparejar",
+              "proveedorDirectorio": null,
+              "nota": null
+            },
+            {
+              "prioridad": 3,
+              "serviceProvider": "Patios de San Telmo",
+              "bookingSupplier": "Up Hoteles",
+              "emparejado": "sin_emparejar",
+              "proveedorDirectorio": null,
+              "nota": null
+            }
+          ]
+        },
+        {
+          "fila": 492,
+          "tipo": "alojamiento",
+          "nivel": null,
+          "noches": null,
+          "linea": "Accommodation: Hotel Grand Brizo / Gran Brizo Bel Air / NH Buenos Aires City. Booking Supplier: Alvarez Arguelles / Alvarez Arguelles / NH City",
+          "opciones": [
+            {
+              "prioridad": 1,
+              "serviceProvider": "Hotel Grand Brizo",
+              "bookingSupplier": "Alvarez Arguelles",
+              "emparejado": "sin_emparejar",
+              "proveedorDirectorio": null,
+              "nota": null
+            },
+            {
+              "prioridad": 2,
+              "serviceProvider": "Gran Brizo Bel Air",
+              "bookingSupplier": "Alvarez Arguelles",
+              "emparejado": "sin_emparejar",
+              "proveedorDirectorio": null,
+              "nota": null
+            },
+            {
+              "prioridad": 3,
+              "serviceProvider": "NH Buenos Aires City",
+              "bookingSupplier": "NH City",
+              "emparejado": "sin_emparejar",
+              "proveedorDirectorio": null,
+              "nota": null
+            }
+          ]
+        },
+        {
+          "fila": 498,
+          "tipo": "excursion",
+          "nivel": null,
+          "noches": null,
+          "linea": "Excursion: City Tour / Bike Tour. Booking Supplier: Grupo Summa / La Bicicleta Naranja",
+          "opciones": [
+            {
+              "prioridad": 1,
+              "serviceProvider": "City Tour",
+              "bookingSupplier": "Grupo Summa",
+              "emparejado": "exacto",
+              "proveedorDirectorio": "Grupo Summa",
+              "nota": null
+            },
+            {
+              "prioridad": 2,
+              "serviceProvider": "Bike Tour",
+              "bookingSupplier": "La Bicicleta Naranja",
+              "emparejado": "exacto",
+              "proveedorDirectorio": "La Bicicleta Naranja",
+              "nota": null
+            }
+          ]
+        },
+        {
+          "fila": 499,
+          "tipo": "traslado",
+          "nivel": null,
+          "noches": null,
+          "linea": "Transfer EZE o AEP - Hotel - EZE o AEP. Booking Supplier: Greeters",
+          "opciones": [
+            {
+              "prioridad": 1,
+              "serviceProvider": "EZE o AEP - Hotel - EZE o AEP",
+              "bookingSupplier": "Greeters",
+              "emparejado": "exacto",
+              "proveedorDirectorio": "GREETERS",
+              "nota": null
+            }
+          ]
+        },
+        {
+          "fila": 500,
+          "tipo": "excursion",
+          "nivel": null,
+          "noches": null,
+          "linea": "Excursion: Colonia Day Trip Circuito Historico. Booking Supplier: Buquebus",
+          "opciones": [
+            {
+              "prioridad": 1,
+              "serviceProvider": "Colonia Day Trip Circuito Historico",
+              "bookingSupplier": "Buquebus",
+              "emparejado": "exacto",
+              "proveedorDirectorio": "Buquebus",
+              "nota": null
+            }
+          ]
+        }
+      ],
+      "nivelesNoOfrecidos": [],
+      "correcciones": [],
+      "enRutasEnBus": true
+    },
+    {
+      "codigo": "OD022",
+      "destino": "USH",
+      "destinoExcel": "USH",
+      "encontrado": true,
+      "nombre": "Ushuaia, end of the World",
+      "celda": "B134",
+      "bloqueNoCalza": false,
+      "servicios": [
+        {
+          "fila": 136,
+          "tipo": "alojamiento",
+          "nivel": "Hostel",
+          "noches": null,
+          "linea": "Accommodation: Anum Hostel / Antarctica Hostel. Booking Supplier: Anum Hostel / Antarctica Hostel",
+          "opciones": [
+            {
+              "prioridad": 1,
+              "serviceProvider": "Anum Hostel",
+              "bookingSupplier": "Anum Hostel",
+              "emparejado": "sin_emparejar",
+              "proveedorDirectorio": null,
+              "nota": null
+            },
+            {
+              "prioridad": 2,
+              "serviceProvider": "Antarctica Hostel",
+              "bookingSupplier": "Antarctica Hostel",
+              "emparejado": "sin_emparejar",
+              "proveedorDirectorio": null,
+              "nota": null
+            }
+          ]
+        },
+        {
+          "fila": 141,
+          "tipo": "alojamiento",
+          "nivel": "Hotel 3*",
+          "noches": null,
+          "linea": "Accommodation: Hotel 3* Los Naranjos / Hotel 3* Altos de Ushuaia. Booking Supplier: Los Naranjos / Altos de Ushuaia",
+          "opciones": [
+            {
+              "prioridad": 1,
+              "serviceProvider": "Hotel 3* Los Naranjos",
+              "bookingSupplier": "Los Naranjos",
+              "emparejado": "exacto",
+              "proveedorDirectorio": "Los naranjos",
+              "nota": null
+            },
+            {
+              "prioridad": 2,
+              "serviceProvider": "Hotel 3* Altos de Ushuaia",
+              "bookingSupplier": "Altos de Ushuaia",
+              "emparejado": "sin_emparejar",
+              "proveedorDirectorio": null,
+              "nota": null
+            }
+          ]
+        },
+        {
+          "fila": 144,
+          "tipo": "alojamiento",
+          "nivel": "Hotel 4*",
+          "noches": null,
+          "linea": "Accommodation: Hotel 4*Albatros / Hotel 4* Los Acebos / Hotel 4* Las Hayas. Booking Supplier: Albatros / Tremun / Tremun",
+          "opciones": [
+            {
+              "prioridad": 1,
+              "serviceProvider": "Hotel 4*Albatros",
+              "bookingSupplier": "Albatros",
+              "emparejado": "sin_emparejar",
+              "proveedorDirectorio": null,
+              "nota": null
+            },
+            {
+              "prioridad": 2,
+              "serviceProvider": "Hotel 4* Los Acebos",
+              "bookingSupplier": "Tremun",
+              "emparejado": "sin_emparejar",
+              "proveedorDirectorio": null,
+              "nota": null
+            },
+            {
+              "prioridad": 3,
+              "serviceProvider": "Hotel 4* Las Hayas",
+              "bookingSupplier": "Tremun",
+              "emparejado": "sin_emparejar",
+              "proveedorDirectorio": null,
+              "nota": null
+            }
+          ]
+        },
+        {
+          "fila": 150,
+          "tipo": "traslado",
+          "nivel": null,
+          "noches": null,
+          "linea": "Transfer Round Trip: Rumbo Sur.Booking Supplier: Rumbo Sur",
+          "opciones": [
+            {
+              "prioridad": 1,
+              "serviceProvider": "Round Trip: Rumbo Sur",
+              "bookingSupplier": "Rumbo Sur",
+              "emparejado": "sin_emparejar",
+              "proveedorDirectorio": null,
+              "nota": "El directorio tiene 2 proveedores con este mismo nombre"
+            }
+          ]
+        }
+      ],
+      "nivelesNoOfrecidos": [],
+      "correcciones": [],
+      "enRutasEnBus": true
+    },
+    {
+      "codigo": "OD025",
+      "destino": "PMY",
+      "destinoExcel": "PMY",
+      "encontrado": true,
+      "nombre": "Puerto Madryn, Penguins and Whales",
+      "celda": "B656",
+      "bloqueNoCalza": false,
+      "servicios": [
+        {
+          "fila": 658,
+          "tipo": "alojamiento",
+          "nivel": null,
+          "noches": null,
+          "linea": "Accommodation: La Tosca / El Gualicho / Amonite. Booking Supplier: La Tosca / El Gualicho / Amonite",
+          "opciones": [
+            {
+              "prioridad": 1,
+              "serviceProvider": "La Tosca",
+              "bookingSupplier": "La Tosca",
+              "emparejado": "exacto",
+              "proveedorDirectorio": "La Tosca",
+              "nota": null
+            },
+            {
+              "prioridad": 2,
+              "serviceProvider": "El Gualicho",
+              "bookingSupplier": "El Gualicho",
+              "emparejado": "sin_emparejar",
+              "proveedorDirectorio": null,
+              "nota": null
+            },
+            {
+              "prioridad": 3,
+              "serviceProvider": "Amonite",
+              "bookingSupplier": "Amonite",
+              "emparejado": "sin_emparejar",
+              "proveedorDirectorio": null,
+              "nota": null
+            }
+          ]
+        },
+        {
+          "fila": 662,
+          "tipo": "alojamiento",
+          "nivel": "Hotel 3*",
+          "noches": null,
+          "linea": "Accommodation: Hotel 3* Tolosa. Booking Supplier: Hotel 3* Tolosa",
+          "opciones": [
+            {
+              "prioridad": 1,
+              "serviceProvider": "Hotel 3* Tolosa",
+              "bookingSupplier": "Hotel 3* Tolosa",
+              "emparejado": "sin_emparejar",
+              "proveedorDirectorio": null,
+              "nota": null
+            }
+          ]
+        },
+        {
+          "fila": 666,
+          "tipo": "alojamiento",
+          "nivel": "Hotel 4*",
+          "noches": null,
+          "linea": "Accommodation: Hotel 4* Dazzler Puerto Madryn / Piren. Booking Supplier: Hotel 4* Dazzler Puerto Madryn / Piren",
+          "opciones": [
+            {
+              "prioridad": 1,
+              "serviceProvider": "Hotel 4* Dazzler Puerto Madryn",
+              "bookingSupplier": "Hotel 4* Dazzler Puerto Madryn",
+              "emparejado": "sin_emparejar",
+              "proveedorDirectorio": null,
+              "nota": null
+            },
+            {
+              "prioridad": 2,
+              "serviceProvider": "Piren",
+              "bookingSupplier": "Piren",
+              "emparejado": "sin_emparejar",
+              "proveedorDirectorio": null,
+              "nota": null
+            }
+          ]
+        },
+        {
+          "fila": 673,
+          "tipo": "excursion",
+          "nivel": null,
+          "noches": null,
+          "linea": "Excursion: Peninsula Valdes Full Day. Booking Supplier: All Peninsula",
+          "opciones": [
+            {
+              "prioridad": 1,
+              "serviceProvider": "Peninsula Valdes Full Day",
+              "bookingSupplier": "All Peninsula",
+              "emparejado": "sin_emparejar",
+              "proveedorDirectorio": null,
+              "nota": null
+            }
+          ]
+        }
+      ],
+      "nivelesNoOfrecidos": [],
+      "correcciones": [],
+      "enRutasEnBus": true
+    },
+    {
+      "codigo": "OD029",
+      "destino": "SCL",
+      "destinoExcel": "SCL",
+      "encontrado": true,
+      "nombre": "Santiago de Chile Starter Package",
+      "celda": "B575",
+      "bloqueNoCalza": false,
+      "servicios": [
+        {
+          "fila": 577,
+          "tipo": "alojamiento",
+          "nivel": null,
+          "noches": null,
+          "linea": "Accommodation: Hostal Providencia. Booking Supplier: Hostal Providencia",
+          "opciones": [
+            {
+              "prioridad": 1,
+              "serviceProvider": "Hostal Providencia",
+              "bookingSupplier": "Hostal Providencia",
+              "emparejado": "exacto",
+              "proveedorDirectorio": "Hostal providencia",
+              "nota": null
+            }
+          ]
+        },
+        {
+          "fila": 582,
+          "tipo": "alojamiento",
+          "nivel": "Hotel 3*",
+          "noches": null,
+          "linea": "Accommodation: Hostal Rio Amazonas / Hotel 3* Elisa Cole. Booking Supplier: Hostal Rio Amazonas / CL Mundo",
+          "opciones": [
+            {
+              "prioridad": 1,
+              "serviceProvider": "Hostal Rio Amazonas",
+              "bookingSupplier": "Hostal Rio Amazonas",
+              "emparejado": "exacto",
+              "proveedorDirectorio": "Hostal rio amazonas",
+              "nota": null
+            },
+            {
+              "prioridad": 2,
+              "serviceProvider": "Hotel 3* Elisa Cole",
+              "bookingSupplier": "CL Mundo",
+              "emparejado": "exacto",
+              "proveedorDirectorio": "Cl mundo",
+              "nota": null
+            }
+          ]
+        },
+        {
+          "fila": 585,
+          "tipo": "alojamiento",
+          "nivel": null,
+          "noches": null,
+          "linea": "Accommodation: Hotel Diego de Velazquez / NH Santiago. Booking Supplier: CL Mundo / NH",
+          "opciones": [
+            {
+              "prioridad": 1,
+              "serviceProvider": "Hotel Diego de Velazquez",
+              "bookingSupplier": "CL Mundo",
+              "emparejado": "exacto",
+              "proveedorDirectorio": "Cl mundo",
+              "nota": null
+            },
+            {
+              "prioridad": 2,
+              "serviceProvider": "NH Santiago",
+              "bookingSupplier": "NH",
+              "emparejado": "sin_emparejar",
+              "proveedorDirectorio": null,
+              "nota": null
+            }
+          ]
+        },
+        {
+          "fila": 591,
+          "tipo": "excursion",
+          "nivel": null,
+          "noches": null,
+          "linea": "Excursion: Bike Tour. Booking Supplier: Bicicleta Verde",
+          "opciones": [
+            {
+              "prioridad": 1,
+              "serviceProvider": "Bike Tour",
+              "bookingSupplier": "Bicicleta Verde",
+              "emparejado": "exacto",
+              "proveedorDirectorio": "Bicicleta verde",
+              "nota": null
+            }
+          ]
+        },
+        {
+          "fila": 592,
+          "tipo": "traslado",
+          "nivel": null,
+          "noches": null,
+          "linea": "Transfer SCL - accommodation: Booking Supplier: CL Mundo",
+          "opciones": [
+            {
+              "prioridad": 1,
+              "serviceProvider": "SCL - accommodation:",
+              "bookingSupplier": "CL Mundo",
+              "emparejado": "exacto",
+              "proveedorDirectorio": "Cl mundo",
+              "nota": null
+            }
+          ]
+        }
+      ],
+      "nivelesNoOfrecidos": [],
+      "correcciones": [],
+      "enRutasEnBus": true
+    },
+    {
+      "codigo": "OD030",
+      "destino": "SPA",
+      "destinoExcel": "SPA",
+      "encontrado": true,
+      "nombre": "San Pedro de Atacama Explorer",
+      "celda": "B794",
+      "bloqueNoCalza": false,
+      "servicios": [
+        {
+          "fila": 796,
+          "tipo": "alojamiento",
+          "nivel": null,
+          "noches": null,
+          "linea": "Accommodation: San Pedro Backpackers / Aji Verde. Booking Supplier: San Pedro Backpackers / Avi Verde",
+          "opciones": [
+            {
+              "prioridad": 1,
+              "serviceProvider": "San Pedro Backpackers",
+              "bookingSupplier": "San Pedro Backpackers",
+              "emparejado": "sin_emparejar",
+              "proveedorDirectorio": null,
+              "nota": null
+            },
+            {
+              "prioridad": 2,
+              "serviceProvider": "Aji Verde",
+              "bookingSupplier": "Avi Verde",
+              "emparejado": "sin_emparejar",
+              "proveedorDirectorio": null,
+              "nota": null
+            }
+          ]
+        },
+        {
+          "fila": 807,
+          "tipo": "excursion",
+          "nivel": null,
+          "noches": null,
+          "linea": "Excursions en San Pedro",
+          "opciones": [
+            {
+              "prioridad": 1,
+              "serviceProvider": "en San Pedro",
+              "bookingSupplier": null,
+              "emparejado": "sin_booking_supplier",
+              "proveedorDirectorio": null,
+              "nota": null
+            }
+          ]
+        },
+        {
+          "fila": 808,
+          "tipo": "traslado",
+          "nivel": null,
+          "noches": null,
+          "linea": "Transfer in CJC - Accommodation in San Pedro de Atacama. Booking Supplier: Transvipp",
+          "opciones": [
+            {
+              "prioridad": 1,
+              "serviceProvider": "in CJC - Accommodation in San Pedro de Atacama",
+              "bookingSupplier": "Transvipp",
+              "emparejado": "sin_emparejar",
+              "proveedorDirectorio": null,
+              "nota": null
+            }
+          ]
+        },
+        {
+          "fila": 809,
+          "tipo": "excursion",
+          "nivel": null,
+          "noches": null,
+          "linea": "Excursion: Geisers del Tatio. Booking Supplier: Horizonte Atacama",
+          "opciones": [
+            {
+              "prioridad": 1,
+              "serviceProvider": "Geisers del Tatio",
+              "bookingSupplier": "Horizonte Atacama",
+              "emparejado": "exacto",
+              "proveedorDirectorio": "Horizonte atacama",
+              "nota": null
+            }
+          ]
+        }
+      ],
+      "nivelesNoOfrecidos": [],
+      "correcciones": [],
+      "enRutasEnBus": true
+    },
+    {
+      "codigo": "OD031",
+      "destino": "LPB",
+      "destinoExcel": "LPB",
+      "encontrado": true,
+      "nombre": "La Paz Bolivia Starter package",
+      "celda": "B1085",
+      "bloqueNoCalza": false,
+      "servicios": [
+        {
+          "fila": 1087,
+          "tipo": "alojamiento",
+          "nivel": "Hostel",
+          "noches": null,
+          "linea": "Accommodation: The Adventure Brew Hostel. Booking Supplier: The Adventure Brew Hostel",
+          "opciones": [
+            {
+              "prioridad": 1,
+              "serviceProvider": "The Adventure Brew Hostel",
+              "bookingSupplier": "The Adventure Brew Hostel",
+              "emparejado": "sin_emparejar",
+              "proveedorDirectorio": null,
+              "nota": null
+            }
+          ]
+        },
+        {
+          "fila": 1091,
+          "tipo": "alojamiento",
+          "nivel": null,
+          "noches": null,
+          "linea": "Accommodation: Hotel Sagarnaga. Booking Supplier: Imperio Inca",
+          "opciones": [
+            {
+              "prioridad": 1,
+              "serviceProvider": "Hotel Sagarnaga",
+              "bookingSupplier": "Imperio Inca",
+              "emparejado": "exacto",
+              "proveedorDirectorio": "Imperio Inca",
+              "nota": null
+            }
+          ]
+        },
+        {
+          "fila": 1096,
+          "tipo": "excursion",
+          "nivel": null,
+          "noches": null,
+          "linea": "Excursions in La Paz",
+          "opciones": [
+            {
+              "prioridad": 1,
+              "serviceProvider": "in La Paz",
+              "bookingSupplier": null,
+              "emparejado": "sin_booking_supplier",
+              "proveedorDirectorio": null,
+              "nota": null
+            }
+          ]
+        },
+        {
+          "fila": 1097,
+          "tipo": "traslado",
+          "nivel": null,
+          "noches": null,
+          "linea": "Transfer La Paz Airport - La Paz Accommodation: Booking Supplier: Imperio Inca",
+          "opciones": [
+            {
+              "prioridad": 1,
+              "serviceProvider": "La Paz Airport - La Paz Accommodation:",
+              "bookingSupplier": "Imperio Inca",
+              "emparejado": "exacto",
+              "proveedorDirectorio": "Imperio Inca",
+              "nota": null
+            }
+          ]
+        },
+        {
+          "fila": 1098,
+          "tipo": "excursion",
+          "nivel": null,
+          "noches": null,
+          "linea": "Excursion Tiwanaco. Booking Supplier: Imperio Inca",
+          "opciones": [
+            {
+              "prioridad": 1,
+              "serviceProvider": "Tiwanaco",
+              "bookingSupplier": "Imperio Inca",
+              "emparejado": "exacto",
+              "proveedorDirectorio": "Imperio Inca",
+              "nota": null
+            }
+          ]
+        }
+      ],
+      "nivelesNoOfrecidos": [],
+      "correcciones": [],
+      "enRutasEnBus": true
+    },
+    {
+      "codigo": "OD032",
+      "destino": "RIO",
+      "destinoExcel": "RIO",
+      "encontrado": true,
+      "nombre": "Rio Starter Package",
+      "celda": "B867",
+      "bloqueNoCalza": false,
+      "servicios": [
+        {
+          "fila": 869,
+          "tipo": "alojamiento",
+          "nivel": "Hostel",
+          "noches": null,
+          "linea": "Accommodation: Cabanacopa Hostel / Ipanema Beach Hostel / Bamboo Rio Hostel / El Misti Ipanema. Booking Supplier: Local 55 / Ipanema Beach Hostel / Bamboo Rio Hostel / El Misti Ipanema",
+          "opciones": [
+            {
+              "prioridad": 1,
+              "serviceProvider": "Cabanacopa Hostel",
+              "bookingSupplier": "Local 55",
+              "emparejado": "sin_emparejar",
+              "proveedorDirectorio": null,
+              "nota": null
+            },
+            {
+              "prioridad": 2,
+              "serviceProvider": "Ipanema Beach Hostel",
+              "bookingSupplier": "Ipanema Beach Hostel",
+              "emparejado": "sin_emparejar",
+              "proveedorDirectorio": null,
+              "nota": null
+            },
+            {
+              "prioridad": 3,
+              "serviceProvider": "Bamboo Rio Hostel",
+              "bookingSupplier": "Bamboo Rio Hostel",
+              "emparejado": "sin_emparejar",
+              "proveedorDirectorio": null,
+              "nota": null
+            },
+            {
+              "prioridad": 4,
+              "serviceProvider": "El Misti Ipanema",
+              "bookingSupplier": "El Misti Ipanema",
+              "emparejado": "sin_emparejar",
+              "proveedorDirectorio": null,
+              "nota": null
+            }
+          ]
+        },
+        {
+          "fila": 875,
+          "tipo": "alojamiento",
+          "nivel": "Hostel",
+          "noches": null,
+          "linea": "Accommodation: National Inn Copacabana / Copacabana Mar Hostel. Booking Supplier: Nacional Inn / Copacabana Mar",
+          "opciones": [
+            {
+              "prioridad": 1,
+              "serviceProvider": "National Inn Copacabana",
+              "bookingSupplier": "Nacional Inn",
+              "emparejado": "por_equivalencia",
+              "proveedorDirectorio": "nacional inn foz",
+              "nota": null
+            },
+            {
+              "prioridad": 2,
+              "serviceProvider": "Copacabana Mar Hostel",
+              "bookingSupplier": "Copacabana Mar",
+              "emparejado": "sin_emparejar",
+              "proveedorDirectorio": null,
+              "nota": null
+            }
+          ]
+        },
+        {
+          "fila": 880,
+          "tipo": "excursion",
+          "nivel": null,
+          "noches": null,
+          "linea": "Excursions Aventura",
+          "opciones": [
+            {
+              "prioridad": 1,
+              "serviceProvider": "Aventura",
+              "bookingSupplier": null,
+              "emparejado": "sin_booking_supplier",
+              "proveedorDirectorio": null,
+              "nota": null
+            }
+          ]
+        },
+        {
+          "fila": 882,
+          "tipo": "excursion",
+          "nivel": null,
+          "noches": null,
+          "linea": "Excursion: Big Dude. Booking Supplier: Local 55",
+          "opciones": [
+            {
+              "prioridad": 1,
+              "serviceProvider": "Big Dude",
+              "bookingSupplier": "Local 55",
+              "emparejado": "sin_emparejar",
+              "proveedorDirectorio": null,
+              "nota": null
+            }
+          ]
+        }
+      ],
+      "nivelesNoOfrecidos": [],
+      "correcciones": [],
+      "enRutasEnBus": true
+    },
+    {
+      "codigo": "OD033",
+      "destino": "CHA",
+      "destinoExcel": null,
+      "encontrado": true,
+      "nombre": "El Chalten Starter Package",
+      "celda": "B1027",
+      "bloqueNoCalza": false,
+      "servicios": [
+        {
+          "fila": 1029,
+          "tipo": "alojamiento",
+          "nivel": null,
+          "noches": null,
+          "linea": "Accommodation: Rancho Grande / Pioneros del Valle / Patagonia. Booking Supplier: Chalten Travel / Pioneros del Valle / Patagonia",
+          "opciones": [
+            {
+              "prioridad": 1,
+              "serviceProvider": "Rancho Grande",
+              "bookingSupplier": "Chalten Travel",
+              "emparejado": "exacto",
+              "proveedorDirectorio": "Chalten Travel",
+              "nota": null
+            },
+            {
+              "prioridad": 2,
+              "serviceProvider": "Pioneros del Valle",
+              "bookingSupplier": "Pioneros del Valle",
+              "emparejado": "sin_emparejar",
+              "proveedorDirectorio": null,
+              "nota": null
+            },
+            {
+              "prioridad": 3,
+              "serviceProvider": "Patagonia",
+              "bookingSupplier": "Patagonia",
+              "emparejado": "sin_emparejar",
+              "proveedorDirectorio": null,
+              "nota": null
+            }
+          ]
+        },
+        {
+          "fila": 1034,
+          "tipo": "alojamiento",
+          "nivel": null,
+          "noches": null,
+          "linea": "Accommodation: Kau Si Aike / Poincenot / Fitz Roy / Vertical Lodge / El Paraiso. Booking Supplier: Kau Si Aike / Chalten Travel / Patagonian Group / Patagonian Group / Patagonian Group",
+          "opciones": [
+            {
+              "prioridad": 1,
+              "serviceProvider": "Kau Si Aike",
+              "bookingSupplier": "Kau Si Aike",
+              "emparejado": "sin_emparejar",
+              "proveedorDirectorio": null,
+              "nota": null
+            },
+            {
+              "prioridad": 2,
+              "serviceProvider": "Poincenot",
+              "bookingSupplier": "Chalten Travel",
+              "emparejado": "exacto",
+              "proveedorDirectorio": "Chalten Travel",
+              "nota": null
+            },
+            {
+              "prioridad": 3,
+              "serviceProvider": "Fitz Roy",
+              "bookingSupplier": "Patagonian Group",
+              "emparejado": "sin_emparejar",
+              "proveedorDirectorio": null,
+              "nota": null
+            },
+            {
+              "prioridad": 4,
+              "serviceProvider": "Vertical Lodge",
+              "bookingSupplier": "Patagonian Group",
+              "emparejado": "sin_emparejar",
+              "proveedorDirectorio": null,
+              "nota": null
+            },
+            {
+              "prioridad": 5,
+              "serviceProvider": "El Paraiso",
+              "bookingSupplier": "Patagonian Group",
+              "emparejado": "sin_emparejar",
+              "proveedorDirectorio": null,
+              "nota": null
+            }
+          ]
+        }
+      ],
+      "nivelesNoOfrecidos": [],
+      "correcciones": [],
+      "enRutasEnBus": true
+    },
+    {
+      "codigo": "CH10",
+      "destino": "PNT",
+      "destinoExcel": null,
+      "encontrado": true,
+      "nombre": "W Trek Standard Self Guided + Puerto Natales (6 nights)",
+      "celda": "B1147",
+      "bloqueNoCalza": false,
+      "servicios": [
+        {
+          "fila": 1149,
+          "tipo": "alojamiento",
+          "nivel": "Hostel",
+          "noches": null,
+          "linea": "Accommodation: Puma Hostel / Last Hope / Factoria. Booking Supplier: Puma Hostel / Last Hope / Vertice",
+          "opciones": [
+            {
+              "prioridad": 1,
+              "serviceProvider": "Puma Hostel",
+              "bookingSupplier": "Puma Hostel",
+              "emparejado": "sin_emparejar",
+              "proveedorDirectorio": null,
+              "nota": null
+            },
+            {
+              "prioridad": 2,
+              "serviceProvider": "Last Hope",
+              "bookingSupplier": "Last Hope",
+              "emparejado": "exacto",
+              "proveedorDirectorio": "Last Hope",
+              "nota": null
+            },
+            {
+              "prioridad": 3,
+              "serviceProvider": "Factoria",
+              "bookingSupplier": "Vertice",
+              "emparejado": "sin_emparejar",
+              "proveedorDirectorio": null,
+              "nota": null
+            }
+          ]
+        },
+        {
+          "fila": 1153,
+          "tipo": "alojamiento",
+          "nivel": null,
+          "noches": null,
+          "linea": "Accommodation: Big Sur / Loreto Belen / Darwin / Pristine Patagonia / Vendaval. Booking Supplier: Big Sur / Loreto Belen / CL Mundo / CL Mundo / Vendaval",
+          "opciones": [
+            {
+              "prioridad": 1,
+              "serviceProvider": "Big Sur",
+              "bookingSupplier": "Big Sur",
+              "emparejado": "sin_emparejar",
+              "proveedorDirectorio": null,
+              "nota": null
+            },
+            {
+              "prioridad": 2,
+              "serviceProvider": "Loreto Belen",
+              "bookingSupplier": "Loreto Belen",
+              "emparejado": "exacto",
+              "proveedorDirectorio": "LORETO BELEN",
+              "nota": null
+            },
+            {
+              "prioridad": 3,
+              "serviceProvider": "Darwin",
+              "bookingSupplier": "CL Mundo",
+              "emparejado": "exacto",
+              "proveedorDirectorio": "Cl mundo",
+              "nota": null
+            },
+            {
+              "prioridad": 4,
+              "serviceProvider": "Pristine Patagonia",
+              "bookingSupplier": "CL Mundo",
+              "emparejado": "exacto",
+              "proveedorDirectorio": "Cl mundo",
+              "nota": null
+            },
+            {
+              "prioridad": 5,
+              "serviceProvider": "Vendaval",
+              "bookingSupplier": "Vendaval",
+              "emparejado": "sin_emparejar",
+              "proveedorDirectorio": null,
+              "nota": null
+            }
+          ]
+        }
+      ],
+      "nivelesNoOfrecidos": [],
+      "correcciones": [],
+      "enRutasEnBus": true
+    },
+    {
+      "codigo": "COMPCH01",
+      "destino": "VLP",
+      "destinoExcel": "VLP",
+      "encontrado": true,
+      "nombre": "Valparaiso Escapade",
+      "celda": "B1590",
+      "bloqueNoCalza": false,
+      "servicios": [
+        {
+          "fila": 1592,
+          "tipo": "alojamiento",
+          "nivel": "Hostel",
+          "noches": null,
+          "linea": "Accommodation: La Joya Hostel. Booking Supplier: La Joya Hostel",
+          "opciones": [
+            {
+              "prioridad": 1,
+              "serviceProvider": "La Joya Hostel",
+              "bookingSupplier": "La Joya Hostel",
+              "emparejado": "exacto",
+              "proveedorDirectorio": "La joya hostel",
+              "nota": null
+            }
+          ]
+        },
+        {
+          "fila": 1598,
+          "tipo": "alojamiento",
+          "nivel": null,
+          "noches": null,
+          "linea": "Accommodation: Ibis Valparaiso / Gervasoni / A Contraluz. Booking Supplier: CL Mundo / CL Mundo / CL Mundo",
+          "opciones": [
+            {
+              "prioridad": 1,
+              "serviceProvider": "Ibis Valparaiso",
+              "bookingSupplier": "CL Mundo",
+              "emparejado": "exacto",
+              "proveedorDirectorio": "Cl mundo",
+              "nota": null
+            },
+            {
+              "prioridad": 2,
+              "serviceProvider": "Gervasoni",
+              "bookingSupplier": "CL Mundo",
+              "emparejado": "exacto",
+              "proveedorDirectorio": "Cl mundo",
+              "nota": null
+            },
+            {
+              "prioridad": 3,
+              "serviceProvider": "A Contraluz",
+              "bookingSupplier": "CL Mundo",
+              "emparejado": "exacto",
+              "proveedorDirectorio": "Cl mundo",
+              "nota": null
+            }
+          ]
+        }
+      ],
+      "nivelesNoOfrecidos": [],
+      "correcciones": [],
+      "enRutasEnBus": true
+    },
+    {
+      "codigo": "COMPBO20",
+      "destino": "UYU",
+      "destinoExcel": null,
+      "encontrado": false,
+      "nombre": null,
+      "celda": null,
+      "bloqueNoCalza": false,
+      "servicios": [],
+      "nivelesNoOfrecidos": [],
+      "correcciones": [],
+      "enRutasEnBus": true
+    },
+    {
+      "codigo": "COMPBR10",
+      "destino": "SAO",
+      "destinoExcel": "SSA",
+      "encontrado": true,
+      "nombre": "Sao Paulo 2 nights Sample",
+      "celda": "B2669",
+      "bloqueNoCalza": true,
+      "servicios": [],
+      "nivelesNoOfrecidos": [],
+      "correcciones": [],
+      "enRutasEnBus": true
+    }
+  ],
+  "omitidosPorYaCargados": [
+    "OD010A",
+    "OD010B",
+    "OD010C",
+    "OD010D",
+    "OD011"
+  ],
+  "aConfirmar": {
+    "proveedoresSinEmparejar": [
+      {
+        "nombre": "Albatros",
+        "paquetes": [
+          "OD022"
+        ],
+        "nota": null,
+        "sugerencias": [
+          {
+            "nombre": "albatros hotel ushuaia",
+            "ciudad": "USHUAIA",
+            "parecido": 0.77
+          }
+        ]
+      },
+      {
+        "nombre": "All Peninsula",
+        "paquetes": [
+          "OD025"
+        ],
+        "nota": null,
+        "sugerencias": [
+          {
+            "nombre": "Peninsula valdes",
+            "ciudad": "PUERTO MADRYN",
+            "parecido": 0.61
+          }
+        ]
+      },
+      {
+        "nombre": "Altos de Ushuaia",
+        "paquetes": [
+          "OD022"
+        ],
+        "nota": null,
+        "sugerencias": [
+          {
+            "nombre": "Altos Ushuaia",
+            "ciudad": "USHUAIA",
+            "parecido": 0.92
+          },
+          {
+            "nombre": "albatros hotel ushuaia",
+            "ciudad": "USHUAIA",
+            "parecido": 0.5
+          },
+          {
+            "nombre": "Alto calafate",
+            "ciudad": "CALAFATE",
+            "parecido": 0.38
+          }
+        ]
+      },
+      {
+        "nombre": "Alvarez Arguelles",
+        "paquetes": [
+          "OD018",
+          "OD020"
+        ],
+        "nota": null,
+        "sugerencias": []
+      },
+      {
+        "nombre": "Always Glaciers",
+        "paquetes": [
+          "OD013",
+          "OD016"
+        ],
+        "nota": null,
+        "sugerencias": [
+          {
+            "nombre": "Always",
+            "ciudad": "RENT A CAR",
+            "parecido": 0.53
+          },
+          {
+            "nombre": "calten tour / ALWAYS",
+            "ciudad": "CALAFATE",
+            "parecido": 0.43
+          }
+        ]
+      },
+      {
+        "nombre": "Amonite",
+        "paquetes": [
+          "OD025"
+        ],
+        "nota": null,
+        "sugerencias": []
+      },
+      {
+        "nombre": "Antarctica Hostel",
+        "paquetes": [
+          "OD022"
+        ],
+        "nota": null,
+        "sugerencias": []
+      },
+      {
+        "nombre": "Anum Hostel",
+        "paquetes": [
+          "OD022"
+        ],
+        "nota": null,
+        "sugerencias": []
+      },
+      {
+        "nombre": "Avi Verde",
+        "paquetes": [
+          "OD030"
+        ],
+        "nota": null,
+        "sugerencias": [
+          {
+            "nombre": "Bicicleta verde",
+            "ciudad": "SANTIAGO",
+            "parecido": 0.5
+          }
+        ]
+      },
+      {
+        "nombre": "Bamboo Rio Hostel",
+        "paquetes": [
+          "OD032"
+        ],
+        "nota": null,
+        "sugerencias": [
+          {
+            "nombre": "Hostal rio amazonas",
+            "ciudad": "SANTIAGO",
+            "parecido": 0.45
+          },
+          {
+            "nombre": "Encanto del Rio 3*",
+            "ciudad": "VILLA LA ANGOSTURA",
+            "parecido": 0.36
+          }
+        ]
+      },
+      {
+        "nombre": "Big Sur",
+        "paquetes": [
+          "OD017",
+          "CH10"
+        ],
+        "nota": null,
+        "sugerencias": [
+          {
+            "nombre": "Hotel big sur",
+            "ciudad": "PUERTO NATALES",
+            "parecido": 0.83
+          },
+          {
+            "nombre": "Rumbo sur",
+            "ciudad": "USHUAIA",
+            "parecido": 0.42
+          },
+          {
+            "nombre": "Rumbo sur",
+            "ciudad": "CALAFATE",
+            "parecido": 0.42
+          }
+        ]
+      },
+      {
+        "nombre": "Copacabana Mar",
+        "paquetes": [
+          "OD032"
+        ],
+        "nota": null,
+        "sugerencias": [
+          {
+            "nombre": "Copacabana Mar hotel",
+            "ciudad": "BRASIL",
+            "parecido": 0.91
+          },
+          {
+            "nombre": "Sociatel copacabana",
+            "ciudad": "BRASIL",
+            "parecido": 0.56
+          },
+          {
+            "nombre": "Socialtel Copacabana",
+            "ciudad": "BRASIL",
+            "parecido": 0.55
+          }
+        ]
+      },
+      {
+        "nombre": "Dazzler",
+        "paquetes": [
+          "OD018",
+          "OD020"
+        ],
+        "nota": null,
+        "sugerencias": [
+          {
+            "nombre": "Dazzler palermo",
+            "ciudad": "BUENOS AIRES",
+            "parecido": 0.82
+          },
+          {
+            "nombre": "Reservas Dazzler Maipu'",
+            "ciudad": "BUENOS AIRES",
+            "parecido": 0.74
+          }
+        ]
+      },
+      {
+        "nombre": "Del Glaciar",
+        "paquetes": [
+          "OD013",
+          "OD016"
+        ],
+        "nota": null,
+        "sugerencias": []
+      },
+      {
+        "nombre": "El Gualicho",
+        "paquetes": [
+          "OD025"
+        ],
+        "nota": null,
+        "sugerencias": []
+      },
+      {
+        "nombre": "El Misti Ipanema",
+        "paquetes": [
+          "OD032"
+        ],
+        "nota": null,
+        "sugerencias": []
+      },
+      {
+        "nombre": "Hotel 3* Tolosa",
+        "paquetes": [
+          "OD025"
+        ],
+        "nota": null,
+        "sugerencias": [
+          {
+            "nombre": "Hotel Tolosa",
+            "ciudad": "PUERTO MADRYN",
+            "parecido": 0.93
+          }
+        ]
+      },
+      {
+        "nombre": "Hotel 4* Dazzler Puerto Madryn",
+        "paquetes": [
+          "OD025"
+        ],
+        "nota": null,
+        "sugerencias": [
+          {
+            "nombre": "Dazzler palermo",
+            "ciudad": "BUENOS AIRES",
+            "parecido": 0.38
+          },
+          {
+            "nombre": "Reservas Dazzler Maipu'",
+            "ciudad": "BUENOS AIRES",
+            "parecido": 0.38
+          }
+        ]
+      },
+      {
+        "nombre": "Hotel Argentino Mendoza",
+        "paquetes": [
+          "OD019"
+        ],
+        "nota": null,
+        "sugerencias": [
+          {
+            "nombre": "Argentino Hotel",
+            "ciudad": "MENDOZA",
+            "parecido": 0.61
+          },
+          {
+            "nombre": "Hotel mendoza",
+            "ciudad": "MENDOZA",
+            "parecido": 0.57
+          },
+          {
+            "nombre": "GRAN HOTEL ARGENTINO | BUENOS AIRES",
+            "ciudad": "BUENOS AIRES",
+            "parecido": 0.54
+          }
+        ]
+      },
+      {
+        "nombre": "Hotel MOD",
+        "paquetes": [
+          "OD019"
+        ],
+        "nota": null,
+        "sugerencias": [
+          {
+            "nombre": "Mod Hotel",
+            "ciudad": "MENDOZA",
+            "parecido": 0.93
+          }
+        ]
+      },
+      {
+        "nombre": "Ipanema Beach Hostel",
+        "paquetes": [
+          "OD032"
+        ],
+        "nota": null,
+        "sugerencias": []
+      },
+      {
+        "nombre": "Kau Si Aike",
+        "paquetes": [
+          "OD033"
+        ],
+        "nota": null,
+        "sugerencias": [
+          {
+            "nombre": "Kau si ake",
+            "ciudad": "CHALTEN",
+            "parecido": 0.65
+          },
+          {
+            "nombre": "Kau Yatun",
+            "ciudad": "CALAFATE",
+            "parecido": 0.38
+          }
+        ]
+      },
+      {
+        "nombre": "Kupos",
+        "paquetes": [
+          "OD017"
+        ],
+        "nota": null,
+        "sugerencias": []
+      },
+      {
+        "nombre": "Lagares Hostel",
+        "paquetes": [
+          "OD019"
+        ],
+        "nota": null,
+        "sugerencias": [
+          {
+            "nombre": "Hostel Lagares Mendoza",
+            "ciudad": "MENDOZA",
+            "parecido": 0.85
+          }
+        ]
+      },
+      {
+        "nombre": "Local 55",
+        "paquetes": [
+          "OD032"
+        ],
+        "nota": null,
+        "sugerencias": []
+      },
+      {
+        "nombre": "Loi Suites",
+        "paquetes": [
+          "OD018",
+          "OD020"
+        ],
+        "nota": null,
+        "sugerencias": [
+          {
+            "nombre": "Loi suites iguazu",
+            "ciudad": "IGUAZU",
+            "parecido": 0.86
+          },
+          {
+            "nombre": "Design Suites",
+            "ciudad": "CALAFATE",
+            "parecido": 0.51
+          },
+          {
+            "nombre": "Design Suites",
+            "ciudad": "BARILOCHE",
+            "parecido": 0.51
+          }
+        ]
+      },
+      {
+        "nombre": "Merit",
+        "paquetes": [
+          "OD018",
+          "OD020"
+        ],
+        "nota": null,
+        "sugerencias": [
+          {
+            "nombre": "Merit San Telmo",
+            "ciudad": "BUENOS AIRES",
+            "parecido": 0.75
+          }
+        ]
+      },
+      {
+        "nombre": "Milhouse",
+        "paquetes": [
+          "OD018",
+          "OD020"
+        ],
+        "nota": null,
+        "sugerencias": [
+          {
+            "nombre": "Milhouse Avenue Hostel",
+            "ciudad": "BUENOS AIRES",
+            "parecido": 0.77
+          }
+        ]
+      },
+      {
+        "nombre": "NH",
+        "paquetes": [
+          "OD029"
+        ],
+        "nota": null,
+        "sugerencias": []
+      },
+      {
+        "nombre": "NH City",
+        "paquetes": [
+          "OD018",
+          "OD020"
+        ],
+        "nota": null,
+        "sugerencias": [
+          {
+            "nombre": "Hotel Nh City",
+            "ciudad": "BUENOS AIRES",
+            "parecido": 0.83
+          }
+        ]
+      },
+      {
+        "nombre": "NH Cordillera",
+        "paquetes": [
+          "OD019"
+        ],
+        "nota": null,
+        "sugerencias": []
+      },
+      {
+        "nombre": "Patagonia",
+        "paquetes": [
+          "OD033"
+        ],
+        "nota": null,
+        "sugerencias": [
+          {
+            "nombre": "Patagonia planet",
+            "ciudad": "PUERTO NATALES",
+            "parecido": 0.86
+          },
+          {
+            "nombre": "Patagonia backpackers",
+            "ciudad": "CALAFATE",
+            "parecido": 0.8
+          },
+          {
+            "nombre": "Hotel Carlos V Patagonia",
+            "ciudad": "BARILOCHE",
+            "parecido": 0.79
+          }
+        ]
+      },
+      {
+        "nombre": "Patagonian Group",
+        "paquetes": [
+          "OD013",
+          "OD016",
+          "OD033"
+        ],
+        "nota": null,
+        "sugerencias": [
+          {
+            "nombre": "Patagonia planet",
+            "ciudad": "PUERTO NATALES",
+            "parecido": 0.57
+          },
+          {
+            "nombre": "Hotel Carlos V Patagonia",
+            "ciudad": "BARILOCHE",
+            "parecido": 0.49
+          },
+          {
+            "nombre": "Patagonia backpackers",
+            "ciudad": "CALAFATE",
+            "parecido": 0.49
+          }
+        ]
+      },
+      {
+        "nombre": "Pioneros del Valle",
+        "paquetes": [
+          "OD033"
+        ],
+        "nota": null,
+        "sugerencias": [
+          {
+            "nombre": "Mirador del Valle",
+            "ciudad": "CAFAYATE",
+            "parecido": 0.49
+          },
+          {
+            "nombre": "Posada Salentein || uco valley",
+            "ciudad": "MENDOZA",
+            "parecido": 0.38
+          }
+        ]
+      },
+      {
+        "nombre": "Piren",
+        "paquetes": [
+          "OD025"
+        ],
+        "nota": null,
+        "sugerencias": [
+          {
+            "nombre": "Hotel Pirén",
+            "ciudad": "PUERTO MADRYN",
+            "parecido": 0.81
+          }
+        ]
+      },
+      {
+        "nombre": "Puma Hostel",
+        "paquetes": [
+          "OD017",
+          "CH10"
+        ],
+        "nota": null,
+        "sugerencias": [
+          {
+            "nombre": "Puma House",
+            "ciudad": "PUERTO NATALES",
+            "parecido": 0.79
+          },
+          {
+            "nombre": "Fujima Hostel",
+            "ciudad": "SAO PAULO",
+            "parecido": 0.35
+          },
+          {
+            "nombre": "Opa Hostel",
+            "ciudad": "BRASIL",
+            "parecido": 0.35
+          }
+        ]
+      },
+      {
+        "nombre": "Rochester",
+        "paquetes": [
+          "OD018",
+          "OD020"
+        ],
+        "nota": null,
+        "sugerencias": [
+          {
+            "nombre": "Rochester Calafate",
+            "ciudad": "CALAFATE",
+            "parecido": 0.83
+          }
+        ]
+      },
+      {
+        "nombre": "Rumbo Sur",
+        "paquetes": [
+          "OD022"
+        ],
+        "nota": "El directorio tiene 2 proveedores con este mismo nombre",
+        "sugerencias": [
+          {
+            "nombre": "Rumbo sur",
+            "ciudad": "USHUAIA",
+            "parecido": 1
+          },
+          {
+            "nombre": "Rumbo sur",
+            "ciudad": "CALAFATE",
+            "parecido": 1
+          },
+          {
+            "nombre": "Comercial Cono Sur",
+            "ciudad": "CALAFATE",
+            "parecido": 0.39
+          }
+        ]
+      },
+      {
+        "nombre": "San Pedro Backpackers",
+        "paquetes": [
+          "OD030"
+        ],
+        "nota": null,
+        "sugerencias": [
+          {
+            "nombre": "Backpacker San Pedro Hostel",
+            "ciudad": "SAN PEDRO DE ATACAMA",
+            "parecido": 0.91
+          },
+          {
+            "nombre": "Patagonia backpackers",
+            "ciudad": "CALAFATE",
+            "parecido": 0.44
+          }
+        ]
+      },
+      {
+        "nombre": "The Adventure Brew Hostel",
+        "paquetes": [
+          "OD031"
+        ],
+        "nota": null,
+        "sugerencias": []
+      },
+      {
+        "nombre": "Transvipp",
+        "paquetes": [
+          "OD030"
+        ],
+        "nota": null,
+        "sugerencias": [
+          {
+            "nombre": "TRANSVIP",
+            "ciudad": "SAN PEDRO DE ATACAMA",
+            "parecido": 0.97
+          }
+        ]
+      },
+      {
+        "nombre": "Tremun",
+        "paquetes": [
+          "OD013",
+          "OD016",
+          "OD022"
+        ],
+        "nota": null,
+        "sugerencias": []
+      },
+      {
+        "nombre": "Up Hoteles",
+        "paquetes": [
+          "OD018",
+          "OD020"
+        ],
+        "nota": null,
+        "sugerencias": []
+      },
+      {
+        "nombre": "Vendaval",
+        "paquetes": [
+          "OD017",
+          "CH10"
+        ],
+        "nota": null,
+        "sugerencias": [
+          {
+            "nombre": "Hotel Vendaval",
+            "ciudad": "PUERTO NATALES",
+            "parecido": 0.87
+          }
+        ]
+      },
+      {
+        "nombre": "Vertice",
+        "paquetes": [
+          "OD017",
+          "CH10"
+        ],
+        "nota": null,
+        "sugerencias": [
+          {
+            "nombre": "W trek VERTICE",
+            "ciudad": "PUERTO NATALES",
+            "parecido": 0.85
+          }
+        ]
+      }
+    ],
+    "equivalenciasParaRevisar": [],
+    "equivalenciasUsadas": [
+      {
+        "nombre": "Nacional Inn",
+        "proveedorDirectorio": "nacional inn foz",
+        "ciudad": "BRASIL",
+        "paquetes": [
+          "OD032"
+        ]
+      }
+    ],
+    "serviciosSinBookingSupplier": [
+      {
+        "linea": "Excursions en Natales",
+        "donde": [
+          {
+            "codigo": "OD017",
+            "fila": 742
+          }
+        ]
+      },
+      {
+        "linea": "Excursions en San Pedro",
+        "donde": [
+          {
+            "codigo": "OD030",
+            "fila": 807
+          }
+        ]
+      },
+      {
+        "linea": "Excursions in La Paz",
+        "donde": [
+          {
+            "codigo": "OD031",
+            "fila": 1096
+          }
+        ]
+      },
+      {
+        "linea": "Excursions Aventura",
+        "donde": [
+          {
+            "codigo": "OD032",
+            "fila": 880
+          }
+        ]
+      }
+    ],
+    "alojamientosSinNivel": [
+      {
+        "codigo": "OD017",
+        "lineas": [
+          {
+            "fila": 737,
+            "texto": "Accommodation: Big Sur / Loreto Belen / Darwin / Pristine Patagonia / Vendaval. Booking Supplier: Big Sur / Loreto Belen / CL Mundo / CL Mundo / Vendaval"
+          }
+        ],
+        "nivelesDeLaTabla": [
+          "Hotel 3*"
+        ]
+      },
+      {
+        "codigo": "OD018",
+        "lineas": [
+          {
+            "fila": 482,
+            "texto": "Accommodation: Milhouse Avenue. Booking Supplier: Milhouse"
+          },
+          {
+            "fila": 486,
+            "texto": "Accommodation:Merit San Telmo / Loi Flats / Rochester Concept. Booking Supplier: Merit / Loi Suites / Rochester"
+          },
+          {
+            "fila": 489,
+            "texto": "Accommodation: Dazzler Maipu / San Martin / Patios de San Telmo. Booking Supplier: Dazzler / Dazzler / Up Hoteles"
+          },
+          {
+            "fila": 492,
+            "texto": "Accommodation: Hotel Grand Brizo / Gran Brizo Bel Air / NH Buenos Aires City. Booking Supplier: Alvarez Arguelles / Alvarez Arguelles / NH City"
+          }
+        ],
+        "nivelesDeLaTabla": [
+          "Hostel",
+          "Budget Hotel",
+          "Hotel 3*",
+          "Hotel 4*"
+        ]
+      },
+      {
+        "codigo": "OD020",
+        "lineas": [
+          {
+            "fila": 482,
+            "texto": "Accommodation: Milhouse Avenue. Booking Supplier: Milhouse"
+          },
+          {
+            "fila": 486,
+            "texto": "Accommodation:Merit San Telmo / Loi Flats / Rochester Concept. Booking Supplier: Merit / Loi Suites / Rochester"
+          },
+          {
+            "fila": 489,
+            "texto": "Accommodation: Dazzler Maipu / San Martin / Patios de San Telmo. Booking Supplier: Dazzler / Dazzler / Up Hoteles"
+          },
+          {
+            "fila": 492,
+            "texto": "Accommodation: Hotel Grand Brizo / Gran Brizo Bel Air / NH Buenos Aires City. Booking Supplier: Alvarez Arguelles / Alvarez Arguelles / NH City"
+          }
+        ],
+        "nivelesDeLaTabla": [
+          "Hostel",
+          "Budget Hotel",
+          "Hotel 3*",
+          "Hotel 4*"
+        ]
+      },
+      {
+        "codigo": "OD025",
+        "lineas": [
+          {
+            "fila": 658,
+            "texto": "Accommodation: La Tosca / El Gualicho / Amonite. Booking Supplier: La Tosca / El Gualicho / Amonite"
+          }
+        ],
+        "nivelesDeLaTabla": []
+      },
+      {
+        "codigo": "OD029",
+        "lineas": [
+          {
+            "fila": 577,
+            "texto": "Accommodation: Hostal Providencia. Booking Supplier: Hostal Providencia"
+          },
+          {
+            "fila": 585,
+            "texto": "Accommodation: Hotel Diego de Velazquez / NH Santiago. Booking Supplier: CL Mundo / NH"
+          }
+        ],
+        "nivelesDeLaTabla": []
+      },
+      {
+        "codigo": "OD030",
+        "lineas": [
+          {
+            "fila": 796,
+            "texto": "Accommodation: San Pedro Backpackers / Aji Verde. Booking Supplier: San Pedro Backpackers / Avi Verde"
+          }
+        ],
+        "nivelesDeLaTabla": []
+      },
+      {
+        "codigo": "OD031",
+        "lineas": [
+          {
+            "fila": 1091,
+            "texto": "Accommodation: Hotel Sagarnaga. Booking Supplier: Imperio Inca"
+          }
+        ],
+        "nivelesDeLaTabla": [
+          "Budget Hotel"
+        ]
+      },
+      {
+        "codigo": "OD033",
+        "lineas": [
+          {
+            "fila": 1029,
+            "texto": "Accommodation: Rancho Grande / Pioneros del Valle / Patagonia. Booking Supplier: Chalten Travel / Pioneros del Valle / Patagonia"
+          },
+          {
+            "fila": 1034,
+            "texto": "Accommodation: Kau Si Aike / Poincenot / Fitz Roy / Vertical Lodge / El Paraiso. Booking Supplier: Kau Si Aike / Chalten Travel / Patagonian Group / Patagonian Group / Patagonian Group"
+          }
+        ],
+        "nivelesDeLaTabla": [
+          "Hostel",
+          "Budget Hotel"
+        ]
+      },
+      {
+        "codigo": "CH10",
+        "lineas": [
+          {
+            "fila": 1153,
+            "texto": "Accommodation: Big Sur / Loreto Belen / Darwin / Pristine Patagonia / Vendaval. Booking Supplier: Big Sur / Loreto Belen / CL Mundo / CL Mundo / Vendaval"
+          }
+        ],
+        "nivelesDeLaTabla": [
+          "Hotel 3*"
+        ]
+      },
+      {
+        "codigo": "COMPCH01",
+        "lineas": [
+          {
+            "fila": 1598,
+            "texto": "Accommodation: Ibis Valparaiso / Gervasoni / A Contraluz. Booking Supplier: CL Mundo / CL Mundo / CL Mundo"
+          }
+        ],
+        "nivelesDeLaTabla": []
+      }
+    ],
+    "nivelesSoloEnPrecios": [
+      {
+        "codigo": "OD032",
+        "nivel": "Hotel 3*"
+      }
+    ],
+    "lineasNoEntendidas": [
+      {
+        "texto": "Hosteria HI: 80 DBL y 60 SGL",
+        "motivo": "no calza con ningún patrón conocido",
+        "donde": [
+          {
+            "codigo": "OD013",
+            "fila": 222
+          },
+          {
+            "codigo": "OD016",
+            "fila": 222
+          }
+        ]
+      },
+      {
+        "texto": "Rincon 93 Sent 105 Quijote 130",
+        "motivo": "no calza con ningún patrón conocido",
+        "donde": [
+          {
+            "codigo": "OD013",
+            "fila": 227
+          },
+          {
+            "codigo": "OD016",
+            "fila": 227
+          }
+        ]
+      },
+      {
+        "texto": "o Kau Yatun o Design o Esplendor o Rochester",
+        "motivo": "no calza con ningún patrón conocido",
+        "donde": [
+          {
+            "codigo": "OD013",
+            "fila": 232
+          },
+          {
+            "codigo": "OD016",
+            "fila": 232
+          }
+        ]
+      },
+      {
+        "texto": "Optional Excursion: Base Torres Trek no food. Booking Supplier: Patagonia Planet",
+        "motivo": "no calza con ningún patrón conocido",
+        "donde": [
+          {
+            "codigo": "OD017",
+            "fila": 745
+          }
+        ]
+      },
+      {
+        "texto": "Transfers: Remis Mendoza. Booking Booking Supplier: Remis Mendoza",
+        "motivo": "\"Booking Supplier\" mal escrito",
+        "donde": [
+          {
+            "codigo": "OD019",
+            "fila": 89
+          }
+        ]
+      },
+      {
+        "texto": "Excursions: Bodegas half Day and Alta Montaña. Booking Booking Supplier: Huentata",
+        "motivo": "\"Booking Supplier\" mal escrito",
+        "donde": [
+          {
+            "codigo": "OD019",
+            "fila": 90
+          }
+        ]
+      },
+      {
+        "texto": "Excursion: Beagle Channel Boat Trip, 3 hours, no transfer to port / Booking Supplier: Rumbo Sur",
+        "motivo": "nombre de proveedor vacío",
+        "donde": [
+          {
+            "codigo": "OD022",
+            "fila": 151
+          }
+        ]
+      },
+      {
+        "texto": "Excursion: Tierra del Fuego National Park half Day. Bookind Supplier: Rumbo Sur",
+        "motivo": "\"Booking Supplier\" mal escrito",
+        "donde": [
+          {
+            "codigo": "OD022",
+            "fila": 153
+          }
+        ]
+      },
+      {
+        "texto": "Optional Excursion: Parque Nacional Tierra del Fuego c/ trekking y canoa. Booking Supplier: Canal Fun",
+        "motivo": "no calza con ningún patrón conocido",
+        "donde": [
+          {
+            "codigo": "OD022",
+            "fila": 154
+          }
+        ]
+      },
+      {
+        "texto": "Transfer REL - accommodation. Bookinkg Supplier: All Peninsula",
+        "motivo": "\"Booking Supplier\" mal escrito",
+        "donde": [
+          {
+            "codigo": "OD025",
+            "fila": 672
+          }
+        ]
+      },
+      {
+        "texto": "Optional Excursion: Whale Watching 1 June - 30 Nov. Booking Supplier: All Peninsula",
+        "motivo": "no calza con ningún patrón conocido",
+        "donde": [
+          {
+            "codigo": "OD025",
+            "fila": 674
+          }
+        ]
+      },
+      {
+        "texto": "Optional Excursion: Pinguinera + Gaiman 1 Sepiembre a 28 Febrero. Booking Supplier: All Peninsula",
+        "motivo": "no calza con ningún patrón conocido",
+        "donde": [
+          {
+            "codigo": "OD025",
+            "fila": 675
+          }
+        ]
+      },
+      {
+        "texto": "Accommodation: Hotel Don Raul / La Casa de Don Tomas. Booking Suplier: Hotel Don Raul / La Casa de Don Tomas",
+        "motivo": "\"Booking Supplier\" mal escrito",
+        "donde": [
+          {
+            "codigo": "OD030",
+            "fila": 801
+          }
+        ]
+      },
+      {
+        "texto": "Transfer GIG - Accommodation in Rio. Booking Supplier: Buzios Transfers / Alex",
+        "motivo": "cantidad de opciones \"/\" distinta entre Service Provider y Booking Supplier",
+        "donde": [
+          {
+            "codigo": "OD032",
+            "fila": 881
+          }
+        ]
+      },
+      {
+        "texto": "Optional:2nd Night at Fitz Camp. Booking Suplier: Receptivo Chalten",
+        "motivo": "no calza con ningún patrón conocido",
+        "donde": [
+          {
+            "codigo": "OD033",
+            "fila": 1038
+          }
+        ]
+      },
+      {
+        "texto": "Transfer El Calafate Airport to El Chalten. Booking Supplier: Chalten Travel / Transporte Las Lengas",
+        "motivo": "cantidad de opciones \"/\" distinta entre Service Provider y Booking Supplier",
+        "donde": [
+          {
+            "codigo": "OD033",
+            "fila": 1042
+          }
+        ]
+      },
+      {
+        "texto": "Public Bus El Chalten Bus Station - El Calafate Bus Station. Booking Supplier: Chalten Travel",
+        "motivo": "no calza con ningún patrón conocido",
+        "donde": [
+          {
+            "codigo": "OD033",
+            "fila": 1043
+          }
+        ]
+      },
+      {
+        "texto": "Tarifas W Trek",
+        "motivo": "no calza con ningún patrón conocido",
+        "donde": [
+          {
+            "codigo": "CH10",
+            "fila": 1157
+          }
+        ]
+      },
+      {
+        "texto": "W Trek Standard. Booking Supplier: Las Torres",
+        "motivo": "no calza con ningún patrón conocido",
+        "donde": [
+          {
+            "codigo": "CH10",
+            "fila": 1158
+          }
+        ]
+      },
+      {
+        "texto": "Self Guided Tent DBL",
+        "motivo": "no calza con ningún patrón conocido",
+        "donde": [
+          {
+            "codigo": "CH10",
+            "fila": 1159
+          }
+        ]
+      },
+      {
+        "texto": "Self Guided Refugio",
+        "motivo": "no calza con ningún patrón conocido",
+        "donde": [
+          {
+            "codigo": "CH10",
+            "fila": 1160
+          }
+        ]
+      },
+      {
+        "texto": "Public Bus Santiago - Valparaiso - Santiago. Booking Supplier: Kupos.cl",
+        "motivo": "no calza con ningún patrón conocido",
+        "donde": [
+          {
+            "codigo": "COMPCH01",
+            "fila": 1604
+          }
+        ]
+      }
+    ],
+    "bloquesNoEncontrados": [
+      {
+        "codigo": "COMPBO20",
+        "motivo": "aparece solo el código, sin el nombre del paquete: no parece el título de un bloque",
+        "apariciones": [
+          {
+            "celda": "C848",
+            "texto": "COMPBO20"
+          },
+          {
+            "celda": "D848",
+            "texto": "COMPBO20"
+          }
+        ],
+        "contexto": [
+          {
+            "celda": "A847",
+            "texto": "CHB31"
+          },
+          {
+            "celda": "B847",
+            "texto": "Overland Tour San Pedro - Uyuni"
+          },
+          {
+            "celda": "B848",
+            "texto": "Net Rates"
+          },
+          {
+            "celda": "B849",
+            "texto": "Overland Sab Pedro to Uyuni. Booking Supplier: Imperio Inca"
+          }
+        ]
+      }
+    ],
+    "bloquesDuplicados": [],
+    "bloquesQueNoCalzan": [
+      {
+        "codigo": "COMPBR10",
+        "motivo": "no encontré dónde termina el armado del paquete (no hay un renglón \"Paquetes …\" ni el título repetido debajo)"
+      }
+    ],
+    "destinosAConfirmar": [
+      {
+        "codigo": "OD033",
+        "destinoLista": "CHA",
+        "destinoExcel": null
+      },
+      {
+        "codigo": "CH10",
+        "destinoLista": "PNT",
+        "destinoExcel": null
+      },
+      {
+        "codigo": "COMPBR10",
+        "destinoLista": "SAO",
+        "destinoExcel": "SSA"
+      }
+    ],
+    "nivelesConfirmadosSinLinea": []
+  },
+  "habriaNecesitadoIA": [
+    {
+      "codigo": "OD013",
+      "bloqueEntero": false,
+      "lineas": [
+        {
+          "fila": 222,
+          "texto": "Hosteria HI: 80 DBL y 60 SGL"
+        },
+        {
+          "fila": 227,
+          "texto": "Rincon 93 Sent 105 Quijote 130"
+        },
+        {
+          "fila": 232,
+          "texto": "o Kau Yatun o Design o Esplendor o Rochester"
+        }
+      ]
+    },
+    {
+      "codigo": "OD016",
+      "bloqueEntero": false,
+      "lineas": [
+        {
+          "fila": 222,
+          "texto": "Hosteria HI: 80 DBL y 60 SGL"
+        },
+        {
+          "fila": 227,
+          "texto": "Rincon 93 Sent 105 Quijote 130"
+        },
+        {
+          "fila": 232,
+          "texto": "o Kau Yatun o Design o Esplendor o Rochester"
+        }
+      ]
+    },
+    {
+      "codigo": "OD017",
+      "bloqueEntero": false,
+      "lineas": [
+        {
+          "fila": 745,
+          "texto": "Optional Excursion: Base Torres Trek no food. Booking Supplier: Patagonia Planet"
+        }
+      ]
+    },
+    {
+      "codigo": "OD019",
+      "bloqueEntero": false,
+      "lineas": [
+        {
+          "fila": 89,
+          "texto": "Transfers: Remis Mendoza. Booking Booking Supplier: Remis Mendoza"
+        },
+        {
+          "fila": 90,
+          "texto": "Excursions: Bodegas half Day and Alta Montaña. Booking Booking Supplier: Huentata"
+        }
+      ]
+    },
+    {
+      "codigo": "OD022",
+      "bloqueEntero": false,
+      "lineas": [
+        {
+          "fila": 151,
+          "texto": "Excursion: Beagle Channel Boat Trip, 3 hours, no transfer to port / Booking Supplier: Rumbo Sur"
+        },
+        {
+          "fila": 153,
+          "texto": "Excursion: Tierra del Fuego National Park half Day. Bookind Supplier: Rumbo Sur"
+        },
+        {
+          "fila": 154,
+          "texto": "Optional Excursion: Parque Nacional Tierra del Fuego c/ trekking y canoa. Booking Supplier: Canal Fun"
+        }
+      ]
+    },
+    {
+      "codigo": "OD025",
+      "bloqueEntero": false,
+      "lineas": [
+        {
+          "fila": 672,
+          "texto": "Transfer REL - accommodation. Bookinkg Supplier: All Peninsula"
+        },
+        {
+          "fila": 674,
+          "texto": "Optional Excursion: Whale Watching 1 June - 30 Nov. Booking Supplier: All Peninsula"
+        },
+        {
+          "fila": 675,
+          "texto": "Optional Excursion: Pinguinera + Gaiman 1 Sepiembre a 28 Febrero. Booking Supplier: All Peninsula"
+        }
+      ]
+    },
+    {
+      "codigo": "OD030",
+      "bloqueEntero": false,
+      "lineas": [
+        {
+          "fila": 801,
+          "texto": "Accommodation: Hotel Don Raul / La Casa de Don Tomas. Booking Suplier: Hotel Don Raul / La Casa de Don Tomas"
+        }
+      ]
+    },
+    {
+      "codigo": "OD032",
+      "bloqueEntero": false,
+      "lineas": [
+        {
+          "fila": 881,
+          "texto": "Transfer GIG - Accommodation in Rio. Booking Supplier: Buzios Transfers / Alex"
+        }
+      ]
+    },
+    {
+      "codigo": "OD033",
+      "bloqueEntero": false,
+      "lineas": [
+        {
+          "fila": 1038,
+          "texto": "Optional:2nd Night at Fitz Camp. Booking Suplier: Receptivo Chalten"
+        },
+        {
+          "fila": 1042,
+          "texto": "Transfer El Calafate Airport to El Chalten. Booking Supplier: Chalten Travel / Transporte Las Lengas"
+        },
+        {
+          "fila": 1043,
+          "texto": "Public Bus El Chalten Bus Station - El Calafate Bus Station. Booking Supplier: Chalten Travel"
+        }
+      ]
+    },
+    {
+      "codigo": "CH10",
+      "bloqueEntero": false,
+      "lineas": [
+        {
+          "fila": 1157,
+          "texto": "Tarifas W Trek"
+        },
+        {
+          "fila": 1158,
+          "texto": "W Trek Standard. Booking Supplier: Las Torres"
+        },
+        {
+          "fila": 1159,
+          "texto": "Self Guided Tent DBL"
+        },
+        {
+          "fila": 1160,
+          "texto": "Self Guided Refugio"
+        }
+      ]
+    },
+    {
+      "codigo": "COMPCH01",
+      "bloqueEntero": false,
+      "lineas": [
+        {
+          "fila": 1604,
+          "texto": "Public Bus Santiago - Valparaiso - Santiago. Booking Supplier: Kupos.cl"
+        }
+      ]
+    },
+    {
+      "codigo": "COMPBR10",
+      "bloqueEntero": true,
+      "lineas": []
+    }
+  ],
+  "codigosAusentesEnRutas": []
+}
