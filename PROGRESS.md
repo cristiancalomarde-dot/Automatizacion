@@ -53,6 +53,40 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
       descripción del paquete de excursiones: decidir cómo representarlo al planear M2.
 - **M1-04c terminada (2026-10-03):** diagnóstico de los 17 paquetes de los 7 tours, sin escribir en la base. El reporte está en `docs/sdd/diagnosticos/M1-04c-paquetes-de-los-tours.md` (+ `.json`) y se corre con `npm run diagnosticar:paquetes`. La lista de códigos vive en `data/paquetes-piloto.csv`. Suite 302/302 (el test de M1-03 ahora admite más de 220 proveedores, porque el directorio ya tiene 227).
   - **Esperando al owner:** `Insumos/Borrador respuestas diagnostico paquetes.xlsx`, con 44 proveedores (18 de confianza alta), 4 renglones sin proveedor, 18 alojamientos sin categoría y 9 casos sueltos. Con eso se escribe la ficha de M1-04d.
+  - **Respuestas del owner al borrador (2026-10-03), leídas y cruzadas con el directorio (227):**
+    - **Equivalencias a cargar en M1-04d:** las 18 marcadas "ok" más estas, que están con otro
+      nombre: Alvarez Arguelles → Hotel Grand Brizo Buenos Aires; Loi Suites → Loi flats buenos
+      aires; Up Hoteles → Patios San Telmo; Las Torres (antes "Fantástico Sur") → W trek LAS
+      TORRES; Vertice → W trek VERTICE (en CH10 depende del programa); Dazzler (Maipú) →
+      Reservas Dazzler Maipu'; Buzios Transfers → buzios transfer; Transporte Las Lengas → Las
+      Lengas; Copacabana Mar → Copacabana Mar hotel; Nacional Inn en Río → Nacional inn
+      Copacabana.
+    - **A confirmar con el owner:** Local 55 = "Rodrigo Perez" (BRASIL)?; All Peninsula Valdés =
+      "Peninsula valdes"?; Always Glaciers = "calten tour / ALWAYS"?; ¿quién es "Alex" (2ª
+      opción de transfer en Río)?; ¿qué es "Amonite" (Madryn, sin respuesta)?
+    - **Faltan en el directorio** (el owner los agrega al Excel de proveedores): Antarctica Hostel
+      y Anum Hostel (Ushuaia); Aji Verde (San Pedro; el Excel dice "Avi Verde" por typo); Bamboo
+      Rio Hostel, El Misti Ipanema e Ipanema Beach Hostel (Río); Dazzler San Martín (BA; Dazzler
+      se reserva hotel por hotel); Dazzler Puerto Madryn; El Gualicho Hostel (Madryn); Del
+      Glaciar (Pioneros / Libertador, Calafate); Tremun (Calafate y Ushuaia); Patagonian Group y
+      Patagonia Hostel (Chaltén); Rochester Concept (BA, central distinta de Calafate); NH
+      central (para NH Santiago) y NH Cordillera (Mendoza, el owner averigua el mail); Receptivo
+      Chalten (Fitz Camp opcional); The Adventure Brew Hostel (La Paz, WhatsApp).
+    - **Falta el mail de Imperio Inca:** está en el directorio pero sin mail, y es crítico
+      (Overland COMPBO20, bus Uyuni–La Paz y Hotel Sagarnaga en La Paz).
+    - **Kupos.cl** es un sistema online de pasajes de bus en Chile, con claves de HI Travel: no
+      es un proveedor al que se le escribe; ese tramo queda manual.
+    - **Categorías confirmadas:** OD018/OD020 → Milhouse = Hostel, Merit/Loi/Rochester =
+      Budget, Dazzler/Patios = 3*, Brizo/NH City = 4*; OD025 = Hostel; OD029 → Providencia =
+      Hostel, Diego de Velázquez/NH = 3*; OD030 = Hostel; OD031 = Budget; OD033 → Rancho
+      Grande/Pioneros/Patagonia = Hostel, Kau Si Aike/Poincenot/… = Budget ("funcionan también
+      como 3*"); OD017, CH10 y COMPCH01 = 3*.
+    - **Para M1-05:** en los tours largos las categorías no son homogéneas y "Budget Hotel" del
+      tour puede corresponder al 3* del paquete (ej. Río: Nacional Inn y Copacabana Mar son 3* y
+      el tour los llama Budget). Hace falta una tabla de equivalencia de categorías tour ↔
+      paquete.
+    - Los 4 "Excursions en …" son títulos de sección; las notas de precios de OD013/OD016 se
+      ignoran; destinos: OD033 = CHA, CH10 = PNT + Torres del Paine, COMPBR10 = SAO.
   - **Hallazgo para M1-04d:** las equivalencias tienen que depender del destino. "Nacional Inn" en Río (OD032) quedó emparejado con Nacional Inn Foz y debería ser Nacional inn Copacabana. Además, el lector tiene que tolerar los typos de "Booking Supplier" (Bookind, Suplier, Booking Booking) y las "Optional Excursion".
   - El builder se colgó 3 veces por el watchdog (esperando la suite completa sin salida). El cierre lo hizo el loop principal.
 - **Plan activo:** `docs/sdd/roadmaps/active/m1-catalogo-y-proveedores.md` — M1-01 a M1-04b
