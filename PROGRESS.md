@@ -61,9 +61,11 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
       Reservas Dazzler Maipu'; Buzios Transfers → buzios transfer; Transporte Las Lengas → Las
       Lengas; Copacabana Mar → Copacabana Mar hotel; Nacional Inn en Río → Nacional inn
       Copacabana.
-    - **A confirmar con el owner:** Local 55 = "Rodrigo Perez" (BRASIL)?; All Peninsula Valdés =
-      "Peninsula valdes"?; Always Glaciers = "calten tour / ALWAYS"?; ¿quién es "Alex" (2ª
-      opción de transfer en Río)?; ¿qué es "Amonite" (Madryn, sin respuesta)?
+    - **Respuestas del owner (2026-10-03):** Local 55 = "Rodrigo Perez" (confirmado). "Alex" es un
+      taxi privado de Río, plan B (va al directorio con su contacto). "Amonite" es un hostel de
+      Puerto Madryn (el owner averigua el mail). **Pendientes de que el owner los verifique:** All
+      Peninsula Valdés = "Peninsula valdes"?; Always Glaciers = "calten tour / ALWAYS"? (no sabe
+      qué es "calten tour": ¿Chalten Travel?).
     - **Faltan en el directorio** (el owner los agrega al Excel de proveedores): Antarctica Hostel
       y Anum Hostel (Ushuaia); Aji Verde (San Pedro; el Excel dice "Avi Verde" por typo); Bamboo
       Rio Hostel, El Misti Ipanema e Ipanema Beach Hostel (Río); Dazzler San Martín (BA; Dazzler
