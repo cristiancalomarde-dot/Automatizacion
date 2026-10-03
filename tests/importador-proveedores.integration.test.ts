@@ -106,9 +106,9 @@ interface FilaProveedorDB {
       filasTrasSegunda = await proveedoresDeLaCorrida(segunda);
     }, TIMEOUT);
 
-    it("#1 lee el archivo completo: entre 180 y 220 proveedores cargados en `proveedor`", () => {
+    it("#1 lee el archivo completo: al menos 180 proveedores cargados en `proveedor` (el directorio crece: 214 al cargar, 227 al 2026-10-03)", () => {
       expect(primera.procesados).toBeGreaterThanOrEqual(180);
-      expect(primera.procesados).toBeLessThanOrEqual(220);
+      expect(primera.procesados).toBeLessThanOrEqual(400);
       expect(filasTrasPrimera).toHaveLength(primera.procesados);
     });
 
