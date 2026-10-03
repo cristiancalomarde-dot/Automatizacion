@@ -55,6 +55,9 @@ const HOJA = grilla({
   AH3: "Otro paquete OD021",
   AH5: "Accommodation: Hostel X. Booking Supplier: Nadie",
   AH8: "Paquetes otro",
+  // Un bloque sin fin de sección (ni "Paquetes", ni el título repetido).
+  AP3: "Sin final OD023",
+  AP5: "Accommodation: Hostel Y. Booking Supplier: Buquebus",
   A30: "MDZ",
 });
 
@@ -90,8 +93,16 @@ function supabaseFalso(tablas: Record<string, unknown[]>) {
   return { admin, metodos };
 }
 
-async function correr(csv: string, extra: { producto?: unknown[]; omitirCargados?: boolean } = {}) {
-  const { admin, metodos } = supabaseFalso({ proveedor: DIRECTORIO, proveedor_alias: ALIAS, producto: extra.producto ?? [] });
+async function correr(
+  csv: string,
+  extra: { producto?: unknown[]; omitirCargados?: boolean; producto_servicio?: unknown[] } = {},
+) {
+  const { admin, metodos } = supabaseFalso({
+    proveedor: DIRECTORIO,
+    proveedor_alias: ALIAS,
+    producto: extra.producto ?? [],
+    producto_servicio: extra.producto_servicio ?? [],
+  });
   const d = await diagnosticarPaquetes({
     admin,
     filas: HOJA,
@@ -218,6 +229,34 @@ describe("diagnosticarPaquetes — lo que necesito que confirmes (spec M1-04c §
     ]);
     expect(d.paquetes.find((p) => p.codigo === "OD099")).toMatchObject({ encontrado: false, servicios: [] });
     expect(d.aConfirmar.destinosAConfirmar).toEqual([{ codigo: "OD020", destinoLista: "URU", destinoExcel: "BUE" }]);
+  });
+});
+
+describe("diagnosticarPaquetes — equivalencias usadas y bloques que no calzan", () => {
+  it("lista cada equivalencia que usó, con la ciudad del proveedor, para revisar que valga para ese paquete", async () => {
+    const { d } = await correr("codigo,destino\nOD018,BUE\n");
+    expect(d.aConfirmar.equivalenciasUsadas).toEqual([
+      { nombre: "Alvarez Arguelles", proveedorDirectorio: "Cuenca Del Plata (Natalia )", ciudad: "IGUAZU", paquetes: ["OD018"] },
+    ]);
+  });
+
+  it("una equivalencia ya usada en un producto cargado del mismo destino no se vuelve a preguntar", async () => {
+    const { d } = await correr("codigo,destino\nOD018,BUE\n", {
+      producto_servicio: [{ booking_supplier_nombre: "Alvarez Arguelles", producto: { destino: "BUE" } }],
+    });
+    expect(d.aConfirmar.equivalenciasUsadas).toEqual([]);
+    const otroDestino = await correr("codigo,destino\nOD018,BUE\n", {
+      producto_servicio: [{ booking_supplier_nombre: "Alvarez Arguelles", producto: { destino: "IGR" } }],
+    });
+    expect(otroDestino.d.aConfirmar.equivalenciasUsadas.map((e) => e.nombre)).toEqual(["Alvarez Arguelles"]);
+  });
+
+  it("un bloque sin fin de sección no calza, y se dice por qué", async () => {
+    const { d } = await correr("codigo,destino\nOD023,BUE\n");
+    expect(d.aConfirmar.bloquesQueNoCalzan).toEqual([
+      { codigo: "OD023", motivo: expect.stringMatching(/dónde termina/) },
+    ]);
+    expect(d.paquetes[0]).toMatchObject({ encontrado: true, bloqueNoCalza: true, servicios: [] });
   });
 });
 

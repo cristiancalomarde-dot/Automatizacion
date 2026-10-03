@@ -103,13 +103,19 @@ export interface ItemsAConfirmar {
     sugerencias: SugerenciaProveedor[];
   }>;
   equivalenciasParaRevisar: Array<{ nombre: string; proveedorDirectorio: string | null; paquetes: string[]; nota: string | null }>;
+  /**
+   * Equivalencias confirmadas que se usaron en un destino donde todavía no se
+   * usaron (en productos ya cargados): valen para todo destino, así que se
+   * pide revisar que apliquen a ese paquete.
+   */
+  equivalenciasUsadas: Array<{ nombre: string; proveedorDirectorio: string | null; ciudad: string | null; paquetes: string[] }>;
   serviciosSinBookingSupplier: Array<{ linea: string; donde: Donde[] }>;
   alojamientosSinNivel: Array<{ codigo: string; lineas: Array<{ fila: number; texto: string }>; nivelesDeLaTabla: string[] }>;
   nivelesSoloEnPrecios: Array<{ codigo: string; nivel: string }>;
   lineasNoEntendidas: Array<{ texto: string; motivo: string; donde: Donde[] }>;
   bloquesNoEncontrados: CodigoNoUbicado[];
   bloquesDuplicados: CodigoDuplicado[];
-  bloquesQueNoCalzan: string[];
+  bloquesQueNoCalzan: Array<{ codigo: string; motivo: string }>;
   destinosAConfirmar: Array<{ codigo: string; destinoLista: string; destinoExcel: string | null }>;
   nivelesConfirmadosSinLinea: NivelConfirmado[];
 }
@@ -273,6 +279,19 @@ export async function diagnosticarPaquetes(opciones: {
   }>(admin, "proveedor_alias", "alias_normalizado, proveedor_id, estado, nota");
   const indice = crearIndiceProveedores(directorio, alias);
   const nombrePorId = new Map(directorio.map((p) => [p.id, p.nombre]));
+  const ciudadPorId = new Map(directorio.map((p) => [p.id, p.ciudad]));
+  // Equivalencias ya usadas en productos cargados, por destino: ahí ya las revisó el owner.
+  const cargadasPorDestino = new Set(
+    (
+      await leerTodo<{ booking_supplier_nombre: string | null; producto: { destino: string | null } | null }>(
+        admin,
+        "producto_servicio",
+        "booking_supplier_nombre, producto:producto_id(destino)",
+      )
+    )
+      .filter((f) => f.booking_supplier_nombre && f.producto?.destino)
+      .map((f) => `${f.producto!.destino}|${normalizarNombre(f.booking_supplier_nombre!)}`),
+  );
 
   const ubicacion = ubicarBloquesEnHoja(filas, paquetes);
   const plan = await planificarBloques({
@@ -290,11 +309,13 @@ export async function diagnosticarPaquetes(opciones: {
 
   const sinEmparejar = new Map<string, ItemsAConfirmar["proveedoresSinEmparejar"][number]>();
   const paraRevisar = new Map<string, ItemsAConfirmar["equivalenciasParaRevisar"][number]>();
+  const usadas = new Map<string, ItemsAConfirmar["equivalenciasUsadas"][number]>();
   const sinBS = new Map<string, ItemsAConfirmar["serviciosSinBookingSupplier"][number]>();
   const noEntendidas = new Map<string, ItemsAConfirmar["lineasNoEntendidas"][number]>();
   const aConfirmar: ItemsAConfirmar = {
     proveedoresSinEmparejar: [],
     equivalenciasParaRevisar: [],
+    equivalenciasUsadas: [],
     serviciosSinBookingSupplier: [],
     alojamientosSinNivel: [],
     nivelesSoloEnPrecios: [],
@@ -358,6 +379,20 @@ export async function diagnosticarPaquetes(opciones: {
           };
           if (!item.paquetes.includes(codigo)) item.paquetes.push(codigo);
           sinEmparejar.set(clave, item);
+        } else if (
+          o.emparejado === "por_equivalencia" &&
+          !cargadasPorDestino.has(`${destino}|${normalizarNombre(o.bookingSupplier!)}`)
+        ) {
+          const clave = normalizarNombre(o.bookingSupplier!);
+          const id = resolverProveedor(o.bookingSupplier, indice).id;
+          const item = usadas.get(clave) ?? {
+            nombre: o.bookingSupplier!,
+            proveedorDirectorio: o.proveedorDirectorio,
+            ciudad: id ? (ciudadPorId.get(id) ?? null) : null,
+            paquetes: [],
+          };
+          if (!item.paquetes.includes(codigo)) item.paquetes.push(codigo);
+          usadas.set(clave, item);
         } else if (o.emparejado === "equivalencia_para_revisar") {
           const clave = normalizarNombre(o.bookingSupplier!);
           const item = paraRevisar.get(clave) ?? {
@@ -403,7 +438,15 @@ export async function diagnosticarPaquetes(opciones: {
         fila: l.fila,
       });
     }
-    if (p.bloqueParaRevisar) aConfirmar.bloquesQueNoCalzan.push(codigo);
+    if (p.bloqueParaRevisar) {
+      aConfirmar.bloquesQueNoCalzan.push({
+        codigo,
+        motivo:
+          lectura.filaFin === null
+            ? "no encontré dónde termina el armado del paquete (no hay un renglón \"Paquetes …\" ni el título repetido debajo)"
+            : "no encontré ninguna línea de servicio (\"Accommodation / Excursion / Transfer … Booking Supplier …\") en su columna",
+      });
+    }
     aConfirmar.nivelesConfirmadosSinLinea.push(...p.nivelesConfirmadosSinLinea);
     if (plan.bloquesQueNecesitanIA.includes(codigo)) {
       habriaNecesitadoIA.push({
@@ -431,6 +474,7 @@ export async function diagnosticarPaquetes(opciones: {
   const porNombre = <T extends { nombre: string }>(a: T, b: T) => a.nombre.localeCompare(b.nombre);
   aConfirmar.proveedoresSinEmparejar = [...sinEmparejar.values()].sort(porNombre);
   aConfirmar.equivalenciasParaRevisar = [...paraRevisar.values()].sort(porNombre);
+  aConfirmar.equivalenciasUsadas = [...usadas.values()].sort(porNombre);
   aConfirmar.serviciosSinBookingSupplier = [...sinBS.values()];
   aConfirmar.lineasNoEntendidas = [...noEntendidas.values()];
 

@@ -11,7 +11,8 @@
     "test:watch": "vitest",
     "importar:proveedores": "tsx scripts/importar-proveedores.ts",
     "importar:productos": "tsx scripts/importar-productos-simples.ts",
-    "importar:equivalencias": "tsx scripts/cargar-equivalencias-proveedores.ts"
+    "importar:equivalencias": "tsx scripts/cargar-equivalencias-proveedores.ts",
+    "diagnosticar:paquetes": "tsx scripts/diagnosticar-paquetes.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.128.0",

@@ -81,6 +81,9 @@ const DIAG: Diagnostico = {
       },
     ],
     equivalenciasParaRevisar: [],
+    equivalenciasUsadas: [
+      { nombre: "Nacional Inn", proveedorDirectorio: "nacional inn foz", ciudad: "IGUAZU", paquetes: ["OD032"] },
+    ],
     serviciosSinBookingSupplier: [{ linea: "Excursions en Natales", donde: [{ codigo: "OD017", fila: 742 }] }],
     alojamientosSinNivel: [
       {
@@ -102,7 +105,7 @@ const DIAG: Diagnostico = {
       },
     ],
     bloquesDuplicados: [],
-    bloquesQueNoCalzan: [],
+    bloquesQueNoCalzan: [{ codigo: "COMPBR10", motivo: "no encontré dónde termina el armado del paquete" }],
     destinosAConfirmar: [{ codigo: "OD033", destinoLista: "CHA", destinoExcel: null }],
     nivelesConfirmadosSinLinea: [],
   },
@@ -146,6 +149,11 @@ describe("reporteMarkdown", () => {
     expect(md).toMatch(/OD020.*Budget Hotel/);
     expect(md).toMatch(/COMPBO20[\s\S]*C848/);
     expect(md).toMatch(/OD033[\s\S]*CHA/);
+  });
+
+  it("pide revisar las equivalencias usadas y explica por qué un bloque no calza", () => {
+    expect(md).toMatch(/Nacional Inn[\s\S]*nacional inn foz[\s\S]*IGUAZU[\s\S]*OD032/);
+    expect(md).toMatch(/COMPBR10[^\n]*dónde termina/);
   });
 
   it("tiene la sección 'Habría necesitado IA'", () => {

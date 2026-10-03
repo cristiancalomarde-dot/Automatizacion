@@ -65,7 +65,8 @@ function seccionPaquete(p: PaqueteDiagnostico, d: Diagnostico): string[] {
     "",
   ];
   if (p.bloqueNoCalza) {
-    out.push("El bloque no tiene la forma de siempre y no pude leer sus servicios.", "");
+    const motivo = d.aConfirmar.bloquesQueNoCalzan.find((b) => b.codigo === p.codigo)?.motivo;
+    out.push(`No pude leer sus servicios${motivo ? `: ${motivo}` : ""}.`, "");
     return out;
   }
   const alojamientos = p.servicios.filter((s) => s.tipo === "alojamiento");
@@ -150,6 +151,16 @@ export function reporteMarkdown(d: Diagnostico): string {
     }
     out.push("");
   }
+  if (c.equivalenciasUsadas.length) {
+    titulo(
+      "Equivalencias que usé: revisá que valgan para este paquete",
+      "Son nombres del Excel de paquetes que ya me confirmaste a qué proveedor corresponden. Pero la equivalencia vale para todos los destinos: fijate que el proveedor sea el correcto para estos paquetes (por ejemplo, que no sea el de otra ciudad).",
+    );
+    for (const e of c.equivalenciasUsadas) {
+      out.push(`- [ ] **${e.nombre}** → «${e.proveedorDirectorio}»${e.ciudad ? ` (${e.ciudad})` : ""}, en ${e.paquetes.join(", ")}.`);
+    }
+    out.push("");
+  }
   if (c.serviciosSinBookingSupplier.length) {
     titulo(
       "Renglones que no dicen a quién reservarle",
@@ -199,8 +210,8 @@ export function reporteMarkdown(d: Diagnostico): string {
     for (const b of c.bloquesDuplicados) {
       out.push(`- [ ] **${b.codigo}**: está en dos bloques distintos (${b.celdaUsada} y ${b.otrasCeldas.join(", ")}). Leí el de ${b.celdaUsada}. ¿Cuál es el bueno?`);
     }
-    for (const codigo of c.bloquesQueNoCalzan) {
-      out.push(`- [ ] **${codigo}**: el bloque no tiene la forma de siempre y no pude leer sus servicios.`);
+    for (const b of c.bloquesQueNoCalzan) {
+      out.push(`- [ ] **${b.codigo}**: está, pero no pude leer sus servicios: ${b.motivo}.`);
     }
     out.push("");
   }
