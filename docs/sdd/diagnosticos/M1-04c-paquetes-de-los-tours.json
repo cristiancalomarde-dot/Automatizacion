@@ -1,5 +1,5 @@
 {
-  "generado": "2026-10-03T09:49:57.934Z",
+  "generado": "2026-10-03T09:52:27.905Z",
   "archivo": "Construccion de Paquetes 2019 con 3 y 4 estrellas.xls",
   "hoja": "Analisis a Mayo 2026",
   "paquetes": [
@@ -1596,8 +1596,8 @@
               "prioridad": 2,
               "serviceProvider": "Pioneros del Valle",
               "bookingSupplier": "Pioneros del Valle",
-              "emparejado": "sin_emparejar",
-              "proveedorDirectorio": null,
+              "emparejado": "exacto",
+              "proveedorDirectorio": "Pioneros del valle",
               "nota": null
             },
             {
@@ -2319,14 +2319,14 @@
             "parecido": 0.86
           },
           {
-            "nombre": "Patagonia backpackers",
-            "ciudad": "CALAFATE",
-            "parecido": 0.8
+            "nombre": "Casa de la Patagonia",
+            "ciudad": "PUERTO NATALES",
+            "parecido": 0.83
           },
           {
-            "nombre": "Hotel Carlos V Patagonia",
-            "ciudad": "BARILOCHE",
-            "parecido": 0.79
+            "nombre": "Pristine Patagonia",
+            "ciudad": "PUERTO NATALES",
+            "parecido": 0.83
           }
         ]
       },
@@ -2345,33 +2345,14 @@
             "parecido": 0.57
           },
           {
-            "nombre": "Hotel Carlos V Patagonia",
-            "ciudad": "BARILOCHE",
-            "parecido": 0.49
+            "nombre": "Casa de la Patagonia",
+            "ciudad": "PUERTO NATALES",
+            "parecido": 0.52
           },
           {
-            "nombre": "Patagonia backpackers",
-            "ciudad": "CALAFATE",
-            "parecido": 0.49
-          }
-        ]
-      },
-      {
-        "nombre": "Pioneros del Valle",
-        "paquetes": [
-          "OD033"
-        ],
-        "nota": null,
-        "sugerencias": [
-          {
-            "nombre": "Mirador del Valle",
-            "ciudad": "CAFAYATE",
-            "parecido": 0.49
-          },
-          {
-            "nombre": "Posada Salentein || uco valley",
-            "ciudad": "MENDOZA",
-            "parecido": 0.38
+            "nombre": "Pristine Patagonia",
+            "ciudad": "PUERTO NATALES",
+            "parecido": 0.52
           }
         ]
       },

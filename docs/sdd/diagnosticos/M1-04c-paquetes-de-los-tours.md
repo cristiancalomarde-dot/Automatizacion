@@ -3,7 +3,7 @@
 Leí el Excel **Construccion de Paquetes 2019 con 3 y 4 estrellas.xls** (hoja "Analisis a Mayo 2026") el 2026-10-03. **No cargué ni cambié nada en el sistema:** esto es solo una lectura para que confirmes lo que no pude resolver solo.
 
 - Paquetes revisados: 17. Encontrados en el Excel: 16.
-- Reservas de servicios (cada opción de hotel o excursión): 126. Proveedor encontrado en el directorio: 40 por nombre exacto y 1 por una equivalencia que ya confirmaste; 0 con equivalencia a confirmar; 81 sin encontrar; 4 sin decir a quién reservarle.
+- Reservas de servicios (cada opción de hotel o excursión): 126. Proveedor encontrado en el directorio: 41 por nombre exacto y 1 por una equivalencia que ya confirmaste; 0 con equivalencia a confirmar; 80 sin encontrar; 4 sin decir a quién reservarle.
 - No revisé los que ya están cargados en el sistema: OD010A, OD010B, OD010C, OD010D, OD011.
 - Todos los códigos revisados aparecen en RutasenBus (hoja "Tours 2027").
 
@@ -76,11 +76,9 @@ Son a quienes se les pide la reserva, según el Excel de paquetes. No los encuen
 - [ ] **NH Cordillera** — aparece en OD019.
   - No encontré ningún nombre parecido en el directorio.
 - [ ] **Patagonia** — aparece en OD033.
-  - Sugerencia, sin aplicar: ¿es «Patagonia planet» (PUERTO NATALES), «Patagonia backpackers» (CALAFATE), «Hotel Carlos V Patagonia» (BARILOCHE)?
+  - Sugerencia, sin aplicar: ¿es «Patagonia planet» (PUERTO NATALES), «Casa de la Patagonia» (PUERTO NATALES), «Pristine Patagonia» (PUERTO NATALES)?
 - [ ] **Patagonian Group** — aparece en OD013, OD016, OD033.
-  - Sugerencia, sin aplicar: ¿es «Patagonia planet» (PUERTO NATALES), «Hotel Carlos V Patagonia» (BARILOCHE), «Patagonia backpackers» (CALAFATE)?
-- [ ] **Pioneros del Valle** — aparece en OD033.
-  - Sugerencia, sin aplicar: ¿es «Mirador del Valle» (CAFAYATE), «Posada Salentein || uco valley» (MENDOZA)?
+  - Sugerencia, sin aplicar: ¿es «Patagonia planet» (PUERTO NATALES), «Casa de la Patagonia» (PUERTO NATALES), «Pristine Patagonia» (PUERTO NATALES)?
 - [ ] **Piren** — aparece en OD025.
   - Sugerencia, sin aplicar: ¿es «Hotel Pirén» (PUERTO MADRYN)?
 - [ ] **Puma Hostel** — aparece en OD017, CH10.
@@ -580,7 +578,7 @@ Está en la celda B1027 · destino CHA.
 
 - Fila 1029: “Accommodation: Rancho Grande / Pioneros del Valle / Patagonia. Booking Supplier: Chalten Travel / Pioneros del Valle / Patagonia”
   1. Rancho Grande → se reserva a **Chalten Travel**: exacto
-  2. Pioneros del Valle → se reserva a **Pioneros del Valle**: **sin emparejar**
+  2. Pioneros del Valle → se reserva a **Pioneros del Valle**: exacto
   3. Patagonia → se reserva a **Patagonia**: **sin emparejar**
 - Fila 1034: “Accommodation: Kau Si Aike / Poincenot / Fitz Roy / Vertical Lodge / El Paraiso. Booking Supplier: Kau Si Aike / Chalten Travel / Patagonian Group / Patagonian Group / Patagonian Group”
   1. Kau Si Aike → se reserva a **Kau Si Aike**: **sin emparejar**
