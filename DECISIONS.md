@@ -6,6 +6,16 @@ Formato mínimo por entrada: qué decisión, por qué, alternativa rechazada, co
 
 # Decisiones de diseño
 
+## 2026-10-05: Formato de los mails a proveedores y del "recibido" (respuestas al boceto)
+- **Decisión:**
+  - **Tono:** saludo y cierre más simpáticos y positivos en todos los mails. El texto final se trabaja con el owner antes de M3; la versión 2 del boceto es una primera propuesta.
+  - **Datos de pasajero estándar en cada pedido:** nombre y apellido, nacionalidad, fecha de nacimiento, pasaporte y datos de vuelo. Lo que la agencia no mandó sale como "pendiente" o "a confirmar".
+  - **Idioma:** a los proveedores de Brasil se les escribe en portugués.
+  - **Iguazú Combined:** el cambio de hostel se le pide a Cuenca del Plata como parte del servicio, al final de la excursión del lado argentino o brasileño. Los pasajeros llevan el equipaje y lo dejan en los lockers del parque.
+  - **Remitente y copias:** el "recibido" a la agencia sale desde `operations@`, con copia a `ccalomarde@hitravel.com.ar`, que hace las liquidaciones. Los pedidos a proveedores también le copian.
+- **Razón:** respuestas del owner al boceto de "Revisar y enviar pedidos".
+- **Constraint:** se aplica al construir M3 (las plantillas). Boceto v2: https://claude.ai/artifact/AKMKXxY6wRxAFY4qhEwp48
+
 ## 2026-10-05: Equivalencias de proveedores por destino; grupos sin central se resuelven por hotel
 - **Decisión:**
   - Las equivalencias (`data/equivalencias-proveedores.csv`) tienen destino. Por ejemplo, "Nacional Inn" es el de Foz en Iguazú y el de Copacabana en Río.
