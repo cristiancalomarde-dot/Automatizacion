@@ -12,6 +12,7 @@
     "importar:proveedores": "tsx scripts/importar-proveedores.ts",
     "importar:productos": "tsx scripts/importar-productos-simples.ts",
     "importar:equivalencias": "tsx scripts/cargar-equivalencias-proveedores.ts",
+    "importar:paquetes": "tsx scripts/importar-paquetes-tours.ts",
     "diagnosticar:paquetes": "tsx scripts/diagnosticar-paquetes.ts"
   },
   "dependencies": {

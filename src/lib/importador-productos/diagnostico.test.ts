@@ -31,8 +31,8 @@ const HOJA = grilla({
   B8: "DBL",
   B9: "Accommodation: Hotel 4* Grand Brizo. Booking Supplier: Alvarez Arguelles",
   B11: "Excursion: City Tour / Bike Tour. Booking Supplier: Grupo Summa / La Bicicleta Naranja",
-  B12: "Transfers: Remis. Booking Booking Supplier: Remis",
-  B13: "Excursions en Natales",
+  B12: "Transfers: Remis. Booked by: Remis",
+  B13: "Excursion: Navimag",
   F10: "Net Prices:",
   F11: "Milhouse Hostel Dorm",
   G11: "200",
@@ -153,7 +153,7 @@ describe("diagnosticarPaquetes — servicios, niveles y emparejado (spec M1-04c 
       [9, 1, "Hotel 4* Grand Brizo", "Alvarez Arguelles", "por_equivalencia"],
       [11, 1, "City Tour", "Grupo Summa", "exacto"],
       [11, 2, "Bike Tour", "La Bicicleta Naranja", "exacto"],
-      [13, 1, "en Natales", null, "sin_booking_supplier"],
+      [13, 1, "Navimag", null, "sin_booking_supplier"],
     ]);
     const brizo = p.servicios.find((s) => s.fila === 9)!.opciones[0];
     expect(brizo.proveedorDirectorio).toBe("Cuenca Del Plata (Natalia )");
@@ -195,7 +195,7 @@ describe("diagnosticarPaquetes — lo que necesito que confirmes (spec M1-04c §
   it("servicios sin Booking Supplier, alojamientos sin nivel (con los niveles de la tabla) y renglones que no entiendo", async () => {
     const { d } = await correr("codigo,destino\nOD018,BUE\n");
     expect(d.aConfirmar.serviciosSinBookingSupplier).toEqual([
-      { linea: "Excursions en Natales", donde: [{ codigo: "OD018", fila: 13 }] },
+      { linea: "Excursion: Navimag", donde: [{ codigo: "OD018", fila: 13 }] },
     ]);
     expect(d.aConfirmar.alojamientosSinNivel).toEqual([
       {
@@ -209,7 +209,7 @@ describe("diagnosticarPaquetes — lo que necesito que confirmes (spec M1-04c §
     ]);
     expect(d.aConfirmar.lineasNoEntendidas).toEqual([
       {
-        texto: "Transfers: Remis. Booking Booking Supplier: Remis",
+        texto: "Transfers: Remis. Booked by: Remis",
         motivo: "\"Booking Supplier\" mal escrito",
         donde: [{ codigo: "OD018", fila: 12 }],
       },
@@ -264,7 +264,7 @@ describe("diagnosticarPaquetes — sin IA (spec M1-04c §3 #8)", () => {
   it("lista los bloques y líneas que habrían necesitado IA, sin llamarla", async () => {
     const { d } = await correr("codigo,destino\nOD018,BUE\nOD020,BUE\n");
     expect(d.habriaNecesitadoIA).toEqual([
-      { codigo: "OD018", bloqueEntero: false, lineas: [{ fila: 12, texto: "Transfers: Remis. Booking Booking Supplier: Remis" }] },
+      { codigo: "OD018", bloqueEntero: false, lineas: [{ fila: 12, texto: "Transfers: Remis. Booked by: Remis" }] },
     ]);
   });
 });

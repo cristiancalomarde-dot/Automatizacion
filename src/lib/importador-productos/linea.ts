@@ -45,6 +45,11 @@ export interface ServicioLeido {
   /** Fila del Excel (1-based) de donde sale. */
   fila: number;
   opciones: OpcionServicio[];
+  /**
+   * "Optional Excursion: …" / "Optional: …" (spec M1-04d #6): solo se pide si
+   * la reserva lo incluye. Ausente = no es opcional.
+   */
+  opcional?: true;
 }
 
 export type LineaClasificada =
@@ -63,10 +68,10 @@ export type LineaClasificada =
   | { clase: "dudosa"; motivo: string };
 
 const TIPOS: Array<[RegExp, TipoServicio]> = [
-  [/^accommodations?$/i, "alojamiento"],
+  [/^accomm?odations?$/i, "alojamiento"],
   [/^excursions?$/i, "excursion"],
   [/^transfers?$/i, "traslado"],
-  [/^bus(es)?$/i, "bus"],
+  [/^(public )?bus(es)?$/i, "bus"],
   [/^cruises?$/i, "crucero"],
   [/^(ferry|ferries)$/i, "otro"],
   [/^car rentals?$/i, "otro"],
@@ -74,16 +79,46 @@ const TIPOS: Array<[RegExp, TipoServicio]> = [
 ];
 
 const PREFIJO_SERVICIO =
-  /^(accommodations?|excursions?|transfers?|bus(?:es)?|cruises?|ferry|ferries|car rentals?|other services?)\b\s*:?\s*(.*)$/i;
-/** Títulos de la tabla de costos (incluye los del Excel vigente: "Excursions Net Rates", "Net Prices"). */
-const ETIQUETA = /^(tarifas|net rates|net prices|netos usd|agency net|excursions? net (rates|prices)|net (rates|prices) excursions?)$/i;
-const TARIFA = /^(dorm|dbl|sgl|twn|twin|tpl|triple|single|double|matrimonial)\b/i;
+  /^(accomm?odations?|excursions?|transfers?|public bus(?:es)?|bus(?:es)?|cruises?|ferry|ferries|car rentals?|other services?)\b\s*[:.]?\s*(.*)$/i;
+/** "Optional Excursion: …" / "Optional: …" (M1-04d #6): el resto se lee como cualquier línea. */
+const OPCIONAL = /^optional\b\s*:?\s*/i;
+/**
+ * "Excursions en Natales", "Excursions in La Paz", "Excursions Aventura":
+ * títulos de sección (confirmado por el owner, M1-04d #7). En plural, sin ":"
+ * y sin Booking Supplier.
+ */
+const TITULO_EXCURSIONES = /^excursions\s+[^:]*$/i;
+/**
+ * Renglones que el owner confirmó que no son servicios (2026-10-03, M1-04d
+ * #7): las notas de precios de OD013/OD016 (filas 222, 227 y 232) y las
+ * etiquetas de la tabla de tarifas del W Trek (CH10). Se comparan
+ * normalizadas (espacios y mayúsculas), sin parecidos.
+ */
+export const NOTAS_SIN_SERVICIO = [
+  "Hosteria HI: 80 DBL y 60 SGL",
+  "Rincon 93 Sent 105 Quijote 130",
+  "o Kau Yatun o Design o Esplendor o Rochester",
+  "Self Guided Tent DBL",
+  "Self Guided Refugio",
+];
+const NOTAS_NORMALIZADAS = new Set(NOTAS_SIN_SERVICIO.map((n) => limpiarNombre(n).toLowerCase()));
+/** Títulos de la tabla de costos (incluye los del Excel vigente: "Excursions Net Rates", "Net Prices", "Tarifas W Trek"). */
+const ETIQUETA = /^(tarifas( w trek)?|net rates|net prices|netos usd|agency net|excursions? net (rates|prices)|net (rates|prices) excursions?)$/i;
+/** Filas de tarifa por habitación ("DBL", "Dorm Alta"; en COMPBO20: "En Dorm a compartir", "Hab SGL"). */
+const TARIFA = /^((en|hab)\s+)?(dorm|dbl|sgl|twn|twin|tpl|triple|single|double|matrimonial)\b/i;
 const INCLUYE = /^includes?\s*:/i;
 const FIN_SECCION = /^paquetes?\b/i;
-const BOOKING_SUPPLIER = /\.?\s*booking supplier\b\s*:?\s*/i;
+/**
+ * "Booking Supplier", con los typos del Excel vigente que confirmó el owner
+ * (M1-04d #5): "Booking Booking Supplier", "Bookind Supplier", "Bookinkg
+ * Supplier", "Booking Suplier"; y separadores raros antes ("… / Booking
+ * Supplier: X", "…: Booking Supplier: X").
+ */
+const BOOKING_SUPPLIER = /[\s./:]*\b(?:booking\s+)?book(?:ing|ind|inkg)\s+sup{1,2}lier\b\s*:?\s*/i;
 /** Lo que queda antes del "Booking Supplier" no puede nombrar a "Book…": sería un "Booking Supplier" mal escrito. */
 const BOOKING_MAL_ESCRITO = /\bbook/i;
-const SEPARADOR_OPCIONES = /\s+\/\s*|\s*\/\s+/;
+/** "c/" pegado (= "con", ej. "c/ trekking y canoa") no separa opciones (M1-04d). */
+const SEPARADOR_OPCIONES = /\s+\/\s*|(?<!\b[cC])\/\s+/;
 const SEPARADOR_TRAMOS = /\s*\+\s*/;
 const NOCHES = /^(\d+)\s*nights?\b\s*/i;
 /** "El Pueblito 7 Botanica": dos palabras, un 7 suelto y una palabra con mayúscula. */
@@ -118,7 +153,7 @@ function tipoDe(prefijo: string): TipoServicio {
 }
 
 function sinPuntoFinal(texto: string): string {
-  return limpiarNombre(texto).replace(/[.\s]+$/, "");
+  return limpiarNombre(texto).replace(/^[.:\s]+/, "").replace(/[.:\s]+$/, "");
 }
 
 function partir(texto: string, separador: RegExp): string[] {
@@ -132,16 +167,31 @@ export function clasificarLinea(celda: string): LineaClasificada {
   if (INCLUYE.test(texto)) return { clase: "incluye", texto };
   if (FIN_SECCION.test(texto)) return { clase: "fin_seccion" };
   if (TARIFA.test(texto)) return { clase: "tarifa" };
+  if (NOTAS_NORMALIZADAS.has(texto.toLowerCase())) return { clase: "etiqueta" };
 
-  const prefijo = PREFIJO_SERVICIO.exec(texto);
-  if (!prefijo) {
+  const opcional = OPCIONAL.test(texto);
+  const sinOpcional = opcional ? texto.replace(OPCIONAL, "") : texto;
+  const tieneBookingSupplier = BOOKING_SUPPLIER.test(sinOpcional);
+  if (!tieneBookingSupplier && TITULO_EXCURSIONES.test(sinOpcional)) return { clase: "etiqueta" };
+
+  const prefijo = PREFIJO_SERVICIO.exec(sinOpcional);
+  let tipo: TipoServicio;
+  let resto: string;
+  if (prefijo) {
+    resto = prefijo[2].trim();
+    if (!resto) return { clase: "etiqueta" }; // "Excursions", "Accommodation" solos: encabezado
+    tipo = tipoDe(prefijo[1]);
+  } else if (tieneBookingSupplier) {
+    // Sin tipo escrito pero con a quién reservarle ("W Trek Standard. Booking
+    // Supplier: Las Torres", "Overland … Booking Supplier: Imperio Inca",
+    // "Optional:2nd Night at Fitz Camp…"): servicio "otro", con la línea tal
+    // cual (M1-04d).
+    resto = sinOpcional;
+    tipo = "otro";
+  } else {
     if (SOLO_NIVEL.test(texto)) return { clase: "nivel_sin_proveedor", nivel: nivelDeAlojamiento(texto)! };
     return { clase: "dudosa", motivo: "no calza con ningún patrón conocido" };
   }
-
-  const resto = prefijo[2].trim();
-  if (!resto) return { clase: "etiqueta" }; // "Excursions", "Accommodation" solos: encabezado
-  const tipo = tipoDe(prefijo[1]);
 
   const partes = resto.split(BOOKING_SUPPLIER);
   if (partes.length > 2) return { clase: "dudosa", motivo: "más de un \"Booking Supplier\"" };
@@ -157,8 +207,13 @@ export function clasificarLinea(celda: string): LineaClasificada {
   }
 
   const nivel = tipo === "alojamiento" ? nivelDeAlojamiento(partes[0]) : null;
-  const tramosSP = partir(partes[0], SEPARADOR_TRAMOS);
   const tramosBS = partes.length === 2 ? partir(partes[1], SEPARADOR_TRAMOS) : null;
+  // Fuera del alojamiento, un "+" con un solo Booking Supplier es parte del
+  // nombre de UNA excursión ("Pinguinera + Gaiman", OD025), no dos tramos
+  // (M1-04d). Los tramos "+" siguen valiendo en los alojamientos combinados
+  // y cuando el Booking Supplier también trae "+".
+  const unSoloServicio = tipo !== "alojamiento" && (tramosBS === null || tramosBS.length === 1);
+  const tramosSP = unSoloServicio ? [sinPuntoFinal(partes[0])] : partir(partes[0], SEPARADOR_TRAMOS);
   if (tramosBS && tramosBS.length !== tramosSP.length && tramosBS.length !== 1) {
     return { clase: "dudosa", motivo: "cantidad de tramos \"+\" distinta entre Service Provider y Booking Supplier" };
   }
@@ -173,9 +228,15 @@ export function clasificarLinea(celda: string): LineaClasificada {
       tramo = tramo.slice(n[0].length);
     }
 
-    const opcionesSP = partir(tramo, SEPARADOR_OPCIONES);
+    let opcionesSP = partir(tramo, SEPARADOR_OPCIONES);
     const tramoBS = tramosBS ? (tramosBS.length === 1 ? tramosBS[0] : tramosBS[i]) : null;
     const opcionesBS = tramoBS !== null ? partir(tramoBS, SEPARADOR_OPCIONES) : null;
+    // Un solo servicio y varios Booking Suppliers en orden ("Transfer GIG -
+    // Accommodation in Rio. Booking Supplier: Buzios Transfers / Alex"): el
+    // mismo servicio se le pide a cada uno, en ese orden de prioridad (M1-04d).
+    if (opcionesBS && opcionesSP.length === 1 && opcionesBS.length > 1) {
+      opcionesSP = opcionesBS.map(() => opcionesSP[0]);
+    }
     if (opcionesBS && opcionesBS.length !== opcionesSP.length && opcionesBS.length !== 1) {
       return { clase: "dudosa", motivo: "cantidad de opciones \"/\" distinta entre Service Provider y Booking Supplier" };
     }
@@ -187,6 +248,7 @@ export function clasificarLinea(celda: string): LineaClasificada {
       tipo,
       noches,
       nivel,
+      ...(opcional ? { opcional: true as const } : {}),
       opciones: opcionesSP.map((sp, j) => ({
         prioridad: j + 1,
         serviceProvider: sp,

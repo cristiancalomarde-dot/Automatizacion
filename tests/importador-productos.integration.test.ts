@@ -120,28 +120,32 @@ interface FilaServicioDB {
       return count ?? 0;
     }
 
-    it("#1 cargar la lista real deja 15 alias, todos con proveedor existente salvo Tetris; una segunda carga deja 15", async () => {
+    // M1-04d: la lista pasó al formato con destino y modo (73 filas: las 15 de
+    // Iguazú, con destino IGR, más las de los 17 paquetes de los tours).
+    it("#1 cargar la lista real deja 73 alias; los 67 que nombran un proveedor apuntan a uno existente; una segunda carga deja 73", async () => {
       const texto = readFileSync(RUTA_EQUIVALENCIAS, "utf-8");
       const primera = await cargarEquivalencias({ admin, textoCsv: texto });
-      expect(primera.total).toBe(15);
-      expect(await contarAlias()).toBe(15);
+      expect(primera.total).toBe(73);
+      expect(await contarAlias()).toBe(73);
 
       const { data, error } = await admin
         .from("proveedor_alias")
-        .select("alias, alias_normalizado, estado, nota, proveedor_id, proveedor:proveedor_id(id, nombre)");
+        .select("destino, alias, alias_normalizado, estado, nota, proveedor_id, proveedor:proveedor_id(id, nombre)");
       expect(error).toBeNull();
       const conId = data!.filter((a) => a.proveedor_id !== null);
-      expect(conId).toHaveLength(14);
+      expect(conId).toHaveLength(67);
       expect(conId.every((a) => a.proveedor !== null)).toBe(true); // apuntan a un proveedor existente
-      const tetris = data!.find((a) => a.alias_normalizado === "tetris")!;
-      expect(tetris).toMatchObject({ estado: "para_revisar", proveedor_id: null });
+      expect(data!.filter((a) => a.destino === "IGR")).toHaveLength(15);
+      const tetris = data!.find((a) => a.destino === "IGR" && a.alias_normalizado === "tetris")!;
+      expect(tetris).toMatchObject({ estado: "confirmado" }); // desde 2026-10-05 (M1-04d)
+      expect(tetris.proveedor_id).not.toBeNull();
       expect(tetris.nota).toContain("WhatsApp");
       const plana = data!.find((a) => a.alias_normalizado === "cuenca del plana")!;
       expect((plana.proveedor as unknown as { nombre: string }).nombre).toBe("Cuenca Del Plata (Natalia )");
 
       const segunda = await cargarEquivalencias({ admin, textoCsv: texto });
-      expect(segunda).toMatchObject({ total: 15, creados: 0, actualizados: 0, sinCambios: 15 });
-      expect(await contarAlias()).toBe(15);
+      expect(segunda).toMatchObject({ total: 73, creados: 0, actualizados: 0, sinCambios: 73 });
+      expect(await contarAlias()).toBe(73);
     }, TIMEOUT);
 
     it("#2 un CSV que nombra un proveedor inexistente falla con un mensaje claro: 0 proveedores y 0 alias nuevos", async () => {
@@ -149,9 +153,9 @@ interface FilaServicioDB {
       const aliasAntes = await contarAlias();
       const inexistente = `Proveedor Inexistente ${randomUUID().slice(0, 8)}`;
       const csv =
-        "nombre_en_excel,proveedor_en_directorio,estado,nota\n" +
-        `Alias de prueba ${randomUUID().slice(0, 8)},HOTEL TAROBA,confirmado,\n` +
-        `Otro alias de prueba,${inexistente},confirmado,\n`;
+        "destino,nombre_en_excel,proveedor_en_directorio,modo,estado,nota\n" +
+        `IGR,Alias de prueba ${randomUUID().slice(0, 8)},HOTEL TAROBA,alias,confirmado,\n` +
+        `IGR,Otro alias de prueba,${inexistente},alias,confirmado,\n`;
       await expect(cargarEquivalencias({ admin, textoCsv: csv })).rejects.toThrow(
         new RegExp(`no se cargó nada.*${inexistente}.*no existe en el directorio`),
       );
@@ -167,7 +171,7 @@ interface FilaServicioDB {
       expect(data ?? []).toEqual([]);
       const { error } = await anonimo
         .from("proveedor_alias")
-        .insert({ alias: "anon", alias_normalizado: `anon-${randomUUID()}`, estado: "para_revisar" });
+        .insert({ destino: "IGR", alias: "anon", alias_normalizado: `anon-${randomUUID()}`, estado: "para_revisar" });
       expect(error).not.toBeNull();
     });
   });
@@ -293,7 +297,8 @@ interface FilaServicioDB {
           expect(f.booking_supplier_nombre).not.toBeNull();
         }
       }
-      expect(resumen.proveedoresSinResolver.length).toBeGreaterThan(0);
+      // Desde M1-04d (2026-10-05) Tetris está en el directorio: ya no queda ninguno sin resolver.
+      expect(resumen.proveedoresSinResolver).toEqual([]);
     }, TIMEOUT);
 
     async function todasLasFilas(): Promise<Array<FilaServicioDB & { codigo: string }>> {
@@ -312,7 +317,7 @@ interface FilaServicioDB {
       }
     }, TIMEOUT);
 
-    it("M1-04b #4 Beer asignado a Tangoinn (confirmado por el owner 2026-09-27, ya sin marca); Tetris sin resolver con su nota", async () => {
+    it("M1-04b #4 Beer asignado a Tangoinn (confirmado por el owner 2026-09-27, ya sin marca); Tetris resuelto por WhatsApp (M1-04d)", async () => {
       const { data: tango } = await admin.from("proveedor").select("id").eq("nombre", "Tangoinn Bed & Brewery IGR").single();
       const todas = await todasLasFilas();
       const beer = todas.filter((f) => ["Beer", "Beer Hostel"].includes(f.booking_supplier_nombre ?? ""));
@@ -322,18 +327,17 @@ interface FilaServicioDB {
       }
       const tetris = todas.filter((f) => f.booking_supplier_nombre === "Tetris");
       expect(tetris).toHaveLength(1);
-      expect(tetris[0]).toMatchObject({ booking_supplier_id: null, proveedor_sin_resolver: true, proveedor_para_revisar: true });
-      expect(tetris[0].proveedor_nota).toContain("WhatsApp");
+      const { data: tetrisDir } = await admin.from("proveedor").select("id, canal").eq("nombre", "Tetris Hostel Foz do Iguacu").single();
+      expect(tetrisDir!.canal).toBe("whatsapp");
+      expect(tetris[0]).toMatchObject({ booking_supplier_id: tetrisDir!.id, proveedor_sin_resolver: false, proveedor_para_revisar: false });
     }, TIMEOUT);
 
-    it("M1-04b #6 todos los Booking Suppliers de las 29 filas quedan resueltos salvo Tetris", async () => {
+    it("M1-04b #6 todos los Booking Suppliers de las 29 filas quedan resueltos (Tetris, desde M1-04d)", async () => {
       const todas = await todasLasFilas();
       expect(todas).toHaveLength(29);
-      expect(todas.filter((f) => f.booking_supplier_id === null).map((f) => f.booking_supplier_nombre)).toEqual(["Tetris"]);
-      expect(resumen.nombresSinResolver).toEqual(["Tetris"]);
-      expect(resumen.proveedoresParaRevisar.map((p) => [p.codigo, p.booking_supplier_nombre, p.asignado])).toEqual([
-        ["OD010B", "Tetris", false],
-      ]);
+      expect(todas.filter((f) => f.booking_supplier_id === null).map((f) => f.booking_supplier_nombre)).toEqual([]);
+      expect(resumen.nombresSinResolver).toEqual([]);
+      expect(resumen.proveedoresParaRevisar).toEqual([]);
     }, TIMEOUT);
 
     it("M1-04b #5 niveles confirmados: OD010C/D con Hostel, Hotel 3* y Hotel 4* (2 alojamientos cada uno); OD010B Taroba 4* y Dann Inn Budget", async () => {
@@ -400,9 +404,9 @@ interface FilaServicioDB {
       expect(data.filas_para_revisar).toBe(resumen.filasParaRevisar);
       expect(data.detalle.productos.procesados).toBe(5);
       expect(data.detalle.proveedores_sin_resolver.length).toBe(resumen.proveedoresSinResolver.length);
-      expect(data.detalle.proveedores_para_revisar).toHaveLength(1);
-      expect(data.detalle.nombres_sin_resolver).toEqual(["Tetris"]);
-      expect(data.detalle.alias_cargados).toBe(15);
+      expect(data.detalle.proveedores_para_revisar).toHaveLength(0);
+      expect(data.detalle.nombres_sin_resolver).toEqual([]);
+      expect(data.detalle.alias_cargados).toBe(73);
       expect(data.detalle.bloques_que_necesitan_ia).toEqual(resumen.bloquesQueNecesitanIA);
     });
   });
@@ -598,7 +602,7 @@ interface FilaServicioDB {
       expect(data!.detalle.codigos_externos.creados).toBe(0);
     }, TIMEOUT);
 
-    it("M1-04b recorrido: servicio → nivel → opción → Booking Supplier → mail; solo Tetris queda sin mail", async () => {
+    it("M1-04b recorrido: servicio → nivel → opción → Booking Supplier → mail; solo Tetris queda sin mail (se reserva por WhatsApp)", async () => {
       const corrida = correrScript();
       importacionesDePrueba.push(corrida.importacionId);
       expect(corrida.servicios).toMatchObject({ creados: 0, eliminados: 0 });
@@ -630,25 +634,8 @@ interface FilaServicioDB {
       expect(sinMail).toEqual(["OD010B:Tetris"]);
     }, TIMEOUT);
 
-    it("M1-04b #7 re-correr no pisa un Booking Supplier resuelto a mano (mismo nombre en el Excel)", async () => {
-      const od010b = await productoPorCodigo("OD010B");
-      const tetris = (await serviciosDe(od010b.id)).find((f) => f.booking_supplier_nombre === "Tetris")!;
-      const { data: bambu } = await admin.from("proveedor").select("id").eq("nombre", "Bambu hostel").single();
-      try {
-        await admin
-          .from("producto_servicio")
-          .update({ booking_supplier_id: bambu!.id, proveedor_sin_resolver: false })
-          .eq("id", tetris.id);
-        const corrida = correrScript();
-        importacionesDePrueba.push(corrida.importacionId);
-        const despues = (await serviciosDe(od010b.id)).find((f) => f.id === tetris.id)!;
-        expect(despues).toMatchObject({ booking_supplier_id: bambu!.id, proveedor_sin_resolver: false });
-      } finally {
-        await admin
-          .from("producto_servicio")
-          .update({ booking_supplier_id: null, proveedor_sin_resolver: true })
-          .eq("id", tetris.id);
-      }
-    }, TIMEOUT);
+    // "M1-04b #7 re-correr no pisa un Booking Supplier resuelto a mano" se movió
+    // a tests/carga-paquetes.integration.test.ts (M1-04d): desde que Tetris está
+    // en el directorio, Iguazú ya no tiene un Booking Supplier sin resolver.
   });
 });

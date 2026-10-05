@@ -157,6 +157,23 @@ function esTituloDeSeccion2(texto: string, bloque: BloqueProducto): boolean {
   return nombre.length > 0 && soloLetrasYNumeros(texto) === nombre;
 }
 
+/**
+ * Bloques que el owner armó sin sección 2 (sin "Paquetes …" ni el título
+ * repetido debajo), confirmados en M1-04d: COMPBO20 (bloque propio agregado
+ * en la fila ~847) y COMPBR10 (São Paulo). Su sección 1 termina en la
+ * próxima fila con algo escrito en la columna A (el bloque o destino
+ * siguiente) o, si no hay, al final del destino. Regla puntual: un bloque
+ * cualquiera sin fin de sección sigue sin calzar (para revisar).
+ */
+export const BLOQUES_SIN_SECCION_2 = new Set(["COMPBO20", "COMPBR10"]);
+
+function limiteSinSeccion2(filas: Filas, rango: RangoDestino): number {
+  for (let r = rango.desde + 1; r < rango.hasta; r++) {
+    if (celda(filas, r, 0).trim()) return r;
+  }
+  return rango.hasta;
+}
+
 export function leerSeccion1(filas: Filas, bloque: BloqueProducto, rango: RangoDestino): LecturaSeccion1 {
   const servicios: ServicioLeido[] = [];
   const dudosas: LineaDudosa[] = [];
@@ -164,8 +181,10 @@ export function leerSeccion1(filas: Filas, bloque: BloqueProducto, rango: RangoD
   const correcciones: CorreccionAplicada[] = [];
   let filaFin: number | null = null;
   let ultimaLinea: ServicioLeido[] = [];
+  const sinSeccion2 = BLOQUES_SIN_SECCION_2.has(bloque.codigo);
+  const limite = sinSeccion2 ? limiteSinSeccion2(filas, rango) : rango.hasta;
 
-  for (let r = rango.desde + 1; r < rango.hasta; r++) {
+  for (let r = rango.desde + 1; r < limite; r++) {
     const texto = limpiarNombre(celda(filas, r, bloque.columna));
     const linea = clasificarLinea(texto);
     if (linea.clase === "fin_seccion" || esTituloDeSeccion2(texto, bloque)) {
@@ -188,6 +207,7 @@ export function leerSeccion1(filas: Filas, bloque: BloqueProducto, rango: RangoD
       dudosas.push({ fila: r + 1, texto, motivo: linea.motivo });
     }
   }
+  if (filaFin === null && sinSeccion2) filaFin = limite;
 
   return {
     servicios,
@@ -307,8 +327,16 @@ function nombreSinCodigo(texto: string, re: RegExp): string {
   return limpiarNombre(texto.replace(new RegExp(re.source, "g"), " "));
 }
 
+/** Cualquier código (OD030, COMPBO20, CHB31…): mayúsculas seguidas de dígitos. */
+const CUALQUIER_CODIGO = /(?<![A-Za-z0-9])[A-Z]{2,}\d+[A-Z0-9]*(?![A-Za-z0-9])/g;
+
+/**
+ * Hay un nombre si, sacando los códigos, queda algo con letras. Una celda que
+ * solo junta códigos ("OD030 + COMPBO20", la fila de códigos de un tour) no
+ * es el título de un bloque (M1-04d).
+ */
 function tieneNombre(texto: string, re: RegExp): boolean {
-  return /\p{L}/u.test(nombreSinCodigo(texto, re));
+  return /\p{L}/u.test(nombreSinCodigo(texto, re).replace(CUALQUIER_CODIGO, " "));
 }
 
 function esNumero(texto: string): boolean {
@@ -339,7 +367,15 @@ export function ubicarBloquesEnHoja(
     filas.forEach((fila, r) =>
       fila.forEach((_, c) => {
         const texto = celda(filas, r, c);
-        if (re.test(texto)) apariciones.push({ r, c, texto: limpiarNombre(texto) });
+        if (!re.test(texto)) return;
+        // Bloque con el código solo en la columna A y el título en la B (el
+        // bloque propio de COMPBO20, M1-04d): el título es la celda de la B.
+        const titulo = limpiarNombre(celda(filas, r, 1));
+        if (c === 0 && limpiarNombre(texto) === codigo && titulo && !esNumero(titulo) && tieneNombre(titulo, re)) {
+          apariciones.push({ r, c: 1, texto: titulo });
+        } else {
+          apariciones.push({ r, c, texto: limpiarNombre(texto) });
+        }
       }),
     );
     if (apariciones.length === 0) {

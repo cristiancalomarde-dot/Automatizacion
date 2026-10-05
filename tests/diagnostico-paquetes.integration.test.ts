@@ -15,11 +15,12 @@
 //   - Cada uno de los 17 códigos tiene su bloque, o queda reportado como no
 //     encontrado.
 //   - Iguazú no cambia (§3 #7): el diagnóstico de los 5 de Iguazú no trae nada
-//     nuevo para confirmar, salvo lo ya conocido (Tetris y "Extra glamping x pax").
+//     nuevo para confirmar, salvo lo ya conocido ("Extra glamping x pax"; Tetris
+//     está en el directorio desde M1-04d).
 // V3 (recorrido completo): el script real (`diagnosticar:paquetes`) deja el
 //     .md con las 17 secciones y el .json válido con una entrada por paquete.
 import { execFileSync } from "node:child_process";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { basename, resolve } from "node:path";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { beforeAll, describe, expect, it } from "vitest";
@@ -127,7 +128,7 @@ const TIMEOUT = 240_000;
   });
 
   describe("V2 — Iguazú no cambia (§3 #7)", () => {
-    it("el diagnóstico de los 5 de Iguazú solo trae lo ya conocido: Tetris y 'Extra glamping x pax'", async () => {
+    it("el diagnóstico de los 5 de Iguazú solo trae lo ya conocido: 'Extra glamping x pax' (Tetris ya está en el directorio, M1-04d)", async () => {
       const d = await diagnosticarPaquetes({
         admin,
         filas: leerFilasPaquetes(RUTA_PAQUETES),
@@ -137,7 +138,7 @@ const TIMEOUT = 240_000;
       });
       expect(d.paquetes.every((p) => p.encontrado && !p.bloqueNoCalza)).toBe(true);
       const c = d.aConfirmar;
-      expect(c.proveedoresSinEmparejar.map((p) => p.nombre)).toEqual(["Tetris"]);
+      expect(c.proveedoresSinEmparejar.map((p) => p.nombre)).toEqual([]);
       expect(c.lineasNoEntendidas.map((l) => l.texto)).toEqual(["Extra glamping x pax"]);
       expect({
         equivalenciasParaRevisar: c.equivalenciasParaRevisar,
@@ -166,27 +167,35 @@ const TIMEOUT = 240_000;
   });
 
   describe("V3 — el script real deja el reporte (§3 #4, #6, #8)", () => {
-    it("npm run diagnosticar:paquetes → .md con 17 secciones y .json con una entrada por paquete", () => {
+    // Desde M1-04d los 17 ya están cargados (por defecto el script los saltea):
+    // se corre con --todos, y el reporte de M1-04c (documento histórico, el que
+    // contestó el owner) se restaura al terminar.
+    it("npm run diagnosticar:paquetes -- --todos → .md con una sección por paquete y .json con una entrada por paquete", () => {
       const antes = { ...process.env };
       delete antes.ANTHROPIC_API_KEY; // sin clave: nunca hay llamadas a la IA
-      execFileSync(process.execPath, [resolve(RAIZ, "node_modules/tsx/dist/cli.mjs"), "scripts/diagnosticar-paquetes.ts"], {
-        cwd: RAIZ,
-        env: antes,
-        stdio: "pipe",
-        timeout: TIMEOUT,
-      });
-      const md = readFileSync(`${SALIDA}.md`, "utf-8");
-      const json = JSON.parse(readFileSync(`${SALIDA}.json`, "utf-8")) as Diagnostico;
-      const detalle = md.slice(md.indexOf("## Detalle por paquete"));
-      const secciones = detalle.split("\n").filter((l) => l.startsWith("### "));
-      expect(secciones).toHaveLength(17);
-      for (const codigo of LOS_17) expect(secciones.some((s) => s.startsWith(`### ${codigo} `)), codigo).toBe(true);
-      expect(md.indexOf("## Lo que necesito que confirmes")).toBeLessThan(md.indexOf("## Detalle por paquete"));
-      expect(md).toContain("## Habría necesitado IA");
-      expect(json.paquetes.map((p) => p.codigo)).toEqual(LOS_17);
-      // Cada servicio muestra su Booking Supplier y su estado.
-      for (const p of json.paquetes) {
-        for (const s of p.servicios) for (const o of s.opciones) expect(o.emparejado, `${p.codigo} fila ${s.fila}`).toBeTruthy();
+      const historico = { md: readFileSync(`${SALIDA}.md`, "utf-8"), json: readFileSync(`${SALIDA}.json`, "utf-8") };
+      try {
+        execFileSync(
+          process.execPath,
+          [resolve(RAIZ, "node_modules/tsx/dist/cli.mjs"), "scripts/diagnosticar-paquetes.ts", RUTA_PAQUETES, "--todos"],
+          { cwd: RAIZ, env: antes, stdio: "pipe", timeout: TIMEOUT },
+        );
+        const md = readFileSync(`${SALIDA}.md`, "utf-8");
+        const json = JSON.parse(readFileSync(`${SALIDA}.json`, "utf-8")) as Diagnostico;
+        const todos = LISTA.map((p) => p.codigo);
+        const detalle = md.slice(md.indexOf("## Detalle por paquete"));
+        const secciones = detalle.split("\n").filter((l) => l.startsWith("### "));
+        expect(secciones).toHaveLength(todos.length);
+        for (const codigo of LOS_17) expect(secciones.some((s) => s.startsWith(`### ${codigo} `)), codigo).toBe(true);
+        expect(md.indexOf("## Lo que necesito que confirmes")).toBeLessThan(md.indexOf("## Detalle por paquete"));
+        expect(json.paquetes.map((p) => p.codigo)).toEqual(todos);
+        // Cada servicio muestra su Booking Supplier y su estado.
+        for (const p of json.paquetes) {
+          for (const s of p.servicios) for (const o of s.opciones) expect(o.emparejado, `${p.codigo} fila ${s.fila}`).toBeTruthy();
+        }
+      } finally {
+        writeFileSync(`${SALIDA}.md`, historico.md);
+        writeFileSync(`${SALIDA}.json`, historico.json);
       }
     }, TIMEOUT);
   });

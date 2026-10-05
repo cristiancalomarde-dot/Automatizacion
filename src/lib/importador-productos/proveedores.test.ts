@@ -186,3 +186,113 @@ describe("armarFilasServicio — equivalencias de proveedores (spec M1-04b)", ()
     });
   });
 });
+
+// Spec M1-04d §3 #2-#4: las equivalencias dependen del destino del paquete y
+// tienen modo (alias / por_service_provider / manual).
+describe("armarFilasServicio — equivalencias por destino (spec M1-04d)", () => {
+  const DIRECTORIO = [
+    { id: "p-nacional-foz", nombre_normalizado: "nacional inn foz", ciudad: "BRASIL" },
+    { id: "p-nacional-copa", nombre_normalizado: "nacional inn copacabana", ciudad: "BRASIL" },
+    { id: "p-rumbo-ush", nombre_normalizado: "rumbo sur", ciudad: "USHUAIA", mails: ["a@rumbosur.com"] },
+    { id: "p-rumbo-fte", nombre_normalizado: "rumbo sur", ciudad: "CALAFATE", mails: ["b@rumbosur.com"] },
+    { id: "p-rincon", nombre_normalizado: "rincon del calafate", ciudad: "CALAFATE" },
+    { id: "p-sent", nombre_normalizado: "sent", ciudad: "CALAFATE" },
+    { id: "p-mirador", nombre_normalizado: "mirador del lago", ciudad: "CALAFATE" },
+    { id: "p-parque", nombre_normalizado: "calafate parque", ciudad: "CALAFATE" },
+    { id: "p-maipu", nombre_normalizado: "reservas dazzler maipu'", ciudad: "BUENOS AIRES" },
+    { id: "p-sanmartin", nombre_normalizado: "dazzler san martin", ciudad: "BUENOS AIRES" },
+    { id: "p-hayas", nombre_normalizado: "las hayas y los acebos", ciudad: "USHUAIA" },
+    // mismo proveedor cargado dos veces (CHALTEN y EL CHALTEN), mismo contacto
+    { id: "p-pioneros-1", nombre_normalizado: "pioneros del valle", ciudad: "CHALTEN", mails: ["r@pioneros.com"], canal: "mail" },
+    { id: "p-pioneros-2", nombre_normalizado: "pioneros del valle", ciudad: "EL CHALTEN", mails: ["r@pioneros.com"], canal: "mail" },
+  ];
+  const ALIAS = [
+    { destino: "IGR", alias_normalizado: "nacional inn", proveedor_id: "p-nacional-foz", estado: "confirmado" as const, nota: null, modo: "alias" as const },
+    { destino: "RIO", alias_normalizado: "nacional inn", proveedor_id: "p-nacional-copa", estado: "confirmado" as const, nota: null, modo: "alias" as const },
+    { destino: "FTE", alias_normalizado: "tremun", proveedor_id: null, estado: "confirmado" as const, nota: "Hotel por hotel", modo: "por_service_provider" as const },
+    { destino: "FTE", alias_normalizado: "rincon del calafate", proveedor_id: "p-rincon", estado: "confirmado" as const, nota: null, modo: "alias" as const },
+    { destino: "FTE", alias_normalizado: "sent", proveedor_id: "p-sent", estado: "confirmado" as const, nota: null, modo: "alias" as const },
+    { destino: "FTE", alias_normalizado: "mirador del lago", proveedor_id: "p-mirador", estado: "confirmado" as const, nota: null, modo: "alias" as const },
+    { destino: "FTE", alias_normalizado: "calafate parque", proveedor_id: "p-parque", estado: "confirmado" as const, nota: null, modo: "alias" as const },
+    { destino: "USH", alias_normalizado: "tremun", proveedor_id: null, estado: "confirmado" as const, nota: null, modo: "por_service_provider" as const },
+    { destino: "USH", alias_normalizado: "las hayas", proveedor_id: "p-hayas", estado: "confirmado" as const, nota: null, modo: "alias" as const },
+    { destino: "BUE", alias_normalizado: "dazzler", proveedor_id: null, estado: "confirmado" as const, nota: null, modo: "por_service_provider" as const },
+    { destino: "BUE", alias_normalizado: "dazzler maipu", proveedor_id: "p-maipu", estado: "confirmado" as const, nota: null, modo: "alias" as const },
+    { destino: "BUE", alias_normalizado: "san martin", proveedor_id: "p-sanmartin", estado: "confirmado" as const, nota: null, modo: "alias" as const },
+    { destino: "VLP", alias_normalizado: "kupos.cl", proveedor_id: null, estado: "confirmado" as const, nota: "Sistema online", modo: "manual" as const },
+  ];
+  const indice = crearIndiceProveedores(DIRECTORIO, ALIAS);
+
+  function filas(destino: string, ...opciones: Array<[string, string | null]>) {
+    return armarFilasServicio(
+      [servicio({ opciones: opciones.map(([sp, bs], i) => ({ prioridad: i + 1, serviceProvider: sp, bookingSupplier: bs })) })],
+      indice,
+      destino,
+    );
+  }
+
+  it("Nacional Inn depende del destino: en RIO es el de Copacabana, en IGR el de Foz", () => {
+    expect(filas("RIO", ["National Inn Copacabana", "Nacional Inn"])[0].booking_supplier_id).toBe("p-nacional-copa");
+    expect(filas("IGR", ["Nacional inn Foz", "Nacional Inn"])[0].booking_supplier_id).toBe("p-nacional-foz");
+    // un alias de otro destino no aplica
+    expect(filas("BUE", ["X", "Nacional Inn"])[0]).toMatchObject({ booking_supplier_id: null, proveedor_sin_resolver: true });
+  });
+
+  it("nombre repetido en el directorio: Rumbo Sur en USH es el de Ushuaia, en FTE el de Calafate", () => {
+    expect(filas("USH", ["Beagle", "Rumbo Sur"])[0].booking_supplier_id).toBe("p-rumbo-ush");
+    expect(filas("FTE", ["Minitrekking", "Rumbo Sur"])[0].booking_supplier_id).toBe("p-rumbo-fte");
+    // sin destino no se elige uno
+    expect(armarFilasServicio([servicio({ opciones: [{ prioridad: 1, serviceProvider: "x", bookingSupplier: "Rumbo Sur" }] })], indice)[0].booking_supplier_id).toBeNull();
+  });
+
+  it("el mismo proveedor cargado dos veces con el mismo contacto (CHALTEN / EL CHALTEN) se resuelve igual", () => {
+    const [f] = filas("CHA", ["Pioneros del Valle", "Pioneros del Valle"]);
+    expect(["p-pioneros-1", "p-pioneros-2"]).toContain(f.booking_supplier_id);
+    expect(f.proveedor_sin_resolver).toBe(false);
+  });
+
+  it("Tremun se resuelve por hotel (OD013/OD016): cada opción con su propio proveedor", () => {
+    const r = filas(
+      "FTE",
+      ["Holtel 3* Rincon del Calafate", "Tremun"],
+      ["Hotel * Sent Calafate", "Tremun"],
+      ["Hotel 4* Mirador del Lago", "Tremun"],
+      ["Hotel 4* Calafate Parque", "Tremun"],
+    );
+    expect(r.map((f) => f.booking_supplier_id)).toEqual(["p-rincon", "p-sent", "p-mirador", "p-parque"]);
+    expect(r.every((f) => !f.proveedor_sin_resolver && !f.proveedor_para_revisar)).toBe(true);
+    expect(r.map((f) => f.booking_supplier_nombre)).toEqual(["Tremun", "Tremun", "Tremun", "Tremun"]);
+  });
+
+  it("Dazzler (OD018): \"Dazzler Maipu\" y \"San Martin\" quedan con proveedores distintos", () => {
+    const r = filas("BUE", ["Dazzler Maipu", "Dazzler"], ["San Martin", "Dazzler"]);
+    expect(r.map((f) => f.booking_supplier_id)).toEqual(["p-maipu", "p-sanmartin"]);
+  });
+
+  it("un hotel sin equivalencia queda sin resolver (no se inventa), con la nota de qué falta", () => {
+    const [acebos, hayas] = filas("USH", ["Hotel 4* Los Acebos", "Tremun"], ["Hotel 4* Las Hayas", "Tremun"]);
+    expect(acebos).toMatchObject({ booking_supplier_id: null, proveedor_sin_resolver: true });
+    expect(acebos.proveedor_nota).toMatch(/Los Acebos/);
+    expect(hayas.booking_supplier_id).toBe("p-hayas");
+  });
+
+  it("modo manual (Kupos.cl): sin proveedor, marcado manual y sin bandera de revisión", () => {
+    const [f] = filas("VLP", ["Santiago - Valparaiso - Santiago", "Kupos.cl"]);
+    expect(f).toMatchObject({
+      booking_supplier_id: null,
+      reserva_manual: true,
+      proveedor_sin_resolver: false,
+      proveedor_para_revisar: false,
+    });
+  });
+
+  it("los servicios opcionales quedan marcados", () => {
+    const [f] = armarFilasServicio(
+      [servicio({ tipo: "excursion", opcional: true, opciones: [{ prioridad: 1, serviceProvider: "Canoa", bookingSupplier: "Sent" }] })],
+      indice,
+      "FTE",
+    );
+    expect(f).toMatchObject({ opcional: true, reserva_manual: false });
+    expect(filas("FTE", ["x", "Sent"])[0].opcional).toBe(false);
+  });
+});

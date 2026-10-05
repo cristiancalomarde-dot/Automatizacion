@@ -2,10 +2,11 @@ import { readFileSync } from "node:fs";
 import { basename } from "node:path";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import * as XLSX from "xlsx";
-import type { CorreccionAplicada, LineaDudosa } from "./bloque";
+import { ubicarBloquesEnHoja, type CorreccionAplicada, type LineaDudosa } from "./bloque";
 import { leerCodigosTourRadar } from "./codigos-tourradar";
 import type { NivelConfirmado } from "./niveles-confirmados";
-import { planificarProductos, type InterpretarBloque, type NivelParaRevisar } from "./plan";
+import type { PaquetePiloto } from "./paquetes-piloto";
+import { planificarBloques, planificarProductos, type InterpretarBloque, type NivelParaRevisar, type Plan } from "./plan";
 import { armarFilasServicio, crearIndiceProveedores, type FilaServicio } from "./proveedores";
 
 /**
@@ -127,6 +128,8 @@ const CAMPOS_SERVICIO: Array<keyof FilaServicio> = [
   "proveedor_sin_resolver",
   "proveedor_para_revisar",
   "proveedor_nota",
+  "opcional",
+  "reserva_manual",
 ];
 
 function leerHoja(ruta: string, hoja: string | null): unknown[][] {
@@ -159,7 +162,7 @@ function conservarResolucionManual(nueva: FilaServicio, existente: FilaServicioD
   ) {
     fila.booking_supplier_id = existente.booking_supplier_id;
   }
-  fila.proveedor_sin_resolver = fila.booking_supplier_id === null;
+  fila.proveedor_sin_resolver = fila.booking_supplier_id === null && !fila.reserva_manual;
   return fila;
 }
 
@@ -178,18 +181,39 @@ export async function importarProductosSimples(opciones: {
   codigos?: string[];
   /** Niveles confirmados por el owner (data/niveles-confirmados.csv, M1-04b). */
   nivelesConfirmados?: NivelConfirmado[];
+  /**
+   * M1-04d: paquetes a cargar ubicándolos por su código en toda la hoja (Excel
+   * vigente), cada uno con su destino (data/paquetes-piloto.csv). Si se pasa,
+   * reemplaza a `destino` + `codigos`.
+   */
+  paquetes?: PaquetePiloto[];
+  /** Cómo se registra la corrida en `importacion.tipo_corrida`. */
+  tipoCorrida?: string;
 }): Promise<ResumenImportacionProductos> {
   const { admin } = opciones;
   const destino = opciones.destino ?? DESTINO_PILOTO;
-  const codigos = opciones.codigos ?? CODIGOS_PILOTO;
+  const codigos = opciones.paquetes ? opciones.paquetes.map((p) => p.codigo) : (opciones.codigos ?? CODIGOS_PILOTO);
+  const filasHoja = leerFilasPaquetes(opciones.rutaPaquetes);
 
-  const plan = await planificarProductos({
-    filas: leerFilasPaquetes(opciones.rutaPaquetes),
-    destino,
-    codigos,
-    interpretarIA: opciones.interpretarIA,
-    nivelesConfirmados: opciones.nivelesConfirmados,
-  });
+  let plan: Plan;
+  if (opciones.paquetes) {
+    const ubicacion = ubicarBloquesEnHoja(filasHoja, opciones.paquetes);
+    const planeados = await planificarBloques({
+      filas: filasHoja,
+      bloques: ubicacion.ubicados.map((u) => ({ bloque: u.bloque, rango: u.rango })),
+      interpretarIA: opciones.interpretarIA,
+      nivelesConfirmados: opciones.nivelesConfirmados,
+    });
+    plan = { destinoEncontrado: true, codigosNoEncontrados: ubicacion.noUbicados.map((n) => n.codigo), ...planeados };
+  } else {
+    plan = await planificarProductos({
+      filas: filasHoja,
+      destino,
+      codigos,
+      interpretarIA: opciones.interpretarIA,
+      nivelesConfirmados: opciones.nivelesConfirmados,
+    });
+  }
   const codigosTR = opciones.rutaCodigosTourRadar
     ? leerCodigosTourRadar(leerHoja(opciones.rutaCodigosTourRadar, null))
     : [];
@@ -197,13 +221,13 @@ export async function importarProductosSimples(opciones: {
   // Directorio de proveedores (M1-03) para el emparejado. Solo se lee.
   const { data: proveedores, error: errorProveedores } = await admin
     .from("proveedor")
-    .select("id, nombre_normalizado")
+    .select("id, nombre_normalizado, ciudad, mails, canal, telefono")
     .range(0, 9999);
   if (errorProveedores) throw new Error(`No se pudo leer proveedor: ${errorProveedores.message}`);
   // Equivalencias revisadas por el owner (M1-04b). Solo se leen.
   const { data: alias, error: errorAlias } = await admin
     .from("proveedor_alias")
-    .select("alias_normalizado, proveedor_id, estado, nota")
+    .select("destino, alias_normalizado, proveedor_id, modo, estado, nota")
     .range(0, 9999);
   if (errorAlias) throw new Error(`No se pudo leer proveedor_alias: ${errorAlias.message}`);
   const indice = crearIndiceProveedores(proveedores ?? [], alias ?? []);
@@ -288,7 +312,7 @@ export async function importarProductosSimples(opciones: {
         ((actuales ?? []) as unknown as FilaServicioDB[]).map((f) => [`${f.orden}:${f.prioridad}`, f]),
       );
 
-      filas = armarFilasServicio(producto.servicios, indice).map((f) =>
+      filas = armarFilasServicio(producto.servicios, indice, producto.destino).map((f) =>
         conservarResolucionManual(f, porClave.get(`${f.orden}:${f.prioridad}`)),
       );
       for (const fila of filas) {
@@ -416,12 +440,13 @@ export async function importarProductosSimples(opciones: {
     .from("importacion")
     .insert({
       archivo,
-      tipo_corrida: TIPO_CORRIDA,
+      tipo_corrida: opciones.tipoCorrida ?? TIPO_CORRIDA,
       filas_cargadas: creados.productos + creados.servicios + creados.codigos,
       filas_para_revisar: filasParaRevisar,
       detalle: {
         hoja: HOJA_PAQUETES,
-        destino,
+        destino: opciones.paquetes ? null : destino,
+        paquetes: opciones.paquetes ?? null,
         codigos_pedidos: codigos,
         archivo_codigos_tourradar: opciones.rutaCodigosTourRadar ? basename(opciones.rutaCodigosTourRadar) : null,
         destino_encontrado: plan.destinoEncontrado,

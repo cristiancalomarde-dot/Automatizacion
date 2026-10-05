@@ -14,7 +14,7 @@ import type { TipoServicio } from "./linea";
 import type { NivelConfirmado } from "./niveles-confirmados";
 import type { PaquetePiloto } from "./paquetes-piloto";
 import { MOTIVO_ALOJAMIENTO_SIN_NIVEL, MOTIVO_NIVEL_AMBIGUO, planificarBloques } from "./plan";
-import { crearIndiceProveedores, resolverProveedor, type IndiceProveedores } from "./proveedores";
+import { buscarAlias, crearIndiceProveedores, resolverProveedor, type IndiceProveedores } from "./proveedores";
 import { clienteSoloLectura } from "./solo-lectura";
 
 /**
@@ -212,14 +212,15 @@ function emparejar(
   nombre: string | null,
   indice: IndiceProveedores,
   nombrePorId: Map<string, string>,
+  contexto: { destino?: string | null; serviceProvider?: string | null } = {},
 ): Pick<OpcionDiagnostico, "emparejado" | "proveedorDirectorio" | "nota"> {
   if (!nombre) return { emparejado: "sin_booking_supplier", proveedorDirectorio: null, nota: null };
   const exactos = indice.exactos.get(normalizarNombre(nombre));
   if (exactos && exactos.length === 1) {
     return { emparejado: "exacto", proveedorDirectorio: nombrePorId.get(exactos[0]) ?? null, nota: null };
   }
-  const r = resolverProveedor(nombre, indice);
-  const alias = indice.alias.get(normalizarNombre(nombre));
+  const r = resolverProveedor(nombre, indice, contexto);
+  const alias = buscarAlias(indice, nombre, contexto.destino);
   const nota =
     alias?.nota ??
     (exactos && exactos.length > 1 ? `El directorio tiene ${exactos.length} proveedores con este mismo nombre` : null);
@@ -276,7 +277,9 @@ export async function diagnosticarPaquetes(opciones: {
     proveedor_id: string | null;
     estado: "confirmado" | "para_revisar";
     nota: string | null;
-  }>(admin, "proveedor_alias", "alias_normalizado, proveedor_id, estado, nota");
+    destino?: string | null;
+    modo?: "alias" | "por_service_provider" | "manual";
+  }>(admin, "proveedor_alias", "destino, alias_normalizado, proveedor_id, modo, estado, nota");
   const indice = crearIndiceProveedores(directorio, alias);
   const nombrePorId = new Map(directorio.map((p) => [p.id, p.nombre]));
   const ciudadPorId = new Map(directorio.map((p) => [p.id, p.ciudad]));
@@ -360,7 +363,7 @@ export async function diagnosticarPaquetes(opciones: {
         prioridad: o.prioridad,
         serviceProvider: o.serviceProvider,
         bookingSupplier: o.bookingSupplier,
-        ...emparejar(o.bookingSupplier, indice, nombrePorId),
+        ...emparejar(o.bookingSupplier, indice, nombrePorId, { destino, serviceProvider: o.serviceProvider }),
       })),
     }));
 
@@ -384,7 +387,7 @@ export async function diagnosticarPaquetes(opciones: {
           !cargadasPorDestino.has(`${destino}|${normalizarNombre(o.bookingSupplier!)}`)
         ) {
           const clave = normalizarNombre(o.bookingSupplier!);
-          const id = resolverProveedor(o.bookingSupplier, indice).id;
+          const id = resolverProveedor(o.bookingSupplier, indice, { destino, serviceProvider: o.serviceProvider }).id;
           const item = usadas.get(clave) ?? {
             nombre: o.bookingSupplier!,
             proveedorDirectorio: o.proveedorDirectorio,

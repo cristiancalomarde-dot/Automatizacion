@@ -204,3 +204,87 @@ describe("nivelesConPrecioEnResumen (spec M1-04c §3 #5)", () => {
     expect(nivelesConPrecioEnResumen(HOJA, u.bloque, u.rango, l.filaFin)).toEqual(["Hostel", "Hotel 3*"]);
   });
 });
+
+// Spec M1-04d §3 #8: COMPBO20 tiene un bloque propio (el owner lo agregó con
+// el código en la columna A y el título en la B) y COMPBR10 (São Paulo) es un
+// bloque sin la forma habitual: ninguno de los dos tiene sección 2, así que su
+// sección 1 termina en la próxima fila con algo en la columna A (o en el
+// final del destino).
+const NUEVOS = {
+  A10: "SPA",
+  B10: "San Pedro de Atacama Explorer OD030",
+  F11: "San Pedro de Atacama Explorer OD030",
+  B12: "Accommodation: San Pedro Backpackers. Booking Supplier: San Pedro Backpackers",
+  B14: "Paquetes San Pedro",
+  A20: "COMPBO20",
+  B20: "Overland Tour San Pedro - Uyuni 3 dias /  2 noches en Villamar y en Salt Hostel",
+  B21: "Net Rates",
+  C21: "COMPBO20",
+  D21: "COMPBO20",
+  B22: "Overland San Pedro de Atacama to Uyuni. Booking Supplier: Imperio Inca",
+  B23: "En Dorm a compartir",
+  B24: "Hab DBL o Twin privada",
+  B25: "Hab SGL",
+  A28: "CHB31+",
+  B28: "San Pedro + Uyuni",
+  B29: "Net Rates",
+  C29: "OD030 + COMPBO20",
+  E29: "CHB31",
+  B30: "Tarifas en Hostel",
+  E30: "Public Bus Uyuni - La Paz. Booking Supplier: Imperio Inca",
+  B31: "Don Raul DBL",
+  A40: "RIO",
+  B40: "Rio Starter Package OD032",
+  A60: "SAO",
+  B60: "Sao Paulo Extra Nights COMPBR10",
+  F61: "Sao Paulo 2 nights Sample",
+  G61: "COMPBR10",
+  B62: "Accomodation: Fujima Hostel / O Hostel GRU: Booking Supplier: Fujima Hostel / O Hostel GRU",
+  B63: "Dorm",
+  B67: "Accommodation: Soos Hotel Collection / Nacionalinn Jaragua Sao Paulo. Booking Supplier:  Sooz Hotel / Nacionalinn",
+  B68: "DBL",
+};
+
+describe("bloques sin sección 2: COMPBO20 y COMPBR10 (spec M1-04d §3 #8)", () => {
+  const hoja = grilla(NUEVOS);
+
+  it("COMPBO20 se ubica en su bloque nuevo (código en la columna A, título en la B), no en \"OD030 + COMPBO20\"", () => {
+    const { ubicados, noUbicados, duplicados } = ubicarBloquesEnHoja(hoja, paquetes(["COMPBO20", "UYU"], ["OD030", "SPA"]));
+    expect(noUbicados).toEqual([]);
+    expect(duplicados).toEqual([]); // "OD030 + COMPBO20" es la fila de códigos de un tour, no un título
+    const compbo = ubicados.find((u) => u.bloque.codigo === "COMPBO20")!;
+    expect(compbo.celda).toBe("B20");
+    expect(compbo.bloque).toMatchObject({
+      columna: 1,
+      nombre: "Overland Tour San Pedro - Uyuni 3 dias / 2 noches en Villamar y en Salt Hostel",
+    });
+    expect(ubicados.find((u) => u.bloque.codigo === "OD030")!.celda).toBe("B10");
+  });
+
+  it("COMPBO20: la sección 1 termina antes del bloque siguiente (\"CHB31+\" en la columna A) y lee el Overland", () => {
+    const [u] = ubicarBloquesEnHoja(hoja, paquetes(["COMPBO20", "UYU"])).ubicados;
+    const l = leerSeccion1(hoja, u.bloque, u.rango);
+    expect(l.filaFin).toBe(27);
+    expect(l.estructuraOk).toBe(true);
+    expect(l.dudosas).toEqual([]);
+    expect(l.servicios.map((s) => [s.fila, s.opciones[0].bookingSupplier])).toEqual([[22, "Imperio Inca"]]);
+  });
+
+  it("COMPBR10 (sin \"Paquetes\" ni título repetido) se lee hasta el final del destino: su alojamiento con Sooz Hotel / Nacionalinn", () => {
+    const [u] = ubicarBloquesEnHoja(hoja, paquetes(["COMPBR10", "SAO"])).ubicados;
+    const l = leerSeccion1(hoja, u.bloque, u.rango);
+    expect(l.estructuraOk).toBe(true);
+    const soos = l.servicios.find((s) => s.fila === 67)!;
+    expect(soos.tipo).toBe("alojamiento");
+    expect(soos.opciones.map((o) => [o.serviceProvider, o.bookingSupplier])).toEqual([
+      ["Soos Hotel Collection", "Sooz Hotel"],
+      ["Nacionalinn Jaragua Sao Paulo", "Nacionalinn"],
+    ]);
+  });
+
+  it("un bloque cualquiera sin fin de sección sigue sin calzar (la regla es solo para estos dos)", () => {
+    const h = grilla({ A3: "BUE", B3: "Sin final OD023", B5: "Accommodation: Hostel Y. Booking Supplier: Buquebus", A30: "MDZ" });
+    const [u] = ubicarBloquesEnHoja(h, paquetes(["OD023", "BUE"])).ubicados;
+    expect(leerSeccion1(h, u.bloque, u.rango)).toMatchObject({ filaFin: null, estructuraOk: false });
+  });
+});
