@@ -51,6 +51,12 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
     - Ahora "proveedor sin resolver" mira solo el Booking Supplier, que es a quien va el mail.
     - El traslado incluido solo figura como texto ("Includes: Transfer in + Out") en la
       descripción del paquete de excursiones: decidir cómo representarlo al planear M2.
+- **M1-04d terminada (2026-10-05):** los 17 paquetes de un destino de los 7 tours, cargados en la base real (`npm run importar:paquetes`, reporte en `docs/sdd/diagnosticos/M1-04d-carga.md`). Son 146 servicios: 126 con mail, 13 por WhatsApp y 4 manuales (Kupos.cl, Buquebus, TRANSVIP). Migración 0006 (alias por destino). Suite 352/352, lint y tsc limpios.
+  - **Pendientes del owner** (el dato va en el Excel de proveedores; después se re-corre `importar:proveedores` → `importar:equivalencias` → `importar:paquetes`): NH Cordillera (mail), Antarctica Hostel (el WhatsApp está en la columna de aclaraciones; pasarlo a la de contacto), O Hostel GRU (São Paulo, falta cargarlo). Además conviene limpiar unos 20 proveedores duplicados como "CHALTEN" / "EL CHALTEN".
+  - Con OK del owner se borró de la base "Selina La Paz" (cerró).
+  - `niveles-confirmados.csv` tiene una columna opcional `forzar` para pisar un nivel mal detectado (OD032 fila 875).
+  - **Próximo paso: reescribir la ficha de M1-05** (`/specs M1-05`) con los códigos de RutasenBus, los itinerarios de los Word, el tour dentro de otro tour, las noches de más o de menos, los servicios incluidos en otro paquete, los tours al revés y la tabla de categorías tour ↔ paquete. Después, `/implementar M1-05`.
+  - Hay una carpeta suelta `.claude/.claude/` creada el 2026-10-05, que parece una copia duplicada por Google Drive. No está commiteada; revisar con el owner antes de borrarla.
 - **M1-04c terminada (2026-10-03):** diagnóstico de los 17 paquetes de los 7 tours, sin escribir en la base. El reporte está en `docs/sdd/diagnosticos/M1-04c-paquetes-de-los-tours.md` (+ `.json`) y se corre con `npm run diagnosticar:paquetes`. La lista de códigos vive en `data/paquetes-piloto.csv`. Suite 302/302 (el test de M1-03 ahora admite más de 220 proveedores, porque el directorio ya tiene 227).
   - **Esperando al owner:** `Insumos/Borrador respuestas diagnostico paquetes.xlsx`, con 44 proveedores (18 de confianza alta), 4 renglones sin proveedor, 18 alojamientos sin categoría y 9 casos sueltos. Con eso se escribe la ficha de M1-04d.
   - **Respuestas del owner al borrador (2026-10-03), leídas y cruzadas con el directorio (227):**
