@@ -296,3 +296,17 @@ describe("armarFilasServicio — equivalencias por destino (spec M1-04d)", () =>
     expect(filas("FTE", ["x", "Sent"])[0].opcional).toBe(false);
   });
 });
+
+describe("armarFilasServicio — modo manual gana al nombre exacto (Buquebus, M1-04d)", () => {
+  it("si el owner marcó el nombre como manual en ese destino, no se le escribe aunque esté en el directorio", () => {
+    const indice = crearIndiceProveedores(
+      [{ id: "p-buquebus", nombre_normalizado: "buquebus", ciudad: "BUENOS AIRES" }],
+      [{ destino: "BUE", alias_normalizado: "buquebus", proveedor_id: null, estado: "confirmado", nota: "Sistema propio", modo: "manual" }],
+    );
+    const [bue] = armarFilasServicio([servicio({ tipo: "excursion", opciones: [{ prioridad: 1, serviceProvider: "Colonia", bookingSupplier: "Buquebus" }] })], indice, "BUE");
+    expect(bue).toMatchObject({ booking_supplier_id: null, reserva_manual: true, proveedor_sin_resolver: false });
+    // en otro destino sigue valiendo el nombre exacto
+    const [mdz] = armarFilasServicio([servicio({ opciones: [{ prioridad: 1, serviceProvider: "x", bookingSupplier: "Buquebus" }] })], indice, "MDZ");
+    expect(mdz).toMatchObject({ booking_supplier_id: "p-buquebus", reserva_manual: false });
+  });
+});

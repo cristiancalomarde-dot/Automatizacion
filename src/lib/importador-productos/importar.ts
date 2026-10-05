@@ -155,7 +155,10 @@ function conservarResolucionManual(nueva: FilaServicio, existente: FilaServicioD
   ) {
     fila.service_provider_id = existente.service_provider_id;
   }
+  // Un servicio marcado manual (Kupos, Buquebus…) no lleva proveedor: no se
+  // conserva el que tenía de una carga anterior (M1-04d).
   if (
+    !fila.reserva_manual &&
     fila.booking_supplier_id === null &&
     existente.booking_supplier_id !== null &&
     existente.booking_supplier_nombre === fila.booking_supplier_nombre

@@ -146,7 +146,7 @@ export function reporteCargaMarkdown(
   );
   l.push(`- Con proveedor y mail: **${t.mail}**.`);
   l.push(`- Por WhatsApp (el pedido lo hace una persona): **${t.whatsapp}**.`);
-  l.push(`- Manuales, no se le escribe a nadie (pasajes en Kupos.cl): **${t.manual}**.`);
+  l.push(`- Manuales, no se le escribe a nadie (se reservan a mano en el sistema de ellos: Kupos.cl, Buquebus, Transvipp): **${t.manual}**.`);
   l.push(`- Sin resolver: **${t.sinResolver}**${t.sinContacto ? `; y ${t.sinContacto} con proveedor pero sin mail ni WhatsApp` : ""}.`);
   l.push("");
   l.push("## Por paquete");

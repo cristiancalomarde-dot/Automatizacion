@@ -7,6 +7,7 @@ import type { ServicioLeido, TipoServicio } from "./linea";
  * Emparejado de Service Provider / Booking Supplier (spec M1-04 §3 #6-#7,
  * M1-04b §3 #3-#4 y M1-04d §3 #2-#4):
  *
+ * 0. Si el nombre está marcado `manual` en el destino del paquete, es manual.
  * 1. Nombre exacto contra `proveedor.nombre_normalizado` (M1-03), tras la
  *    normalización estándar (espacios y mayúsculas). Si coincide con más de
  *    un proveedor (mismo nombre en dos ciudades), con el destino del paquete
@@ -138,6 +139,12 @@ export function resolverProveedor(
 ): Resolucion {
   if (!nombre) return { id: null, paraRevisar: false, nota: null };
   const clave = normalizarNombre(nombre);
+  // Un nombre que el owner marcó `manual` en este destino (Buquebus, Transvipp:
+  // "se reserva por el sistema de ellos") no recibe pedidos aunque esté en el
+  // directorio: la marca gana al nombre exacto (M1-04d).
+  if (contexto.destino && indice.alias.get(`${contexto.destino}|${clave}`)?.modo === "manual") {
+    return { id: null, paraRevisar: false, nota: null, manual: true };
+  }
   const mismos = indice.porNombre.get(clave) ?? [];
   if (mismos.length === 1) return { id: mismos[0].id, paraRevisar: false, nota: null };
   if (mismos.length > 1) {

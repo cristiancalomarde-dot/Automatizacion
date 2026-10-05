@@ -5,8 +5,8 @@ Cargué en el sistema los paquetes de un destino de los 7 tours desde **Construc
 - Paquetes: 17. Servicios (cada opción de hotel o excursión cuenta una vez): 146.
 - Con proveedor y mail: **126**.
 - Por WhatsApp (el pedido lo hace una persona): **13**.
-- Manuales, no se le escribe a nadie (pasajes en Kupos.cl): **2**.
-- Sin resolver: **2**; y 3 con proveedor pero sin mail ni WhatsApp.
+- Manuales, no se le escribe a nadie (se reservan a mano en el sistema de ellos: Kupos.cl, Buquebus, Transvipp): **4**.
+- Sin resolver: **2**; y 1 con proveedor pero sin mail ni WhatsApp.
 
 ## Por paquete
 
@@ -17,11 +17,11 @@ Cargué en el sistema los paquetes de un destino de los 7 tours desde **Construc
 | OD017 | PNT | 11 | 10 | 0 | 1 | 0 | 0 |
 | OD018 | BUE | 14 | 14 | 0 | 0 | 0 | 0 |
 | OD019 | MDZ | 6 | 4 | 1 | 0 | 1 | 0 |
-| OD020 | BUE | 14 | 13 | 0 | 0 | 0 | 1 |
+| OD020 | BUE | 14 | 13 | 0 | 1 | 0 | 0 |
 | OD022 | USH | 11 | 10 | 0 | 0 | 0 | 1 |
 | OD025 | PMY | 10 | 8 | 2 | 0 | 0 | 0 |
 | OD029 | SCL | 7 | 7 | 0 | 0 | 0 | 0 |
-| OD030 | SPA | 6 | 3 | 2 | 0 | 0 | 1 |
+| OD030 | SPA | 6 | 3 | 2 | 1 | 0 | 0 |
 | OD031 | LPB | 4 | 0 | 4 | 0 | 0 | 0 |
 | OD032 | RIO | 9 | 7 | 2 | 0 | 0 | 0 |
 | OD033 | CHA | 12 | 12 | 0 | 0 | 0 | 0 |
@@ -35,16 +35,8 @@ Cargué en el sistema los paquetes de un destino de los 7 tours desde **Construc
 Estos servicios todavía no saben a quién escribirle. Cuando completes el dato en el Excel de proveedores, alcanza con volver a correr la importación.
 
 - [ ] **OD019** (fila 83): 4* NH Cordillera → «NH Cordillera». Falta el mail: el owner lo está averiguando.
-- [ ] **OD020** (fila 500): Colonia Day Trip Circuito Historico → «Buquebus». "Buquebus" está en el directorio sin mail ni WhatsApp.
 - [ ] **OD022** (fila 136): Antarctica Hostel → «Antarctica Hostel». "Antarctica Hostel" está en el directorio sin mail ni WhatsApp.
-- [ ] **OD030** (fila 808): in CJC - Accommodation in San Pedro de Atacama → «Transvipp». "TRANSVIP" está en el directorio sin mail ni WhatsApp.
 - [ ] **COMPBR10** (fila 2671): O Hostel GRU → «O Hostel GRU». "O Hostel GRU" no está en el directorio ni en las equivalencias de SAO.
-
-## Otros puntos para revisar
-
-- [ ] OD030 (fila 801): el alojamiento “Accommodation: Hotel Don Raul / La Casa de Don Tomas. Booking Suplier: Hotel Don Raul / La Casa de Don Tomas” no dice su categoría (Hostel, Budget, 3*, 4*).
-- [ ] COMPBR10 (fila 2676): el alojamiento “Accommodation: Soos Hotel Collection / Nacionalinn Jaragua Sao Paulo. Booking Supplier: Sooz Hotel / Nacionalinn” no dice su categoría (Hostel, Budget, 3*, 4*).
-- [ ] COMPBR10: la tabla de precios nombra “Hotel 3*”, que podría ser uno de los alojamientos sin categoría.
 
 ## Detalle: servicio → nivel → opción → a quién se le pide → contacto
 
@@ -144,7 +136,7 @@ Estos servicios todavía no saben a quién escribirle. Cuando completes el dato 
 | 498 | excursion | — | 1 | City Tour | Grupo Summa | Grupo Summa | reservas@gruposumma.tur.ar |
 | 498 | excursion | — | 2 | Bike Tour | La Bicicleta Naranja | La Bicicleta Naranja | info@labicicletanaranja.com.ar |
 | 499 | traslado | — | 1 | EZE o AEP - Hotel - EZE o AEP | Greeters | GREETERS | info@greetersba.com |
-| 500 | excursion | — | 1 | Colonia Day Trip Circuito Historico | Buquebus | Buquebus | **sin mail ni WhatsApp** |
+| 500 | excursion | — | 1 | Colonia Day Trip Circuito Historico | Buquebus | — | manual (no se le escribe) |
 
 ### OD022 · Ushuaia, end of the World
 
@@ -195,9 +187,9 @@ Estos servicios todavía no saben a quién escribirle. Cuando completes el dato 
 |---|---|---|---|---|---|---|---|
 | 796 | alojamiento | Hostel | 1 | San Pedro Backpackers | San Pedro Backpackers | Backpacker San Pedro Hostel | WhatsApp |
 | 796 | alojamiento | Hostel | 2 | Aji Verde | Avi Verde | Aji Verde | WhatsApp |
-| 801 | alojamiento | — | 1 | Hotel Don Raul | Hotel Don Raul | Hotel don raul | reservas@donraul.cl |
-| 801 | alojamiento | — | 2 | La Casa de Don Tomas | La Casa de Don Tomas | Hotel La Casa de Don Tomas | reservas@dontomas.cl |
-| 808 | traslado | — | 1 | in CJC - Accommodation in San Pedro de Atacama | Transvipp | TRANSVIP | **sin mail ni WhatsApp** |
+| 801 | alojamiento | Hotel 3* | 1 | Hotel Don Raul | Hotel Don Raul | Hotel don raul | reservas@donraul.cl |
+| 801 | alojamiento | Hotel 3* | 2 | La Casa de Don Tomas | La Casa de Don Tomas | Hotel La Casa de Don Tomas | reservas@dontomas.cl |
+| 808 | traslado | — | 1 | in CJC - Accommodation in San Pedro de Atacama | Transvipp | — | manual (no se le escribe) |
 | 809 | excursion | — | 1 | Geisers del Tatio | Horizonte Atacama | Horizonte atacama | horizonteatacamareserva@gmail.com |
 
 ### OD031 · La Paz Bolivia Starter package
@@ -217,8 +209,8 @@ Estos servicios todavía no saben a quién escribirle. Cuando completes el dato 
 | 869 | alojamiento | Hostel | 2 | Ipanema Beach Hostel | Ipanema Beach Hostel | Ipanema Beach Hostel | info@hostelipanemabeach.com |
 | 869 | alojamiento | Hostel | 3 | Bamboo Rio Hostel | Bamboo Rio Hostel | Bamboo Hostel Rio | WhatsApp |
 | 869 | alojamiento | Hostel | 4 | El Misti Ipanema | El Misti Ipanema | El Misti Hostel Ipanema | info@elmistihostels.com |
-| 875 | alojamiento | Hostel | 1 | National Inn Copacabana | Nacional Inn | Nacional inn Copacabana | reservas@nacionalinncopacabana.com.br, rio.lazer@nacionalinn.com |
-| 875 | alojamiento | Hostel | 2 | Copacabana Mar Hostel | Copacabana Mar | Copacabana Mar hotel | reserva@copacabanamar.com.br |
+| 875 | alojamiento | Hotel 3* | 1 | National Inn Copacabana | Nacional Inn | Nacional inn Copacabana | reservas@nacionalinncopacabana.com.br, rio.lazer@nacionalinn.com |
+| 875 | alojamiento | Hotel 3* | 2 | Copacabana Mar Hostel | Copacabana Mar | Copacabana Mar hotel | reserva@copacabanamar.com.br |
 | 881 | traslado | — | 1 | GIG - Accommodation in Rio | Buzios Transfers | buzios transfer | buziostransfer@hotmail.com |
 | 881 | traslado | — | 2 | GIG - Accommodation in Rio | Alex | Alex | WhatsApp |
 | 882 | excursion | — | 1 | Big Dude | Local 55 | Rodrigo Perez | perez@local55.com |
@@ -276,5 +268,5 @@ Estos servicios todavía no saben a quién escribirle. Cuando completes el dato 
 |---|---|---|---|---|---|---|---|
 | 2671 | alojamiento | Hostel | 1 | Fujima Hostel | Fujima Hostel | Fujima Hostel | WhatsApp |
 | 2671 | alojamiento | Hostel | 2 | O Hostel GRU | O Hostel GRU | — | **sin resolver** |
-| 2676 | alojamiento | — | 1 | Soos Hotel Collection | Sooz Hotel | sooz hotel | saopaulo@soozhotel.com |
-| 2676 | alojamiento | — | 2 | Nacionalinn Jaragua Sao Paulo | Nacionalinn | Nacional Inn Jaragua Sao Paulo | rio.lazer@nacionalinn.com |
+| 2676 | alojamiento | Hotel 3* | 1 | Soos Hotel Collection | Sooz Hotel | sooz hotel | saopaulo@soozhotel.com |
+| 2676 | alojamiento | Hotel 3* | 2 | Nacionalinn Jaragua Sao Paulo | Nacionalinn | Nacional Inn Jaragua Sao Paulo | rio.lazer@nacionalinn.com |

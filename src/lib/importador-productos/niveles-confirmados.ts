@@ -25,6 +25,12 @@ export interface NivelConfirmado {
   texto_linea: string;
   nivel: string;
   ofrecido: boolean;
+  /**
+   * Columna opcional `forzar` (M1-04d; si/no, por defecto no): con `si` el
+   * nivel confirmado reemplaza al que se detectó en la línea (ej. OD032:
+   * "Copacabana Mar Hostel" es un Hotel 3*). Ausente = no se fuerza.
+   */
+  forzar?: true;
 }
 
 export function parsearNivelesConfirmados(texto: string): NivelConfirmado[] {
@@ -40,7 +46,11 @@ export function parsearNivelesConfirmados(texto: string): NivelConfirmado[] {
     if (ofrecido !== "si" && ofrecido !== "no") {
       throw new Error(`Niveles confirmados, fila ${fila}: ofrecido "${r.ofrecido ?? ""}" inválido (usar si | no).`);
     }
-    return { producto, texto_linea, nivel, ofrecido: ofrecido === "si" };
+    const forzar = limpiarNombre(r.forzar ?? "").toLowerCase();
+    if (forzar !== "" && forzar !== "si" && forzar !== "no") {
+      throw new Error(`Niveles confirmados, fila ${fila}: forzar "${r.forzar}" inválido (usar si | no, o vacío).`);
+    }
+    return { producto, texto_linea, nivel, ofrecido: ofrecido === "si", ...(forzar === "si" ? { forzar: true as const } : {}) };
   });
 }
 
@@ -86,7 +96,7 @@ export function aplicarNivelesConfirmados(
       servicios.push(s);
     } else if (!c.ofrecido) {
       descartar(c);
-    } else if (s.tipo === "alojamiento" && s.nivel === null) {
+    } else if (s.tipo === "alojamiento" && (s.nivel === null || c.forzar)) {
       usados.add(c);
       servicios.push({ ...s, nivel: c.nivel });
     } else {

@@ -121,3 +121,32 @@ describe("aplicarNivelesConfirmados", () => {
     expect(confirmados.filter((c) => c.producto === "OD010B" && !r.usados.includes(c))).toHaveLength(1);
   });
 });
+
+// M1-04d: columna opcional `forzar` (si/no, por defecto no). Con `forzar=si`
+// el nivel confirmado reemplaza al que se detectó en la línea (ej. OD032:
+// "Copacabana Mar Hostel" es un Hotel 3*, confirmado por el owner 2026-10-05).
+describe("niveles confirmados con forzar (M1-04d)", () => {
+  const LINEA = "Accommodation: National Inn Copacabana / Copacabana Mar Hostel. Booking Supplier: Nacional Inn / Copacabana Mar";
+  const CON_FORZAR =
+    "producto,texto_linea,nivel,ofrecido,forzar,nota\n" +
+    `OD032,"${LINEA}",Hotel 3*,si,si,owner 2026-10-05\n` +
+    "OD030,Accommodation: Hotel Don Raul. Booking Supplier: Hotel Don Raul,Hotel 3*,si,,\n";
+
+  it("la columna es opcional: sin ella, o vacía, no se fuerza; 'si' fuerza; otro valor es un error con la fila", () => {
+    const [od032, od030] = parsearNivelesConfirmados(CON_FORZAR);
+    expect(od032).toMatchObject({ producto: "OD032", nivel: "Hotel 3*", forzar: true });
+    expect(od030.forzar ?? false).toBe(false);
+    expect(parsearNivelesConfirmados(CSV).every((c) => !c.forzar)).toBe(true);
+    expect(() => parsearNivelesConfirmados("producto,texto_linea,nivel,ofrecido,forzar\nX,Y,Hostel,si,quizas\n")).toThrow(/fila 2.*forzar/);
+  });
+
+  it("con forzar=si el nivel confirmado reemplaza al detectado; sin forzar, el escrito se respeta", () => {
+    const confirmados = parsearNivelesConfirmados(CON_FORZAR);
+    const r = aplicarNivelesConfirmados("OD032", { servicios: [alojamiento(LINEA, "Hostel", 875)], dudosas: [] }, confirmados);
+    expect(r.servicios[0].nivel).toBe("Hotel 3*");
+    expect(r.usados).toHaveLength(1);
+    const sinForzar = parsearNivelesConfirmados(CON_FORZAR.replace(",si,si,", ",si,no,"));
+    const r2 = aplicarNivelesConfirmados("OD032", { servicios: [alojamiento(LINEA, "Hostel", 875)], dudosas: [] }, sinForzar);
+    expect(r2.servicios[0].nivel).toBe("Hostel");
+  });
+});

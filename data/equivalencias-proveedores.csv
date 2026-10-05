@@ -61,7 +61,7 @@ SCL,NH,Hotel NH Santiago,alias,confirmado,"Confirmado por el owner (2026-10-03/0
 VLP,Kupos.cl,,manual,confirmado,Kupos.cl es un sistema online de pasajes: el tramo queda manual
 SPA,Avi Verde,Aji Verde,alias,confirmado,Typo del Excel de paquetes: es Aji Verde
 SPA,San Pedro Backpackers,Backpacker San Pedro Hostel,alias,confirmado,"Confirmado por el owner (2026-10-03/05, diagnóstico M1-04c)"
-SPA,Transvipp,TRANSVIP,alias,confirmado,"Confirmado por el owner (2026-10-03/05, diagnóstico M1-04c)"
+SPA,Transvipp,,manual,confirmado,"Se reserva manual por el sistema de ellos (owner 2026-10-05). En el directorio es TRANSVIP, sin mail"
 LPB,The Adventure Brew Hostel,Adventure Brew Hostel,alias,confirmado,"Confirmado por el owner (2026-10-03/05, diagnóstico M1-04c). Por WhatsApp"
 RIO,Bamboo Rio Hostel,Bamboo Hostel Rio,alias,confirmado,"Confirmado por el owner (2026-10-03/05, diagnóstico M1-04c)"
 RIO,Copacabana Mar,Copacabana Mar hotel,alias,confirmado,"Confirmado por el owner (2026-10-03/05, diagnóstico M1-04c)"
@@ -74,3 +74,4 @@ SAO,Sooz Hotel,sooz hotel,alias,confirmado,"Soos Hotel Collection São Paulo (sa
 SAO,Nacionalinn,Nacional Inn Jaragua Sao Paulo,alias,confirmado,"Confirmado por el owner (2026-10-05). No es el de Foz ni el de Copacabana"
 USH,Los Acebos,Las Hayas y los Acebos,alias,confirmado,"Mismo proveedor que Las Hayas (Tremun Ushuaia, un solo mail)"
 SPA,La Casa de Don Tomas,Hotel La Casa de Don Tomas,alias,confirmado,"Mismo hotel, en el directorio con ""Hotel"" adelante"
+BUE,Buquebus,,manual,confirmado,"Colonia Day Trip (OD020): se reserva manual por el sistema de ellos (owner 2026-10-05)"

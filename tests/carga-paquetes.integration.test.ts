@@ -109,11 +109,11 @@ interface Fila {
       }
     }, TIMEOUT);
 
-    it("#2 cargar las equivalencias del formato nuevo (75) es idempotente", async () => {
+    it("#2 cargar las equivalencias del formato nuevo (76) es idempotente", async () => {
       const texto = readFileSync(RUTA_EQUIVALENCIAS, "utf-8");
       await cargarEquivalencias({ admin, textoCsv: texto });
       const segunda = await cargarEquivalencias({ admin, textoCsv: texto });
-      expect(segunda).toMatchObject({ total: 75, creados: 0, actualizados: 0 });
+      expect(segunda).toMatchObject({ total: 76, creados: 0, actualizados: 0 });
       const { data } = await admin
         .from("proveedor_alias")
         .select("destino, modo, proveedor:proveedor_id(nombre, ciudad)")
@@ -185,6 +185,22 @@ interface Fila {
         const kupos = (await servicios(codigo)).filter((s) => /kupos/i.test(s.booking_supplier_nombre ?? ""));
         expect(kupos, codigo).toHaveLength(1);
         expect(kupos[0], codigo).toMatchObject({ reserva_manual: true, bs: null, proveedor_sin_resolver: false, proveedor_para_revisar: false });
+      }
+    });
+
+    it("#4 Buquebus (OD020) y Transvipp (OD030) quedan manuales aunque estén en el directorio (owner 2026-10-05)", async () => {
+      for (const [codigo, nombre] of [["OD020", "Buquebus"], ["OD030", "Transvipp"]]) {
+        const s = (await servicios(codigo)).filter((x) => x.booking_supplier_nombre === nombre);
+        expect(s, codigo).toHaveLength(1);
+        expect(s[0], codigo).toMatchObject({ reserva_manual: true, bs: null, proveedor_sin_resolver: false, proveedor_para_revisar: false });
+      }
+    });
+
+    it("niveles confirmados (owner 2026-10-05): OD030 fila 801, COMPBR10 fila 2676 y OD032 fila 875 (forzado) = Hotel 3*", async () => {
+      for (const [codigo, fila] of [["OD030", 801], ["COMPBR10", 2676], ["OD032", 875]] as const) {
+        const s = (await servicios(codigo)).filter((x) => x.fila_excel === fila);
+        expect(s.length, `${codigo} ${fila}`).toBe(2);
+        expect(s.every((x) => x.nivel === "Hotel 3*"), `${codigo} ${fila}`).toBe(true);
       }
     });
 
@@ -302,7 +318,10 @@ interface Fila {
       // De los pendientes conocidos solo queda NH Cordillera (el owner sumó Patagonia Hostel, Sooz, Nacional Inn Jaraguá y Tetris).
       const lista = md.slice(md.indexOf("## Lo que sigue sin resolver"), md.indexOf("## Detalle"));
       expect(lista).toContain("NH Cordillera");
-      for (const resuelto of ["«Patagonia»", "«Nacionalinn»", "«Sooz Hotel»", "Tetris"]) expect(lista, resuelto).not.toContain(resuelto);
+      for (const resuelto of ["«Patagonia»", "«Nacionalinn»", "«Sooz Hotel»", "Tetris", "«Buquebus»", "«Transvipp»", "Don Tomas"]) {
+        expect(lista, resuelto).not.toContain(resuelto);
+      }
+      expect(md).not.toContain("## Otros puntos para revisar"); // categorías confirmadas por el owner (2026-10-05)
     }, TIMEOUT);
   });
 });
