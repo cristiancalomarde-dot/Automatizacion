@@ -3,10 +3,10 @@
 Cargué en el sistema los paquetes de un destino de los 7 tours desde **Construccion de Paquetes 2019 con 3 y 4 estrellas.xls** (2026-10-05). Cada servicio de cada paquete ya sabe a qué proveedor pedírselo, salvo los de la lista de abajo.
 
 - Paquetes: 17. Servicios (cada opción de hotel o excursión cuenta una vez): 146.
-- Con proveedor y mail: **124**.
+- Con proveedor y mail: **126**.
 - Por WhatsApp (el pedido lo hace una persona): **13**.
 - Manuales, no se le escribe a nadie (pasajes en Kupos.cl): **2**.
-- Sin resolver: **4**; y 3 con proveedor pero sin mail ni WhatsApp.
+- Sin resolver: **2**; y 3 con proveedor pero sin mail ni WhatsApp.
 
 ## Por paquete
 
@@ -18,10 +18,10 @@ Cargué en el sistema los paquetes de un destino de los 7 tours desde **Construc
 | OD018 | BUE | 14 | 14 | 0 | 0 | 0 | 0 |
 | OD019 | MDZ | 6 | 4 | 1 | 0 | 1 | 0 |
 | OD020 | BUE | 14 | 13 | 0 | 0 | 0 | 1 |
-| OD022 | USH | 11 | 9 | 0 | 0 | 1 | 1 |
+| OD022 | USH | 11 | 10 | 0 | 0 | 0 | 1 |
 | OD025 | PMY | 10 | 8 | 2 | 0 | 0 | 0 |
 | OD029 | SCL | 7 | 7 | 0 | 0 | 0 | 0 |
-| OD030 | SPA | 6 | 2 | 2 | 0 | 1 | 1 |
+| OD030 | SPA | 6 | 3 | 2 | 0 | 0 | 1 |
 | OD031 | LPB | 4 | 0 | 4 | 0 | 0 | 0 |
 | OD032 | RIO | 9 | 7 | 2 | 0 | 0 | 0 |
 | OD033 | CHA | 12 | 12 | 0 | 0 | 0 | 0 |
@@ -37,8 +37,6 @@ Estos servicios todavía no saben a quién escribirle. Cuando completes el dato 
 - [ ] **OD019** (fila 83): 4* NH Cordillera → «NH Cordillera». Falta el mail: el owner lo está averiguando.
 - [ ] **OD020** (fila 500): Colonia Day Trip Circuito Historico → «Buquebus». "Buquebus" está en el directorio sin mail ni WhatsApp.
 - [ ] **OD022** (fila 136): Antarctica Hostel → «Antarctica Hostel». "Antarctica Hostel" está en el directorio sin mail ni WhatsApp.
-- [ ] **OD022** (fila 144): Hotel 4* Los Acebos → «Tremun». "Tremun" se reserva hotel por hotel y "Hotel 4* Los Acebos" no tiene equivalencia en USH.
-- [ ] **OD030** (fila 801): La Casa de Don Tomas → «La Casa de Don Tomas». "La Casa de Don Tomas" no está en el directorio ni en las equivalencias de SPA.
 - [ ] **OD030** (fila 808): in CJC - Accommodation in San Pedro de Atacama → «Transvipp». "TRANSVIP" está en el directorio sin mail ni WhatsApp.
 - [ ] **COMPBR10** (fila 2671): O Hostel GRU → «O Hostel GRU». "O Hostel GRU" no está en el directorio ni en las equivalencias de SAO.
 
@@ -157,7 +155,7 @@ Estos servicios todavía no saben a quién escribirle. Cuando completes el dato 
 | 141 | alojamiento | Hotel 3* | 1 | Hotel 3* Los Naranjos | Los Naranjos | Los naranjos | reservas@losnaranjosushuaia.com |
 | 141 | alojamiento | Hotel 3* | 2 | Hotel 3* Altos de Ushuaia | Altos de Ushuaia | Altos Ushuaia | altosushuaiahotel@gmail.com |
 | 144 | alojamiento | Hotel 4* | 1 | Hotel 4*Albatros | Albatros | albatros hotel ushuaia | reservas1@albatroshotel.com.ar |
-| 144 | alojamiento | Hotel 4* | 2 | Hotel 4* Los Acebos | Tremun | — | **sin resolver** |
+| 144 | alojamiento | Hotel 4* | 2 | Hotel 4* Los Acebos | Tremun | Las Hayas y los Acebos | reservas.ushuaia@tremunhoteles.com.ar |
 | 144 | alojamiento | Hotel 4* | 3 | Hotel 4* Las Hayas | Tremun | Las Hayas y los Acebos | reservas.ushuaia@tremunhoteles.com.ar |
 | 150 | traslado | — | 1 | Round Trip: Rumbo Sur | Rumbo Sur | Rumbo sur | emiliao@rumbosur.com.ar |
 | 151 | excursion | — | 1 | Beagle Channel Boat Trip, 3 hours, no transfer to port | Rumbo Sur | Rumbo sur | emiliao@rumbosur.com.ar |
@@ -198,7 +196,7 @@ Estos servicios todavía no saben a quién escribirle. Cuando completes el dato 
 | 796 | alojamiento | Hostel | 1 | San Pedro Backpackers | San Pedro Backpackers | Backpacker San Pedro Hostel | WhatsApp |
 | 796 | alojamiento | Hostel | 2 | Aji Verde | Avi Verde | Aji Verde | WhatsApp |
 | 801 | alojamiento | — | 1 | Hotel Don Raul | Hotel Don Raul | Hotel don raul | reservas@donraul.cl |
-| 801 | alojamiento | — | 2 | La Casa de Don Tomas | La Casa de Don Tomas | — | **sin resolver** |
+| 801 | alojamiento | — | 2 | La Casa de Don Tomas | La Casa de Don Tomas | Hotel La Casa de Don Tomas | reservas@dontomas.cl |
 | 808 | traslado | — | 1 | in CJC - Accommodation in San Pedro de Atacama | Transvipp | TRANSVIP | **sin mail ni WhatsApp** |
 | 809 | excursion | — | 1 | Geisers del Tatio | Horizonte Atacama | Horizonte atacama | horizonteatacamareserva@gmail.com |
 

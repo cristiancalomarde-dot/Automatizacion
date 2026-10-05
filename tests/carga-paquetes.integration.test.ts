@@ -109,11 +109,11 @@ interface Fila {
       }
     }, TIMEOUT);
 
-    it("#2 cargar las equivalencias del formato nuevo (73) es idempotente", async () => {
+    it("#2 cargar las equivalencias del formato nuevo (75) es idempotente", async () => {
       const texto = readFileSync(RUTA_EQUIVALENCIAS, "utf-8");
       await cargarEquivalencias({ admin, textoCsv: texto });
       const segunda = await cargarEquivalencias({ admin, textoCsv: texto });
-      expect(segunda).toMatchObject({ total: 73, creados: 0, actualizados: 0 });
+      expect(segunda).toMatchObject({ total: 75, creados: 0, actualizados: 0 });
       const { data } = await admin
         .from("proveedor_alias")
         .select("destino, modo, proveedor:proveedor_id(nombre, ciudad)")
@@ -173,9 +173,11 @@ interface Fila {
       ]);
     });
 
-    it("#3 un hotel de Tremun sin equivalencia queda sin resolver (Los Acebos en OD022), no se inventa", async () => {
+    it("#3 Los Acebos (Tremun Ushuaia) resuelve por hotel; un proveedor que no está en el directorio (O Hostel GRU en COMPBR10) queda sin resolver, no se inventa", async () => {
       const acebos = (await servicios("OD022")).find((s) => s.service_provider_nombre.includes("Los Acebos"))!;
-      expect(acebos).toMatchObject({ bs: null, proveedor_sin_resolver: true });
+      expect(acebos.bs?.nombre).toBe("Las Hayas y los Acebos");
+      const oHostel = (await servicios("COMPBR10")).find((s) => /O Hostel/i.test(s.service_provider_nombre))!;
+      expect(oHostel).toMatchObject({ bs: null, proveedor_sin_resolver: true });
     });
 
     it("#4 Kupos (COMPCH01 y OD017) queda manual, sin proveedor y sin bandera de revisión", async () => {
@@ -204,9 +206,9 @@ interface Fila {
         lineas += s.length;
       }
       expect(lineas).toBe(8); // OD030 fila 801 son 2 opciones
-      // con proveedor del directorio, salvo "La Casa de Don Tomas" (no está en el directorio)
+      // todas con proveedor del directorio ("La Casa de Don Tomas" resuelve por equivalencia desde 2026-10-05)
       const conProveedor = (await Promise.all(casos.map(async ([c, f]) => (await servicios(c)).filter((x) => x.fila_excel === f)))).flat();
-      expect(conProveedor.filter((x) => x.bs === null).map((x) => x.booking_supplier_nombre)).toEqual(["La Casa de Don Tomas"]);
+      expect(conProveedor.filter((x) => x.bs === null).map((x) => x.booking_supplier_nombre)).toEqual([]);
     });
 
     it("#6 opcionales: OD022, OD025, OD017 y OD033 tienen su servicio opcional con proveedor", async () => {
@@ -236,14 +238,14 @@ interface Fila {
       expect(soos.map((s) => s.bs?.nombre)).toEqual(["sooz hotel", "Nacional Inn Jaragua Sao Paulo"]);
     });
 
-    it("#9 re-correr no pisa un Booking Supplier resuelto a mano (Los Acebos en OD022, mismo nombre en el Excel)", async () => {
-      const { data: p } = await admin.from("producto").select("id").eq("codigo", "OD022").single();
+    it("#9 re-correr no pisa un Booking Supplier resuelto a mano (O Hostel GRU en COMPBR10, mismo nombre en el Excel)", async () => {
+      const { data: p } = await admin.from("producto").select("id").eq("codigo", "COMPBR10").single();
       const { data: filas } = await admin
         .from("producto_servicio")
         .select("id, service_provider_nombre")
         .eq("producto_id", p!.id);
-      const acebos = filas!.find((f) => f.service_provider_nombre.includes("Los Acebos"))!;
-      const { data: hayas } = await admin.from("proveedor").select("id").eq("nombre", "Las Hayas y los Acebos").single();
+      const acebos = filas!.find((f) => /O Hostel/i.test(f.service_provider_nombre))!;
+      const { data: hayas } = await admin.from("proveedor").select("id").eq("nombre", "sooz hotel").single();
       try {
         await admin.from("producto_servicio").update({ booking_supplier_id: hayas!.id, proveedor_sin_resolver: false }).eq("id", acebos.id);
         const corrida = await cargar();
