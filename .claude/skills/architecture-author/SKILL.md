@@ -34,7 +34,7 @@ todos escritos en la misma pasada (sin subagentes).
 
    Y los **condicionales** — solo si el proyecto los necesita (si no, NO se crea el archivo y el
    índice lo marca):
-   - `integraciones-ia.md` — modelo, para qué se usa, y el **techo de gasto** por llamada (regla #3).
+   - `integraciones-ia.md` — modelo, para qué se usa, el **system prompt** (con su estructura de buenas prácticas: rol, criterio/rúbrica, tono, guardrails, forma de salida y casos límite), los **parámetros de la llamada** (salida estructurada/schema, entrada, reintentos y la perilla de consistencia —temperatura si el modelo la admite; si no, `effort`—) y el **techo de gasto** por llamada (regla #3).
    - `integraciones.md` — otros sistemas externos (pagos, mails, APIs); todo efecto hacia afuera
      cita la regla #4.
    - `auth-y-permisos.md` — cómo entra el usuario (autenticación) y qué puede hacer cada rol.

@@ -32,6 +32,7 @@ Cada etapa tiene su responsable. Nombralos al invocarlos.
 | Programador (`builder`) | `/implementar <ID>` (o prosa: "construí `<ID>`") | Una spec → código verificado (3 verificaciones) |
 | Diseñador de Producto (`ux-reviewer`) | lo despacha `/arquitectura` (autor) · prosa: "revisá que no parezca de IA" (auditor) | Define user-flow y marca; después audita que la app no parezca prototipo |
 | DevOps (`deploy-engineer`) | `/deploy [entorno]` | Control listo-para-publicar + deploy real con tu OK |
+| Revisor de IA (`ia-reviewer`) | `/revisar-ia` | Audita el diseño de IA (paradigma, modelos, salida, techo de gasto, guardrails, evals) → `docs/arquitectura/revision-ia.md`; corrige tras tu OK |
 | Estimador de Costos (`cost-estimator`) | `/costo` | La foto del costo mensual (infra + IA) → `docs/arquitectura/costos.md` |
 | Instalador de Monitoreo (`sentry-installer`) | `/instalar-sentry` | Sentry capturando errores (vía el `builder`) → `docs/arquitectura/sentry.md` |
 | Instalador de Analítica (`posthog-installer`) | `/instalar-posthog` | PostHog midiendo producto (vía el `builder`) → `docs/arquitectura/posthog.md` |
