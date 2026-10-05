@@ -74,6 +74,15 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
       Patagonia Hostel (Chaltén); Rochester Concept (BA, central distinta de Calafate); NH
       central (para NH Santiago) y NH Cordillera (Mendoza, el owner averigua el mail); Receptivo
       Chalten (Fitz Camp opcional); The Adventure Brew Hostel (La Paz, WhatsApp).
+    - **Excel de proveedores actualizado por el owner (2026-10-05, en `Insumos/`):** se agregaron casi
+      todos los faltantes. All Peninsula = "Peninsula valdes" (agencia@allpeninsulavaldes.com) y
+      "calten tour / ALWAYS" pasó a "ALWAYS Glaciers" (calafatehostel@alwaysglaciers.com). NH
+      Santiago se reserva por CL Mundo. **Siguen faltando:** Tetris, Patagonian Group, Patagonia
+      Hostel (Chaltén), NH Cordillera y Amonite. **Imperio Inca quedó solo con WhatsApp**
+      (Overland, bus Uyuni–La Paz y Sagarnaga serían manuales; falta que el owner confirme).
+      **Tremun** no tiene central, va hotel por hotel (Las Hayas en Ushuaia, Yene Hue en Madryn):
+      falta saber cuál es el de Calafate (OD013/OD016). Dazzler San Martín está duplicado (filas 8
+      y 16, mismo mail).
     - **Falta el mail de Imperio Inca:** está en el directorio pero sin mail, y es crítico
       (Overland COMPBO20, bus Uyuni–La Paz y Hotel Sagarnaga en La Paz).
     - **Kupos.cl** es un sistema online de pasajes de bus en Chile, con claves de HI Travel: no
