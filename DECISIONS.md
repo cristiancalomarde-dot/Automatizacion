@@ -6,6 +6,20 @@ Formato mínimo por entrada: qué decisión, por qué, alternativa rechazada, co
 
 # Decisiones de diseño
 
+## 2026-10-05: Equivalencias de proveedores por destino; grupos sin central se resuelven por hotel
+- **Decisión:**
+  - Las equivalencias (`data/equivalencias-proveedores.csv`) tienen destino. Por ejemplo, "Nacional Inn" es el de Foz en Iguazú y el de Copacabana en Río.
+  - Hay tres modos:
+    - `alias`: el nombre del Excel corresponde a un proveedor del directorio.
+    - `por_service_provider`: grupos sin central, como Tremun y Dazzler. Se busca por el nombre del hotel.
+    - `manual`: tramos que se reservan en sistemas propios, sin mail (Kupos.cl, Buquebus, TRANSVIP).
+  - Si el directorio tiene dos proveedores con el mismo nombre, se elige el de la ciudad del destino. Si además tienen el mismo contacto, se toma uno.
+- **Razón:** el diagnóstico de M1-04c mostró que una equivalencia global empareja mal entre destinos. El owner confirmó que Tremun y Dazzler no tienen central.
+- **Constraint:**
+  - El orden de búsqueda sigue siendo nombre exacto → equivalencia.
+  - Un proveedor que el owner saca del Excel no se borra solo. Se borró a mano "Selina La Paz" (cerrado), con su OK. La política general de bajas se decide en M1-06.
+  - Categorías: en paquetes, Nacional Inn Copacabana y Copacabana Mar son Hotel 3\*, pero en los tours largos se llaman Budget (lo resuelve M1-05). Don Raúl, Don Tomás, Sooz y Nacional Inn Jaraguá son Hotel 3\*.
+
 ## 2026-10-02: Códigos de Kilroy: se extrae el nuestro del suyo; Overland por ciudad de inicio
 - **Decisión:** el "Tour code" de Kilroy tiene la forma `HI_ARGENTINA_<nuestro código>-677` o `HI_TRAVEL_<nuestro código>-677` (677 es HI Travel como proveedor de Kilroy). Para emparejar, el sistema saca nuestro código de ahí y normaliza los guiones bajos internos (`ARCH_33` → `ARCH33`, después de quitar el prefijo `W_TREK_`). Excepciones:
   - `HI_ARGENTINA_OVERLAND_7DAYS-677` no contiene código. Se decide por la ciudad de inicio: si arranca en Calama/San Pedro es **CHB31**; si arranca en La Paz es **BOCHI04R**.
