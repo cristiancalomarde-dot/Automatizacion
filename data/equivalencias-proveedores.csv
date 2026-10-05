@@ -13,7 +13,7 @@ IGR,Bambu Foz,Bambu hostel,alias,confirmado,
 IGR,Bambu Hostel Foz,Bambu hostel,alias,confirmado,
 IGR,Beer,Tangoinn Bed & Brewery IGR,alias,confirmado,"Cambió de nombre de Tangoinn Bed & Brewery a Beer; confirmado por el owner 2026-09-27 (mails: beerhotel@tangoinn.com y beerhotel@cervezaholy.com)"
 IGR,Beer Hostel,Tangoinn Bed & Brewery IGR,alias,confirmado,"Cambió de nombre de Tangoinn Bed & Brewery a Beer; confirmado por el owner 2026-09-27"
-IGR,Tetris,,alias,para_revisar,"Se reserva por WhatsApp (confirmado por operaciones 2026-09-27). Falta sumarlo al Excel de proveedores con su WhatsApp; después: proveedor_en_directorio = Tetris y estado confirmado"
+IGR,Tetris,Tetris Hostel Foz do Iguacu,alias,confirmado,"Se reserva por WhatsApp; confirmado por el owner (2026-10-05)"
 USH,Albatros,albatros hotel ushuaia,alias,confirmado,"Confirmado por el owner (2026-10-03/05, diagnóstico M1-04c)"
 USH,Altos de Ushuaia,Altos Ushuaia,alias,confirmado,"Confirmado por el owner (2026-10-03/05, diagnóstico M1-04c)"
 USH,Rumbo Sur,Rumbo sur,alias,confirmado,"Confirmado por el owner (2026-10-03/05, diagnóstico M1-04c). En el directorio hay 2 ""Rumbo sur"": usar el de Ushuaia"
@@ -31,7 +31,7 @@ CHA,Patagonian Group,Hosteria Fitz roy,alias,confirmado,"Confirmado por el owner
 CHA,Kau Si Aike,Kau si ake,alias,confirmado,"Confirmado por el owner (2026-10-03/05, diagnóstico M1-04c)"
 CHA,Receptivo Chalten,Fitz Camp / Receptivo Chalten,alias,confirmado,"Confirmado por el owner (2026-10-03/05, diagnóstico M1-04c)"
 CHA,Transporte Las Lengas,Las Lengas,alias,confirmado,"Confirmado por el owner (2026-10-03/05, diagnóstico M1-04c)"
-CHA,Patagonia,,alias,para_revisar,Patagonia Hostel (El Chaltén): falta en el Excel de proveedores
+CHA,Patagonia,Patagonia Hostel El Chalten,alias,confirmado,"Confirmado por el owner (2026-10-05)"
 PNT,Big Sur,Hotel big sur,alias,confirmado,"Confirmado por el owner (2026-10-03/05, diagnóstico M1-04c)"
 PNT,Puma Hostel,Puma House,alias,confirmado,"Confirmado por el owner (2026-10-03/05, diagnóstico M1-04c)"
 PNT,Vendaval,Hotel Vendaval,alias,confirmado,"Confirmado por el owner (2026-10-03/05, diagnóstico M1-04c)"
@@ -70,5 +70,5 @@ RIO,Local 55,Rodrigo Perez,alias,confirmado,"Confirmado por el owner (2026-10-03
 RIO,Nacional Inn,Nacional inn Copacabana,alias,confirmado,"En Río, Nacional Inn es el de Copacabana, no el de Foz"
 RIO,Alex,Alex,alias,confirmado,"Taxi privado de Río, plan B. Por WhatsApp"
 RIO,Buzios Transfers,buzios transfer,alias,confirmado,"Confirmado por el owner (2026-10-03/05, diagnóstico M1-04c)"
-SAO,Sooz Hotel,,alias,para_revisar,"Soos Hotel Collection (São Paulo, COMPBR10): falta en el Excel de proveedores"
-SAO,Nacionalinn,,alias,para_revisar,"Nacional Inn Jaraguá (São Paulo, COMPBR10): falta en el Excel de proveedores, con su mail (no es el de Foz ni el de Copacabana)"
+SAO,Sooz Hotel,sooz hotel,alias,confirmado,"Soos Hotel Collection São Paulo (saopaulo@soozhotel.com); confirmado por el owner (2026-10-05)"
+SAO,Nacionalinn,Nacional Inn Jaragua Sao Paulo,alias,confirmado,"Confirmado por el owner (2026-10-05). No es el de Foz ni el de Copacabana"
