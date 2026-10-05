@@ -16,8 +16,8 @@ OD029,SCL,
 OD030,SPA,
 OD031,LPB,
 OD032,RIO,
-OD033,CHA,El Chaltén: el Excel no dice destino en la columna A (a confirmar)
-CH10,PNT,W Trek desde Puerto Natales: el Excel no dice destino en la columna A (a confirmar)
+OD033,CHA,El Chaltén (confirmado por el owner 2026-10-03)
+CH10,PNT,Puerto Natales + Torres del Paine (confirmado por el owner 2026-10-03)
 COMPCH01,VLP,
-COMPBO20,UYU,Overland Uyuni (a confirmar)
-COMPBR10,SAO,São Paulo: en el Excel está bajo SSA (a confirmar)
+COMPBO20,UYU,Overland San Pedro–Uyuni; el owner le agregó bloque propio (2026-10-03)
+COMPBR10,SAO,São Paulo (confirmado por el owner; en el Excel estaba bajo SSA)

@@ -1,16 +1,74 @@
-nombre_en_excel,proveedor_en_directorio,estado,nota
-Cuenca del Plata,Cuenca Del Plata (Natalia ),confirmado,"No es ""Cuenca del Plata, +"" (sin mail)"
-Cuenca del Plana,Cuenca Del Plata (Natalia ),confirmado,Typo del Excel de paquetes (OD010C/D)
-Nacional Inn,nacional inn foz,confirmado,No es Nacional inn Copacabana
-Nacional inn Foz,nacional inn foz,confirmado,
-Nacional Inn Foz 3*,nacional inn foz,confirmado,
-Dann Inn Foz,nacional inn foz,confirmado,Dan Inn es del grupo Nacional Inn: se reserva con el mail de Nacional Inn Foz
-Taroba,HOTEL TAROBA,confirmado,
-Taroba Express,HOTEL TAROBA,confirmado,
-Taroba Hotel 3* sup/4,HOTEL TAROBA,confirmado,
-Bambu,Bambu hostel,confirmado,
-Bambu Foz,Bambu hostel,confirmado,
-Bambu Hostel Foz,Bambu hostel,confirmado,
-Beer,Tangoinn Bed & Brewery IGR,confirmado,"Cambió de nombre de Tangoinn Bed & Brewery a Beer; confirmado por el owner 2026-09-27 (mails: beerhotel@tangoinn.com y beerhotel@cervezaholy.com)"
-Beer Hostel,Tangoinn Bed & Brewery IGR,confirmado,"Cambió de nombre de Tangoinn Bed & Brewery a Beer; confirmado por el owner 2026-09-27"
-Tetris,,para_revisar,"Se reserva por WhatsApp (confirmado por operaciones 2026-09-27). Falta sumarlo al Excel de proveedores con su WhatsApp; después: proveedor_en_directorio = Tetris y estado confirmado"
+destino,nombre_en_excel,proveedor_en_directorio,modo,estado,nota
+IGR,Cuenca del Plata,Cuenca Del Plata (Natalia ),alias,confirmado,"No es ""Cuenca del Plata, +"" (sin mail)"
+IGR,Cuenca del Plana,Cuenca Del Plata (Natalia ),alias,confirmado,Typo del Excel de paquetes (OD010C/D)
+IGR,Nacional Inn,nacional inn foz,alias,confirmado,No es Nacional inn Copacabana
+IGR,Nacional inn Foz,nacional inn foz,alias,confirmado,
+IGR,Nacional Inn Foz 3*,nacional inn foz,alias,confirmado,
+IGR,Dann Inn Foz,nacional inn foz,alias,confirmado,Dan Inn es del grupo Nacional Inn: se reserva con el mail de Nacional Inn Foz
+IGR,Taroba,HOTEL TAROBA,alias,confirmado,
+IGR,Taroba Express,HOTEL TAROBA,alias,confirmado,
+IGR,Taroba Hotel 3* sup/4,HOTEL TAROBA,alias,confirmado,
+IGR,Bambu,Bambu hostel,alias,confirmado,
+IGR,Bambu Foz,Bambu hostel,alias,confirmado,
+IGR,Bambu Hostel Foz,Bambu hostel,alias,confirmado,
+IGR,Beer,Tangoinn Bed & Brewery IGR,alias,confirmado,"Cambió de nombre de Tangoinn Bed & Brewery a Beer; confirmado por el owner 2026-09-27 (mails: beerhotel@tangoinn.com y beerhotel@cervezaholy.com)"
+IGR,Beer Hostel,Tangoinn Bed & Brewery IGR,alias,confirmado,"Cambió de nombre de Tangoinn Bed & Brewery a Beer; confirmado por el owner 2026-09-27"
+IGR,Tetris,,alias,para_revisar,"Se reserva por WhatsApp (confirmado por operaciones 2026-09-27). Falta sumarlo al Excel de proveedores con su WhatsApp; después: proveedor_en_directorio = Tetris y estado confirmado"
+USH,Albatros,albatros hotel ushuaia,alias,confirmado,"Confirmado por el owner (2026-10-03/05, diagnóstico M1-04c)"
+USH,Altos de Ushuaia,Altos Ushuaia,alias,confirmado,"Confirmado por el owner (2026-10-03/05, diagnóstico M1-04c)"
+USH,Rumbo Sur,Rumbo sur,alias,confirmado,"Confirmado por el owner (2026-10-03/05, diagnóstico M1-04c). En el directorio hay 2 ""Rumbo sur"": usar el de Ushuaia"
+USH,Tremun,,por_service_provider,confirmado,Tremun no tiene central: cada hotel tiene su mail. Se resuelve por el hotel (Service Provider)
+USH,Las Hayas,Las Hayas y los Acebos,alias,confirmado,"Confirmado por el owner (2026-10-03/05, diagnóstico M1-04c)"
+FTE,Always Glaciers,ALWAYS Glaciers,alias,confirmado,"Confirmado por el owner (2026-10-03/05, diagnóstico M1-04c)"
+FTE,Del Glaciar,Del Glaciar / Juan Pablo,alias,confirmado,"Confirmado por el owner (2026-10-03/05, diagnóstico M1-04c). Hostel Pioneros y Hotel Libertador se reservan al mismo mail"
+FTE,Tremun,,por_service_provider,confirmado,"Tremun no tiene central: Rincón del Calafate y Sent (3*), Mirador del Lago y Calafate Parque (4*), cada uno con su mail"
+FTE,Rincon del Calafate,Rincon del calafate,alias,confirmado,"Confirmado por el owner (2026-10-03/05, diagnóstico M1-04c)"
+FTE,Sent,Sent,alias,confirmado,"Confirmado por el owner (2026-10-03/05, diagnóstico M1-04c)"
+FTE,Mirador del Lago,Mirador del Lago,alias,confirmado,"Confirmado por el owner (2026-10-03/05, diagnóstico M1-04c)"
+FTE,Calafate Parque,Calafate Parque,alias,confirmado,"Confirmado por el owner (2026-10-03/05, diagnóstico M1-04c)"
+FTE,Patagonian Group,Hosteria Fitz roy,alias,confirmado,"Confirmado por el owner (2026-10-03/05, diagnóstico M1-04c). Patagonian Group centraliza: mismo mail info@patagoniangroup.com.ar"
+CHA,Patagonian Group,Hosteria Fitz roy,alias,confirmado,"Confirmado por el owner (2026-10-03/05, diagnóstico M1-04c). Mismo mail para Fitz Roy, El Paraíso y Vertical Lodge"
+CHA,Kau Si Aike,Kau si ake,alias,confirmado,"Confirmado por el owner (2026-10-03/05, diagnóstico M1-04c)"
+CHA,Receptivo Chalten,Fitz Camp / Receptivo Chalten,alias,confirmado,"Confirmado por el owner (2026-10-03/05, diagnóstico M1-04c)"
+CHA,Transporte Las Lengas,Las Lengas,alias,confirmado,"Confirmado por el owner (2026-10-03/05, diagnóstico M1-04c)"
+CHA,Patagonia,,alias,para_revisar,Patagonia Hostel (El Chaltén): falta en el Excel de proveedores
+PNT,Big Sur,Hotel big sur,alias,confirmado,"Confirmado por el owner (2026-10-03/05, diagnóstico M1-04c)"
+PNT,Puma Hostel,Puma House,alias,confirmado,"Confirmado por el owner (2026-10-03/05, diagnóstico M1-04c)"
+PNT,Vendaval,Hotel Vendaval,alias,confirmado,"Confirmado por el owner (2026-10-03/05, diagnóstico M1-04c)"
+PNT,Vertice,W trek VERTICE,alias,confirmado,"Confirmado por el owner (2026-10-03/05, diagnóstico M1-04c). En CH10 el W Trek va a Vertice o a Las Torres según el programa"
+PNT,Las Torres,W trek LAS TORRES,alias,confirmado,"Confirmado por el owner (2026-10-03/05, diagnóstico M1-04c)"
+PNT,Fantastico Sur,W trek LAS TORRES,alias,confirmado,Nombre anterior de Las Torres Patagonia
+PNT,Kupos,,manual,confirmado,"Kupos.cl es un sistema online de pasajes (claves de HI Travel): no se le escribe, el tramo queda manual"
+BUE,Alvarez Arguelles,Hotel Grand Brizo Buenos Aires,alias,confirmado,"Confirmado por el owner (2026-10-03/05, diagnóstico M1-04c)"
+BUE,Dazzler,,por_service_provider,confirmado,Dazzler se reserva hotel por hotel
+BUE,Dazzler Maipu,Reservas Dazzler Maipu',alias,confirmado,"Confirmado por el owner (2026-10-03/05, diagnóstico M1-04c)"
+BUE,San Martin,Dazzler San Martin,alias,confirmado,"Confirmado por el owner (2026-10-03/05, diagnóstico M1-04c) (Dazzler San Martín)"
+BUE,Loi Suites,Loi Flats Buenos Aires,alias,confirmado,"Confirmado por el owner (2026-10-03/05, diagnóstico M1-04c). Loi Suites cambió de nombre a Loi Flats y se reserva directo"
+BUE,Merit,Merit San Telmo,alias,confirmado,"Confirmado por el owner (2026-10-03/05, diagnóstico M1-04c)"
+BUE,Milhouse,Milhouse Avenue Hostel,alias,confirmado,"Confirmado por el owner (2026-10-03/05, diagnóstico M1-04c)"
+BUE,NH City,Hotel Nh City,alias,confirmado,"Confirmado por el owner (2026-10-03/05, diagnóstico M1-04c)"
+BUE,Rochester,Rochester Concept,alias,confirmado,"Confirmado por el owner (2026-10-03/05, diagnóstico M1-04c)"
+BUE,Up Hoteles,Patios San Telmo,alias,confirmado,"Confirmado por el owner (2026-10-03/05, diagnóstico M1-04c). Up Hoteles: se usa Patios de San Telmo"
+MDZ,Hotel Argentino Mendoza,Argentino Hotel,alias,confirmado,"Confirmado por el owner (2026-10-03/05, diagnóstico M1-04c)"
+MDZ,Hotel MOD,Mod Hotel,alias,confirmado,"Confirmado por el owner (2026-10-03/05, diagnóstico M1-04c)"
+MDZ,Lagares Hostel,Hostel Lagares Mendoza,alias,confirmado,"Confirmado por el owner (2026-10-03/05, diagnóstico M1-04c)"
+MDZ,NH Cordillera,,alias,para_revisar,Falta el mail: el owner lo está averiguando
+PMY,All Peninsula,Peninsula valdes,alias,confirmado,"Confirmado por el owner (2026-10-03/05, diagnóstico M1-04c) (agencia@allpeninsulavaldes.com)"
+PMY,Hotel 3* Tolosa,Hotel Tolosa,alias,confirmado,"Confirmado por el owner (2026-10-03/05, diagnóstico M1-04c)"
+PMY,Hotel 4* Dazzler Puerto Madryn,Dazzler Puerto Madryn,alias,confirmado,"Confirmado por el owner (2026-10-03/05, diagnóstico M1-04c)"
+PMY,Piren,Hotel Pirén,alias,confirmado,"Confirmado por el owner (2026-10-03/05, diagnóstico M1-04c)"
+SCL,NH,Hotel NH Santiago,alias,confirmado,"Confirmado por el owner (2026-10-03/05, diagnóstico M1-04c). Se reserva por CL Mundo"
+VLP,Kupos.cl,,manual,confirmado,Kupos.cl es un sistema online de pasajes: el tramo queda manual
+SPA,Avi Verde,Aji Verde,alias,confirmado,Typo del Excel de paquetes: es Aji Verde
+SPA,San Pedro Backpackers,Backpacker San Pedro Hostel,alias,confirmado,"Confirmado por el owner (2026-10-03/05, diagnóstico M1-04c)"
+SPA,Transvipp,TRANSVIP,alias,confirmado,"Confirmado por el owner (2026-10-03/05, diagnóstico M1-04c)"
+LPB,The Adventure Brew Hostel,Adventure Brew Hostel,alias,confirmado,"Confirmado por el owner (2026-10-03/05, diagnóstico M1-04c). Por WhatsApp"
+RIO,Bamboo Rio Hostel,Bamboo Hostel Rio,alias,confirmado,"Confirmado por el owner (2026-10-03/05, diagnóstico M1-04c)"
+RIO,Copacabana Mar,Copacabana Mar hotel,alias,confirmado,"Confirmado por el owner (2026-10-03/05, diagnóstico M1-04c)"
+RIO,El Misti Ipanema,El Misti Hostel Ipanema,alias,confirmado,"Confirmado por el owner (2026-10-03/05, diagnóstico M1-04c)"
+RIO,Local 55,Rodrigo Perez,alias,confirmado,"Confirmado por el owner (2026-10-03/05, diagnóstico M1-04c). Local 55 centraliza Cabanacopa, Mango Tree, Big Dude y Favela Tour"
+RIO,Nacional Inn,Nacional inn Copacabana,alias,confirmado,"En Río, Nacional Inn es el de Copacabana, no el de Foz"
+RIO,Alex,Alex,alias,confirmado,"Taxi privado de Río, plan B. Por WhatsApp"
+RIO,Buzios Transfers,buzios transfer,alias,confirmado,"Confirmado por el owner (2026-10-03/05, diagnóstico M1-04c)"
+SAO,Sooz Hotel,,alias,para_revisar,"Soos Hotel Collection (São Paulo, COMPBR10): falta en el Excel de proveedores"
+SAO,Nacionalinn,,alias,para_revisar,"Nacional Inn Jaraguá (São Paulo, COMPBR10): falta en el Excel de proveedores, con su mail (no es el de Foz ni el de Copacabana)"
