@@ -51,6 +51,10 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
     - Ahora "proveedor sin resolver" mira solo el Booking Supplier, que es a quien va el mail.
     - El traslado incluido solo figura como texto ("Includes: Transfer in + Out") en la
       descripción del paquete de excursiones: decidir cómo representarlo al planear M2.
+- **M1-05 terminada (2026-10-05):** los 7 tours compuestos (`npm run importar:tours`, reporte en `docs/sdd/diagnosticos/M1-05-tours.md`), en el orden del viaje según los Word, con noches, día de inicio, buses nocturnos, 5C01 → CHB31 anidado y el bus Uyuni–La Paz como servicio de Imperio Inca. Migración 0007. Suite 401/401.
+  - **Esperando al owner:** categorías tour ↔ paquete (`data/categorias-tour.csv`) y buses que quizás reserva un proveedor (`data/tramos-con-proveedor.csv`): ver el reporte.
+  - **Abierto para M3:** la equivalencia de categorías hoy se controla en el reporte, pero no se guarda en la base; el día y si es nocturno de los buses con proveedor quedan solo en la descripción.
+  - **Próximo paso:** M1-06 (pantallas de Catálogo y Directorio, con el logo). Antes, decidir cómo proteger las correcciones manuales de las re-importaciones y de los tests.
 - **M1-04d terminada (2026-10-05):** los 17 paquetes de un destino de los 7 tours, cargados en la base real (`npm run importar:paquetes`, reporte en `docs/sdd/diagnosticos/M1-04d-carga.md`). Son 146 servicios: 126 con mail, 13 por WhatsApp y 4 manuales (Kupos.cl, Buquebus, TRANSVIP). Migración 0006 (alias por destino). Suite 352/352, lint y tsc limpios.
   - **Pendientes del owner** (el dato va en el Excel de proveedores; después se re-corre `importar:proveedores` → `importar:equivalencias` → `importar:paquetes`): NH Cordillera (mail), Antarctica Hostel (el WhatsApp está en la columna de aclaraciones; pasarlo a la de contacto), O Hostel GRU (São Paulo, falta cargarlo). Además conviene limpiar unos 20 proveedores duplicados como "CHALTEN" / "EL CHALTEN".
   - Con OK del owner se borró de la base "Selina La Paz" (cerró).
