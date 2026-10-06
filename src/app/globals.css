@@ -1,7 +1,9 @@
 /*
- * Tokens de marca (docs/arquitectura/marca.md §1). Solo los que hacen falta
- * para el Login y el shell de M1-01; los de estado de reserva se agregan
- * cuando exista una pantalla que los use.
+ * Tokens de marca (docs/arquitectura/marca.md §1, paleta actualizada el
+ * 2026-09-27 con el logo real). El primario es el azul del logo oscurecido
+ * para que el texto blanco se lea (5.96:1). El azul claro del logo solo se
+ * usa como anillo de foco y el naranja nunca sale del logo (spec M1-06 #13).
+ * Los pares `-texto`/`-fondo` los controla el test de contraste.
  */
 :root {
   --color-fondo: #f6f7f9;
@@ -12,15 +14,30 @@
   --color-texto: #1b2430;
   --color-texto-secundario: #5a6470;
   --color-texto-deshabilitado: #94a0ac;
+  --color-fila-hover: #f0f2f5;
+  --color-fila-seleccionada: #e9eff7;
 
-  --color-primario: #1f5f8b;
-  --color-primario-hover: #184c6f;
-  --color-primario-tenue: #e7eff6;
-  --color-foco: #2f80c2;
+  --color-primario: #3b659b;
+  --color-primario-hover: #2d4d76;
+  --color-primario-tenue: #e9eff7;
+  --color-foco: #4e7cba;
   --color-destructivo: #b42318;
 
+  /* Semánticos de feedback (marca.md §1) */
   --color-error-texto: #b42318;
   --color-error-fondo: #fbeae8;
+  --color-aviso-texto: #8a5300;
+  --color-aviso-fondo: #fbf0db;
+  --color-exito-texto: #1e7b4f;
+  --color-exito-fondo: #e3f2ea;
+  --color-info-texto: #3b659b;
+  --color-info-fondo: #e9eff7;
+  --color-neutro-texto: #3f4c5a;
+  --color-neutro-fondo: #ebeef1;
+  --color-atenuado-texto: #5a6470;
+  --color-atenuado-fondo: #eef0f2;
+
+  --sombra-flotante: 0 1px 2px rgba(16, 24, 40, 0.06), 0 2px 6px rgba(16, 24, 40, 0.1);
 }
 
 html {
@@ -65,4 +82,9 @@ a {
 
 button {
   font-family: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-foco);
+  outline-offset: 2px;
 }

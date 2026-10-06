@@ -27,6 +27,12 @@ describe("LoginScreen (spec M1-01 §3)", () => {
     useSearchParamsMock.mockReturnValue(paramsCon(null));
   });
 
+  it("muestra el logo real de HI Travel (spec M1-06 #13)", () => {
+    render(<LoginScreen />);
+    const logo = screen.getByRole("img", { name: "HI Travel" });
+    expect(logo.getAttribute("src")).toContain("/marca/logo-hi-travel.png");
+  });
+
   it("sin error en la URL: no muestra ningún mensaje", () => {
     render(<LoginScreen />);
     expect(screen.queryByRole("alert")).toBeNull();

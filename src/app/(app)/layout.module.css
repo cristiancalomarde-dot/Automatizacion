@@ -5,6 +5,14 @@
   min-height: 100vh;
 }
 
+.cuerpo {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
 .contenido {
   flex: 1;
+  min-width: 0;
+  padding: 24px;
 }

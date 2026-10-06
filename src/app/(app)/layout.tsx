@@ -1,15 +1,16 @@
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { Header } from "@/components/header";
-import styles from "./page.module.css";
+import { NavegacionLateral } from "@/components/navegacion-lateral";
+import styles from "./layout.module.css";
 
 /**
- * Shell post-login (spec M1-01 #8): header con wordmark, nombre del usuario y
- * botón "Salir"; el área de contenido queda vacía a la espera del catálogo
- * (M1-02 en adelante). El middleware ya garantiza que no se llega acá sin
- * sesión, pero se revalida por si el request esquivó el matcher.
+ * Shell de la app con sesión (spec M1-01 #8 + M1-06 §4): header con el logo,
+ * el usuario y "Salir"; barra lateral con las secciones (user-flow.md §2).
+ * El proxy ya garantiza que no se llega acá sin sesión, pero se revalida por
+ * si el request esquivó el matcher.
  */
-export default async function HomePage() {
+export default async function AppLayout({ children }: LayoutProps<"/">) {
   const supabase = await createSupabaseServerClient();
   const {
     data: { user },
@@ -27,7 +28,10 @@ export default async function HomePage() {
   return (
     <div className={styles.shell}>
       <Header nombreVisible={nombreVisible} />
-      <main className={styles.contenido} />
+      <div className={styles.cuerpo}>
+        <NavegacionLateral />
+        <main className={styles.contenido}>{children}</main>
+      </div>
     </div>
   );
 }

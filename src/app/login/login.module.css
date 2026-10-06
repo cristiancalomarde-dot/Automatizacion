@@ -21,25 +21,16 @@
 
 .marca {
   display: flex;
-  align-items: baseline;
-  gap: 8px;
-  font-weight: 600;
-  color: var(--color-texto);
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
   margin-bottom: 8px;
 }
 
-.wordmark {
-  font-size: 16px;
-}
-
-.separador {
-  color: var(--color-texto-secundario);
-}
-
 .producto {
-  font-size: 14px;
-  font-weight: 400;
-  color: var(--color-texto-secundario);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-texto);
 }
 
 .error {

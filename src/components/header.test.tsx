@@ -21,6 +21,13 @@ import { Header } from "./header";
 describe("Header (spec M1-01 #8)", () => {
   beforeEach(() => vi.clearAllMocks());
 
+  it("muestra el logo real de HI Travel y el nombre del producto (spec M1-06 #13)", () => {
+    render(<Header nombreVisible="ana@hitravel.com.ar" />);
+    const logo = screen.getByRole("img", { name: "HI Travel" });
+    expect(logo.getAttribute("src")).toContain("/marca/logo-hi-travel.png");
+    expect(screen.getByText("Reservas de Catálogo")).toBeInTheDocument();
+  });
+
   it("muestra el nombre del usuario logueado", () => {
     render(<Header nombreVisible="ana@hitravel.com.ar" />);
     expect(screen.getByText("ana@hitravel.com.ar")).toBeInTheDocument();

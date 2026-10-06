@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { obtenerMensajeErrorLogin } from "@/lib/auth/mensajes";
+import { Logo } from "@/components/logo";
+import { TEXTOS } from "@/lib/textos";
 import styles from "./login.module.css";
 
 export function LoginScreen() {
@@ -41,9 +43,8 @@ export function LoginScreen() {
     <div className={styles.pantalla}>
       <div className={styles.tarjeta}>
         <div className={styles.marca}>
-          <span className={styles.wordmark}>HI Travel</span>
-          <span className={styles.separador}>·</span>
-          <span className={styles.producto}>Reservas de Catálogo</span>
+          <Logo alto={64} />
+          <span className={styles.producto}>{TEXTOS.app.producto}</span>
         </div>
 
         {mensaje ? (

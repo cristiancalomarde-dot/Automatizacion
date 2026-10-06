@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import { TEXTOS } from "@/lib/textos";
+import { Logo } from "./logo";
 import styles from "./header.module.css";
 
 export function Header({ nombreVisible }: { nombreVisible: string }) {
@@ -20,9 +22,9 @@ export function Header({ nombreVisible }: { nombreVisible: string }) {
   return (
     <header className={styles.header}>
       <div className={styles.marca}>
-        <span className={styles.wordmark}>HI Travel</span>
-        <span className={styles.separador}>·</span>
-        <span className={styles.producto}>Reservas de Catálogo</span>
+        <Logo alto={30} />
+        <span className={styles.separador} aria-hidden="true" />
+        <span className={styles.producto}>{TEXTOS.app.producto}</span>
       </div>
 
       <div className={styles.usuario}>
