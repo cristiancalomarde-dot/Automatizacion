@@ -6,6 +6,16 @@ Formato mínimo por entrada: qué decisión, por qué, alternativa rechazada, co
 
 # Decisiones de diseño
 
+## 2026-10-06: En el MVP los datos se corrigen en los Excel, no en la app (M1-06 es de solo lectura)
+- **Decisión:** las pantallas de Catálogo y Directorio solo muestran. Proveedores, paquetes y tours se corrigen en los Excel del owner, que se copian a `Insumos/` y se re-importan. La app marca con claridad lo que falta completar y en qué Excel.
+- **Razón:** hoy los Excel son la fuente de la verdad. Editar en la app haría que una re-importación, o la suite de tests, pisara las correcciones (ya pasó con el segundo mail de Beer). El owner prefiere controlar el contenido desde los Excel.
+- **Alternativa rechazada (por ahora):** editar en la app con protección de lo editado a mano y una base de tests separada. Se revisa cuando el equipo use la app a diario.
+- **Constraint:** mientras valga esto, ninguna pantalla escribe en el catálogo ni en el directorio.
+
+## 2026-10-06: Fin de ARCH31/ARCH33 — bus a Punta Arenas o transfer al aeropuerto de Puerto Natales
+- **Decisión:** al final de ARCH31 y ARCH33, el bus regular Puerto Natales → Punta Arenas se emite a mano por Kupos. Si el pasajero vuela desde Puerto Natales, se le incluye sin cargo el transfer out al aeropuerto, que se pide a Patagonia Planet, en lugar del bus. El owner lo carga en el Excel de paquetes, en los bloques de OD017 y CH10, como un renglón de bus (Kupos) y un renglón "Optional: Transfer out Puerto Natales Airport … Booking Supplier: Patagonia Planet".
+- **Constraint:** en M2/M3, si la reserva trae un vuelo que sale de PNT, se pide el transfer y no el bus.
+
 ## 2026-10-05: Formato de los mails a proveedores y del "recibido" (respuestas al boceto)
 - **Decisión:**
   - **Tono:** saludo y cierre más simpáticos y positivos en todos los mails. El texto final se trabaja con el owner antes de M3; la versión 2 del boceto es una primera propuesta.
