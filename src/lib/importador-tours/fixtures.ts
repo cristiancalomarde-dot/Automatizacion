@@ -199,7 +199,7 @@ export const WORD_5C01 = [
   "Not Included",
 ];
 
-/** Paquetes cargados (M1-04/M1-04d) con su destino y sus noches base en el Excel de paquetes. */
+/** Paquetes cargados (M1-04/M1-04d) con su destino, sus noches base y si traen traslado/bus propio (cubren la punta). */
 export const PAQUETES = [
   { codigo: "OD010D", destino: "IGR", nochesBase: 3 },
   { codigo: "OD016", destino: "FTE", nochesBase: 2 },
@@ -207,10 +207,10 @@ export const PAQUETES = [
   { codigo: "OD019", destino: "MDZ", nochesBase: 3 },
   { codigo: "OD020", destino: "BUE", nochesBase: 3 },
   { codigo: "OD029", destino: "SCL", nochesBase: 2 },
-  { codigo: "OD030", destino: "SPA", nochesBase: 3 },
-  { codigo: "OD031", destino: "LPB", nochesBase: 2 },
+  { codigo: "OD030", destino: "SPA", nochesBase: 3, cubrePuntas: true },
+  { codigo: "OD031", destino: "LPB", nochesBase: 2, cubrePuntas: true },
   { codigo: "OD032", destino: "RIO", nochesBase: 3 },
-  { codigo: "OD033", destino: "CHA", nochesBase: 3 },
+  { codigo: "OD033", destino: "CHA", nochesBase: 3, cubrePuntas: true },
   { codigo: "COMPBO20", destino: "UYU", nochesBase: 2 },
   { codigo: "COMPBR10", destino: "SAO", nochesBase: 2 },
   { codigo: "COMPCH01", destino: "VLP", nochesBase: 2 },

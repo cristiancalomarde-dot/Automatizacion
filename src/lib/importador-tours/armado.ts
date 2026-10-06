@@ -25,7 +25,9 @@ import type { DiaItinerario, ItemIncluido, ItinerarioWord } from "./word";
  *    servicio propio del tour (CHB31: Uyuni – La Paz con Imperio Inca), o
  *    parte del tour anidado si el bus es de ese tour (5C01 → CHB31). Los
  *    buses antes de la primera estadía o después de la última (aeropuerto,
- *    salida) los cubre el paquete de la punta: no se cargan.
+ *    salida) los cubre el paquete de la punta: no se cargan. Con proveedor,
+ *    tampoco, si el paquete de la punta trae su traslado o bus (OD033); si no
+ *    lo trae (COMPBO20 en BOCHI04R y CHB31), el bus es servicio del tour.
  * 4. Transfer: solo el primer componente lleva `transfer_in` y solo el
  *    último `transfer_out`; Iguazú (IGR) los conserva aunque esté en el medio.
  *
@@ -41,6 +43,8 @@ export interface PaqueteConocido {
   /** Noches del paquete vendido solo (Excel de paquetes); null = no se encontraron. */
   nochesBase: number | null;
   nombre?: string;
+  /** El paquete trae su propio traslado o bus (ej. OD033: aeropuerto de El Calafate → El Chaltén): cubre la punta del tour. */
+  cubrePuntas?: boolean;
 }
 
 export interface ComponenteArmado {
@@ -70,6 +74,8 @@ export interface ServicioPropio {
   desde: string;
   hasta: string;
   bookingSupplier: string;
+  /** El proveedor hace el bus en los dos sentidos (tramos-con-proveedor.csv). */
+  ambosSentidos: boolean;
   diaDesde: number;
   nocturno: boolean;
   /** Ruta en el sentido de este tour ("La Paz – Uyuni"). */
@@ -115,6 +121,7 @@ interface Grupo {
   ajuste: number;
   base: number | null;
   tramosPropios: TramoConProveedor[];
+  cubrePuntas: boolean;
 }
 
 interface Paso {
@@ -185,6 +192,7 @@ export function armarTour(e: EntradaArmado): TourArmado {
         ajuste: c.ajusteNoches,
         base: anidado.noches,
         tramosPropios: e.tramosConProveedor.filter((t) => t.tour === c.codigo),
+        cubrePuntas: false,
       });
       continue;
     }
@@ -211,6 +219,7 @@ export function armarTour(e: EntradaArmado): TourArmado {
       ajuste: c.ajusteNoches,
       base: paquete.nochesBase,
       tramosPropios: [],
+      cubrePuntas: paquete.cubrePuntas === true,
     });
   }
   const porDestino = new Map<string, Grupo[]>();
@@ -321,6 +330,14 @@ export function armarTour(e: EntradaArmado): TourArmado {
     const antes = i < primera ? undefined : grupoAntes(i);
     const despues = i > ultima ? undefined : grupoDespues(i);
     const propio = e.tramosConProveedor.find((t) => t.tour === e.codigo && mismaRuta(t, bus.desde, bus.hasta));
+    const punta = i < primera ? grupoDePaso.get(primera) : i > ultima ? grupoDePaso.get(ultima) : undefined;
+    if (propio && punta?.cubrePuntas) {
+      // Decisión #4 también con proveedor: el traslado de la punta ya está en el paquete.
+      base.notas.push(
+        `“${bus.texto}” va ${i < primera ? "antes de la primera" : "después de la última"} estadía y ${punta.codigo} ya trae su traslado: no se carga (aunque esté en tramos-con-proveedor.csv).`,
+      );
+      return;
+    }
     if (propio) {
       controlarDia(p, bus.hasta!);
       serviciosPropios.push({
@@ -328,6 +345,7 @@ export function armarTour(e: EntradaArmado): TourArmado {
         desde: propio.desde,
         hasta: propio.hasta,
         bookingSupplier: propio.bookingSupplier,
+        ambosSentidos: propio.ambosSentidos,
         diaDesde: p.dia,
         nocturno: p.nocturno,
         sentido: ruta(bus.desde!, bus.hasta!),

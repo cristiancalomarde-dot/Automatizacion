@@ -45,9 +45,11 @@ function secuencia(t: ResumenTour): string[] {
   }
   for (const s of t.serviciosPropios) {
     const llega = s.nocturno ? `nocturno, llega el día ${s.diaDesde + 1}` : "diurno";
-    const quien = s.sinResolver
-      ? `lo reserva ${s.bookingSupplier} — **no lo encontré en el directorio**`
-      : `lo reserva ${s.bookingSupplier} (servicio del tour)`;
+    const quien = s.reservaManual
+      ? `se reserva a mano en ${s.bookingSupplier} (sistema propio, no se le escribe)`
+      : s.sinResolver
+        ? `lo reserva ${s.bookingSupplier} — **no lo encontré en el directorio**`
+        : `lo reserva ${s.bookingSupplier} (servicio del tour)`;
     filas.push({ dia: s.diaDesde, orden: 0, linea: `| ${s.diaDesde} | Bus ${s.sentido} (${llega}) | — | ${quien} |` });
   }
   filas.sort((a, b) => a.dia - b.dia || a.orden - b.orden);
@@ -130,7 +132,7 @@ export function reporteToursMarkdown(r: ResumenImportacionTours, meta: { fecha: 
   }
   const propios = armados.flatMap((t) => t.serviciosPropios.map((s) => ({ t, s })));
   for (const { t, s } of propios) {
-    if (s.sentido !== `${nombreDestino(s.desde)} – ${nombreDestino(s.hasta)}`) {
+    if (!s.ambosSentidos && s.sentido !== `${nombreDestino(s.desde)} – ${nombreDestino(s.hasta)}`) {
       out.push(`- [ ] **${t.codigo}**: el bus va ${s.sentido} (al revés que en el archivo, “${s.ruta}”). Lo cargué con ${s.bookingSupplier}; confirmá que también lo reserva ese proveedor.`);
     }
     if (s.sinResolver) out.push(`- [ ] **${t.codigo}**: “${s.bookingSupplier}” no está en el directorio de proveedores (o está repetido).`);

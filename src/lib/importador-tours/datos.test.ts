@@ -16,12 +16,25 @@ describe("tramos-con-proveedor.csv (spec M1-05 §3 #6)", () => {
     expect(() => parsearTramosConProveedor("tour,ruta,booking_supplier\nCHB31,Bus a Narnia,X\n")).toThrow(/fila 2/);
   });
 
-  it("el archivo real arranca con CHB31 y BOCHI04R → Imperio Inca", async () => {
+  it("ambos_sentidos es opcional: 'si' = el proveedor hace el bus en los dos sentidos; sin columna, no", () => {
+    expect(parsearTramosConProveedor("tour,ruta,booking_supplier\nCHB31,Bus Uyuni – La Paz,Imperio Inca\n")[0].ambosSentidos).toBe(false);
+    const [si, no] = parsearTramosConProveedor(
+      "tour,ruta,booking_supplier,ambos_sentidos\nCHB31,Bus Uyuni – La Paz,Imperio Inca,si\n5C01,Bus Calama – San Pedro,Transvipp,no\n",
+    );
+    expect([si.ambosSentidos, no.ambosSentidos]).toEqual([true, false]);
+    expect(() => parsearTramosConProveedor("tour,ruta,booking_supplier,ambos_sentidos\nCHB31,Bus Uyuni – La Paz,X,quizas\n")).toThrow(/ambos_sentidos/);
+  });
+
+  it("el archivo real: Imperio Inca y Chalten Travel en los dos sentidos; Kupos.cl y Transvipp en 5C01", async () => {
     const { readFileSync } = await import("node:fs");
     const tramos = parsearTramosConProveedor(readFileSync("data/tramos-con-proveedor.csv", "utf-8"));
-    expect(tramos.map((t) => [t.tour, t.desde, t.hasta, t.bookingSupplier])).toEqual([
-      ["CHB31", "UYU", "LPB", "Imperio Inca"],
-      ["BOCHI04R", "UYU", "LPB", "Imperio Inca"],
+    expect(tramos.map((t) => [t.tour, t.desde, t.hasta, t.bookingSupplier, t.ambosSentidos])).toEqual([
+      ["CHB31", "UYU", "LPB", "Imperio Inca", true],
+      ["BOCHI04R", "UYU", "LPB", "Imperio Inca", true],
+      ["ARCH31", "CHA", "FTE", "Chalten Travel", true],
+      ["ARCH33", "CHA", "FTE", "Chalten Travel", true],
+      ["5C01", "SCL", "VLP", "Kupos.cl", false],
+      ["5C01", "CJC", "SPA", "Transvipp", false],
     ]);
   });
 });
@@ -49,11 +62,20 @@ describe("categorías tour ↔ paquete (spec M1-05 §3 #8)", () => {
     expect(verificarCategorias("CHB31", ["Hostel"], [{ codigo: "COMPBO20", categorias: [] }], [])).toEqual([]);
   });
 
-  it("el archivo real arranca con Budget Hotel de Río = Hotel 3* en los tours", async () => {
+  it("el archivo real trae lo que confirmó el owner (Budget de Río = 3*, Hotel in SPA = 3*, …)", async () => {
     const { readFileSync } = await import("node:fs");
-    const filas = parsearCategoriasTour(readFileSync("data/categorias-tour.csv", "utf-8"));
-    expect(filas.every((f) => f.componente === "OD032" && f.categoriaTour === "Budget Hotel" && f.categoriaPaquete === "Hotel 3*")).toBe(true);
-    expect(filas.map((f) => f.tour).sort()).toEqual(["5C01", "BRARCH26"]);
+    const filas = parsearCategoriasTour(readFileSync("data/categorias-tour.csv", "utf-8")).map(
+      (f) => `${f.tour} ${f.categoriaTour} ${f.componente} → ${f.categoriaPaquete}`,
+    );
+    expect(filas).toEqual(
+      expect.arrayContaining([
+        "BRARCH26 Budget Hotel OD032 → Hotel 3*",
+        "5C01 Budget Hotel OD032 → Hotel 3*",
+        "CHB31 Hotel in SPA OD030 → Hotel 3*",
+        "ARCH33 Hotel 3* OD033 → Budget Hotel",
+        "5C01 Budget Hotel CHB31 → Hotel in SPA",
+      ]),
+    );
   });
 });
 

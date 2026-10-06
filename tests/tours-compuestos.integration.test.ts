@@ -138,13 +138,27 @@ interface Componente {
     expect(s.bs!.nombre.toLowerCase()).toContain("imperio inca");
   });
 
-  it("ARCH31: paquete / bus / paquete / bus / paquete, con transfers solo en las puntas", async () => {
+  async function serviciosDelTour(codigo: string) {
+    const { data, error } = await admin
+      .from("producto_servicio")
+      .select("descripcion, booking_supplier_nombre, booking_supplier_id, reserva_manual, proveedor_sin_resolver")
+      .eq("producto_id", await idDe(codigo))
+      .order("orden");
+    expect(error).toBeNull();
+    return data!;
+  }
+
+  it("ARCH31: paquete / paquete / bus / paquete, con transfers solo en las puntas; el bus a El Calafate lo reserva Chalten Travel", async () => {
     expect((await componentes("ARCH31")).map(legible)).toEqual([
       "OD033 d1 3n IN",
-      "bus El Chaltén – El Calafate d4",
       "OD016 d4 3n",
       "bus El Calafate – Puerto Natales d7",
       "OD017 d7 2n OUT",
+    ]);
+    // Uno solo: el traslado de llegada (aeropuerto → El Chaltén) ya lo trae OD033.
+    const s = await serviciosDelTour("ARCH31");
+    expect(s.map((x) => [x.descripcion.split(" (")[0], x.booking_supplier_nombre, x.booking_supplier_id !== null])).toEqual([
+      ["Bus El Chaltén – El Calafate", "Chalten Travel", true],
     ]);
   });
 
@@ -162,15 +176,19 @@ interface Componente {
       "OD019 d15 2n",
       "bus Mendoza – Santiago de Chile d17",
       "OD029 d17 2n",
-      "bus Santiago de Chile – Valparaíso d19",
       "COMPCH01 d19 2n",
       "bus Valparaíso – Calama d21 noct",
-      "bus Calama – San Pedro de Atacama d22",
       "CHB31 d22 6n",
       "OD031 d28 2n OUT",
     ]);
     const noches = cs.reduce((n, c) => n + (c.noches ?? 0) + (c.nocturno ? 1 : 0), 0);
     expect(noches).toBe(29);
+    // Santiago – Valparaíso (Kupos.cl) y Calama – San Pedro (Transvipp) son manuales: sin proveedor ni revisión.
+    const s = await serviciosDelTour("5C01");
+    expect(s.map((x) => [x.descripcion.split(" (")[0], x.booking_supplier_nombre, x.reserva_manual, x.proveedor_sin_resolver])).toEqual([
+      ["Bus Santiago de Chile – Valparaíso", "Kupos.cl", true, false],
+      ["Bus Calama – San Pedro de Atacama", "Transvipp", true, false],
+    ]);
     // CHB31 tiene sus propios componentes (no se copiaron a 5C01).
     expect((await componentes("CHB31")).length).toBe(2);
   });
@@ -187,7 +205,6 @@ interface Componente {
   it("ARCH33: el W Trek va dentro de CH10 (sin componente propio)", async () => {
     expect((await componentes("ARCH33")).map(legible)).toEqual([
       "OD033 d1 3n IN",
-      "bus El Chaltén – El Calafate d4",
       "OD016 d4 2n",
       "bus El Calafate – Puerto Natales d6",
       "CH10 d6 6n OUT",

@@ -7,8 +7,8 @@ import { leerItinerario } from "./word";
 
 const TOURS = new Set(["CHB31", "BOCHI04R", "ARCH31", "ARCH33", "AR09", "BRARCH26", "5C01"]);
 const IMPERIO: TramoConProveedor[] = [
-  { tour: "CHB31", desde: "UYU", hasta: "LPB", ruta: "Bus Uyuni – La Paz", bookingSupplier: "Imperio Inca" },
-  { tour: "BOCHI04R", desde: "UYU", hasta: "LPB", ruta: "Bus Uyuni – La Paz", bookingSupplier: "Imperio Inca" },
+  { tour: "CHB31", desde: "UYU", hasta: "LPB", ruta: "Bus Uyuni – La Paz", bookingSupplier: "Imperio Inca", ambosSentidos: true },
+  { tour: "BOCHI04R", desde: "UYU", hasta: "LPB", ruta: "Bus Uyuni – La Paz", bookingSupplier: "Imperio Inca", ambosSentidos: true },
 ];
 
 function entrada(codigo: string, filas: string[][], word: string[], extra: Partial<EntradaArmado> = {}): EntradaArmado {
@@ -99,6 +99,31 @@ describe("armado de un tour compuesto (spec M1-05 §3)", () => {
     expect(t.componentes[15]).toMatchObject({ codigo: "CHB31", esTour: true });
     expect(t.serviciosPropios).toEqual([]);
     expect(t.noches).toBe(29);
+  });
+
+  it("un bus con proveedor en la punta no se carga si el paquete de la punta ya trae su traslado (ARCH31)", () => {
+    const chalten: TramoConProveedor = {
+      tour: "ARCH31", desde: "CHA", hasta: "FTE", ruta: "Bus El Chaltén – El Calafate", bookingSupplier: "Chalten Travel", ambosSentidos: true,
+    };
+    const t = armarTour(entrada("ARCH31", RUTAS_ARCH31, WORD_ARCH31, { tramosConProveedor: [chalten] }));
+    if (t.estado !== "armado") throw new Error(t.motivos.join(" | "));
+    // Solo el bus del día 4 (entre OD033 y OD016); el del día 1 (aeropuerto → El Chaltén) lo cubre OD033.
+    expect(t.serviciosPropios.map((s) => [s.sentido, s.diaDesde])).toEqual([["El Chaltén – El Calafate", 4]]);
+    expect(t.notas.join(" ")).toMatch(/OD033/);
+    expect(resumen(t)).toEqual(["1 OD033 d1 3n IN", "2 OD016 d4 3n", "3 bus FTE-PNT d7", "4 OD017 d7 2n OUT"]);
+  });
+
+  it("si el paquete de la punta no trae traslado, el bus con proveedor de la punta sí se carga (BOCHI04R / CHB31)", () => {
+    const sinTraslado = new Map(PAQUETES.map((p) => [p.codigo, { ...p, cubrePuntas: p.codigo === "OD033" ? false : p.cubrePuntas }]));
+    const chalten: TramoConProveedor = {
+      tour: "ARCH31", desde: "CHA", hasta: "FTE", ruta: "Bus El Chaltén – El Calafate", bookingSupplier: "Chalten Travel", ambosSentidos: true,
+    };
+    const t = armarTour(entrada("ARCH31", RUTAS_ARCH31, WORD_ARCH31, { tramosConProveedor: [chalten], paquetes: sinTraslado }));
+    if (t.estado !== "armado") throw new Error(t.motivos.join(" | "));
+    expect(t.serviciosPropios.map((s) => [s.sentido, s.diaDesde, s.ambosSentidos])).toEqual([
+      ["El Calafate – El Chaltén", 1, true],
+      ["El Chaltén – El Calafate", 4, true],
+    ]);
   });
 
   it("un bus es nocturno si el texto del día lo dice, aunque tenga el typo 'nigh bus'", () => {

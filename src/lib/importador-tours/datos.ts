@@ -6,7 +6,8 @@ import { normalizarCategoria } from "./rutas";
  * Los dos archivos de datos de M1-05 (spec §3 #6 y #8, "Datos, no código"):
  * los completa el owner sin tocar el programa.
  *
- * - `data/tramos-con-proveedor.csv` (tour, ruta, booking_supplier, nota): los
+ * - `data/tramos-con-proveedor.csv` (tour, ruta, booking_supplier, nota y,
+ *   opcional, ambos_sentidos si/no): los
  *   buses que reserva un proveedor y que, por eso, van como servicio propio
  *   del tour y no como `tramo_bus`. La ruta se escribe "Bus A – B"; vale en
  *   los dos sentidos (BOCHI04R hace el mismo bus al revés).
@@ -24,6 +25,8 @@ export interface TramoConProveedor {
   /** La ruta como la escribió el owner ("Bus Uyuni – La Paz"). */
   ruta: string;
   bookingSupplier: string;
+  /** `ambos_sentidos=si`: el proveedor hace el bus en los dos sentidos (no hace falta confirmarlo). */
+  ambosSentidos: boolean;
   nota?: string;
 }
 
@@ -56,7 +59,11 @@ export function parsearTramosConProveedor(texto: string): TramoConProveedor[] {
     if (!desde || !hasta) {
       throw new Error(`tramos-con-proveedor.csv, fila ${fila}: no entiendo la ruta "${ruta}" (escribila "Bus A – B").`);
     }
-    return { tour, desde, hasta, ruta, bookingSupplier, nota: (r.nota ?? "").trim() || undefined };
+    const sentidos = (r.ambos_sentidos ?? "").trim().toLowerCase();
+    if (!["", "si", "sí", "no"].includes(sentidos)) {
+      throw new Error(`tramos-con-proveedor.csv, fila ${fila}: ambos_sentidos tiene que ser si o no (dice "${r.ambos_sentidos}").`);
+    }
+    return { tour, desde, hasta, ruta, bookingSupplier, ambosSentidos: sentidos === "si" || sentidos === "sí", nota: (r.nota ?? "").trim() || undefined };
   });
 }
 

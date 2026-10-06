@@ -1,11 +1,12 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { AGENCIA_PROPIA } from "@/lib/importador-productos/importar";
 import type { PaquetePiloto } from "@/lib/importador-productos/paquetes-piloto";
-import { crearIndiceProveedores, resolverProveedor } from "@/lib/importador-productos/proveedores";
+import { crearIndiceProveedores } from "@/lib/importador-productos/proveedores";
 import { armarTour, type ComponenteArmado, type PaqueteConocido, type ServicioPropio, type TourArmado } from "./armado";
 import { verificarCategorias, type CategoriaFaltante } from "./categorias";
 import type { CategoriaTour, TramoConProveedor } from "./datos";
 import { nochesBasePaquete } from "./noches-base";
+import { resolverProveedorTramo } from "./proveedor-tramo";
 import { leerTourRutas, type TourExcel } from "./rutas";
 import { leerItinerario, type ItinerarioWord } from "./word";
 
@@ -157,6 +158,16 @@ export async function importarToursCompuestos(opciones: {
     const cargado = productoPorCodigo.get(p.codigo);
     if (cargado) paquetes.set(p.codigo, { ...p, nochesBase: nochesBase[p.codigo], nombre: cargado.nombre });
   }
+  // Los paquetes que traen su propio traslado o bus cubren la punta del tour
+  // (un bus con proveedor en la punta no se duplica como servicio del tour).
+  const { data: traslados, error: errorTraslados } = await admin
+    .from("producto_servicio")
+    .select("producto_id")
+    .in("producto_id", [...paquetes.keys()].map((c) => productoPorCodigo.get(c)!.id))
+    .in("tipo_servicio", ["traslado", "bus"]);
+  if (errorTraslados) throw new Error(`No se pudo leer los traslados de los paquetes: ${errorTraslados.message}`);
+  const conTraslado = new Set((traslados ?? []).map((t) => t.producto_id as string));
+  for (const p of paquetes.values()) p.cubrePuntas = conTraslado.has(productoPorCodigo.get(p.codigo)!.id);
 
   // --- armado (puro) ---
   const excelPorTour = new Map(codigosTour.map((c) => [c, leerTourRutas(opciones.filasRutas, c)]));
@@ -337,7 +348,7 @@ export async function importarToursCompuestos(opciones: {
     if (errorServicios) throw new Error(`No se pudo leer los servicios de ${codigo}: ${errorServicios.message}`);
     const porClave = new Map(((servicios ?? []) as unknown as Fila[]).map((f) => [`${f.orden}:${f.prioridad}`, f]));
     for (const [k, s] of t.serviciosPropios.entries()) {
-      const bs = resolverProveedor(s.bookingSupplier, indice, { destino: s.desde });
+      const bs = resolverProveedorTramo(s.bookingSupplier, indice, [s.desde, s.hasta]);
       const fila: Fila = {
         tipo_servicio: "bus",
         nivel: null,

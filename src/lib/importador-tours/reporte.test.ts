@@ -15,7 +15,7 @@ function resumenDe(codigo: string, filas: string[][], word: string[]): ResumenTo
     paquetes: new Map(PAQUETES.map((p) => [p.codigo, p])),
     codigosTour: new Set(["CHB31", "ARCH31"]),
     tours: new Map(),
-    tramosConProveedor: [{ tour: "CHB31", desde: "UYU", hasta: "LPB", ruta: "Bus Uyuni – La Paz", bookingSupplier: "Imperio Inca" }],
+    tramosConProveedor: [{ tour: "CHB31", desde: "UYU", hasta: "LPB", ruta: "Bus Uyuni – La Paz", bookingSupplier: "Imperio Inca", ambosSentidos: true }],
   });
   if (t.estado !== "armado") throw new Error(t.motivos.join(" | "));
   return {
@@ -81,5 +81,29 @@ describe("reporte de los tours para el owner (spec M1-05 §3 #10)", () => {
     expect(md).toMatch(/\*\*ARCH31\*\*: El Chaltén – El Calafate; El Calafate – Puerto Natales\. En RutasenBus, las columnas sin código son: “FTE - PNT”/);
     expect(md).toContain("- [ ] **AR09**: días 3, 7.");
     expect(md).toContain("| OD033 | no encontradas |");
+  });
+
+  it("pregunta por el sentido del bus solo si el archivo no dice ambos_sentidos=si", () => {
+    const base = resumenDe("CHB31", RUTAS_CHB31, WORD_CHB31);
+    const alReves = (ambosSentidos: boolean): ResumenTour => ({
+      ...base,
+      codigo: "BOCHI04R",
+      serviciosPropios: base.serviciosPropios.map((s) => ({ ...s, sentido: "La Paz – Uyuni", ambosSentidos })),
+    });
+    const conPregunta = reporteToursMarkdown({ ...r, tours: [alReves(false)] }, { fecha: "x", archivos: [] });
+    const sinPregunta = reporteToursMarkdown({ ...r, tours: [alReves(true)] }, { fecha: "x", archivos: [] });
+    expect(conPregunta).toContain("**BOCHI04R**: el bus va La Paz – Uyuni");
+    expect(sinPregunta).not.toMatch(/el bus va La Paz – Uyuni/);
+  });
+
+  it("un bus manual (Kupos.cl, Transvipp) dice que se reserva a mano, no que falta en el directorio", () => {
+    const base = resumenDe("CHB31", RUTAS_CHB31, WORD_CHB31);
+    const manual: ResumenTour = {
+      ...base,
+      serviciosPropios: base.serviciosPropios.map((s) => ({ ...s, bookingSupplier: "Kupos.cl", bookingSupplierId: null, sinResolver: false, reservaManual: true })),
+    };
+    const texto = reporteToursMarkdown({ ...r, tours: [manual] }, { fecha: "x", archivos: [] });
+    expect(texto).toContain("se reserva a mano en Kupos.cl (sistema propio, no se le escribe)");
+    expect(texto).not.toContain("no está en el directorio");
   });
 });
