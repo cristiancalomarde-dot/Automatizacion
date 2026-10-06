@@ -1,3 +1,7 @@
 tour,ruta,booking_supplier,nota
 CHB31,Bus Uyuni – La Paz,Imperio Inca,"Excel de paquetes, bloque del CHB31 (filas 847-862): Public Bus Uyuni - La Paz. Booking Supplier: Imperio Inca"
 BOCHI04R,Bus Uyuni – La Paz,Imperio Inca,"El mismo bus, al revés (La Paz – Uyuni), en el Overland desde La Paz"
+ARCH31,Bus El Chaltén – El Calafate,Chalten Travel,"Confirmado por el owner (2026-10-06): se pide a Chalten Travel (proveedor directo de la ruta) si el horario da; si no, otro proveedor"
+ARCH33,Bus El Chaltén – El Calafate,Chalten Travel,"Confirmado por el owner (2026-10-06): se pide a Chalten Travel si el horario da; si no, otro proveedor"
+5C01,Bus Santiago de Chile – Valparaíso,Kupos.cl,"Confirmado por el owner (2026-10-06): se compra en Kupos.cl (sistema online, tramo manual)"
+5C01,Bus Calama – San Pedro de Atacama,Transvipp,"Confirmado por el owner (2026-10-06): traslado Calama – alojamiento en San Pedro por el sistema de Transvip (manual)"
