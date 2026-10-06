@@ -90,8 +90,11 @@ Overland): ese sí genera un pedido a proveedor por mail, como cualquier otro se
 - ~~Casilla: cuenta Gmail común nueva vs. dirección del dominio `hitravel.com.ar`~~ — **resuelto:**
   se usa el Gmail existente al que Ferozo reenvía `sales@hitravel.com.ar`. Confirmar antes de M2
   que ese reenvío es una regla de servidor (ver arriba).
-- **Cómo se manda desde `operations@hitravel.com.ar`:** SMTP de Ferozo vs. servicio transaccional
-  (Resend) con DNS del dominio. El owner no lo sabe todavía — a confirmar con quien administra
-  `hitravel.com.ar`. No bloquea M1; se resuelve antes de M3.
+- **Cómo se manda desde `operations@hitravel.com.ar`:** a decidir antes de M3. Opciones (2026-10-06):
+  - **(A) "Enviar como" operations@ configurado en el Gmail dedicado**, con el SMTP de Ferozo cargado dentro de Google. La app envía por la Gmail API con ese alias. No toca el DNS y no guarda la clave de Ferozo en la app. **Es la recomendada para arrancar.**
+  - **(B) SMTP de Ferozo directo**, con la clave en las variables de Vercel.
+  - **(C) Resend con registros DNS (SPF/DKIM)** del dominio: la más confiable, pero exige tocar el DNS con cuidado (un solo SPF combinado). Se evalúa si con A los mails caen en spam.
+  - El owner **no quiere migrar a Google Workspace** ni tocar la operación de Ferozo por este proyecto; ninguna opción lo requiere.
+  - En todas, CC a `ccalomarde@hitravel.com.ar` (liquidaciones) y las respuestas llegan a operations@ en Ferozo como siempre.
 - ¿Se avisa al equipo (mail/Slack) cuando entra una reserva o cuando algo cae en "para revisión"?
   Posiblemente fuera de alcance del MVP; decidir en el roadmap.
