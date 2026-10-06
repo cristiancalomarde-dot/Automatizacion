@@ -1,4 +1,4 @@
-import { nombraDestino, nombreDestino } from "./ciudades";
+import { ciudadesEnTexto, nombraDestino, nombreDestino } from "./ciudades";
 import { mismaRuta, type TramoConProveedor } from "./datos";
 import type { TourExcel } from "./rutas";
 import type { DiaItinerario, ItemIncluido, ItinerarioWord } from "./word";
@@ -45,6 +45,35 @@ export interface PaqueteConocido {
   nombre?: string;
   /** El paquete trae su propio traslado o bus (ej. OD033: aeropuerto de El Calafate → El Chaltén): cubre la punta del tour. */
   cubrePuntas?: boolean;
+  /** Rutas de sus servicios propios de bus/traslado (ej. OD033: El Chaltén – El Calafate), ver rutasDeServicios. */
+  rutasPropias?: RutaPropia[];
+}
+
+export interface RutaPropia {
+  desde: string;
+  hasta: string;
+  /** La descripción del servicio, tal cual. */
+  texto: string;
+}
+
+/**
+ * La ruta de cada servicio de bus/traslado de un paquete, sacada de su
+ * descripción: la primera y la última ciudad que nombra, si son dos destinos
+ * distintos ("Public Bus El Chalten Bus Station - El Calafate Bus Station").
+ * Una descripción que nombra un solo destino ("Transfer in CJC - Accommodation
+ * in San Pedro") no es una ruta entre destinos.
+ */
+export function rutasDeServicios(descripciones: string[]): RutaPropia[] {
+  const rutas: RutaPropia[] = [];
+  for (const texto of descripciones) {
+    // Sin el "Booking Supplier: …" (no es una ciudad), con los typos del Excel (Bookinkg, Booking Booking).
+    const ciudades = ciudadesEnTexto(texto.split(/\bbook\w*\s+(?:book\w*\s+)?sup/i)[0]);
+    if (ciudades.length < 2) continue;
+    const desde = ciudades[0].destino;
+    const hasta = ciudades[ciudades.length - 1].destino;
+    if (desde !== hasta) rutas.push({ desde, hasta, texto });
+  }
+  return rutas;
 }
 
 export interface ComponenteArmado {
@@ -122,6 +151,7 @@ interface Grupo {
   base: number | null;
   tramosPropios: TramoConProveedor[];
   cubrePuntas: boolean;
+  rutasPropias: RutaPropia[];
 }
 
 interface Paso {
@@ -193,6 +223,7 @@ export function armarTour(e: EntradaArmado): TourArmado {
         base: anidado.noches,
         tramosPropios: e.tramosConProveedor.filter((t) => t.tour === c.codigo),
         cubrePuntas: false,
+        rutasPropias: [],
       });
       continue;
     }
@@ -220,6 +251,7 @@ export function armarTour(e: EntradaArmado): TourArmado {
       base: paquete.nochesBase,
       tramosPropios: [],
       cubrePuntas: paquete.cubrePuntas === true,
+      rutasPropias: paquete.rutasPropias ?? [],
     });
   }
   const porDestino = new Map<string, Grupo[]>();
@@ -330,6 +362,18 @@ export function armarTour(e: EntradaArmado): TourArmado {
     const antes = i < primera ? undefined : grupoAntes(i);
     const despues = i > ultima ? undefined : grupoDespues(i);
     const propio = e.tramosConProveedor.find((t) => t.tour === e.codigo && mismaRuta(t, bus.desde, bus.hasta));
+    // Un bus que el paquete de una de sus puntas ya trae como servicio propio
+    // (misma ruta, en cualquier sentido) no es ni tramo ni servicio del tour.
+    // Si el paquete tiene más de uno con esa ruta, se cita el del mismo sentido.
+    for (const g of [grupoAntes(i), grupoDespues(i)]) {
+      const ruta =
+        g?.rutasPropias.find((r) => r.desde === bus.desde && r.hasta === bus.hasta) ??
+        g?.rutasPropias.find((r) => mismaRuta(r, bus.desde, bus.hasta));
+      if (g && ruta) {
+        base.notas.push(`“${bus.texto}”: lo trae el paquete ${g.codigo} (“${ruta.texto}”), no se carga aparte.`);
+        return;
+      }
+    }
     const punta = i < primera ? grupoDePaso.get(primera) : i > ultima ? grupoDePaso.get(ultima) : undefined;
     if (propio && punta?.cubrePuntas) {
       // Decisión #4 también con proveedor: el traslado de la punta ya está en el paquete.

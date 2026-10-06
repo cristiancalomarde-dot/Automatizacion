@@ -2,7 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { AGENCIA_PROPIA } from "@/lib/importador-productos/importar";
 import type { PaquetePiloto } from "@/lib/importador-productos/paquetes-piloto";
 import { crearIndiceProveedores } from "@/lib/importador-productos/proveedores";
-import { armarTour, type ComponenteArmado, type PaqueteConocido, type ServicioPropio, type TourArmado } from "./armado";
+import { armarTour, rutasDeServicios, type ComponenteArmado, type PaqueteConocido, type ServicioPropio, type TourArmado } from "./armado";
 import { verificarCategorias, type CategoriaFaltante } from "./categorias";
 import type { CategoriaTour, TramoConProveedor } from "./datos";
 import { nochesBasePaquete } from "./noches-base";
@@ -159,15 +159,22 @@ export async function importarToursCompuestos(opciones: {
     if (cargado) paquetes.set(p.codigo, { ...p, nochesBase: nochesBase[p.codigo], nombre: cargado.nombre });
   }
   // Los paquetes que traen su propio traslado o bus cubren la punta del tour
-  // (un bus con proveedor en la punta no se duplica como servicio del tour).
+  // (un bus con proveedor en la punta no se duplica como servicio del tour), y
+  // un bus entre destinos que el paquete ya trae (misma ruta) no se carga aparte.
   const { data: traslados, error: errorTraslados } = await admin
     .from("producto_servicio")
-    .select("producto_id")
+    .select("producto_id, descripcion")
     .in("producto_id", [...paquetes.keys()].map((c) => productoPorCodigo.get(c)!.id))
     .in("tipo_servicio", ["traslado", "bus"]);
   if (errorTraslados) throw new Error(`No se pudo leer los traslados de los paquetes: ${errorTraslados.message}`);
   const conTraslado = new Set((traslados ?? []).map((t) => t.producto_id as string));
-  for (const p of paquetes.values()) p.cubrePuntas = conTraslado.has(productoPorCodigo.get(p.codigo)!.id);
+  for (const p of paquetes.values()) {
+    const id = productoPorCodigo.get(p.codigo)!.id;
+    p.cubrePuntas = conTraslado.has(id);
+    p.rutasPropias = rutasDeServicios(
+      [...new Set((traslados ?? []).filter((t) => t.producto_id === id).map((t) => String(t.descripcion ?? "")))],
+    );
+  }
 
   // --- armado (puro) ---
   const excelPorTour = new Map(codigosTour.map((c) => [c, leerTourRutas(opciones.filasRutas, c)]));

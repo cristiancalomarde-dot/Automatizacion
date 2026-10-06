@@ -12,8 +12,8 @@ Armé los tours top-seller con los códigos de RutasenBus y el itinerario día p
 |---|---|---|---|---|---|---|
 | CHB31 | Overland San Pedro de Atacama to Uyuni, end in La Paz | 6 | armado | OD030 → COMPBO20 | 0 | 1 |
 | BOCHI04R | OVERLAND UYUNI TO SAN PEDRO DE ATACAMA BEGINNING IN LA PAZ | 6 | armado | COMPBO20 → OD030 | 0 | 1 |
-| ARCH31 | Patagonia Highlights | 8 | armado | OD033 → OD016 → OD017 | 1 | 1 |
-| ARCH33 | Patagonia, Trekking Paradise with W-Trek | 11 | armado | OD033 → OD016 → CH10 | 1 | 1 |
+| ARCH31 | Patagonia Highlights | 8 | armado | OD033 → OD016 → OD017 | 1 | 0 |
+| ARCH33 | Patagonia, Trekking Paradise with W-Trek | 11 | armado | OD033 → OD016 → CH10 | 1 | 0 |
 | AR09 | Patagonia Adventure Tour | 15 | armado | OD018 → OD025 → OD013 → OD022 | 5 | 0 |
 | BRARCH26 | From Rio de Janeiro to Santiago de Chile | 16 | armado | OD032 → OD010A → OD018 → OD019 → OD029 | 4 | 0 |
 | 5C01 | 5 Countries: Rio de Janeiro to la Paz | 29 | armado | OD032 → COMPBR10 → OD010D → OD020 → OD019 → OD029 → COMPCH01 → CHB31 → OD031 | 6 | 2 |
@@ -47,12 +47,12 @@ Empieza en El Chaltén y termina en Puerto Natales. Itinerario: Multi Destinatio
 | Día | Qué | Noches | Transfer / quién lo reserva |
 |---|---|---|---|
 | 1 | **OD033** El Chalten Starter Package (El Chaltén) | 3 noches | transfer de llegada |
-| 4 | Bus El Chaltén – El Calafate (diurno) | — | lo reserva Chalten Travel (servicio del tour) |
 | 4 | **OD016** El Calafate Starter Package (El Calafate) | 3 noches (1 noche más que el paquete solo) | sin transfer |
 | 7 | Bus El Calafate – Puerto Natales (diurno) | — | lo emite HI Travel (tarea manual) |
 | 7 | **OD017** Puerto Natales & Torres del Paine Adventure (Puerto Natales) | 2 noches | transfer de salida |
 
-- “El Calafate airport shuttle or bus to El Chalten or bus from El Calafate to El Chalten” va antes de la primera estadía y OD033 ya trae su traslado: no se carga (aunque esté en tramos-con-proveedor.csv).
+- “El Calafate airport shuttle or bus to El Chalten or bus from El Calafate to El Chalten”: lo trae el paquete OD033 (“Transfer El Calafate Airport to El Chalten. Booking Supplier: Chalten Travel / Transporte Las Lengas”), no se carga aparte.
+- “Bus El Chalten to El Calafate”: lo trae el paquete OD033 (“Public Bus El Chalten Bus Station - El Calafate Bus Station. Booking Supplier: Chalten Travel”), no se carga aparte.
 - “Punta Arenas Airport Drop Off or Bus from Puerto Natales to El Calafate” va después de la última estadía: lo cubre el paquete de la punta, no se carga como tramo.
 
 ### ARCH33 · Patagonia, Trekking Paradise with W-Trek (11 noches, 12 días)
@@ -62,13 +62,13 @@ Empieza en El Chaltén y termina en Puerto Natales. Itinerario: Multi Destinatio
 | Día | Qué | Noches | Transfer / quién lo reserva |
 |---|---|---|---|
 | 1 | **OD033** El Chalten Starter Package (El Chaltén) | 3 noches | transfer de llegada |
-| 4 | Bus El Chaltén – El Calafate (diurno) | — | lo reserva Chalten Travel (servicio del tour) |
 | 4 | **OD016** El Calafate Starter Package (El Calafate) | 2 noches | sin transfer |
 | 6 | Bus El Calafate – Puerto Natales (diurno) | — | lo emite HI Travel (tarea manual) |
 | 6 | **CH10** W Trek Standard Self Guided + Puerto Natales (6 nights) (Puerto Natales) | 6 noches | transfer de salida |
 
 - La columna F (“PNT - PUQ”) está incluida en CH10: no es un componente propio.
-- “Shuttle or bus from El Calafate Airport to El Chalten” va antes de la primera estadía y OD033 ya trae su traslado: no se carga (aunque esté en tramos-con-proveedor.csv).
+- “Shuttle or bus from El Calafate Airport to El Chalten”: lo trae el paquete OD033 (“Transfer El Calafate Airport to El Chalten. Booking Supplier: Chalten Travel / Transporte Las Lengas”), no se carga aparte.
+- “Bus from El Chalten to El Calafate”: lo trae el paquete OD033 (“Public Bus El Chalten Bus Station - El Calafate Bus Station. Booking Supplier: Chalten Travel”), no se carga aparte.
 - “Bus from Port of Lake Pehoe to Puerto Natales” va después de la última estadía: lo cubre el paquete de la punta, no se carga como tramo.
 - “Regular Bus Puerto Natales to Punta Arenas Airport (or to Punta Arenas city) or transfer to Puerto Natales airport” va después de la última estadía: lo cubre el paquete de la punta, no se carga como tramo.
 

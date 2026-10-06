@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { armarTour, type EntradaArmado, type TourArmado } from "./armado";
+import { armarTour, rutasDeServicios, type EntradaArmado, type TourArmado } from "./armado";
 import type { TramoConProveedor } from "./datos";
 import { fila, PAQUETES, RUTAS_5C01, RUTAS_ARCH31, RUTAS_CHB31, WORD_5C01, WORD_ARCH31, WORD_CHB31 } from "./fixtures";
 import { leerTourRutas } from "./rutas";
@@ -124,6 +124,54 @@ describe("armado de un tour compuesto (spec M1-05 §3)", () => {
       ["El Calafate – El Chaltén", 1, true],
       ["El Chaltén – El Calafate", 4, true],
     ]);
+  });
+
+  it("un bus que el paquete de una punta ya trae como servicio propio (misma ruta, cualquier sentido) no genera tramo ni servicio", () => {
+    // OD033 trae "Public Bus El Chalten Bus Station - El Calafate Bus Station" (Chalten Travel).
+    const conBus = new Map(
+      PAQUETES.map((p) => [p.codigo, p.codigo === "OD033" ? { ...p, rutasPropias: rutasDeServicios(["Transfer El Calafate Airport to El Chalten", "Public Bus El Chalten Bus Station - El Calafate Bus Station"]) } : p]),
+    );
+    const chalten: TramoConProveedor = {
+      tour: "ARCH31", desde: "CHA", hasta: "FTE", ruta: "Bus El Chaltén – El Calafate", bookingSupplier: "Chalten Travel", ambosSentidos: true,
+    };
+    for (const tramos of [[], [chalten]]) {
+      const t = armarTour(entrada("ARCH31", RUTAS_ARCH31, WORD_ARCH31, { paquetes: conBus, tramosConProveedor: tramos }));
+      if (t.estado !== "armado") throw new Error(t.motivos.join(" | "));
+      expect(resumen(t)).toEqual(["1 OD033 d1 3n IN", "2 OD016 d4 3n", "3 bus FTE-PNT d7", "4 OD017 d7 2n OUT"]);
+      expect(t.serviciosPropios).toEqual([]);
+      // Cada bus cita el servicio del paquete que va en su mismo sentido: el del día 4, el bus (no el traslado del aeropuerto).
+      expect(t.notas.find((n) => n.includes("“Bus El Chalten to El Calafate”"))).toContain("lo trae el paquete OD033 (“Public Bus");
+      expect(t.notas.find((n) => n.includes("airport shuttle"))).toContain("lo trae el paquete OD033 (“Transfer El Calafate Airport");
+    }
+  });
+
+  it("la regla no toca CHB31 (COMPBO20 no trae el Uyuni – La Paz) ni el Calama – San Pedro de 5C01", () => {
+    const reales = new Map(
+      PAQUETES.map((p) => [
+        p.codigo,
+        p.codigo === "OD030"
+          ? { ...p, rutasPropias: rutasDeServicios(["Transfer in CJC - Accommodation in San Pedro de Atacama. Booking Supplier: Transvipp"]) }
+          : p.codigo === "OD031"
+            ? { ...p, rutasPropias: rutasDeServicios(["Transfer La Paz Airport - La Paz Accommodation: Booking Supplier: Imperio Inca"]) }
+            : p,
+      ]),
+    );
+    const chb31 = armarTour(entrada("CHB31", RUTAS_CHB31, WORD_CHB31, { paquetes: reales }));
+    if (chb31.estado !== "armado") throw new Error(chb31.motivos.join(" | "));
+    expect(chb31.serviciosPropios.map((s) => s.sentido)).toEqual(["Uyuni – La Paz"]);
+    const t = armarTour(entrada("5C01", RUTAS_5C01, WORD_5C01, { paquetes: reales, tours: new Map([["CHB31", chb31]]) }));
+    expect(resumen(t)).toContain("15 bus CJC-SPA d22");
+  });
+
+  it("de la descripción de un servicio del paquete saca la ruta solo si nombra dos destinos", () => {
+    expect(rutasDeServicios(["Public Bus El Chalten Bus Station - El Calafate Bus Station"])).toEqual([
+      { desde: "CHA", hasta: "FTE", texto: "Public Bus El Chalten Bus Station - El Calafate Bus Station" },
+    ]);
+    expect(rutasDeServicios(["Transfer in CJC - Accommodation in San Pedro de Atacama", "EZE o AEP - Hotel - EZE o AEP"])).toEqual([]);
+    // El Booking Supplier no cuenta como ciudad ("Chalten Travel"), con los typos del Excel.
+    expect(rutasDeServicios(["Public Bus El Chalten Bus Station - El Calafate Bus Station. Booking Supplier: Chalten Travel"]).map((r) => [r.desde, r.hasta])).toEqual([["CHA", "FTE"]]);
+    expect(rutasDeServicios(["Transfer El Calafate Accommodation - FTE Airport. Bookinkg Supplier: Chalten Travel"])).toEqual([]);
+    expect(rutasDeServicios(["Public Bus Santiago - Valparaiso - Santiago. Booking Supplier: Kupos.cl"])).toEqual([]);
   });
 
   it("un bus es nocturno si el texto del día lo dice, aunque tenga el typo 'nigh bus'", () => {

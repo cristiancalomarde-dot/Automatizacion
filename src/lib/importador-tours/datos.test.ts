@@ -25,14 +25,12 @@ describe("tramos-con-proveedor.csv (spec M1-05 §3 #6)", () => {
     expect(() => parsearTramosConProveedor("tour,ruta,booking_supplier,ambos_sentidos\nCHB31,Bus Uyuni – La Paz,X,quizas\n")).toThrow(/ambos_sentidos/);
   });
 
-  it("el archivo real: Imperio Inca y Chalten Travel en los dos sentidos; Kupos.cl y Transvipp en 5C01", async () => {
+  it("el archivo real: Imperio Inca en los dos sentidos; Kupos.cl y Transvipp en 5C01", async () => {
     const { readFileSync } = await import("node:fs");
     const tramos = parsearTramosConProveedor(readFileSync("data/tramos-con-proveedor.csv", "utf-8"));
     expect(tramos.map((t) => [t.tour, t.desde, t.hasta, t.bookingSupplier, t.ambosSentidos])).toEqual([
       ["CHB31", "UYU", "LPB", "Imperio Inca", true],
       ["BOCHI04R", "UYU", "LPB", "Imperio Inca", true],
-      ["ARCH31", "CHA", "FTE", "Chalten Travel", true],
-      ["ARCH33", "CHA", "FTE", "Chalten Travel", true],
       ["5C01", "SCL", "VLP", "Kupos.cl", false],
       ["5C01", "CJC", "SPA", "Transvipp", false],
     ]);

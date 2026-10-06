@@ -148,18 +148,15 @@ interface Componente {
     return data!;
   }
 
-  it("ARCH31: paquete / paquete / bus / paquete, con transfers solo en las puntas; el bus a El Calafate lo reserva Chalten Travel", async () => {
+  it("ARCH31: paquete / paquete / bus / paquete, con transfers solo en las puntas; sin servicios propios (el bus a El Calafate ya lo trae OD033 con Chalten Travel)", async () => {
     expect((await componentes("ARCH31")).map(legible)).toEqual([
       "OD033 d1 3n IN",
       "OD016 d4 3n",
       "bus El Calafate – Puerto Natales d7",
       "OD017 d7 2n OUT",
     ]);
-    // Uno solo: el traslado de llegada (aeropuerto → El Chaltén) ya lo trae OD033.
-    const s = await serviciosDelTour("ARCH31");
-    expect(s.map((x) => [x.descripcion.split(" (")[0], x.booking_supplier_nombre, x.booking_supplier_id !== null])).toEqual([
-      ["Bus El Chaltén – El Calafate", "Chalten Travel", true],
-    ]);
+    // Sin servicios propios: el traslado de llegada y el bus El Chaltén – El Calafate ya los trae OD033 (Chalten Travel).
+    expect(await serviciosDelTour("ARCH31")).toEqual([]);
   });
 
   it("5C01: apunta a CHB31 (anidado) con sus días; Iguazú conserva el transfer; cierra en 29 noches", async () => {

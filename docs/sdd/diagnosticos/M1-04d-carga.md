@@ -1,6 +1,6 @@
 # Carga de los paquetes de los 7 tours (M1-04d)
 
-Cargué en el sistema los paquetes de un destino de los 7 tours desde **Construccion de Paquetes 2019 con 3 y 4 estrellas.xls** (2026-10-05). Cada servicio de cada paquete ya sabe a qué proveedor pedírselo, salvo los de la lista de abajo.
+Cargué en el sistema los paquetes de un destino de los 7 tours desde **Construccion de Paquetes 2019 con 3 y 4 estrellas.xls** (2026-10-06). Cada servicio de cada paquete ya sabe a qué proveedor pedírselo, salvo los de la lista de abajo.
 
 - Paquetes: 17. Servicios (cada opción de hotel o excursión cuenta una vez): 146.
 - Con proveedor y mail: **126**.
