@@ -16,6 +16,13 @@ export interface ProveedorResumen {
   telefono: string | null;
 }
 
+/** En qué noches del paquete va un servicio (M1-07, `producto_servicio_noches`). */
+export interface TramoNoches {
+  nocheDesde: number;
+  noches: number;
+  lugar: string | null;
+}
+
 export interface Servicio {
   id: string;
   productoId: string;
@@ -34,6 +41,8 @@ export interface Servicio {
   bookingSupplierNombre: string | null;
   serviceProvider: ProveedorResumen | null;
   bookingSupplier: ProveedorResumen | null;
+  /** Vacío o ausente = el servicio no dice en qué noches va (se muestra como un bloque). */
+  tramosNoches?: TramoNoches[];
 }
 
 export interface CodigoExterno {
@@ -67,8 +76,11 @@ export interface ComponenteTour {
   transferIn: boolean;
   transferOut: boolean;
   descripcionRuta: string | null;
-  /** Solo en `paquete`: el producto componente, con sus servicios. */
-  producto: (ProductoBase & { esTour: boolean; servicios: Servicio[] }) | null;
+  /**
+   * Solo en `paquete`: el producto componente, con sus servicios. Si es un
+   * tour (CHB31 dentro de 5C01), `componentes` trae su secuencia (M1-07).
+   */
+  producto: (ProductoBase & { esTour: boolean; servicios: Servicio[]; componentes?: ComponenteTour[] }) | null;
 }
 
 export interface DetalleProducto extends ProductoBase {

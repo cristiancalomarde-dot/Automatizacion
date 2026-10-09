@@ -9,6 +9,7 @@ import {
   filtrarCatalogo,
   filtrarDirectorio,
   normalizarTexto,
+  partesPorNoche,
   queEs,
   proveedoresDeServicios,
   tieneMail,
@@ -291,5 +292,25 @@ describe("queEs: el nombre corto de un servicio", () => {
         }),
       ),
     ).toBe("Paquete 105");
+  });
+});
+
+describe("partesPorNoche (spec M1-07 #8, #9)", () => {
+  it("junta los alojamientos de todos los niveles por tramo de noches y deja el resto aparte", () => {
+    const hostel = servicio({ id: "h", orden: 1, nivel: "Hostel", tramosNoches: [{ nocheDesde: 1, noches: 1, lugar: "Puerto Natales" }, { nocheDesde: 6, noches: 1, lugar: "Puerto Natales" }] });
+    const hotel = servicio({ id: "t", orden: 2, nivel: "Hotel 3*", tramosNoches: [{ nocheDesde: 1, noches: 1, lugar: "Puerto Natales" }, { nocheDesde: 6, noches: 1, lugar: "Puerto Natales" }] });
+    const trek = servicio({ id: "w", orden: 3, tipo: "otro", descripcion: "W Trek Standard. Booking Supplier: Las Torres", bookingSupplierNombre: "Las Torres", tramosNoches: [{ nocheDesde: 2, noches: 4, lugar: "refugios" }] });
+    const excursion = servicio({ id: "e", orden: 4, tipo: "excursion", descripcion: "Excursion: Glaciar" });
+    const r = partesPorNoche([hostel, hotel, trek, excursion])!;
+    expect(r.partes.map((p) => [p.nocheDesde, p.etiqueta, p.servicios.map((s) => s.id)])).toEqual([
+      [1, "1 noche en Puerto Natales", ["h", "t"]],
+      [2, "W Trek Standard, 4 noches en refugios (Las Torres)", ["w"]],
+      [6, "1 noche en Puerto Natales", ["h", "t"]],
+    ]);
+    expect(r.resto.map((s) => s.id)).toEqual(["e"]);
+  });
+
+  it("sin noches por servicio devuelve null (el paquete se muestra como antes)", () => {
+    expect(partesPorNoche([servicio({ id: "x" })])).toBeNull();
   });
 });

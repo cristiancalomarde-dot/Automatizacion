@@ -24,6 +24,7 @@ import type {
   ProveedorResumen,
   Servicio,
   TipoServicio,
+  TramoNoches,
 } from "./tipos";
 
 const CAMPOS_PROVEEDOR = "id,nombre,mails,canal,telefono";
@@ -142,37 +143,33 @@ export async function cargarCatalogo(supabase: SupabaseClient): Promise<FilaCata
   });
 }
 
-export async function cargarProducto(supabase: SupabaseClient, id: string): Promise<DetalleProducto> {
-  const [producto, servicios, componentes, codigos] = await Promise.all([
-    supabase.from("producto").select(CAMPOS_PRODUCTO).eq("id", id).maybeSingle(),
-    supabase.from("producto_servicio").select(CAMPOS_SERVICIO).eq("producto_id", id),
-    supabase
-      .from("producto_componente")
-      .select(
-        `orden,tipo,dia_desde,noches,nocturno,transfer_in,transfer_out,descripcion_ruta,comp:componente_producto_id(${CAMPOS_PRODUCTO})`,
-      )
-      .eq("producto_id", id)
-      .order("orden"),
-    supabase.from("codigo_externo").select("producto_id,agencia,codigo,nombre_externo").eq("producto_id", id),
+const CAMPOS_COMPONENTE =
+  `producto_id,orden,tipo,dia_desde,noches,nocturno,transfer_in,transfer_out,descripcion_ruta,comp:componente_producto_id(${CAMPOS_PRODUCTO})`;
+
+/** Servicios de varios productos, con las noches de cada uno (M1-07), agrupados por producto. */
+async function serviciosDe(supabase: SupabaseClient, ids: string[]): Promise<Map<string, Servicio[]>> {
+  if (ids.length === 0) return new Map();
+  const [svc, noches] = await Promise.all([
+    supabase.from("producto_servicio").select(CAMPOS_SERVICIO).in("producto_id", ids),
+    supabase.from("producto_servicio_noches").select("producto_id,orden,noche_desde,noches,lugar").in("producto_id", ids),
   ]);
-
-  const filaProducto = verificar(producto);
-  if (!filaProducto) throw new Error("Producto no encontrado.");
-  const filasComponente = verificar(componentes) as any[];
-
-  const idsComponentes = filasComponente.map((c) => c.comp?.id).filter(Boolean) as string[];
-  let serviciosDeComponentes = new Map<string, Servicio[]>();
-  let toursEntreComponentes = new Set<string>();
-  if (idsComponentes.length > 0) {
-    const [svc, sub] = await Promise.all([
-      supabase.from("producto_servicio").select(CAMPOS_SERVICIO).in("producto_id", idsComponentes),
-      supabase.from("producto_componente").select("producto_id").in("producto_id", idsComponentes),
-    ]);
-    serviciosDeComponentes = agruparPor((verificar(svc) as any[]).map(aServicio), (s) => s.productoId);
-    toursEntreComponentes = new Set((verificar(sub) as any[]).map((c) => c.producto_id));
+  const tramos = new Map<string, TramoNoches[]>();
+  for (const n of verificar(noches) as any[]) {
+    const clave = `${n.producto_id}:${n.orden}`;
+    const lista = tramos.get(clave) ?? [];
+    lista.push({ nocheDesde: n.noche_desde, noches: n.noches, lugar: n.lugar ?? null });
+    tramos.set(clave, lista.sort((a, b) => a.nocheDesde - b.nocheDesde));
   }
+  const lista = (verificar(svc) as any[]).map((fila) => {
+    const s = aServicio(fila);
+    const t = tramos.get(`${s.productoId}:${s.orden}`);
+    return t ? { ...s, tramosNoches: t } : s;
+  });
+  return agruparPor(lista, (s) => s.productoId);
+}
 
-  const listaComponentes: ComponenteTour[] = filasComponente.map((c) => ({
+function aComponente(c: any, esTour: Set<string>, servicios: Map<string, Servicio[]>): ComponenteTour {
+  return {
     orden: c.orden,
     tipo: c.tipo,
     diaDesde: c.dia_desde ?? null,
@@ -184,17 +181,52 @@ export async function cargarProducto(supabase: SupabaseClient, id: string): Prom
     producto: c.comp
       ? {
           ...aProducto(c.comp),
-          esTour: toursEntreComponentes.has(c.comp.id),
-          servicios: serviciosDeComponentes.get(c.comp.id) ?? [],
+          esTour: esTour.has(c.comp.id),
+          servicios: servicios.get(c.comp.id) ?? [],
         }
       : null,
-  }));
+  };
+}
+
+export async function cargarProducto(supabase: SupabaseClient, id: string): Promise<DetalleProducto> {
+  const [producto, componentes, codigos] = await Promise.all([
+    supabase.from("producto").select(CAMPOS_PRODUCTO).eq("id", id).maybeSingle(),
+    supabase.from("producto_componente").select(CAMPOS_COMPONENTE).eq("producto_id", id).order("orden"),
+    supabase.from("codigo_externo").select("producto_id,agencia,codigo,nombre_externo").eq("producto_id", id),
+  ]);
+
+  const filaProducto = verificar(producto);
+  if (!filaProducto) throw new Error("Producto no encontrado.");
+  const filasComponente = verificar(componentes) as any[];
+
+  // Los componentes que son tours (CHB31 en 5C01) traen su propia secuencia,
+  // para desplegarla en la pantalla (M1-07 #10). Un solo nivel de anidado.
+  const idsComponentes = filasComponente.map((c) => c.comp?.id).filter(Boolean) as string[];
+  let filasAdentro: any[] = [];
+  if (idsComponentes.length > 0) {
+    filasAdentro = verificar(
+      await supabase.from("producto_componente").select(CAMPOS_COMPONENTE).in("producto_id", idsComponentes).order("orden"),
+    ) as any[];
+  }
+  const toursEntreComponentes = new Set(filasAdentro.map((c) => c.producto_id as string));
+  const idsAdentro = filasAdentro.map((c) => c.comp?.id).filter(Boolean) as string[];
+  const servicios = await serviciosDe(supabase, [...new Set([id, ...idsComponentes, ...idsAdentro])]);
+
+  const adentroPorTour = agruparPor(filasAdentro, (c) => c.producto_id);
+  const listaComponentes: ComponenteTour[] = filasComponente.map((c) => {
+    const componente = aComponente(c, toursEntreComponentes, servicios);
+    const adentro = c.comp ? adentroPorTour.get(c.comp.id) : undefined;
+    if (componente.producto && adentro?.length) {
+      componente.producto.componentes = adentro.map((x) => aComponente(x, new Set(), servicios));
+    }
+    return componente;
+  });
 
   return {
     ...aProducto(filaProducto),
     esTour: listaComponentes.length > 0,
     codigosExternos: (verificar(codigos) as any[]).map(aCodigoExterno),
-    servicios: (verificar(servicios) as any[]).map(aServicio),
+    servicios: servicios.get(id) ?? [],
     componentes: listaComponentes,
   };
 }

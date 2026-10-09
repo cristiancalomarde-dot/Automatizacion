@@ -145,6 +145,51 @@ export function duracionTour(
   return fin;
 }
 
+// === Noches por servicio (M1-07 #8, #9) ============================================
+
+export interface ParteDelPaquete {
+  nocheDesde: number;
+  noches: number;
+  lugar: string | null;
+  /** "1 noche en Puerto Natales" / "W Trek Standard, 4 noches en refugios (Las Torres)". */
+  etiqueta: string;
+  /** Los servicios de esa parte (los alojamientos de todos los niveles van juntos). */
+  servicios: Servicio[];
+}
+
+/**
+ * Un paquete que guarda en qué noches va cada servicio (CH10), en partes
+ * ordenadas por noche. Los alojamientos de los distintos niveles que van en
+ * las mismas noches forman una sola parte (el pasajero elige uno). Devuelve
+ * null si ningún servicio tiene noches: el paquete se muestra como siempre.
+ */
+export function partesPorNoche(servicios: Servicio[]): { partes: ParteDelPaquete[]; resto: Servicio[] } | null {
+  if (!servicios.some((s) => (s.tramosNoches ?? []).length > 0)) return null;
+  const partes = new Map<string, ParteDelPaquete>();
+  const resto: Servicio[] = [];
+  for (const s of [...servicios].sort(porOrdenYPrioridad)) {
+    const tramos = s.tramosNoches ?? [];
+    if (tramos.length === 0) {
+      resto.push(s);
+      continue;
+    }
+    for (const t of tramos) {
+      const quien = s.tipo === "alojamiento" ? "alojamiento" : `orden-${s.orden}`;
+      const clave = `${t.nocheDesde}|${t.noches}|${t.lugar ?? ""}|${quien}`;
+      let parte = partes.get(clave);
+      if (!parte) {
+        const noches = TEXTOS.producto.nochesEn(TEXTOS.producto.noches(t.noches), t.lugar);
+        const proveedor = s.bookingSupplierNombre ?? s.bookingSupplier?.nombre;
+        const etiqueta = s.tipo === "alojamiento" ? noches : `${queEs(s)}, ${noches}${proveedor ? ` (${proveedor})` : ""}`;
+        parte = { nocheDesde: t.nocheDesde, noches: t.noches, lugar: t.lugar, etiqueta, servicios: [] };
+        partes.set(clave, parte);
+      }
+      parte.servicios.push(s);
+    }
+  }
+  return { partes: [...partes.values()].sort((a, b) => a.nocheDesde - b.nocheDesde), resto };
+}
+
 // === Búsqueda y filtros (#2, #8) =====================================================
 
 export function normalizarTexto(texto: string): string {

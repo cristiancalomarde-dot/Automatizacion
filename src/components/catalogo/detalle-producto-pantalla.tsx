@@ -8,6 +8,7 @@ import {
   agruparPorOrden,
   diaDeServicioDelTour,
   duracionTour,
+  partesPorNoche,
   proveedoresDeServicios,
 } from "@/lib/catalogo/reglas";
 import type { ComponenteTour, DetalleProducto, Servicio } from "@/lib/catalogo/tipos";
@@ -42,7 +43,13 @@ export function DetalleProductoPantalla({ id }: { id: string }) {
 }
 
 function Detalle({ producto }: { producto: DetalleProducto }) {
-  const todos = [...producto.servicios, ...producto.componentes.flatMap((c) => c.producto?.servicios ?? [])];
+  const todos = [
+    ...producto.servicios,
+    ...producto.componentes.flatMap((c) => [
+      ...(c.producto?.servicios ?? []),
+      ...(c.producto?.componentes ?? []).flatMap((x) => x.producto?.servicios ?? []),
+    ]),
+  ];
   const sinProveedores = proveedoresDeServicios(todos).size === 0;
   const dias = duracionTour(producto.componentes);
 
@@ -139,8 +146,40 @@ function FilaGrupo({ children, conDia = false }: { children: ReactNode; conDia?:
   );
 }
 
-/** Producto simple: alojamiento agrupado por nivel (#14) y el resto de los servicios. */
+/**
+ * Producto simple. Si guarda en qué noches va cada servicio (CH10, M1-07),
+ * primero el día por día; lo que no tiene noches, como siempre.
+ */
 function ServiciosSimples({ servicios }: { servicios: Servicio[] }) {
+  const porNoche = partesPorNoche(servicios);
+  if (!porNoche) return <ServiciosEnBloque servicios={servicios} />;
+  return (
+    <>
+      <section className={ui.seccion}>
+        <h2 className={ui.subtitulo}>{T.diaPorDia}</h2>
+        <div className={ui.panel}>
+          <table className={ui.tabla} aria-label={T.diaPorDia}>
+            <Encabezados />
+            <tbody>
+              {porNoche.partes.map((parte) => (
+                <Fragment key={`${parte.nocheDesde}-${parte.etiqueta}`}>
+                  <FilaGrupo>{T.diaParte(parte.nocheDesde, parte.etiqueta)}</FilaGrupo>
+                  {agruparPorOrden(parte.servicios).map((alternativas) => (
+                    <FilasAlternativas key={alternativas[0].id} grupo={alternativas} mostrarNivel />
+                  ))}
+                </Fragment>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+      {porNoche.resto.length > 0 ? <ServiciosEnBloque servicios={porNoche.resto} /> : null}
+    </>
+  );
+}
+
+/** Alojamiento agrupado por nivel (#14) y el resto de los servicios. */
+function ServiciosEnBloque({ servicios }: { servicios: Servicio[] }) {
   const niveles = agruparAlojamientoPorNivel(servicios);
   const otros = agruparPorOrden(servicios.filter((s) => s.tipo !== "alojamiento"));
 
@@ -203,10 +242,13 @@ type Entrada =
  * del tour (buses con proveedor) en su día, antes del componente que empieza
  * ese mismo día (el bus llega, después empieza el paquete).
  */
-function entradasDelItinerario(producto: DetalleProducto): { entradas: Entrada[]; sinDia: Servicio[] } {
-  const entradas: Entrada[] = producto.componentes.map((componente) => ({ tipo: "componente", componente }));
+function entradasDelItinerario(
+  componentes: ComponenteTour[],
+  servicios: Servicio[],
+): { entradas: Entrada[]; sinDia: Servicio[] } {
+  const entradas: Entrada[] = componentes.map((componente) => ({ tipo: "componente", componente }));
   const sinDia: Servicio[] = [];
-  for (const servicio of producto.servicios) {
+  for (const servicio of servicios) {
     const dia = diaDeServicioDelTour(servicio.descripcion);
     if (dia === null) {
       sinDia.push(servicio);
@@ -220,9 +262,32 @@ function entradasDelItinerario(producto: DetalleProducto): { entradas: Entrada[]
   return { entradas, sinDia };
 }
 
+/**
+ * Las filas de una secuencia. `desfase` corre los días: un tour dentro de
+ * otro (CHB31 en 5C01, día 22) muestra sus pasos con los días del de afuera.
+ */
+function FilasEntradas({ entradas, desfase }: { entradas: Entrada[]; desfase: number }) {
+  return (
+    <>
+      {entradas.map((entrada, i) =>
+        entrada.tipo === "servicio" ? (
+          <FilaServicio
+            key={`s-${entrada.servicio.id}`}
+            servicio={entrada.servicio}
+            opcion={null}
+            celdaInicial={T.dia(entrada.dia + desfase)}
+          />
+        ) : (
+          <FilasComponente key={`c-${entrada.componente.orden}-${i}`} componente={entrada.componente} desfase={desfase} />
+        ),
+      )}
+    </>
+  );
+}
+
 /** Tour compuesto, día por día (#4, #16). */
 function Itinerario({ producto }: { producto: DetalleProducto }) {
-  const { entradas, sinDia } = entradasDelItinerario(producto);
+  const { entradas, sinDia } = entradasDelItinerario(producto.componentes, producto.servicios);
 
   return (
     <>
@@ -232,18 +297,7 @@ function Itinerario({ producto }: { producto: DetalleProducto }) {
           <table className={ui.tabla} aria-label={T.itinerario}>
             <Encabezados conDia />
             <tbody>
-              {entradas.map((entrada, i) =>
-                entrada.tipo === "servicio" ? (
-                  <FilaServicio
-                    key={`s-${entrada.servicio.id}`}
-                    servicio={entrada.servicio}
-                    opcion={null}
-                    celdaInicial={T.dia(entrada.dia)}
-                  />
-                ) : (
-                  <FilasComponente key={`c-${entrada.componente.orden}-${i}`} componente={entrada.componente} />
-                ),
-              )}
+              <FilasEntradas entradas={entradas} desfase={0} />
             </tbody>
           </table>
         </div>
@@ -268,8 +322,33 @@ function Itinerario({ producto }: { producto: DetalleProducto }) {
   );
 }
 
-function FilasComponente({ componente }: { componente: ComponenteTour }) {
-  const dia = componente.diaDesde !== null ? T.dia(componente.diaDesde) : "";
+/** Los servicios de un paquete dentro del tour: por noches si las tiene (CH10), si no en bloque. */
+function FilasServiciosDelPaquete({ servicios, diaInicio }: { servicios: Servicio[]; diaInicio: number | null }) {
+  const porNoche = partesPorNoche(servicios);
+  const enBloque = agruparPorOrden(porNoche ? porNoche.resto : servicios);
+  return (
+    <>
+      {porNoche?.partes.map((parte) => (
+        <Fragment key={`${parte.nocheDesde}-${parte.etiqueta}`}>
+          <tr>
+            <td className={ui.nowrap}>{diaInicio !== null ? T.dia(diaInicio + parte.nocheDesde - 1) : ""}</td>
+            <td colSpan={COLUMNAS}>{parte.etiqueta}</td>
+          </tr>
+          {agruparPorOrden(parte.servicios).map((alternativas) => (
+            <FilasAlternativas key={alternativas[0].id} grupo={alternativas} mostrarNivel conCeldaInicial />
+          ))}
+        </Fragment>
+      ))}
+      {enBloque.map((alternativas) => (
+        <FilasAlternativas key={alternativas[0].id} grupo={alternativas} mostrarNivel conCeldaInicial />
+      ))}
+    </>
+  );
+}
+
+function FilasComponente({ componente, desfase = 0 }: { componente: ComponenteTour; desfase?: number }) {
+  const diaInicio = componente.diaDesde !== null ? componente.diaDesde + desfase : null;
+  const dia = diaInicio !== null ? T.dia(diaInicio) : "";
 
   if (componente.tipo === "tramo_bus" || !componente.producto) {
     return (
@@ -292,7 +371,7 @@ function FilasComponente({ componente }: { componente: ComponenteTour }) {
   }
 
   const paquete = componente.producto;
-  const grupos = agruparPorOrden(paquete.servicios);
+  const adentro = paquete.esTour && paquete.componentes?.length ? paquete.componentes : null;
 
   return (
     <>
@@ -315,7 +394,13 @@ function FilasComponente({ componente }: { componente: ComponenteTour }) {
           </span>
         </td>
       </tr>
-      {paquete.esTour ? (
+      {adentro ? (
+        // El tour de adentro, desplegado con los días de este (M1-07 #10).
+        <FilasEntradas
+          entradas={entradasDelItinerario(adentro, paquete.servicios).entradas}
+          desfase={(diaInicio ?? 1) - 1}
+        />
+      ) : paquete.esTour ? (
         <tr>
           <td />
           <td colSpan={COLUMNAS} className={ui.secundario}>
@@ -323,9 +408,7 @@ function FilasComponente({ componente }: { componente: ComponenteTour }) {
           </td>
         </tr>
       ) : (
-        grupos.map((alternativas) => (
-          <FilasAlternativas key={alternativas[0].id} grupo={alternativas} mostrarNivel conCeldaInicial />
-        ))
+        <FilasServiciosDelPaquete servicios={paquete.servicios} diaInicio={diaInicio} />
       )}
     </>
   );

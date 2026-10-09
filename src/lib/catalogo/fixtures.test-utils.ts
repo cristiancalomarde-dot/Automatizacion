@@ -3,6 +3,7 @@
  * los datos reales (OD010A, OD030, CHB31, Antarctica Hostel…). Solo tests.
  */
 import type {
+  ComponenteTour,
   DetalleProducto,
   DetalleProveedor,
   FilaCatalogo,
@@ -330,3 +331,129 @@ export const pendientes: Pendiente[] = [
     filaExcel: 136,
   },
 ];
+
+// === M1-07: CH10 en tres partes y tours dentro de tours desplegados ===
+
+const lasTorres: ProveedorResumen = {
+  id: "prov-las-torres",
+  nombre: "W trek LAS TORRES",
+  mails: ["reservas@lastorres.com"],
+  canal: "mail",
+  telefono: null,
+};
+
+const PUERTO_NATALES = [
+  { nocheDesde: 1, noches: 1, lugar: "Puerto Natales" },
+  { nocheDesde: 6, noches: 1, lugar: "Puerto Natales" },
+];
+
+export const ch10Servicios: Servicio[] = [
+  unServicio({ productoId: "prod-ch10", nivel: "Hostel", orden: 1, prioridad: 1, filaExcel: 1149, serviceProviderNombre: "Puma Hostel", bookingSupplierNombre: "Puma Hostel", tramosNoches: PUERTO_NATALES }),
+  unServicio({ productoId: "prod-ch10", nivel: "Hostel", orden: 1, prioridad: 2, filaExcel: 1149, serviceProviderNombre: "Last Hope", bookingSupplierNombre: "Last Hope", tramosNoches: PUERTO_NATALES }),
+  unServicio({ productoId: "prod-ch10", nivel: "Hotel 3*", orden: 2, prioridad: 1, filaExcel: 1153, serviceProviderNombre: "Big Sur", bookingSupplierNombre: "Big Sur", tramosNoches: PUERTO_NATALES }),
+  unServicio({
+    productoId: "prod-ch10",
+    tipo: "otro",
+    orden: 3,
+    filaExcel: 1158,
+    descripcion: "W Trek Standard. Booking Supplier: Las Torres",
+    serviceProviderNombre: "W Trek Standard",
+    bookingSupplierNombre: "Las Torres",
+    bookingSupplier: lasTorres,
+    tramosNoches: [{ nocheDesde: 2, noches: 4, lugar: "refugios" }],
+  }),
+];
+
+export const ch10: DetalleProducto = {
+  id: "prod-ch10",
+  codigo: "CH10",
+  nombre: "W Trek Standard Self Guided + Puerto Natales (6 nights)",
+  ciudades: [],
+  destino: "PNT",
+  updatedAt: "2026-10-09T10:00:00Z",
+  esTour: false,
+  codigosExternos: [],
+  servicios: ch10Servicios,
+  componentes: [],
+};
+
+export const arch33: DetalleProducto = {
+  ...ch10,
+  id: "prod-arch33",
+  codigo: "ARCH33",
+  nombre: "Patagonia, Trekking Paradise with W-Trek",
+  destino: null,
+  esTour: true,
+  servicios: [
+    unServicio({
+      productoId: "prod-arch33",
+      tipo: "bus",
+      orden: 1,
+      reservaManual: true,
+      descripcion:
+        "Bus Puerto Natales – Punta Arenas (diurno, sale el día 12 del tour) o traslado al aeropuerto de Puerto Natales con Patagonia Planet (se elige con la reserva). Booking Supplier: Kupos.cl",
+      serviceProviderNombre: "Bus Puerto Natales – Punta Arenas",
+      bookingSupplierNombre: "Kupos.cl",
+    }),
+  ],
+  componentes: [
+    {
+      orden: 4,
+      tipo: "tramo_bus",
+      diaDesde: 6,
+      noches: null,
+      nocturno: false,
+      transferIn: false,
+      transferOut: false,
+      descripcionRuta: "El Calafate – Puerto Natales",
+      producto: null,
+    },
+    {
+      orden: 5,
+      tipo: "paquete",
+      diaDesde: 6,
+      noches: 6,
+      nocturno: null,
+      transferIn: false,
+      transferOut: true,
+      descripcionRuta: null,
+      producto: { ...ch10, esTour: false, servicios: ch10Servicios },
+    },
+  ],
+};
+
+const compbo20: ComponenteTour = {
+  orden: 2,
+  tipo: "paquete",
+  diaDesde: 4,
+  noches: 2,
+  nocturno: null,
+  transferIn: false,
+  transferOut: true,
+  descripcionRuta: null,
+  producto: {
+    id: "prod-compbo20",
+    codigo: "COMPBO20",
+    nombre: "Overland Tour San Pedro - Uyuni",
+    ciudades: [],
+    destino: "UYU",
+    updatedAt: "2026-10-05T12:00:00Z",
+    esTour: false,
+    servicios: [],
+  },
+};
+
+/** 5C01 con CHB31 adentro, con la secuencia de CHB31 cargada (OD030 → COMPBO20 + bus Uyuni – La Paz). */
+export const tourConTourAdentroDesplegado: DetalleProducto = {
+  ...tourConTourAdentro,
+  componentes: [
+    {
+      ...tourConTourAdentro.componentes[0],
+      producto: {
+        ...tourConTourAdentro.componentes[0].producto!,
+        servicios: chb31.servicios,
+        componentes: [chb31.componentes[0], compbo20],
+      },
+    },
+  ],
+};

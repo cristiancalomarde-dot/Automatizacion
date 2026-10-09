@@ -66,6 +66,9 @@ export const TEXTOS = {
     otrosServicios: "Servicios",
     serviciosDelTour: "Servicios propios del tour",
     itinerario: "Itinerario día por día",
+    diaPorDia: "Día por día",
+    diaParte: (dia: number, texto: string) => `Día ${dia} · ${texto}`,
+    nochesEn: (noches: string, lugar: string | null) => (lugar ? `${noches} en ${lugar}` : noches),
     duracionEtiqueta: "Duración",
     duracion: (dias: number) => `${dias} días`,
     sinProveedores:

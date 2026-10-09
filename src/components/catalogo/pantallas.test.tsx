@@ -26,6 +26,9 @@ import {
   od010a,
   pendientes,
   tourConTourAdentro,
+  tourConTourAdentroDesplegado,
+  ch10,
+  arch33,
   unServicio,
 } from "@/lib/catalogo/fixtures.test-utils";
 import { CatalogoPantalla } from "./catalogo-pantalla";
@@ -329,5 +332,58 @@ describe("Pendientes (#18)", () => {
     render(<PendientesPantalla />);
     expect(await screen.findByRole("alert")).toHaveTextContent("No pudimos cargar los pendientes.");
     await waitFor(() => expect(screen.getByRole("button", { name: "Reintentar" })).toBeEnabled());
+  });
+});
+
+describe("Noches por servicio y tours dentro de tours (spec M1-07 #9, #10)", () => {
+  it("CH10 solo se ve día por día en tres partes, sin bus ni traslado de salida", async () => {
+    consultas.cargarProducto.mockResolvedValue(ch10);
+    render(<DetalleProductoPantalla id="prod-ch10" />);
+    const tabla = await screen.findByRole("table", { name: "Día por día" });
+    expect(within(tabla).getByText("Día 1 · 1 noche en Puerto Natales")).toBeInTheDocument();
+    expect(within(tabla).getByText("Día 2 · W Trek Standard, 4 noches en refugios (Las Torres)")).toBeInTheDocument();
+    expect(within(tabla).getByText("Día 6 · 1 noche en Puerto Natales")).toBeInTheDocument();
+    const texto = tabla.textContent ?? "";
+    expect(texto.indexOf("Día 1 ·")).toBeLessThan(texto.indexOf("Día 2 ·"));
+    expect(texto.indexOf("Día 2 ·")).toBeLessThan(texto.indexOf("Día 6 ·"));
+    // Las dos noches de Puerto Natales se piden con las mismas opciones de hotel.
+    expect(within(tabla).getAllByRole("row").filter((f) => f.textContent?.includes("Big Sur"))).toHaveLength(2);
+    expect(screen.queryByText(/Punta Arenas|Kupos/)).toBeNull();
+    expect(screen.queryByRole("table", { name: "Alojamiento por nivel" })).toBeNull();
+  });
+
+  it("dentro de ARCH33, las tres partes de CH10 van con los días del tour (6, 7 y 11) y al final la salida de Puerto Natales", async () => {
+    consultas.cargarProducto.mockResolvedValue(arch33);
+    render(<DetalleProductoPantalla id="prod-arch33" />);
+    const itinerario = await screen.findByRole("table", { name: "Itinerario día por día" });
+    const filas = within(itinerario).getAllByRole("row");
+    const fila = (texto: string) => filas.find((f) => f.textContent?.includes(texto));
+    expect(fila("1 noche en Puerto Natales")?.textContent).toContain("Día 6");
+    expect(fila("W Trek Standard, 4 noches en refugios (Las Torres)")?.textContent).toContain("Día 7");
+    expect(filas.filter((f) => f.textContent?.includes("1 noche en Puerto Natales")).map((f) => (f as HTMLTableRowElement).cells[0].textContent)).toEqual(["Día 6", "Día 11"]);
+    const ultima = filas[filas.length - 1].textContent ?? "";
+    expect(ultima).toContain("Día 12");
+    expect(ultima).toContain("Patagonia Planet");
+    expect(ultima).toContain("Kupos.cl");
+  });
+
+  it("un paquete sin noches por servicio se ve como antes", async () => {
+    consultas.cargarProducto.mockResolvedValue(od010a);
+    render(<DetalleProductoPantalla id="prod-od010a" />);
+    await screen.findByRole("table", { name: "Alojamiento por nivel" });
+    expect(screen.queryByRole("table", { name: "Día por día" })).toBeNull();
+  });
+
+  it("el tour de adentro se despliega con los días del tour de afuera, y el link se mantiene", async () => {
+    consultas.cargarProducto.mockResolvedValue(tourConTourAdentroDesplegado);
+    render(<DetalleProductoPantalla id="prod-5c01" />);
+    const itinerario = await screen.findByRole("table", { name: "Itinerario día por día" });
+    expect(within(itinerario).getByRole("link", { name: "CHB31" })).toHaveAttribute("href", "/catalogo/prod-chb31");
+    const filas = within(itinerario).getAllByRole("row");
+    const diaDe = (texto: string) => (filas.find((f) => f.textContent?.includes(texto)) as HTMLTableRowElement | undefined)?.cells[0].textContent;
+    expect(diaDe("OD030")).toBe("Día 22");
+    expect(diaDe("COMPBO20")).toBe("Día 25");
+    expect(diaDe("Imperio Inca")).toBe("Día 27");
+    expect(within(itinerario).queryByText("Es un tour. Ver su itinerario completo.")).toBeNull();
   });
 });
