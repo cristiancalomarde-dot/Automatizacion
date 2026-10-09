@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { basename } from "node:path";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import * as XLSX from "xlsx";
+import { apartarBorrados, compararDirectorio, type ComparacionDirectorio, type ProveedorBorrado, type ProveedorEnBase } from "./cambios";
 import { agruparProveedores, leerHojaContactos } from "./hoja";
 import { resolverProveedor, type ConsultarIA, type RegistroProveedor } from "./resolver";
 
@@ -16,6 +17,12 @@ import { resolverProveedor, type ConsultarIA, type RegistroProveedor } from "./r
  * Re-ejecutable (spec §3 #11): la clave de identidad es
  * `nombre_normalizado` + destino (guardado en `ciudad`); si ya existe, se
  * actualiza (mails/canal/aclaraciones/categoría) en vez de insertar otro.
+ *
+ * Desde M1-07, un proveedor que el owner movió de sección o renombró en el
+ * Excel se reconoce y se actualiza (no se duplica; ver `cambios.ts`), y los
+ * que se borraron con su OK (`data/proveedores-borrados.csv`) no vuelven.
+ * Lo que está en la base y ya no en el Excel no se borra: se informa
+ * (DECISIONS: "un proveedor que el owner saca del Excel no se borra solo").
  */
 
 export const HOJA_CONTACTOS = "Contactos hi";
@@ -43,6 +50,10 @@ export interface ResumenImportacion {
   ia: (EstadisticasIA & { configurada: boolean });
   /** Claves (nombre_normalizado + ciudad) de los proveedores de esta corrida. */
   claves: Array<{ nombre_normalizado: string; ciudad: string | null }>;
+  /** Qué cambió respecto del directorio cargado (M1-07): altas, bajas, movidos, renombrados, contactos. */
+  cambios: ComparacionDirectorio;
+  /** Proveedores borrados con el OK del owner que volvieron a aparecer en el Excel (no se cargan). */
+  borradosQueVolvieron: RegistroProveedor[];
 }
 
 export function leerFilasDelExcel(rutaArchivo: string): string[][] {
@@ -58,15 +69,13 @@ export function esSinMail(registro: Pick<RegistroProveedor, "mails" | "canal">):
   return registro.mails.length === 0 && registro.canal !== "whatsapp";
 }
 
-function claveDe(nombreNormalizado: string, ciudad: string | null): string {
-  return `${ciudad ?? ""}\u0000${nombreNormalizado}`;
-}
-
 export async function importarProveedores(opciones: {
   admin: SupabaseClient;
   rutaArchivo: string;
   consultarIA: ConsultarIA | null;
   estadisticasIA?: () => EstadisticasIA;
+  /** data/proveedores-borrados.csv (M1-07). */
+  borrados?: ProveedorBorrado[];
 }): Promise<ResumenImportacion> {
   const { admin } = opciones;
   const filas = leerHojaContactos(leerFilasDelExcel(opciones.rutaArchivo));
@@ -74,39 +83,36 @@ export async function importarProveedores(opciones: {
 
   // Resolución celda por celda (secuencial: las llamadas de IA pasan una a
   // una por el techo de gasto).
-  const registros: RegistroProveedor[] = [];
   let celdasAmbiguas = 0;
   let resueltasPorIA = 0;
   const mailsRechazadosIA: string[] = [];
+  const todos: RegistroProveedor[] = [];
   for (const grupo of grupos) {
     const r = await resolverProveedor(grupo, opciones.consultarIA);
-    registros.push(r.registro);
+    todos.push(r.registro);
     celdasAmbiguas += r.celdasAmbiguas;
     resueltasPorIA += r.resueltasPorIA;
     mailsRechazadosIA.push(...r.mailsRechazadosIA);
   }
 
-  // Proveedores ya cargados, para decidir insertar vs. actualizar.
+  const { quedan: registros, vueltos: borradosQueVolvieron } = apartarBorrados(todos, opciones.borrados ?? []);
+
+  // Proveedores ya cargados, para decidir insertar vs. actualizar (y qué cambió).
   const { data: existentes, error: errorLectura } = await admin
     .from("proveedor")
-    .select("id, nombre_normalizado, ciudad")
+    .select("id, nombre, nombre_normalizado, ciudad, mails, canal, aclaraciones")
     .range(0, 9999);
   if (errorLectura) throw new Error(`No se pudo leer proveedor: ${errorLectura.message}`);
-
-  const idPorClave = new Map<string, string>();
-  for (const p of existentes ?? []) {
-    const clave = claveDe(p.nombre_normalizado, p.ciudad);
-    if (!idPorClave.has(clave)) idPorClave.set(clave, p.id);
-  }
+  const cambios = compararDirectorio(registros, (existentes ?? []) as ProveedorEnBase[]);
 
   const ahora = new Date().toISOString();
   const aActualizar: Array<RegistroProveedor & { id: string; updated_at: string }> = [];
   const aInsertar: RegistroProveedor[] = [];
-  for (const registro of registros) {
-    const id = idPorClave.get(claveDe(registro.nombre_normalizado, registro.ciudad));
+  registros.forEach((registro, i) => {
+    const id = cambios.idDe[i];
     if (id) aActualizar.push({ ...registro, id, updated_at: ahora });
     else aInsertar.push(registro);
-  }
+  });
 
   if (aActualizar.length) {
     const { error } = await admin.from("proveedor").upsert(aActualizar, { onConflict: "id" });
@@ -146,6 +152,14 @@ export async function importarProveedores(opciones: {
         resueltas_por_ia: resueltasPorIA,
         mails_rechazados_ia: mailsRechazadosIA,
         ia,
+        cambios: {
+          altas: cambios.altas.map((a) => ({ nombre: a.nombre, ciudad: a.ciudad })),
+          bajas: cambios.bajas.map((b) => ({ id: b.id, nombre: b.nombre, ciudad: b.ciudad })),
+          movidos: cambios.movidos,
+          renombrados: cambios.renombrados,
+          contactos: cambios.cambiosContacto,
+        },
+        borrados_que_volvieron: borradosQueVolvieron.map((r) => ({ nombre: r.nombre, ciudad: r.ciudad })),
       },
     })
     .select("id")
@@ -169,5 +183,7 @@ export async function importarProveedores(opciones: {
     mailsRechazadosIA,
     ia,
     claves: registros.map((r) => ({ nombre_normalizado: r.nombre_normalizado, ciudad: r.ciudad })),
+    cambios,
+    borradosQueVolvieron,
   };
 }
