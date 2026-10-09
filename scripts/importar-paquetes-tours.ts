@@ -19,6 +19,9 @@
  * `npm run importar:equivalencias`. Es idempotente: una segunda corrida no
  * agrega filas. Escribe `docs/sdd/diagnosticos/M1-04d-carga.md`.
  *
+ * Después carga `data/noches-servicio.csv` (M1-07): en qué noches del paquete
+ * va cada servicio (CH10: alojamiento noche 1 y 6, W Trek noches 2 a 5).
+ *
  * Variables de entorno (regla #2 — nunca en el código; en local se leen de
  * `.env.local`): NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY y,
  * opcional, ANTHROPIC_API_KEY (sin clave, lo que no calza queda "para
@@ -31,7 +34,9 @@ import { createClient } from "@supabase/supabase-js";
 import { mesActual } from "@/lib/ia/techo-gasto";
 import { crearRegistroUsoIASupabase } from "@/lib/ia/registro-uso-ia-supabase";
 import { crearConsultorIABloque } from "@/lib/importador-productos/ia-bloque";
-import { CODIGOS_PILOTO, importarProductosSimples } from "@/lib/importador-productos/importar";
+import { CODIGOS_PILOTO, importarProductosSimples, leerFilasPaquetes } from "@/lib/importador-productos/importar";
+import { cargarNochesServicio, parsearNochesServicio } from "@/lib/importador-productos/noches-servicio";
+import { nochesBasePaquete } from "@/lib/importador-tours/noches-base";
 import { parsearNivelesConfirmados } from "@/lib/importador-productos/niveles-confirmados";
 import { parsearPaquetesPiloto } from "@/lib/importador-productos/paquetes-piloto";
 import { leerServiciosCargados, reporteCargaMarkdown, resumirCarga } from "@/lib/importador-productos/reporte-carga";
@@ -41,6 +46,7 @@ const PAQUETES_POR_DEFECTO = "Insumos/Construccion de Paquetes 2019 con 3 y 4 es
 const CODIGOS_TR = "Insumos/Codigos Productos Tourradar.xlsx";
 const LISTA = "data/paquetes-piloto.csv";
 const NIVELES_CONFIRMADOS = "data/niveles-confirmados.csv";
+const NOCHES_SERVICIO = "data/noches-servicio.csv";
 const REPORTE = "docs/sdd/diagnosticos/M1-04d-carga.md";
 
 function variable(nombre: string): string {
@@ -92,6 +98,15 @@ async function main() {
     tipoCorrida: TIPO_CORRIDA_PAQUETES,
   });
 
+  const filasPaquetes = leerFilasPaquetes(rutaPaquetes);
+  const noches = existsSync(resolve(process.cwd(), NOCHES_SERVICIO))
+    ? await cargarNochesServicio({
+        admin,
+        filas: parsearNochesServicio(readFileSync(archivo(NOCHES_SERVICIO), "utf-8")),
+        nochesPaquete: (codigo) => nochesBasePaquete(filasPaquetes, codigo),
+      })
+    : null;
+
   const carga = resumirCarga(await leerServiciosCargados(admin, paquetes.map((p) => p.codigo)));
   // Iguazú (M1-04) no se recarga acá, pero lo que le falta también es del piloto.
   const iguazu = resumirCarga(await leerServiciosCargados(admin, CODIGOS_PILOTO)).sinResolver.map(
@@ -118,6 +133,7 @@ async function main() {
         servicios: resumen.servicios,
         totales: carga.totales,
         sinResolver: carga.sinResolver.length,
+        nochesPorServicio: noches,
         reporte: REPORTE,
       },
       null,

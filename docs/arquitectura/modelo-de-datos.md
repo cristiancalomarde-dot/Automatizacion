@@ -31,6 +31,12 @@ separación por usuario.
 - **producto_servicio** — un servicio dentro de un producto (alojamiento, excursión, traslado,
   bus, crucero…), con su **Service Provider** y su **Booking Supplier**, y la prioridad si hay
   varias opciones separadas por "/". Es lo que decide a qué proveedores se les escribe.
+- **producto_servicio_noches** — en qué noches del paquete va un servicio (M1-07): noche de
+  inicio, cantidad de noches y lugar ("Puerto Natales", "refugios"). Se engancha al servicio por
+  (producto, `orden`). Un servicio puede ir en más de un tramo: en CH10 el alojamiento va en la
+  noche 1 y en la 6 (se pide dos veces, con fechas distintas y las mismas opciones de hotel) y el
+  W Trek de la 2 a la 5. Un paquete sin filas acá se muestra y se reserva como un bloque. Origen:
+  `data/noches-servicio.csv`. RLS como el resto del catálogo (migración 0008).
 - **codigo_externo** — mapea un código de una agencia/partner (Kilroy, TourRadar, etc.) al código
   interno de HI Travel. El mail de reserva trae uno de estos; acá se traduce.
 - **producto_componente** — solo para **tours compuestos** (ej. Patagonia Highlights, Overland San
@@ -84,6 +90,11 @@ bus **sí se mantiene**, aunque ese destino esté en el medio del tour.
 Por eso `producto_componente` no reusa ciegamente los servicios de transfer del paquete: cada
 componente marca si su transfer de entrada y/o de salida aplican en ese tour puntual (por defecto
 solo la primera entrada y la última salida del tour completo, con la excepción de IGR/IGU).
+
+**Excepciones por tour (M1-07):** `data/transfers-tour.csv` (tour, código, transfer_in,
+transfer_out, nota) pisa la regla en un tour y componente puntual, con `si`/`no` (vacío = la
+regla). Ej.: BRARCH26 termina en Santiago (OD029) **sin** transfer de salida. Si una fila nombra un
+componente que el tour no tiene, el importador falla antes de escribir.
 
 ### Dos cosas que parecen lo mismo y no lo son
 
