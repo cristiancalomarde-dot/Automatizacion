@@ -3,7 +3,14 @@ import { basename, resolve } from "node:path";
 import * as XLSX from "xlsx";
 import { leerFilasPaquetes } from "@/lib/importador-productos/importar";
 import { parsearPaquetesPiloto, type PaquetePiloto } from "@/lib/importador-productos/paquetes-piloto";
-import { parsearCategoriasTour, parsearTramosConProveedor, type CategoriaTour, type TramoConProveedor } from "./datos";
+import {
+  parsearCategoriasTour,
+  parsearTramosConProveedor,
+  parsearTransfersTour,
+  type CategoriaTour,
+  type ExcepcionTransfer,
+  type TramoConProveedor,
+} from "./datos";
 import type { DocumentoWord } from "./importar";
 import { HOJA_TOURS } from "./rutas";
 import { leerParrafosDocx } from "./word";
@@ -31,6 +38,7 @@ export interface InsumosTours {
   paquetesPiloto: PaquetePiloto[];
   tramosConProveedor: TramoConProveedor[];
   categoriasTour: CategoriaTour[];
+  excepcionesTransfer: ExcepcionTransfer[];
   archivos: { rutas: string; paquetes: string };
 }
 
@@ -65,6 +73,9 @@ export function leerInsumosTours(raiz: string): InsumosTours {
     paquetesPiloto: parsearPaquetesPiloto(texto("data/paquetes-piloto.csv")),
     tramosConProveedor: parsearTramosConProveedor(texto("data/tramos-con-proveedor.csv")),
     categoriasTour: parsearCategoriasTour(texto("data/categorias-tour.csv")),
+    excepcionesTransfer: existsSync(resolve(raiz, "data/transfers-tour.csv"))
+      ? parsearTransfersTour(texto("data/transfers-tour.csv"))
+      : [],
     archivos: { rutas: basename(RUTA_RUTAS), paquetes: basename(RUTA_PAQUETES) },
   };
 }

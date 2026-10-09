@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { armarTour, rutasDeServicios, type EntradaArmado, type TourArmado } from "./armado";
 import type { TramoConProveedor } from "./datos";
-import { fila, PAQUETES, RUTAS_5C01, RUTAS_ARCH31, RUTAS_CHB31, WORD_5C01, WORD_ARCH31, WORD_CHB31 } from "./fixtures";
+import { fila, PAQUETES, RUTAS_5C01, RUTAS_ARCH31, RUTAS_ARCH33, RUTAS_CHB31, WORD_5C01, WORD_ARCH31, WORD_ARCH33, WORD_CHB31 } from "./fixtures";
 import { leerTourRutas } from "./rutas";
 import { leerItinerario } from "./word";
 
@@ -251,5 +251,74 @@ describe("armado de un tour compuesto (spec M1-05 §3)", () => {
   it("sin el tour en el Word o en RutasenBus, va a revisión", () => {
     expect(armarTour({ ...entrada("ARCH31", RUTAS_ARCH31, WORD_ARCH31), word: null }).estado).toBe("para_revisar");
     expect(armarTour({ ...entrada("ARCH31", RUTAS_ARCH31, WORD_ARCH31), excel: null }).estado).toBe("para_revisar");
+  });
+});
+
+describe("correcciones del probalo vos de M1 (spec M1-07)", () => {
+  const KUPOS_PNT: TramoConProveedor = {
+    tour: "ARCH33",
+    desde: "PNT",
+    hasta: "PUQ",
+    ruta: "Bus Puerto Natales – Punta Arenas",
+    bookingSupplier: "Kupos.cl",
+    ambosSentidos: false,
+    alternativa: "traslado al aeropuerto de Puerto Natales con Patagonia Planet",
+  };
+
+  it("una excepción de transfer cambia solo ese componente de ese tour; los demás siguen con la regla", () => {
+    const sin = armarTour(entrada("ARCH31", RUTAS_ARCH31, WORD_ARCH31));
+    const con = armarTour(
+      entrada("ARCH31", RUTAS_ARCH31, WORD_ARCH31, {
+        excepcionesTransfer: [
+          { tour: "ARCH31", codigo: "OD017", transferIn: null, transferOut: false },
+          { tour: "OTRO", codigo: "OD033", transferIn: false, transferOut: null },
+        ],
+      }),
+    );
+    expect(resumen(sin)).toEqual(["1 OD033 d1 3n IN", "2 bus CHA-FTE d4", "3 OD016 d4 3n", "4 bus FTE-PNT d7", "5 OD017 d7 2n OUT"]);
+    expect(resumen(con)).toEqual(["1 OD033 d1 3n IN", "2 bus CHA-FTE d4", "3 OD016 d4 3n", "4 bus FTE-PNT d7", "5 OD017 d7 2n"]);
+  });
+
+  it("una excepción puede también agregar un transfer que la regla no pone", () => {
+    const t = armarTour(
+      entrada("ARCH31", RUTAS_ARCH31, WORD_ARCH31, {
+        excepcionesTransfer: [{ tour: "ARCH31", codigo: "OD016", transferIn: true, transferOut: null }],
+      }),
+    );
+    expect(resumen(t)).toContain("3 OD016 d4 3n IN");
+  });
+
+  it("si la excepción nombra un componente que el tour no tiene, falla con un mensaje claro", () => {
+    expect(() =>
+      armarTour(
+        entrada("ARCH31", RUTAS_ARCH31, WORD_ARCH31, {
+          excepcionesTransfer: [{ tour: "ARCH31", codigo: "OD029", transferIn: null, transferOut: false }],
+        }),
+      ),
+    ).toThrow(/transfers-tour\.csv.*ARCH31.*OD029/);
+  });
+
+  it("ARCH33: después de CH10 va la salida de Puerto Natales (Kupos o traslado con Patagonia Planet), como último paso", () => {
+    const t = armarTour(entrada("ARCH33", RUTAS_ARCH33, WORD_ARCH33, { tramosConProveedor: [KUPOS_PNT] }));
+    expect(resumen(t)).toEqual(["1 OD033 d1 3n IN", "2 bus CHA-FTE d4", "3 OD016 d4 2n", "4 bus FTE-PNT d6", "5 CH10 d6 6n OUT"]);
+    if (t.estado !== "armado") return;
+    expect(t.serviciosPropios).toEqual([
+      expect.objectContaining({
+        sentido: "Puerto Natales – Punta Arenas",
+        bookingSupplier: "Kupos.cl",
+        diaDesde: 12,
+        alternativa: "traslado al aeropuerto de Puerto Natales con Patagonia Planet",
+      }),
+    ]);
+    const notas = t.notas.join(" ");
+    expect(notas).not.toMatch(/está incluida en CH10/);
+    expect(notas).toMatch(/PNT - PUQ.*tramo final/);
+  });
+
+  it("sin la fila en tramos-con-proveedor.csv, ARCH33 sigue como antes (la columna PNT - PUQ incluida en CH10)", () => {
+    const t = armarTour(entrada("ARCH33", RUTAS_ARCH33, WORD_ARCH33));
+    if (t.estado !== "armado") throw new Error(t.motivos.join(" | "));
+    expect(t.serviciosPropios).toEqual([]);
+    expect(t.notas.join(" ")).toMatch(/está incluida en CH10/);
   });
 });

@@ -15,6 +15,8 @@ import { normalizarCategoria } from "./rutas";
  *   categoria_paquete, nota): qué categoría del paquete corresponde a una
  *   categoría del tour cuando no es la misma.
  *
+ * - `data/transfers-tour.csv` (M1-07): excepciones a la regla de transfers.
+ *
  * Una fila incompleta o una ruta que no se entiende es un error explícito.
  */
 
@@ -27,6 +29,20 @@ export interface TramoConProveedor {
   bookingSupplier: string;
   /** `ambos_sentidos=si`: el proveedor hace el bus en los dos sentidos (no hace falta confirmarlo). */
   ambosSentidos: boolean;
+  /** Columna opcional `alternativa`: otra forma de hacer el mismo tramo, que se elige con la reserva (M1-07, ARCH33). */
+  alternativa?: string;
+  nota?: string;
+}
+
+/**
+ * `data/transfers-tour.csv` (spec M1-07 §3 #4): excepciones a la regla de
+ * transfers, por tour y componente. `si`/`no` pisa la regla; vacío la deja.
+ */
+export interface ExcepcionTransfer {
+  tour: string;
+  codigo: string;
+  transferIn: boolean | null;
+  transferOut: boolean | null;
   nota?: string;
 }
 
@@ -63,7 +79,41 @@ export function parsearTramosConProveedor(texto: string): TramoConProveedor[] {
     if (!["", "si", "sí", "no"].includes(sentidos)) {
       throw new Error(`tramos-con-proveedor.csv, fila ${fila}: ambos_sentidos tiene que ser si o no (dice "${r.ambos_sentidos}").`);
     }
-    return { tour, desde, hasta, ruta, bookingSupplier, ambosSentidos: sentidos === "si" || sentidos === "sí", nota: (r.nota ?? "").trim() || undefined };
+    const alternativa = (r.alternativa ?? "").trim() || undefined;
+    return {
+      tour,
+      desde,
+      hasta,
+      ruta,
+      bookingSupplier,
+      ambosSentidos: sentidos === "si" || sentidos === "sí",
+      ...(alternativa ? { alternativa } : {}),
+      nota: (r.nota ?? "").trim() || undefined,
+    };
+  });
+}
+
+function siNo(valor: string | undefined, columna: string, fila: number): boolean | null {
+  const v = (valor ?? "").trim().toLowerCase();
+  if (v === "") return null;
+  if (v === "si" || v === "sí") return true;
+  if (v === "no") return false;
+  throw new Error(`transfers-tour.csv, fila ${fila}: ${columna} tiene que ser si, no o vacío (dice "${valor}").`);
+}
+
+export function parsearTransfersTour(texto: string): ExcepcionTransfer[] {
+  requerir(["tour", "codigo", "transfer_in", "transfer_out"], texto, "transfers-tour.csv");
+  return leerCsv(texto).map((r, i) => {
+    const fila = i + 2;
+    const tour = (r.tour ?? "").trim();
+    const codigo = (r.codigo ?? "").trim().toUpperCase();
+    if (!tour || !codigo) throw new Error(`transfers-tour.csv, fila ${fila}: faltan tour o codigo.`);
+    const transferIn = siNo(r.transfer_in, "transfer_in", fila);
+    const transferOut = siNo(r.transfer_out, "transfer_out", fila);
+    if (transferIn === null && transferOut === null) {
+      throw new Error(`transfers-tour.csv, fila ${fila}: no cambia nada (transfer_in y transfer_out vacíos).`);
+    }
+    return { tour, codigo, transferIn, transferOut, nota: (r.nota ?? "").trim() || undefined };
   });
 }
 

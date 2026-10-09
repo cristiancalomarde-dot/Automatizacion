@@ -1,5 +1,5 @@
 import { ciudadesEnTexto, nombraDestino, nombreDestino } from "./ciudades";
-import { mismaRuta, type TramoConProveedor } from "./datos";
+import { mismaRuta, type ExcepcionTransfer, type TramoConProveedor } from "./datos";
 import type { TourExcel } from "./rutas";
 import type { DiaItinerario, ItemIncluido, ItinerarioWord } from "./word";
 
@@ -30,6 +30,9 @@ import type { DiaItinerario, ItemIncluido, ItinerarioWord } from "./word";
  *    lo trae (COMPBO20 en BOCHI04R y CHB31), el bus es servicio del tour.
  * 4. Transfer: solo el primer componente lleva `transfer_in` y solo el
  *    último `transfer_out`; Iguazú (IGR) los conserva aunque esté en el medio.
+ *    `data/transfers-tour.csv` (M1-07) pisa la regla en un tour y componente
+ *    puntual; si nombra un componente que el tour no tiene, el armado falla
+ *    (tira un error) y el importador no escribe nada.
  *
  * Lo que no cierra no se arma: el tour queda "para revisar" con sus motivos
  * (falta un paquete, las noches del Word no coinciden con el Excel, la suma
@@ -109,6 +112,8 @@ export interface ServicioPropio {
   nocturno: boolean;
   /** Ruta en el sentido de este tour ("La Paz – Uyuni"). */
   sentido: string;
+  /** Otra forma de hacer el tramo, que se elige con la reserva (tramos-con-proveedor.csv, M1-07). */
+  alternativa?: string;
 }
 
 interface Base {
@@ -138,6 +143,8 @@ export interface EntradaArmado {
   /** Los tours ya armados en esta corrida (los anidados se arman primero). */
   tours: Map<string, TourArmado>;
   tramosConProveedor: TramoConProveedor[];
+  /** Excepciones a la regla de transfers (data/transfers-tour.csv, M1-07). */
+  excepcionesTransfer?: ExcepcionTransfer[];
 }
 
 interface Grupo {
@@ -164,6 +171,12 @@ interface Paso {
 const NOCTURNO_DIA = /\b(over)?night?\s+bus\b|\bovernight\b/i;
 const DESTINOS_CON_TRANSFER = new Set(["IGR", "IGU"]);
 
+/** "PNT - PUQ" (encabezado de RutasenBus, en códigos) es la ruta de ese tramo, en cualquier sentido. */
+function esRutaDeEncabezado(t: TramoConProveedor, encabezado: string): boolean {
+  const codigos = encabezado.toUpperCase().match(/\b[A-Z]{3}\b/g) ?? [];
+  return codigos.length === 2 && mismaRuta(t, codigos[0], codigos[1]);
+}
+
 function ruta(desde: string, hasta: string): string {
   return `${nombreDestino(desde)} – ${nombreDestino(hasta)}`;
 }
@@ -189,6 +202,11 @@ export function armarTour(e: EntradaArmado): TourArmado {
   for (const i of excel.incluidos) {
     if (!excel.componentes.some((c) => c.codigo === i.incluidoEn)) {
       motivos.push(`RutasenBus, columna ${i.columna}: dice “incluido en ${i.incluidoEn}”, pero ${i.incluidoEn} no está en el tour`);
+    } else if (e.tramosConProveedor.some((t) => t.tour === e.codigo && esRutaDeEncabezado(t, i.encabezado))) {
+      // M1-07: el owner corrigió que la salida de Puerto Natales no viene en CH10.
+      base.notas.push(
+        `La columna ${i.columna} (“${i.encabezado}”) no viene en ${i.incluidoEn} (RutasenBus dice que sí): se carga como tramo final del tour (data/tramos-con-proveedor.csv).`,
+      );
     } else {
       base.notas.push(`La columna ${i.columna} (“${i.encabezado}”) está incluida en ${i.incluidoEn}: no es un componente propio.`);
     }
@@ -393,6 +411,7 @@ export function armarTour(e: EntradaArmado): TourArmado {
         diaDesde: p.dia,
         nocturno: p.nocturno,
         sentido: ruta(bus.desde!, bus.hasta!),
+        ...(propio.alternativa ? { alternativa: propio.alternativa } : {}),
       });
       sumarCiudad(bus.desde!);
       sumarCiudad(bus.hasta!);
@@ -486,6 +505,19 @@ export function armarTour(e: EntradaArmado): TourArmado {
     const conTransfer = c.destinos.some((d) => DESTINOS_CON_TRANSFER.has(d));
     c.transferIn = c === paquetes[0] || conTransfer;
     c.transferOut = c === paquetes[paquetes.length - 1] || conTransfer;
+  }
+  for (const x of (e.excepcionesTransfer ?? []).filter((x) => x.tour === e.codigo)) {
+    const c = paquetes.find((p) => p.codigo === x.codigo);
+    if (!c) {
+      throw new Error(
+        `data/transfers-tour.csv: el tour ${e.codigo} no tiene el componente ${x.codigo} (tiene ${paquetes.map((p) => p.codigo).join(", ")}). Corregí la fila; no se cargó nada.`,
+      );
+    }
+    if (x.transferIn !== null) c.transferIn = x.transferIn;
+    if (x.transferOut !== null) c.transferOut = x.transferOut;
+    base.notas.push(
+      `Transfer de ${x.codigo} cambiado a mano (data/transfers-tour.csv)${x.nota ? `: ${x.nota}` : ""}.`,
+    );
   }
 
   return { ...base, estado: "armado", componentes, serviciosPropios, ciudades };

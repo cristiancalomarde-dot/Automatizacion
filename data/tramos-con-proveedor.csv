@@ -1,5 +1,6 @@
-tour,ruta,booking_supplier,ambos_sentidos,nota
-CHB31,Bus Uyuni – La Paz,Imperio Inca,si,"Excel de paquetes, bloque del CHB31 (filas 847-862): Public Bus Uyuni - La Paz. Booking Supplier: Imperio Inca"
-BOCHI04R,Bus Uyuni – La Paz,Imperio Inca,si,"El mismo bus, al revés (La Paz – Uyuni), en el Overland desde La Paz"
-5C01,Bus Santiago de Chile – Valparaíso,Kupos.cl,no,"Confirmado por el owner (2026-10-06): se compra en Kupos.cl (sistema online, tramo manual)"
-5C01,Bus Calama – San Pedro de Atacama,Transvipp,no,"Confirmado por el owner (2026-10-06): traslado Calama – alojamiento en San Pedro por el sistema de Transvip (manual)"
+tour,ruta,booking_supplier,ambos_sentidos,alternativa,nota
+CHB31,Bus Uyuni – La Paz,Imperio Inca,si,,"Excel de paquetes, bloque del CHB31 (filas 847-862): Public Bus Uyuni - La Paz. Booking Supplier: Imperio Inca"
+BOCHI04R,Bus Uyuni – La Paz,Imperio Inca,si,,"El mismo bus, al revés (La Paz – Uyuni), en el Overland desde La Paz"
+5C01,Bus Santiago de Chile – Valparaíso,Kupos.cl,no,,"Confirmado por el owner (2026-10-06): se compra en Kupos.cl (sistema online, tramo manual)"
+5C01,Bus Calama – San Pedro de Atacama,Kupos.cl,no,,"Corregido por el owner (2026-10-09): bus de terminal a terminal que se compra en Kupos.cl (tramo manual). El traslado desde el aeropuerto de Calama (CJC) es otro servicio, del paquete OD030"
+ARCH33,Bus Puerto Natales – Punta Arenas,Kupos.cl,no,traslado al aeropuerto de Puerto Natales con Patagonia Planet,"Owner (2026-10-09): salida de Puerto Natales después de CH10 (columna ""PNT - PUQ"" de RutasenBus). Bus por Kupos.cl (manual) o traslado al aeropuerto de Puerto Natales; la opción se elige con la reserva (M3). Solo en ARCH33: CH10 vendido solo no la trae"

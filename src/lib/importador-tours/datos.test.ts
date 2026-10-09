@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { verificarCategorias } from "./categorias";
-import { mismaRuta, parsearCategoriasTour, parsearTramosConProveedor } from "./datos";
+import { mismaRuta, parsearCategoriasTour, parsearTramosConProveedor, parsearTransfersTour } from "./datos";
 import { fila } from "./fixtures";
 import { nochesBasePaquete } from "./noches-base";
 
@@ -25,15 +25,24 @@ describe("tramos-con-proveedor.csv (spec M1-05 §3 #6)", () => {
     expect(() => parsearTramosConProveedor("tour,ruta,booking_supplier,ambos_sentidos\nCHB31,Bus Uyuni – La Paz,X,quizas\n")).toThrow(/ambos_sentidos/);
   });
 
-  it("el archivo real: Imperio Inca en los dos sentidos; Kupos.cl y Transvipp en 5C01", async () => {
+  it("el archivo real: Imperio Inca en los dos sentidos; Kupos.cl en 5C01 (también Calama – San Pedro) y en la salida de ARCH33", async () => {
     const { readFileSync } = await import("node:fs");
-    const tramos = parsearTramosConProveedor(readFileSync("data/tramos-con-proveedor.csv", "utf-8"));
+    const texto = readFileSync("data/tramos-con-proveedor.csv", "utf-8");
+    const tramos = parsearTramosConProveedor(texto);
     expect(tramos.map((t) => [t.tour, t.desde, t.hasta, t.bookingSupplier, t.ambosSentidos])).toEqual([
       ["CHB31", "UYU", "LPB", "Imperio Inca", true],
       ["BOCHI04R", "UYU", "LPB", "Imperio Inca", true],
       ["5C01", "SCL", "VLP", "Kupos.cl", false],
-      ["5C01", "CJC", "SPA", "Transvipp", false],
+      ["5C01", "CJC", "SPA", "Kupos.cl", false],
+      ["ARCH33", "PNT", "PUQ", "Kupos.cl", false],
     ]);
+    // M1-07 #3: Transvip queda solo como traslado del aeropuerto de Calama (en OD030), no en 5C01.
+    expect(texto).not.toMatch(/transvip/i);
+    expect(tramos.find((t) => t.tour === "ARCH33")!.alternativa).toMatch(/Patagonia Planet/);
+  });
+
+  it("alternativa es opcional", () => {
+    expect(parsearTramosConProveedor("tour,ruta,booking_supplier\nCHB31,Bus Uyuni – La Paz,Imperio Inca\n")[0].alternativa).toBeUndefined();
   });
 });
 
@@ -94,5 +103,34 @@ describe("noches base de un paquete en el Excel de paquetes", () => {
     expect(nochesBasePaquete(filas, "COMPBO20")).toBe(2);
     expect(nochesBasePaquete(filas, "COMPBR10")).toBe(2);
     expect(nochesBasePaquete(filas, "OD021")).toBeNull();
+  });
+});
+
+describe("transfers-tour.csv (spec M1-07 §3 #4)", () => {
+  it("cada fila dice qué cambia: si/no pisa la regla, vacío la deja", () => {
+    const [e] = parsearTransfersTour("tour,codigo,transfer_in,transfer_out,nota\nBRARCH26,OD029,,no,owner\n");
+    expect(e).toEqual({ tour: "BRARCH26", codigo: "OD029", transferIn: null, transferOut: false, nota: "owner" });
+  });
+
+  it("un valor que no es si/no/vacío, o una fila sin tour o código, es un error explícito", () => {
+    const enc = "tour,codigo,transfer_in,transfer_out\n";
+    expect(() => parsearTransfersTour(`${enc}BRARCH26,OD029,quizas,\n`)).toThrow(/fila 2.*transfer_in/);
+    expect(() => parsearTransfersTour(`${enc},OD029,,no\n`)).toThrow(/fila 2/);
+    expect(() => parsearTransfersTour(`${enc}BRARCH26,OD029,,\n`)).toThrow(/fila 2.*no cambia nada/);
+  });
+
+  it("el archivo real: BRARCH26 OD029 sin transfer de salida (owner, 2026-10-09)", async () => {
+    const { readFileSync } = await import("node:fs");
+    const filas = parsearTransfersTour(readFileSync("data/transfers-tour.csv", "utf-8"));
+    expect(filas.map((f) => [f.tour, f.codigo, f.transferIn, f.transferOut])).toEqual([["BRARCH26", "OD029", null, false]]);
+  });
+});
+
+describe("equivalencias-proveedores.csv (spec M1-07 §3 #2)", () => {
+  it("Cuenca del Plata ahora es Analia (el Excel corregido ya no dice Natalia)", async () => {
+    const { readFileSync } = await import("node:fs");
+    const texto = readFileSync("data/equivalencias-proveedores.csv", "utf-8");
+    expect(texto).not.toMatch(/Natalia/);
+    expect(texto.match(/Cuenca Del Plata \(Analia \)/g)).toHaveLength(2);
   });
 });

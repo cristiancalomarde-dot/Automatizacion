@@ -50,7 +50,7 @@ function secuencia(t: ResumenTour): string[] {
       : s.sinResolver
         ? `lo reserva ${s.bookingSupplier} — **no lo encontré en el directorio**`
         : `lo reserva ${s.bookingSupplier} (servicio del tour)`;
-    filas.push({ dia: s.diaDesde, orden: 0, linea: `| ${s.diaDesde} | Bus ${s.sentido} (${llega}) | — | ${quien} |` });
+    filas.push({ dia: s.diaDesde, orden: 0, linea: `| ${s.diaDesde} | Bus ${s.sentido} (${llega})${s.alternativa ? ` o ${s.alternativa}` : ""} | — | ${quien} |` });
   }
   filas.sort((a, b) => a.dia - b.dia || a.orden - b.orden);
   return ["| Día | Qué | Noches | Transfer / quién lo reserva |", "|---|---|---|---|", ...filas.map((f) => f.linea)];

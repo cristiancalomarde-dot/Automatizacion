@@ -106,4 +106,20 @@ describe("reporte de los tours para el owner (spec M1-05 §3 #10)", () => {
     expect(texto).toContain("se reserva a mano en Kupos.cl (sistema propio, no se le escribe)");
     expect(texto).not.toContain("no está en el directorio");
   });
+
+  it("un tramo con alternativa (salida de ARCH33) nombra las dos opciones (M1-07)", () => {
+    const base = resumenDe("CHB31", RUTAS_CHB31, WORD_CHB31);
+    const conAlternativa: ResumenTour = {
+      ...base,
+      serviciosPropios: base.serviciosPropios.map((s) => ({
+        ...s,
+        sentido: "Puerto Natales – Punta Arenas",
+        alternativa: "traslado al aeropuerto de Puerto Natales con Patagonia Planet",
+        bookingSupplier: "Kupos.cl",
+        reservaManual: true,
+      })),
+    };
+    const texto = reporteToursMarkdown({ ...r, tours: [conAlternativa] }, { fecha: "x", archivos: [] });
+    expect(texto).toContain("Bus Puerto Natales – Punta Arenas (nocturno, llega el día 7) o traslado al aeropuerto de Puerto Natales con Patagonia Planet");
+  });
 });

@@ -4,7 +4,7 @@ import type { PaquetePiloto } from "@/lib/importador-productos/paquetes-piloto";
 import { crearIndiceProveedores } from "@/lib/importador-productos/proveedores";
 import { armarTour, rutasDeServicios, type ComponenteArmado, type PaqueteConocido, type ServicioPropio, type TourArmado } from "./armado";
 import { verificarCategorias, type CategoriaFaltante } from "./categorias";
-import type { CategoriaTour, TramoConProveedor } from "./datos";
+import type { CategoriaTour, ExcepcionTransfer, TramoConProveedor } from "./datos";
 import { nochesBasePaquete } from "./noches-base";
 import { resolverProveedorTramo } from "./proveedor-tramo";
 import { leerTourRutas, type TourExcel } from "./rutas";
@@ -137,6 +137,8 @@ export async function importarToursCompuestos(opciones: {
   paquetesPiloto: PaquetePiloto[];
   tramosConProveedor: TramoConProveedor[];
   categoriasTour: CategoriaTour[];
+  /** data/transfers-tour.csv (M1-07). Una fila que no cierra corta la carga antes de escribir. */
+  excepcionesTransfer?: ExcepcionTransfer[];
   archivos: { rutas: string; paquetes: string };
   tours?: string[];
 }): Promise<ResumenImportacionTours> {
@@ -202,6 +204,7 @@ export async function importarToursCompuestos(opciones: {
         codigosTour: new Set(codigosTour),
         tours: armados,
         tramosConProveedor: opciones.tramosConProveedor,
+        excepcionesTransfer: opciones.excepcionesTransfer ?? [],
       }),
     );
   }
@@ -360,7 +363,7 @@ export async function importarToursCompuestos(opciones: {
         tipo_servicio: "bus",
         nivel: null,
         fila_excel: null,
-        descripcion: `Bus ${s.sentido} (${s.nocturno ? "nocturno" : "diurno"}, sale el día ${s.diaDesde} del tour). Booking Supplier: ${s.bookingSupplier}`,
+        descripcion: `Bus ${s.sentido} (${s.nocturno ? "nocturno" : "diurno"}, sale el día ${s.diaDesde} del tour)${s.alternativa ? ` o ${s.alternativa} (se elige con la reserva)` : ""}. Booking Supplier: ${s.bookingSupplier}`,
         service_provider_nombre: s.ruta,
         booking_supplier_nombre: s.bookingSupplier,
         service_provider_id: null,
