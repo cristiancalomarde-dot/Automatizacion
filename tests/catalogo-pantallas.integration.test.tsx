@@ -122,7 +122,12 @@ function clienteInalcanzable(): SupabaseClient {
       const buscador = await screen.findByLabelText("Buscar por código o nombre", {}, ESPERA);
       fireEvent.change(buscador, { target: { value: "CHB31" } });
 
-      const filas = within(screen.getByRole("table")).getAllByRole("row").slice(1);
+      // Sin las filas temporales que crea en paralelo tests/catalogo.integration.test.ts
+      // ("TEST-M1-02-…-CHB31"): son de otro test y se borran al terminar.
+      const filas = within(screen.getByRole("table"))
+        .getAllByRole("row")
+        .slice(1)
+        .filter((f) => !f.textContent?.includes("TEST-M1-02-"));
       expect(filas).toHaveLength(1);
       expect(filas[0]).toHaveTextContent("Overland San Pedro de Atacama to Uyuni, end in La Paz");
       fireEvent.click(filas[0]);
