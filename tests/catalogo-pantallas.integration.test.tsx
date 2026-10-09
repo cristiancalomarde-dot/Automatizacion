@@ -139,7 +139,7 @@ function clienteInalcanzable(): SupabaseClient {
       // Proveedores con mail de San Pedro (OD030), visibles sin abrir el Directorio.
       expect(within(itinerario).getByText("reservas@donraul.cl")).toBeInTheDocument();
       expect(within(itinerario).getByText("horizonteatacamareserva@gmail.com")).toBeInTheDocument();
-      // Transvip manual y el bus propio del tour de Imperio Inca (WhatsApp), en su día.
+      // Transvip manual y el bus propio del tour de Imperio Inca (por mail desde M1-07), en su día.
       expect(within(itinerario).getAllByText("Manual en sistema propio").length).toBeGreaterThan(0);
       const filaDia6 = within(itinerario).getByText("Día 6").closest("tr")!;
       expect(within(filaDia6).getByRole("link", { name: "Imperio Inca" })).toBeInTheDocument();
@@ -183,7 +183,7 @@ function clienteInalcanzable(): SupabaseClient {
       expect(screen.getByRole("link", { name: "OD022" })).toBeInTheDocument();
     }, 40_000);
 
-    it("Pendientes: NH Cordillera (OD019), Antarctica Hostel (OD022) y O Hostel GRU (COMPBR10)", async () => {
+    it("Pendientes: NH Cordillera (OD019) y O Hostel GRU (COMPBR10); Antarctica Hostel ya no (WhatsApp, M1-07)", async () => {
       cliente.actual = conSesion;
       render(<PendientesPantalla />);
       const tabla = await screen.findByRole("table", {}, ESPERA);
@@ -191,11 +191,11 @@ function clienteInalcanzable(): SupabaseClient {
       const claves = filas.map((f) => f.textContent ?? "");
       for (const [codigo, proveedor] of [
         ["OD019", "NH Cordillera"],
-        ["OD022", "Antarctica Hostel"],
         ["COMPBR10", "O Hostel GRU"],
       ]) {
         expect(claves.some((t) => t.includes(codigo) && t.includes(proveedor))).toBe(true);
       }
+      expect(claves.some((t) => t.includes("Antarctica Hostel"))).toBe(false);
     }, 40_000);
   });
 });

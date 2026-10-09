@@ -141,7 +141,7 @@ interface FilaServicioDB {
       expect(tetris.proveedor_id).not.toBeNull();
       expect(tetris.nota).toContain("WhatsApp");
       const plana = data!.find((a) => a.alias_normalizado === "cuenca del plana")!;
-      expect((plana.proveedor as unknown as { nombre: string }).nombre).toBe("Cuenca Del Plata (Natalia )");
+      expect((plana.proveedor as unknown as { nombre: string }).nombre).toBe("Cuenca Del Plata (Analia )"); // M1-07: el owner corrigió Natalia → Analia
 
       const segunda = await cargarEquivalencias({ admin, textoCsv: texto });
       expect(segunda).toMatchObject({ total: 76, creados: 0, actualizados: 0, sinCambios: 76 });
@@ -308,8 +308,8 @@ interface FilaServicioDB {
       return porProducto.flat();
     }
 
-    it("M1-04b #3 el typo 'Cuenca del Plana' (OD010C/D) queda emparejado con Cuenca Del Plata (Natalia )", async () => {
-      const { data: cuenca } = await admin.from("proveedor").select("id").eq("nombre", "Cuenca Del Plata (Natalia )").single();
+    it("M1-04b #3 el typo 'Cuenca del Plana' (OD010C/D) queda emparejado con Cuenca Del Plata (Analia, antes Natalia: M1-07)", async () => {
+      const { data: cuenca } = await admin.from("proveedor").select("id").eq("nombre", "Cuenca Del Plata (Analia )").single();
       const plana = (await todasLasFilas()).filter((f) => f.booking_supplier_nombre === "Cuenca del Plana");
       expect(plana.map((f) => f.codigo)).toEqual(["OD010C", "OD010D"]);
       for (const f of plana) {

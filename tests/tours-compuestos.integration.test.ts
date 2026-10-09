@@ -180,11 +180,11 @@ interface Componente {
     ]);
     const noches = cs.reduce((n, c) => n + (c.noches ?? 0) + (c.nocturno ? 1 : 0), 0);
     expect(noches).toBe(29);
-    // Santiago – Valparaíso (Kupos.cl) y Calama – San Pedro (Transvipp) son manuales: sin proveedor ni revisión.
+    // Santiago – Valparaíso y Calama – San Pedro (M1-07: bus de terminal a terminal) van por Kupos.cl: manuales, sin proveedor ni revisión.
     const s = await serviciosDelTour("5C01");
     expect(s.map((x) => [x.descripcion.split(" (")[0], x.booking_supplier_nombre, x.reserva_manual, x.proveedor_sin_resolver])).toEqual([
       ["Bus Santiago de Chile – Valparaíso", "Kupos.cl", true, false],
-      ["Bus Calama – San Pedro de Atacama", "Transvipp", true, false],
+      ["Bus Calama – San Pedro de Atacama", "Kupos.cl", true, false],
     ]);
     // CHB31 tiene sus propios componentes (no se copiaron a 5C01).
     expect((await componentes("CHB31")).length).toBe(2);

@@ -125,11 +125,11 @@ const CORRE = credencialesSupabaseDisponibles();
     expect(detalle.productos.map((p) => p.codigo)).toContain("OD022");
   }, 30_000);
 
-  it("#18 pendientes: NH Cordillera, Antarctica Hostel y O Hostel GRU", async () => {
+  it("#18 pendientes: NH Cordillera y O Hostel GRU (Antarctica Hostel ya tiene WhatsApp desde M1-07)", async () => {
     const pendientes = await cargarPendientes(cliente);
     const claves = pendientes.map((p) => `${p.producto.codigo}:${p.proveedorNombre}`);
     expect(claves).toEqual(
-      expect.arrayContaining(["OD019:NH Cordillera", "OD022:Antarctica Hostel", "COMPBR10:O Hostel GRU"]),
+      expect.arrayContaining(["OD019:NH Cordillera", "COMPBR10:O Hostel GRU"]),
     );
     expect(pendientes.every((p) => p.motivo.length > 0)).toBe(true);
   }, 30_000);
