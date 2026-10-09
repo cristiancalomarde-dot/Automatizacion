@@ -62,7 +62,10 @@ describe("reporte de la recarga del directorio para el owner (spec M1-07 §3 #11
   it("lo que no cierra: sin contacto, secciones duplicadas (CHALTEN / EL CHALTEN) y el mismo nombre en otra ciudad", () => {
     expect(md).toMatch(/## Lo que no cierra/);
     expect(md).toMatch(/Hotel sin nada.*SALTA/);
-    expect(md).toMatch(/“CHALTEN” y “EL CHALTEN”/);
+    // CHALTEN quedó solo con bajas: el Excel ya no tiene esa sección.
+    expect(md).toContain("La sección “CHALTEN” ya no está en el Excel (quedó “EL CHALTEN”)");
+    // Lo que no cierra mira lo que sigue en el Excel: una baja no se repite ahí.
+    expect(md.split("## Lo que no cierra")[1].split("**Secciones duplicadas")[0]).not.toContain("(CHALTEN)");
     expect(md).toMatch(/Rumbo Sur.*CALAFATE.*USHUAIA|Rumbo Sur.*USHUAIA.*CALAFATE/);
   });
 

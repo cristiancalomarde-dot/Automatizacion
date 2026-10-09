@@ -1,6 +1,6 @@
 # Los 7 tours compuestos (M1-05)
 
-Armé los tours top-seller con los códigos de RutasenBus y el itinerario día por día de los Word de catálogo (2026-10-06). Leí: RutasenBus2020.xls, Multi Destination Independent Tours 1 Jun 2026 - 31 Dec 2027.docx, Two Destination Tours 1 Jun 2026 - 31 Dec 2027.docx, One Destination Tours 1 Jun 2026 - 31 Dec 2027.docx, Unique Tours 1 Jun 2026 - 31 Dec 2027.docx, Construccion de Paquetes 2019 con 3 y 4 estrellas.xls.
+Armé los tours top-seller con los códigos de RutasenBus y el itinerario día por día de los Word de catálogo (2026-10-09). Leí: RutasenBus2020.xls, Multi Destination Independent Tours 1 Jun 2026 - 31 Dec 2027.docx, Two Destination Tours 1 Jun 2026 - 31 Dec 2027.docx, One Destination Tours 1 Jun 2026 - 31 Dec 2027.docx, Unique Tours 1 Jun 2026 - 31 Dec 2027.docx, Construccion de Paquetes 2019 con 3 y 4 estrellas.xls.
 
 - Armados: **7 de 7**. Para revisar: **0**.
 - Cada tour guarda su secuencia: cada paquete con sus noches en el tour y el día en que empieza, y cada bus con el día en que sale y si es nocturno. Las fechas reales se calculan cuando llegue la reserva con su fecha de inicio.
@@ -13,7 +13,7 @@ Armé los tours top-seller con los códigos de RutasenBus y el itinerario día p
 | CHB31 | Overland San Pedro de Atacama to Uyuni, end in La Paz | 6 | armado | OD030 → COMPBO20 | 0 | 1 |
 | BOCHI04R | OVERLAND UYUNI TO SAN PEDRO DE ATACAMA BEGINNING IN LA PAZ | 6 | armado | COMPBO20 → OD030 | 0 | 1 |
 | ARCH31 | Patagonia Highlights | 8 | armado | OD033 → OD016 → OD017 | 1 | 0 |
-| ARCH33 | Patagonia, Trekking Paradise with W-Trek | 11 | armado | OD033 → OD016 → CH10 | 1 | 0 |
+| ARCH33 | Patagonia, Trekking Paradise with W-Trek | 11 | armado | OD033 → OD016 → CH10 | 1 | 1 |
 | AR09 | Patagonia Adventure Tour | 15 | armado | OD018 → OD025 → OD013 → OD022 | 5 | 0 |
 | BRARCH26 | From Rio de Janeiro to Santiago de Chile | 16 | armado | OD032 → OD010A → OD018 → OD019 → OD029 | 4 | 0 |
 | 5C01 | 5 Countries: Rio de Janeiro to la Paz | 29 | armado | OD032 → COMPBR10 → OD010D → OD020 → OD019 → OD029 → COMPCH01 → CHB31 → OD031 | 6 | 2 |
@@ -57,7 +57,7 @@ Empieza en El Chaltén y termina en Puerto Natales. Itinerario: Multi Destinatio
 
 ### ARCH33 · Patagonia, Trekking Paradise with W-Trek (11 noches, 12 días)
 
-Empieza en El Chaltén y termina en Puerto Natales. Itinerario: Multi Destination Independent Tours 1 Jun 2026 - 31 Dec 2027.docx; códigos: RutasenBus, fila 317.
+Empieza en El Chaltén y termina en Punta Arenas. Itinerario: Multi Destination Independent Tours 1 Jun 2026 - 31 Dec 2027.docx; códigos: RutasenBus, fila 317.
 
 | Día | Qué | Noches | Transfer / quién lo reserva |
 |---|---|---|---|
@@ -65,12 +65,12 @@ Empieza en El Chaltén y termina en Puerto Natales. Itinerario: Multi Destinatio
 | 4 | **OD016** El Calafate Starter Package (El Calafate) | 2 noches | sin transfer |
 | 6 | Bus El Calafate – Puerto Natales (diurno) | — | lo emite HI Travel (tarea manual) |
 | 6 | **CH10** W Trek Standard Self Guided + Puerto Natales (6 nights) (Puerto Natales) | 6 noches | transfer de salida |
+| 12 | Bus Puerto Natales – Punta Arenas (diurno) o traslado al aeropuerto de Puerto Natales con Patagonia Planet | — | se reserva a mano en Kupos.cl (sistema propio, no se le escribe) |
 
-- La columna F (“PNT - PUQ”) está incluida en CH10: no es un componente propio.
+- La columna F (“PNT - PUQ”) no viene en CH10 (RutasenBus dice que sí): se carga como tramo final del tour (data/tramos-con-proveedor.csv).
 - “Shuttle or bus from El Calafate Airport to El Chalten”: lo trae el paquete OD033 (“Transfer El Calafate Airport to El Chalten. Booking Supplier: Chalten Travel / Transporte Las Lengas”), no se carga aparte.
 - “Bus from El Chalten to El Calafate”: lo trae el paquete OD033 (“Public Bus El Chalten Bus Station - El Calafate Bus Station. Booking Supplier: Chalten Travel”), no se carga aparte.
 - “Bus from Port of Lake Pehoe to Puerto Natales” va después de la última estadía: lo cubre el paquete de la punta, no se carga como tramo.
-- “Regular Bus Puerto Natales to Punta Arenas Airport (or to Punta Arenas city) or transfer to Puerto Natales airport” va después de la última estadía: lo cubre el paquete de la punta, no se carga como tramo.
 
 ### AR09 · Patagonia Adventure Tour (15 noches, 16 días)
 
@@ -102,7 +102,9 @@ Empieza en Río de Janeiro y termina en Santiago de Chile. Itinerario: Multi Des
 | 12 | Bus Buenos Aires – Mendoza (nocturno, llega el día 13) | — | lo emite HI Travel (tarea manual) |
 | 13 | **OD019** Mendoza Mountains and Wineries (Mendoza) | 2 noches (1 noche menos que el paquete solo) | sin transfer |
 | 15 | Bus Mendoza – Santiago de Chile (diurno) | — | lo emite HI Travel (tarea manual) |
-| 15 | **OD029** Santiago de Chile Starter Package (Santiago de Chile) | 2 noches | transfer de salida |
+| 15 | **OD029** Santiago de Chile Starter Package (Santiago de Chile) | 2 noches | sin transfer |
+
+- Transfer de OD029 cambiado a mano (data/transfers-tour.csv): Owner (2026-10-09): Santiago, al final de BRARCH26, va sin transfer de salida.
 
 ### 5C01 · 5 Countries: Rio de Janeiro to la Paz (29 noches, 30 días)
 
@@ -124,7 +126,7 @@ Empieza en Río de Janeiro y termina en La Paz. Itinerario: Multi Destination In
 | 19 | Bus Santiago de Chile – Valparaíso (diurno) | — | se reserva a mano en Kupos.cl (sistema propio, no se le escribe) |
 | 19 | **COMPCH01** Valparaiso Escapade (Valparaíso) | 2 noches | sin transfer |
 | 21 | Bus Valparaíso – Calama (nocturno, llega el día 22) | — | lo emite HI Travel (tarea manual) |
-| 22 | Bus Calama – San Pedro de Atacama (diurno) | — | se reserva a mano en Transvipp (sistema propio, no se le escribe) |
+| 22 | Bus Calama – San Pedro de Atacama (diurno) | — | se reserva a mano en Kupos.cl (sistema propio, no se le escribe) |
 | 22 | **CHB31** (tour completo: Overland San Pedro de Atacama to Uyuni, end in La Paz) | 6 noches | sin transfer |
 | 28 | **OD031** La Paz Bolivia Starter package (La Paz) | 2 noches | transfer de salida |
 

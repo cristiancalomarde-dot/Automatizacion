@@ -1,12 +1,12 @@
 # Carga de los paquetes de los 7 tours (M1-04d)
 
-Cargué en el sistema los paquetes de un destino de los 7 tours desde **Construccion de Paquetes 2019 con 3 y 4 estrellas.xls** (2026-10-06). Cada servicio de cada paquete ya sabe a qué proveedor pedírselo, salvo los de la lista de abajo.
+Cargué en el sistema los paquetes de un destino de los 7 tours desde **Construccion de Paquetes 2019 con 3 y 4 estrellas.xls** (2026-10-09). Cada servicio de cada paquete ya sabe a qué proveedor pedírselo, salvo los de la lista de abajo.
 
 - Paquetes: 17. Servicios (cada opción de hotel o excursión cuenta una vez): 146.
-- Con proveedor y mail: **126**.
-- Por WhatsApp (el pedido lo hace una persona): **13**.
+- Con proveedor y mail: **130**.
+- Por WhatsApp (el pedido lo hace una persona): **10**.
 - Manuales, no se le escribe a nadie (se reservan a mano en el sistema de ellos: Kupos.cl, Buquebus, Transvipp): **4**.
-- Sin resolver: **2**; y 1 con proveedor pero sin mail ni WhatsApp.
+- Sin resolver: **2**.
 
 ## Por paquete
 
@@ -18,16 +18,16 @@ Cargué en el sistema los paquetes de un destino de los 7 tours desde **Construc
 | OD018 | BUE | 14 | 14 | 0 | 0 | 0 | 0 |
 | OD019 | MDZ | 6 | 4 | 1 | 0 | 1 | 0 |
 | OD020 | BUE | 14 | 13 | 0 | 1 | 0 | 0 |
-| OD022 | USH | 11 | 10 | 0 | 0 | 0 | 1 |
+| OD022 | USH | 11 | 10 | 1 | 0 | 0 | 0 |
 | OD025 | PMY | 10 | 8 | 2 | 0 | 0 | 0 |
 | OD029 | SCL | 7 | 7 | 0 | 0 | 0 | 0 |
 | OD030 | SPA | 6 | 3 | 2 | 1 | 0 | 0 |
-| OD031 | LPB | 4 | 0 | 4 | 0 | 0 | 0 |
+| OD031 | LPB | 4 | 3 | 1 | 0 | 0 | 0 |
 | OD032 | RIO | 9 | 7 | 2 | 0 | 0 | 0 |
 | OD033 | CHA | 12 | 12 | 0 | 0 | 0 | 0 |
 | CH10 | PNT | 9 | 9 | 0 | 0 | 0 | 0 |
 | COMPCH01 | VLP | 5 | 4 | 0 | 1 | 0 | 0 |
-| COMPBO20 | UYU | 1 | 0 | 1 | 0 | 0 | 0 |
+| COMPBO20 | UYU | 1 | 1 | 0 | 0 | 0 | 0 |
 | COMPBR10 | SAO | 4 | 2 | 1 | 0 | 1 | 0 |
 
 ## Lo que sigue sin resolver
@@ -35,7 +35,6 @@ Cargué en el sistema los paquetes de un destino de los 7 tours desde **Construc
 Estos servicios todavía no saben a quién escribirle. Cuando completes el dato en el Excel de proveedores, alcanza con volver a correr la importación.
 
 - [ ] **OD019** (fila 83): 4* NH Cordillera → «NH Cordillera». Falta el mail: el owner lo está averiguando.
-- [ ] **OD022** (fila 136): Antarctica Hostel → «Antarctica Hostel». "Antarctica Hostel" está en el directorio sin mail ni WhatsApp.
 - [ ] **COMPBR10** (fila 2671): O Hostel GRU → «O Hostel GRU». "O Hostel GRU" no está en el directorio ni en las equivalencias de SAO.
 
 ## Detalle: servicio → nivel → opción → a quién se le pide → contacto
@@ -143,7 +142,7 @@ Estos servicios todavía no saben a quién escribirle. Cuando completes el dato 
 | Fila | Servicio | Nivel | Opción | Hotel / servicio | Se le pide a | Proveedor del directorio | Contacto |
 |---|---|---|---|---|---|---|---|
 | 136 | alojamiento | Hostel | 1 | Anum Hostel | Anum Hostel | Anum Hostel | reservas@anum-travel.com |
-| 136 | alojamiento | Hostel | 2 | Antarctica Hostel | Antarctica Hostel | Antarctica Hostel | **sin mail ni WhatsApp** |
+| 136 | alojamiento | Hostel | 2 | Antarctica Hostel | Antarctica Hostel | Antarctica Hostel | WhatsApp |
 | 141 | alojamiento | Hotel 3* | 1 | Hotel 3* Los Naranjos | Los Naranjos | Los naranjos | reservas@losnaranjosushuaia.com |
 | 141 | alojamiento | Hotel 3* | 2 | Hotel 3* Altos de Ushuaia | Altos de Ushuaia | Altos Ushuaia | altosushuaiahotel@gmail.com |
 | 144 | alojamiento | Hotel 4* | 1 | Hotel 4*Albatros | Albatros | albatros hotel ushuaia | reservas1@albatroshotel.com.ar |
@@ -197,9 +196,9 @@ Estos servicios todavía no saben a quién escribirle. Cuando completes el dato 
 | Fila | Servicio | Nivel | Opción | Hotel / servicio | Se le pide a | Proveedor del directorio | Contacto |
 |---|---|---|---|---|---|---|---|
 | 1087 | alojamiento | Hostel | 1 | The Adventure Brew Hostel | The Adventure Brew Hostel | Adventure Brew Hostel | WhatsApp |
-| 1091 | alojamiento | Budget Hotel | 1 | Hotel Sagarnaga | Imperio Inca | Imperio Inca | WhatsApp |
-| 1097 | traslado | — | 1 | La Paz Airport - La Paz Accommodation | Imperio Inca | Imperio Inca | WhatsApp |
-| 1098 | excursion | — | 1 | Tiwanaco | Imperio Inca | Imperio Inca | WhatsApp |
+| 1091 | alojamiento | Budget Hotel | 1 | Hotel Sagarnaga | Imperio Inca | Imperio Inca | reservas.imperioincaturismo@gmail.com |
+| 1097 | traslado | — | 1 | La Paz Airport - La Paz Accommodation | Imperio Inca | Imperio Inca | reservas.imperioincaturismo@gmail.com |
+| 1098 | excursion | — | 1 | Tiwanaco | Imperio Inca | Imperio Inca | reservas.imperioincaturismo@gmail.com |
 
 ### OD032 · Rio Starter Package
 
@@ -260,7 +259,7 @@ Estos servicios todavía no saben a quién escribirle. Cuando completes el dato 
 
 | Fila | Servicio | Nivel | Opción | Hotel / servicio | Se le pide a | Proveedor del directorio | Contacto |
 |---|---|---|---|---|---|---|---|
-| 849 | otro | — | 1 | Overland San Pedro de Atacama to Uyuni | Imperio Inca | Imperio Inca | WhatsApp |
+| 849 | otro | — | 1 | Overland San Pedro de Atacama to Uyuni | Imperio Inca | Imperio Inca | reservas.imperioincaturismo@gmail.com |
 
 ### COMPBR10 · Sao Paulo 2 nights Sample
 

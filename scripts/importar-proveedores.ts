@@ -8,6 +8,9 @@
  *
  * Con `--reporte=<ruta>` deja el reporte para el owner de qué cambió en el
  * directorio (altas, bajas, cambios de contacto) y lo que no cierra (M1-07).
+ * "Qué cambió" es de esa corrida: una segunda corrida con el mismo Excel ya no
+ * tiene cambios (las bajas y lo que no cierra sí se recalculan siempre). Los
+ * cambios de cada corrida quedan en `importacion.detalle.cambios`.
  * Lee `data/proveedores-borrados.csv`: los borrados con el OK del owner no
  * vuelven aunque el Excel los traiga (se avisan).
  *

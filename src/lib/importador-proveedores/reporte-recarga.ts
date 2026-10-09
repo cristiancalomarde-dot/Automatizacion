@@ -94,7 +94,10 @@ export function reporteRecargaMarkdown(d: DatosReporteRecarga): string {
   out.push("");
 
   out.push("## Lo que no cierra", "");
-  const sinContacto = d.directorio.filter(esSinMail).sort((a, b) => seccion(a.ciudad).localeCompare(seccion(b.ciudad)) || a.nombre.localeCompare(b.nombre));
+  // Se mira lo que sigue en el Excel; las bajas ya están listadas arriba.
+  const idsBaja = new Set(cambios.bajas.map((b) => b.id));
+  const vigentes = d.directorio.filter((p) => !idsBaja.has(p.id));
+  const sinContacto = vigentes.filter(esSinMail).sort((a, b) => seccion(a.ciudad).localeCompare(seccion(b.ciudad)) || a.nombre.localeCompare(b.nombre));
   out.push(`**Sin contacto (${sinContacto.length}):** no tienen mail ni WhatsApp en el Excel. Si alguno se usa en un producto, ese pedido no se puede mandar.`, "");
   for (const p of sinContacto) {
     const uso = d.enUso.get(p.id) ?? [];
@@ -112,13 +115,25 @@ export function reporteRecargaMarkdown(d: DatosReporteRecarga): string {
   out.push("**Secciones duplicadas:** la misma ciudad escrita de dos formas, cada una con sus proveedores.", "");
   if (duplicadas.length === 0) out.push("- Ninguna.");
   for (const s of duplicadas) {
-    const cuenta = s.map((c) => `${d.directorio.filter((p) => p.ciudad === c).length} en “${c}”`).join(", ");
-    out.push(`- ${s.map((c) => `“${c}”`).join(" y ")} (${cuenta}).`);
+    const enExcel = s.filter((c) => vigentes.some((p) => p.ciudad === c));
+    const soloBase = s.filter((c) => !enExcel.includes(c));
+    if (enExcel.length > 0 && soloBase.length > 0) {
+      for (const c of soloBase) {
+        const deEsa = d.directorio.filter((p) => p.ciudad === c);
+        const enUso = deEsa.filter((p) => (d.enUso.get(p.id) ?? []).length > 0).map((p) => p.nombre);
+        out.push(
+          `- La sección “${c}” ya no está en el Excel (quedó ${enExcel.map((x) => `“${x}”`).join(" y ")}), pero sus ${deEsa.length} proveedores siguen en la base: están en “Ya no están en el Excel”.${enUso.length ? ` En uso: ${enUso.join(", ")}.` : ""}`,
+        );
+      }
+    } else {
+      const cuenta = s.map((c) => `${d.directorio.filter((p) => p.ciudad === c).length} en “${c}”`).join(", ");
+      out.push(`- ${s.map((c) => `“${c}”`).join(" y ")} (${cuenta}).`);
+    }
   }
   out.push("");
 
   const porNombre = new Map<string, Array<RegistroProveedor & { id: string }>>();
-  for (const p of d.directorio) porNombre.set(p.nombre_normalizado, [...(porNombre.get(p.nombre_normalizado) ?? []), p]);
+  for (const p of vigentes) porNombre.set(p.nombre_normalizado, [...(porNombre.get(p.nombre_normalizado) ?? []), p]);
   const repetidos = [...porNombre.values()]
     .filter((ps) => new Set(ps.map((p) => p.ciudad)).size > 1)
     .filter((ps) => duplicadas.every((s) => !ps.every((p) => p.ciudad !== null && s.includes(p.ciudad))))
