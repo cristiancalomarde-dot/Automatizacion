@@ -188,19 +188,15 @@ function clienteInalcanzable(): SupabaseClient {
       expect(screen.getByRole("link", { name: "OD022" })).toBeInTheDocument();
     }, 40_000);
 
-    it("Pendientes: NH Cordillera (OD019) y O Hostel GRU (COMPBR10); Antarctica Hostel ya no (WhatsApp, M1-07)", async () => {
+    it("Pendientes: O Hostel GRU (COMPBR10); Antarctica Hostel ya no (WhatsApp, M1-07) ni NH Cordillera (tiene mail desde M1-08)", async () => {
       cliente.actual = conSesion;
       render(<PendientesPantalla />);
       const tabla = await screen.findByRole("table", {}, ESPERA);
       const filas = within(tabla).getAllByRole("row").slice(1);
       const claves = filas.map((f) => f.textContent ?? "");
-      for (const [codigo, proveedor] of [
-        ["OD019", "NH Cordillera"],
-        ["COMPBR10", "O Hostel GRU"],
-      ]) {
-        expect(claves.some((t) => t.includes(codigo) && t.includes(proveedor))).toBe(true);
-      }
+      expect(claves.some((t) => t.includes("COMPBR10") && t.includes("O Hostel GRU"))).toBe(true);
       expect(claves.some((t) => t.includes("Antarctica Hostel"))).toBe(false);
+      expect(claves.some((t) => t.includes("NH Cordillera"))).toBe(false);
     }, 40_000);
   });
 });
