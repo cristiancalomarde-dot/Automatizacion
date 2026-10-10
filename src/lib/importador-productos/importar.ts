@@ -130,6 +130,7 @@ const CAMPOS_SERVICIO: Array<keyof FilaServicio> = [
   "proveedor_nota",
   "opcional",
   "reserva_manual",
+  "sentido",
 ];
 
 function leerHoja(ruta: string, hoja: string | null): unknown[][] {

@@ -310,3 +310,49 @@ describe("armarFilasServicio — modo manual gana al nombre exacto (Buquebus, M1
     expect(mdz).toMatchObject({ booking_supplier_id: "p-buquebus", reserva_manual: false });
   });
 });
+
+describe("armarFilasServicio — M1-08: sentido de los traslados y grupos por hotel", () => {
+  it("cada traslado guarda su sentido (llegada, salida, ida y vuelta o sin sentido); el resto, null", () => {
+    const indice = crearIndiceProveedores([]);
+    const r = armarFilasServicio(
+      [
+        servicio({ tipo: "traslado", descripcion: "Transfer SCL - accommodation: Booking Supplier: CL Mundo", opciones: [{ prioridad: 1, serviceProvider: "SCL - accommodation", bookingSupplier: "CL Mundo" }] }),
+        servicio({ tipo: "traslado", descripcion: "Transfers: Remis Mendoza. Booking Booking Supplier: Remis Mendoza", opciones: [{ prioridad: 1, serviceProvider: "Remis Mendoza", bookingSupplier: "Remis Mendoza" }] }),
+        servicio({ tipo: "excursion", descripcion: "Excursion: Tiwanaco. Booking Supplier: Imperio Inca", opciones: [{ prioridad: 1, serviceProvider: "Tiwanaco", bookingSupplier: "Imperio Inca" }] }),
+      ],
+      indice,
+      "SCL",
+    );
+    expect(r.map((f) => f.sentido)).toEqual(["llegada", "sin_sentido", null]);
+  });
+
+  it("por hotel: si el nombre del servicio es justo una equivalencia, gana a las que solo están contenidas (105 Premium x Foz)", () => {
+    const indice = crearIndiceProveedores(
+      [
+        { id: "p-105", nombre_normalizado: "paquetes 105 premium: transfer in+out en igr, lado arg, lado bra", ciudad: "IGUAZU" },
+        { id: "p-105-foz", nombre_normalizado: "paquete 105 premium desde foz: transfer in+out en foz/igu, lado arg, lado bra", ciudad: "IGUAZU" },
+        { id: "p-pueblito", nombre_normalizado: "el pueblito, proveedor cuenca del plata", ciudad: "IGUAZU" },
+      ],
+      [
+        { destino: "IGR", alias_normalizado: "cuenca del plata", proveedor_id: null, estado: "confirmado", nota: null, modo: "por_service_provider" },
+        { destino: "IGR", alias_normalizado: "paquete receptvo 105 premium", proveedor_id: "p-105", estado: "confirmado", nota: null, modo: "alias" },
+        { destino: "IGR", alias_normalizado: "paquete receptvo 105 premium x foz", proveedor_id: "p-105-foz", estado: "confirmado", nota: null, modo: "alias" },
+        { destino: "IGR", alias_normalizado: "el pueblito", proveedor_id: "p-pueblito", estado: "confirmado", nota: null, modo: "alias" },
+      ],
+    );
+    const r = armarFilasServicio(
+      [
+        servicio({ tipo: "excursion", opciones: [{ prioridad: 1, serviceProvider: "Paquete Receptvo 105 Premium x Foz", bookingSupplier: "Cuenca del Plata" }] }),
+        servicio({ tipo: "excursion", opciones: [{ prioridad: 1, serviceProvider: "Paquete Receptvo 105 Premium", bookingSupplier: "Cuenca del Plata" }] }),
+        servicio({ opciones: [{ prioridad: 1, serviceProvider: "Hotel 3* El Pueblito", bookingSupplier: "Cuenca del Plata" }] }),
+        servicio({ opciones: [{ prioridad: 1, serviceProvider: "Hotel 4*: La Aldea de la Selva", bookingSupplier: "Cuenca del Plata" }] }),
+      ],
+      indice,
+      "IGR",
+    );
+    expect(r.map((f) => f.booking_supplier_id)).toEqual(["p-105-foz", "p-105", "p-pueblito", null]);
+    // un hotel sin fila propia queda sin resolver y se reporta (no se inventa)
+    expect(r[3]).toMatchObject({ proveedor_sin_resolver: true });
+    expect(r[3].proveedor_nota).toMatch(/La Aldea/);
+  });
+});

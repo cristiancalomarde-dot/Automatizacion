@@ -2,6 +2,7 @@ import { normalizarNombre } from "@/lib/importador-proveedores/nombre";
 import { elegirPorDestino, type CandidatoProveedor } from "./destinos";
 import type { AliasProveedor, ModoAlias } from "./equivalencias";
 import type { ServicioLeido, TipoServicio } from "./linea";
+import { sentidoDelTraslado, type SentidoTraslado } from "./sentido";
 
 /**
  * Emparejado de Service Provider / Booking Supplier (spec M1-04 §3 #6-#7,
@@ -25,7 +26,10 @@ import type { ServicioLeido, TipoServicio } from "./linea";
  *      equivalencias `alias` del mismo destino cuyo nombre esté escrito,
  *      como palabras enteras, en el del hotel ("Holtel 3* Rincon del
  *      Calafate" → "Rincon del Calafate"). Si no hay ninguna, o hay dos que
- *      llevan a proveedores distintos, esa opción queda sin resolver.
+ *      llevan a proveedores distintos, esa opción queda sin resolver. Si el
+ *      nombre del servicio ES una equivalencia del destino, esa gana a las
+ *      que solo están contenidas (M1-08: "Paquete Receptvo 105 Premium x
+ *      Foz" no es el "Paquete Receptvo 105 Premium" del lado argentino).
  *    - modo `manual` (Kupos.cl): no se le escribe a nadie; el servicio queda
  *      `reserva_manual`, sin proveedor y sin bandera de revisión.
  * 3. Si tampoco, queda sin resolver con el nombre del Excel.
@@ -117,6 +121,11 @@ function porServiceProvider(
   destino: string | null | undefined,
 ): Resolucion {
   const hotel = palabras(serviceProvider ?? "");
+  const exacta = serviceProvider ? buscarAlias(indice, serviceProvider, destino) : undefined;
+  if (exacta && exacta.modo === "alias" && exacta.proveedor_id !== null) {
+    const paraRevisar = exacta.estado === "para_revisar";
+    return { id: exacta.proveedor_id, paraRevisar, nota: paraRevisar ? exacta.nota : null };
+  }
   const candidatos = [...(indice.aliasPorDestino.get(destino ?? TODOS) ?? []), ...(destino ? (indice.aliasPorDestino.get(TODOS) ?? []) : [])]
     .filter((a) => a.proveedor_id !== null && a.palabras.trim() !== "" && hotel.includes(a.palabras));
   const ids = [...new Set(candidatos.map((a) => a.proveedor_id))];
@@ -186,6 +195,8 @@ export interface FilaServicio {
   opcional: boolean;
   /** Se gestiona a mano, fuera de la app (ej. pasajes en Kupos.cl, M1-04d). */
   reserva_manual: boolean;
+  /** Solo traslados (M1-08): llegada, salida, ida y vuelta o sin sentido (el texto no lo dice). */
+  sentido: SentidoTraslado | null;
 }
 
 export function armarFilasServicio(
@@ -215,6 +226,7 @@ export function armarFilasServicio(
         proveedor_nota: notas.length ? notas.join(" | ") : null,
         opcional: servicio.opcional === true,
         reserva_manual: bs.manual === true,
+        sentido: servicio.tipo === "traslado" ? sentidoDelTraslado(servicio.descripcion) : null,
       });
     }
   });
