@@ -1,6 +1,12 @@
 destino,nombre_en_excel,proveedor_en_directorio,modo,estado,nota
-IGR,Cuenca del Plata,"El Pueblito, proveedor Cuenca del Plata",alias,confirmado,"No es ""Cuenca del Plata, +"" (sin mail)"
-IGR,Cuenca del Plana,"El Pueblito, proveedor Cuenca del Plata",alias,confirmado,Typo del Excel de paquetes (OD010C/D)
+IGR,Cuenca del Plata,,por_service_provider,confirmado,"Owner (2026-10-10): Cuenca del Plata se reserva hotel por hotel (una fila por hotel en el Excel de proveedores, mismo mail). M1-08"
+IGR,Cuenca del Plana,,por_service_provider,confirmado,"Typo del Excel de paquetes (OD010C/D). Se reserva hotel por hotel, como Cuenca del Plata (M1-08)"
+IGR,El Pueblito,"El Pueblito, proveedor Cuenca del Plata",alias,confirmado,"Owner (2026-10-10): Cuenca del Plata (reservas3@cuencadelplata.com) tiene una fila por hotel y por paquete de excursiones en el Excel de proveedores; el pedido va a esa fila (M1-08)"
+IGR,La Aldea,"La Aldea de la Selva, proveedor Cuenca del Plata",alias,confirmado,"Owner (2026-10-10): Cuenca del Plata (reservas3@cuencadelplata.com) tiene una fila por hotel y por paquete de excursiones en el Excel de proveedores; el pedido va a esa fila (M1-08)"
+IGR,Botanica,"Botanica House, proveedor Cuenca del Plata",alias,confirmado,"Owner (2026-10-10): Cuenca del Plata (reservas3@cuencadelplata.com) tiene una fila por hotel y por paquete de excursiones en el Excel de proveedores; el pedido va a esa fila (M1-08)"
+IGR,Glamping Selva Iguazu,"Glamping Selva Iguazu, proveedor Cuenca del Plata",alias,confirmado,"Owner (2026-10-10): Cuenca del Plata (reservas3@cuencadelplata.com) tiene una fila por hotel y por paquete de excursiones en el Excel de proveedores; el pedido va a esa fila (M1-08)"
+IGR,Paquete Receptvo 105 Premium,"Paquetes 105 Premium: Transfer in+out en IGR, Lado Arg, lado Bra",alias,confirmado,"Owner (2026-10-10): Cuenca del Plata (reservas3@cuencadelplata.com) tiene una fila por hotel y por paquete de excursiones en el Excel de proveedores; el pedido va a esa fila (M1-08)"
+IGR,Paquete Receptvo 105 Premium x Foz,"Paquete 105 Premium desde Foz: Transfer in+out en Foz/Igu, Lado Arg, Lado Bra",alias,confirmado,"Owner (2026-10-10): Cuenca del Plata (reservas3@cuencadelplata.com) tiene una fila por hotel y por paquete de excursiones en el Excel de proveedores; el pedido va a esa fila (M1-08)"
 IGR,Nacional Inn,nacional inn foz,alias,confirmado,No es Nacional inn Copacabana
 IGR,Nacional inn Foz,nacional inn foz,alias,confirmado,
 IGR,Nacional Inn Foz 3*,nacional inn foz,alias,confirmado,
@@ -26,8 +32,9 @@ FTE,Rincon del Calafate,Rincon del calafate,alias,confirmado,"Confirmado por el 
 FTE,Sent,Sent,alias,confirmado,"Confirmado por el owner (2026-10-03/05, diagnóstico M1-04c)"
 FTE,Mirador del Lago,Mirador del Lago,alias,confirmado,"Confirmado por el owner (2026-10-03/05, diagnóstico M1-04c)"
 FTE,Calafate Parque,Calafate Parque,alias,confirmado,"Confirmado por el owner (2026-10-03/05, diagnóstico M1-04c)"
-FTE,Patagonian Group,Hosteria Fitz roy,alias,confirmado,"Confirmado por el owner (2026-10-03/05, diagnóstico M1-04c). Patagonian Group centraliza: mismo mail info@patagoniangroup.com.ar"
-CHA,Patagonian Group,Hosteria Fitz roy,alias,confirmado,"Confirmado por el owner (2026-10-03/05, diagnóstico M1-04c). Mismo mail para Fitz Roy, El Paraíso y Vertical Lodge"
+FTE,Patagonian Group,,por_service_provider,confirmado,"Owner (2026-10-10): Patagonian Group se reserva hotel por hotel (una fila por hotel en el Excel de proveedores, mismo mail info@patagoniangroup.com.ar). M1-08"
+CHA,Patagonian Group,,por_service_provider,confirmado,"Owner (2026-10-10): Patagonian Group se reserva hotel por hotel (una fila por hotel en el Excel de proveedores, mismo mail info@patagoniangroup.com.ar). M1-08"
+CHA,Fitz Roy,"Hosteria Fitz roy, proveedor Patagonian Group",alias,confirmado,"Owner (2026-10-10): Patagonian Group (info@patagoniangroup.com.ar) tiene una fila por hotel en el Excel de proveedores; el pedido va a la fila del hotel (M1-08)"
 CHA,Kau Si Aike,Kau si ake,alias,confirmado,"Confirmado por el owner (2026-10-03/05, diagnóstico M1-04c)"
 CHA,Receptivo Chalten,Fitz Camp / Receptivo Chalten,alias,confirmado,"Confirmado por el owner (2026-10-03/05, diagnóstico M1-04c)"
 CHA,Transporte Las Lengas,Las Lengas,alias,confirmado,"Confirmado por el owner (2026-10-03/05, diagnóstico M1-04c)"
@@ -52,7 +59,7 @@ BUE,Up Hoteles,Patios San Telmo,alias,confirmado,"Confirmado por el owner (2026-
 MDZ,Hotel Argentino Mendoza,Argentino Hotel,alias,confirmado,"Confirmado por el owner (2026-10-03/05, diagnóstico M1-04c)"
 MDZ,Hotel MOD,Mod Hotel,alias,confirmado,"Confirmado por el owner (2026-10-03/05, diagnóstico M1-04c)"
 MDZ,Lagares Hostel,Hostel Lagares Mendoza,alias,confirmado,"Confirmado por el owner (2026-10-03/05, diagnóstico M1-04c)"
-MDZ,NH Cordillera,,alias,para_revisar,Falta el mail: el owner lo está averiguando
+MDZ,NH Cordillera,NH Cordillera,alias,confirmado,"Owner (2026-10-10): el mail ya está en el Excel de proveedores (M1-08)"
 PMY,All Peninsula,Peninsula valdes,alias,confirmado,"Confirmado por el owner (2026-10-03/05, diagnóstico M1-04c) (agencia@allpeninsulavaldes.com)"
 PMY,Hotel 3* Tolosa,Hotel Tolosa,alias,confirmado,"Confirmado por el owner (2026-10-03/05, diagnóstico M1-04c)"
 PMY,Hotel 4* Dazzler Puerto Madryn,Dazzler Puerto Madryn,alias,confirmado,"Confirmado por el owner (2026-10-03/05, diagnóstico M1-04c)"
@@ -81,6 +88,6 @@ CHA,Rancho Grande,Chalten Travel,alias,confirmado,"Owner (2026-10-10): Chalten T
 CHA,Poincenot,Chalten Travel,alias,confirmado,"Owner (2026-10-10): Chalten Travel (agencias@chaltentravel.com) reserva Rancho Grande, Poincenot, Andino Aparts y Destino Sur en El Chaltén, y los buses FTE-CHA-BRC"
 CHA,Andino Aparts,Chalten Travel,alias,confirmado,"Owner (2026-10-10): Chalten Travel (agencias@chaltentravel.com) reserva Rancho Grande, Poincenot, Andino Aparts y Destino Sur en El Chaltén, y los buses FTE-CHA-BRC"
 CHA,Destino Sur,Chalten Travel,alias,confirmado,"Owner (2026-10-10): Chalten Travel (agencias@chaltentravel.com) reserva Rancho Grande, Poincenot, Andino Aparts y Destino Sur en El Chaltén, y los buses FTE-CHA-BRC"
-CHA,Vertical Lodge,Hosteria Fitz roy,alias,confirmado,"Owner (2026-10-10): Patagonian Group (info@patagoniangroup.com.ar) es el proveedor de Hostería Fitz Roy, Vertical Lodge y Hostería El Paraíso en El Chaltén y de Puerto San Julián en El Calafate"
-CHA,El Paraiso,Hosteria Fitz roy,alias,confirmado,"Owner (2026-10-10): Patagonian Group (info@patagoniangroup.com.ar) es el proveedor de Hostería Fitz Roy, Vertical Lodge y Hostería El Paraíso en El Chaltén y de Puerto San Julián en El Calafate"
-FTE,Puerto San Julian,Hosteria Fitz roy,alias,confirmado,"Owner (2026-10-10): Patagonian Group (info@patagoniangroup.com.ar) es el proveedor de Hostería Fitz Roy, Vertical Lodge y Hostería El Paraíso en El Chaltén y de Puerto San Julián en El Calafate"
+CHA,Vertical Lodge,"Vertical Lodge, proveedor Patagonian Group",alias,confirmado,"Owner (2026-10-10): Patagonian Group (info@patagoniangroup.com.ar) tiene una fila por hotel en el Excel de proveedores; el pedido va a la fila del hotel (M1-08)"
+CHA,El Paraiso,"Hosteria El Paraiso, proveedor Patagonian Group",alias,confirmado,"Owner (2026-10-10): Patagonian Group (info@patagoniangroup.com.ar) tiene una fila por hotel en el Excel de proveedores; el pedido va a la fila del hotel (M1-08)"
+FTE,Puerto San Julian,"Hosteria Puerto San Julian, proveedor Patagonian Group",alias,confirmado,"Owner (2026-10-10): Patagonian Group (info@patagoniangroup.com.ar) tiene una fila por hotel en el Excel de proveedores; el pedido va a la fila del hotel (M1-08)"

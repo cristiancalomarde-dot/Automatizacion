@@ -16,7 +16,10 @@ import type { RegistroProveedor } from "./resolver";
  * 1. **Movido:** el mismo nombre en otra ciudad, si hay uno solo (Tetris:
  *    BRASIL → FOZ DO IGUAZU).
  * 2. **Renombrado:** la misma ciudad y un mail en común, si hay uno solo
- *    (Cuenca Del Plata: Natalia → Analia).
+ *    (Cuenca Del Plata: Natalia → Analia). Si hay varios con el mail (un
+ *    grupo con un mail para varios hoteles), vale el único cuyo nombre es el
+ *    principio del nuevo (M1-08: "Vertical Lodge" → "Vertical Lodge,
+ *    proveedor Patagonian Group").
  *
  * Con más de un candidato no se adivina. Lo que queda en la base sin
  * emparejar es una "baja": se informa y no se borra (borrar un proveedor es
@@ -103,7 +106,8 @@ export function compararDirectorio(registros: RegistroProveedor[], existentes: P
   registros.forEach((r, i) => {
     if (idDe[i] || r.mails.length === 0) return;
     const mails = new Set(r.mails.map((m) => m.toLowerCase()));
-    const candidatos = libres().filter((p) => p.ciudad === r.ciudad && p.mails.some((m) => mails.has(m.toLowerCase())));
+    let candidatos = libres().filter((p) => p.ciudad === r.ciudad && p.mails.some((m) => mails.has(m.toLowerCase())));
+    if (candidatos.length > 1) candidatos = candidatos.filter((p) => r.nombre_normalizado.startsWith(p.nombre_normalizado));
     if (candidatos.length !== 1) return;
     const p = candidatos[0];
     idDe[i] = p.id;

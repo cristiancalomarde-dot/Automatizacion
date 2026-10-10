@@ -133,10 +133,24 @@ describe("transfers-tour.csv (spec M1-07 §3 #4)", () => {
 });
 
 describe("equivalencias-proveedores.csv (spec M1-07 §3 #2)", () => {
-  it("Cuenca del Plata apunta a El Pueblito (el owner separó Cuenca del Plata por hotel, 2026-10-10)", async () => {
+  it("Cuenca del Plata y Patagonian Group se resuelven hotel por hotel (owner, 2026-10-10; M1-08 §3 #7)", async () => {
     const { readFileSync } = await import("node:fs");
+    const { parsearEquivalencias } = await import("@/lib/importador-productos/equivalencias");
     const texto = readFileSync("data/equivalencias-proveedores.csv", "utf-8");
     expect(texto).not.toMatch(/Natalia|Analia/);
-    expect(texto.match(/"El Pueblito, proveedor Cuenca del Plata"/g)).toHaveLength(2);
+    const filas = parsearEquivalencias(texto);
+    const modo = (destino: string, alias: string) => filas.find((f) => f.destino === destino && f.alias === alias)?.modo;
+    for (const [d, a] of [["IGR", "Cuenca del Plata"], ["IGR", "Cuenca del Plana"], ["CHA", "Patagonian Group"], ["FTE", "Patagonian Group"]]) {
+      expect(modo(d, a), `${d} ${a}`).toBe("por_service_provider");
+    }
+    const a = (destino: string, alias: string) => filas.find((f) => f.destino === destino && f.alias === alias)?.proveedor_en_directorio;
+    expect(a("CHA", "Fitz Roy")).toBe("Hosteria Fitz roy, proveedor Patagonian Group");
+    expect(a("CHA", "Vertical Lodge")).toBe("Vertical Lodge, proveedor Patagonian Group");
+    expect(a("CHA", "El Paraiso")).toBe("Hosteria El Paraiso, proveedor Patagonian Group");
+    expect(a("FTE", "Puerto San Julian")).toBe("Hosteria Puerto San Julian, proveedor Patagonian Group");
+    expect(a("IGR", "El Pueblito")).toBe("El Pueblito, proveedor Cuenca del Plata");
+    expect(a("IGR", "La Aldea")).toBe("La Aldea de la Selva, proveedor Cuenca del Plata");
+    // ninguna equivalencia apunta ya a la fila suelta "Hosteria Fitz roy"
+    expect(filas.some((f) => f.proveedor_en_directorio === "Hosteria Fitz roy")).toBe(false);
   });
 });

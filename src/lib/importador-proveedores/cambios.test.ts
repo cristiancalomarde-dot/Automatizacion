@@ -97,3 +97,35 @@ describe("proveedores borrados con el OK del owner (data/proveedores-borrados.cs
     expect(parsearProveedoresBorrados(readFileSync("data/proveedores-borrados.csv", "utf-8")).map((b) => b.nombre)).toContain("Selina La Paz");
   });
 });
+
+describe("grupo con un mail para varios hoteles: cada hotel renombrado a su fila (spec M1-08 §3 #7 y #8)", () => {
+  const mail = { mails: ["info@patagoniangroup.com.ar"], canal: "mail" as const };
+  const cargados = [
+    enBase("vl", registro("Vertical Lodge", "EL CHALTEN", mail)),
+    enBase("fr", registro("Hosteria Fitz roy", "EL CHALTEN", mail)),
+    enBase("ep", registro("Hosteria El Paraiso", "EL CHALTEN", mail)),
+  ];
+
+  it("si el nombre nuevo empieza con el viejo (\"…, proveedor Patagonian Group\"), es ese mismo proveedor", () => {
+    const excel = [
+      registro("Vertical Lodge, proveedor Patagonian Group", "EL CHALTEN", mail),
+      registro("Hosteria Fitz roy, proveedor Patagonian Group", "EL CHALTEN", mail),
+      registro("Hosteria El Paraiso, proveedor Patagonian Group", "EL CHALTEN", mail),
+    ];
+    const c = compararDirectorio(excel, cargados);
+    expect(c.idDe).toEqual(["vl", "fr", "ep"]);
+    expect(c.renombrados.map((r) => [r.antes, r.despues])).toEqual([
+      ["Vertical Lodge", "Vertical Lodge, proveedor Patagonian Group"],
+      ["Hosteria Fitz roy", "Hosteria Fitz roy, proveedor Patagonian Group"],
+      ["Hosteria El Paraiso", "Hosteria El Paraiso, proveedor Patagonian Group"],
+    ]);
+    expect(c.altas).toEqual([]);
+    expect(c.bajas).toEqual([]);
+  });
+
+  it("con el mismo mail y ningún nombre que calce, no se adivina: alta y baja", () => {
+    const c = compararDirectorio([registro("Patagon Hotel, proveedor Patagonian Group", "EL CHALTEN", mail)], cargados);
+    expect(c.idDe).toEqual([null]);
+    expect(c.bajas).toHaveLength(3);
+  });
+});
