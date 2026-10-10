@@ -115,9 +115,9 @@ interface Componente {
     "una segunda corrida deja 0 filas nuevas (idempotente)",
     async () => {
       const segunda = await cargar();
-      expect(segunda.creados).toEqual({ productos: 0, componentes: 0, servicios: 0, codigos: 0 });
-      expect(segunda.actualizados).toEqual({ productos: 0, componentes: 0, servicios: 0 });
-      expect(segunda.eliminados).toEqual({ componentes: 0, servicios: 0 });
+      expect(segunda.creados).toEqual({ productos: 0, componentes: 0, servicios: 0, codigos: 0, ajustes: 0 });
+      expect(segunda.actualizados).toEqual({ productos: 0, componentes: 0, servicios: 0, ajustes: 0 });
+      expect(segunda.eliminados).toEqual({ componentes: 0, servicios: 0, ajustes: 0 });
     },
     TIMEOUT,
   );
@@ -148,15 +148,19 @@ interface Componente {
     return data!;
   }
 
-  it("ARCH31: paquete / paquete / bus / paquete, con transfers solo en las puntas; sin servicios propios (el bus a El Calafate ya lo trae OD033 con Chalten Travel)", async () => {
+  it("ARCH31: paquete / paquete / bus / paquete, con transfers solo en las puntas; el único servicio propio es la salida de Puerto Natales (M1-08)", async () => {
     expect((await componentes("ARCH31")).map(legible)).toEqual([
       "OD033 d1 3n IN",
       "OD016 d4 3n",
       "bus El Calafate – Puerto Natales d7",
       "OD017 d7 2n OUT",
     ]);
-    // Sin servicios propios: el traslado de llegada y el bus El Chaltén – El Calafate ya los trae OD033 (Chalten Travel).
-    expect(await serviciosDelTour("ARCH31")).toEqual([]);
+    // El traslado de llegada y el bus El Chaltén – El Calafate ya los trae OD033 (Chalten Travel).
+    // M1-08 (f): termina con la salida de Puerto Natales, como ARCH33 (Kupos.cl, manual, o Patagonia Planet a pedido).
+    const propios = await serviciosDelTour("ARCH31");
+    expect(propios.map((x) => [x.descripcion.split(" (")[0], x.booking_supplier_nombre, x.reserva_manual])).toEqual([
+      ["Bus Puerto Natales – Punta Arenas", "Kupos.cl", true],
+    ]);
   });
 
   it("5C01: apunta a CHB31 (anidado) con sus días; Iguazú conserva el transfer; cierra en 29 noches", async () => {
@@ -176,7 +180,7 @@ interface Componente {
       "COMPCH01 d19 2n",
       "bus Valparaíso – Calama d21 noct",
       "CHB31 d22 6n",
-      "OD031 d28 2n OUT",
+      "OD031 d28 2n IN", // M1-08 (c): llega en bus a la terminal de La Paz (data/transfers-tour.csv)
     ]);
     const noches = cs.reduce((n, c) => n + (c.noches ?? 0) + (c.nocturno ? 1 : 0), 0);
     expect(noches).toBe(29);
@@ -218,7 +222,7 @@ interface Componente {
         timeout: TIMEOUT,
       });
       const json = JSON.parse(salida.slice(salida.indexOf("{")));
-      expect(json.creados).toEqual({ productos: 0, componentes: 0, servicios: 0, codigos: 0 });
+      expect(json.creados).toEqual({ productos: 0, componentes: 0, servicios: 0, codigos: 0, ajustes: 0 });
       expect(existsSync(REPORTE)).toBe(true);
       const md = readFileSync(REPORTE, "utf-8");
       for (const codigo of TOURS_PILOTO) expect(md).toContain(`| ${codigo} |`);

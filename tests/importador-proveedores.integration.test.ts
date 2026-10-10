@@ -14,7 +14,7 @@
 // corridas reales. `proveedor` NO se limpia: el importador es idempotente y
 // el estado que deja es justamente el de la carga real.
 import { execFileSync } from "node:child_process";
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
@@ -24,6 +24,7 @@ import {
   type ResumenImportacion,
 } from "@/lib/importador-proveedores/importar";
 import type { ConsultarIA } from "@/lib/importador-proveedores/resolver";
+import { parsearProveedoresBorrados } from "@/lib/importador-proveedores/cambios";
 import { credencialesSupabaseDisponibles } from "./helpers/entorno-supabase";
 
 const RAIZ = resolve(__dirname, "..");
@@ -34,6 +35,9 @@ const RUTA_EXCEL = resolve(
 const CORRE = credencialesSupabaseDisponibles() && existsSync(RUTA_EXCEL);
 
 const MAIL_INVENTADO = "inventado@no-esta-en-el-excel.com";
+// Como el script real (M1-07): los borrados con el OK del owner no vuelven a la base. Sin
+// esto, la corrida del test volvía a insertar la fila duplicada "Hosteria Fitz roy" (M1-08).
+const BORRADOS = parsearProveedoresBorrados(readFileSync(resolve(RAIZ, "data/proveedores-borrados.csv"), "utf-8"));
 const TIMEOUT = 180_000;
 
 interface FilaProveedorDB {
@@ -97,11 +101,11 @@ interface FilaProveedorDB {
     };
 
     beforeAll(async () => {
-      primera = await importarProveedores({ admin, rutaArchivo: RUTA_EXCEL, consultarIA: iaQueInventa });
+      primera = await importarProveedores({ admin, rutaArchivo: RUTA_EXCEL, consultarIA: iaQueInventa, borrados: BORRADOS });
       importacionesDePrueba.push(primera.importacionId);
       filasTrasPrimera = await proveedoresDeLaCorrida(primera);
 
-      segunda = await importarProveedores({ admin, rutaArchivo: RUTA_EXCEL, consultarIA: iaQueInventa });
+      segunda = await importarProveedores({ admin, rutaArchivo: RUTA_EXCEL, consultarIA: iaQueInventa, borrados: BORRADOS });
       importacionesDePrueba.push(segunda.importacionId);
       filasTrasSegunda = await proveedoresDeLaCorrida(segunda);
     }, TIMEOUT);

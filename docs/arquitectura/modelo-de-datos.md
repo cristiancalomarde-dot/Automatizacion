@@ -30,13 +30,31 @@ separación por usuario.
   a mano.
 - **producto_servicio** — un servicio dentro de un producto (alojamiento, excursión, traslado,
   bus, crucero…), con su **Service Provider** y su **Booking Supplier**, y la prioridad si hay
-  varias opciones separadas por "/". Es lo que decide a qué proveedores se les escribe.
+  varias opciones separadas por "/". Es lo que decide a qué proveedores se les escribe. Desde
+  M1-08: los traslados guardan su **sentido** (`llegada` | `salida` | `ida_y_vuelta` |
+  `sin_sentido`), que sale del texto del Excel ("SCL - accommodation" → llegada; "El Calafate
+  Accommodation - FTE Airport" → salida; "Round Trip" → ida y vuelta; si no se deduce, queda
+  `sin_sentido` y se reporta). Y un servicio que en el paquete vendido solo no se pide siempre
+  lleva la marca `a_pedido` (lo pide el pax o el vendedor: la salida de OD016) o `segun_reserva`
+  (depende de la variante: el Remis de OD019 solo si es CON traslados), con su nota. No se borra:
+  se muestra con la marca. Origen: `data/servicios-a-pedido.csv` (migración 0009).
 - **producto_servicio_noches** — en qué noches del paquete va un servicio (M1-07): noche de
   inicio, cantidad de noches y lugar ("Puerto Natales", "refugios"). Se engancha al servicio por
   (producto, `orden`). Un servicio puede ir en más de un tramo: en CH10 el alojamiento va en la
   noche 1 y en la 6 (se pide dos veces, con fechas distintas y las mismas opciones de hotel) y el
   W Trek de la 2 a la 5. Un paquete sin filas acá se muestra y se reserva como un bloque. Origen:
-  `data/noches-servicio.csv`. RLS como el resto del catálogo (migración 0008).
+  `data/noches-servicio.csv`. RLS como el resto del catálogo (migración 0008). Un alojamiento
+  también se puede nombrar por su hotel cuando la línea del Excel junta dos ("2 Nights Nacional
+  inn Foz + 1 Night El Pueblito" ya son dos servicios del mismo nivel): OD010D va noches 1-2 en
+  Foz (lado brasileño) y 3 en Puerto Iguazú (lado argentino); los hoteles de un nivel suman juntos.
+- **tour_servicio_ajuste** — cómo queda un servicio de un paquete **dentro de un tour** (M1-08):
+  `anular` (no se pide en ese tour), `solo_llegada` / `solo_salida` (de un ida y vuelta, solo ese
+  lado), `reemplazar` (se pide con otro texto) o `invertir` (cambia de sentido), con su motivo y
+  su origen (`regla` o `excepcion`). Lo que no figura se pide tal cual. Se identifica por (tour,
+  paquete, `orden` del servicio) y no por el componente: un paquete puede estar dentro de un tour
+  anidado (OD030 en CHB31 dentro de 5C01) y ahí vale el ajuste del tour de afuera. La pantalla y
+  M3 lo leen igual. Lo calcula `npm run importar:tours` (ver la regla más abajo). RLS como el
+  resto del catálogo (migración 0009).
 - **codigo_externo** — mapea un código de una agencia/partner (Kilroy, TourRadar, etc.) al código
   interno de HI Travel. El mail de reserva trae uno de estos; acá se traduce.
 - **producto_componente** — solo para **tours compuestos** (ej. Patagonia Highlights, Overland San
@@ -95,6 +113,27 @@ solo la primera entrada y la última salida del tour completo, con la excepción
 transfer_out, nota) pisa la regla en un tour y componente puntual, con `si`/`no` (vacío = la
 regla). Ej.: BRARCH26 termina en Santiago (OD029) **sin** transfer de salida. Si una fila nombra un
 componente que el tour no tiene, el importador falla antes de escribir.
+
+**Los traslados de cada paquete dentro del tour (M1-08, regla confirmada por el owner el
+2026-10-10).** Las marcas de arriba son el resumen por componente; lo que se pide de verdad se
+decide servicio por servicio y queda en `tour_servicio_ajuste`. Entre un paquete y el siguiente
+de un tour siempre se viaja por tierra (bus), así que:
+
+- al paquete al que se llega en bus no se le pide el traslado de **llegada**;
+- al paquete del que se sale en bus no se le pide el de **salida**;
+- uno de **ida y vuelta** queda solo del lado que corresponde (o se anula si no queda ninguno);
+- uno **sin sentido** deducido (Remis Mendoza) se anula solo si no hace falta ningún lado; en una
+  punta del tour se deja entero;
+- el primer paquete conserva la llegada y el último la salida; Iguazú conserva los suyos (vienen
+  dentro del 105 Premium). Solo se miran los servicios de tipo traslado: los buses del paquete son
+  la conexión.
+
+Las **excepciones** van en `data/traslados-tour.csv` (tour, paquete, servicio, acción `anular` /
+`solo_llegada` / `solo_salida` / `reemplazar` / `invertir`, texto nuevo, nota) y le ganan a la
+regla en ese tour y ese servicio (ej. el 105 Premium de OD010D en 5C01 con transfer desde la
+Rodoviaria de Foz; el Transvip de OD030 en BOCHI04R de salida). Si una fila nombra un tour, un
+paquete del tour o un servicio que no existe, el importador falla antes de escribir. El paquete
+abierto solo sigue mostrando todos sus servicios.
 
 ### Dos cosas que parecen lo mismo y no lo son
 

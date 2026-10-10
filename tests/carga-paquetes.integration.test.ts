@@ -109,11 +109,11 @@ interface Fila {
       }
     }, TIMEOUT);
 
-    it("#2 cargar las equivalencias del formato nuevo (85) es idempotente", async () => {
+    it("#2 cargar las equivalencias del formato nuevo (92 desde M1-08) es idempotente", async () => {
       const texto = readFileSync(RUTA_EQUIVALENCIAS, "utf-8");
       await cargarEquivalencias({ admin, textoCsv: texto });
       const segunda = await cargarEquivalencias({ admin, textoCsv: texto });
-      expect(segunda).toMatchObject({ total: 85, creados: 0, actualizados: 0 });
+      expect(segunda).toMatchObject({ total: 92, creados: 0, actualizados: 0 });
       const { data } = await admin
         .from("proveedor_alias")
         .select("destino, modo, proveedor:proveedor_id(nombre, ciudad)")
@@ -315,9 +315,9 @@ interface Fila {
       const md = readFileSync(REPORTE, "utf-8");
       expect(md).toContain("## Lo que sigue sin resolver");
       for (const p of LOS_17) expect(md, p.codigo).toContain(`### ${p.codigo} ·`);
-      // De los pendientes conocidos solo queda NH Cordillera (el owner sumó Patagonia Hostel, Sooz, Nacional Inn Jaraguá y Tetris).
+      // De los pendientes conocidos ya no queda NH Cordillera (M1-08: el owner sumó su mail el 2026-10-10).
       const lista = md.slice(md.indexOf("## Lo que sigue sin resolver"), md.indexOf("## Detalle"));
-      expect(lista).toContain("NH Cordillera");
+      expect(lista).not.toContain("NH Cordillera");
       for (const resuelto of ["«Patagonia»", "«Nacionalinn»", "«Sooz Hotel»", "Tetris", "«Buquebus»", "«Transvipp»", "Don Tomas"]) {
         expect(lista, resuelto).not.toContain(resuelto);
       }

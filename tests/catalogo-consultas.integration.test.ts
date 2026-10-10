@@ -40,8 +40,9 @@ const CORRE = credencialesSupabaseDisponibles();
     const catalogo = await cargarCatalogo(cliente);
     expect(catalogo.length).toBeGreaterThanOrEqual(29);
     const od010a = catalogo.find((p) => p.codigo === "OD010A")!;
-    // Beer (Tangoinn) + Cuenca del Plata: Cuenca aparece en 4 servicios y cuenta una vez.
-    expect(od010a.cantidadProveedores).toBe(2);
+    // Beer (Tangoinn) + Cuenca del Plata, que desde M1-08 se pide hotel por hotel: El Pueblito,
+    // Botanica, La Aldea y el 105 Premium, cada uno con su fila (y Tangoinn cuenta una vez).
+    expect(od010a.cantidadProveedores).toBe(5);
     expect(od010a.updatedAt).toBeTruthy();
     const chb31 = catalogo.find((p) => p.codigo === "CHB31")!;
     expect(chb31.esTour).toBe(true);
@@ -113,7 +114,7 @@ const CORRE = credencialesSupabaseDisponibles();
     expect(directorio.length).toBeGreaterThan(200);
     expect(directorio.some((p) => p.mails.length === 0)).toBe(true);
     const cuenca = directorio.find((p) => p.nombre === "El Pueblito, proveedor Cuenca del Plata")!;
-    expect(cuenca.cantidadProductos).toBeGreaterThanOrEqual(4);
+    expect(cuenca.cantidadProductos).toBeGreaterThanOrEqual(3); // OD010A, OD010C y OD010D (M1-08: hotel por hotel)
   }, 30_000);
 
   it("#9 detalle de proveedor: datos y productos donde aparece", async () => {
@@ -125,12 +126,11 @@ const CORRE = credencialesSupabaseDisponibles();
     expect(detalle.productos.map((p) => p.codigo)).toContain("OD022");
   }, 30_000);
 
-  it("#18 pendientes: NH Cordillera y O Hostel GRU (Antarctica Hostel ya tiene WhatsApp desde M1-07)", async () => {
+  it("#18 pendientes: O Hostel GRU (Antarctica Hostel ya tiene WhatsApp desde M1-07; NH Cordillera tiene mail desde M1-08)", async () => {
     const pendientes = await cargarPendientes(cliente);
     const claves = pendientes.map((p) => `${p.producto.codigo}:${p.proveedorNombre}`);
-    expect(claves).toEqual(
-      expect.arrayContaining(["OD019:NH Cordillera", "COMPBR10:O Hostel GRU"]),
-    );
+    expect(claves).toEqual(expect.arrayContaining(["COMPBR10:O Hostel GRU"]));
+    expect(claves).not.toContain("OD019:NH Cordillera");
     expect(pendientes.every((p) => p.motivo.length > 0)).toBe(true);
   }, 30_000);
 
