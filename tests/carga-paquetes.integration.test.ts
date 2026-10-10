@@ -109,11 +109,11 @@ interface Fila {
       }
     }, TIMEOUT);
 
-    it("#2 cargar las equivalencias del formato nuevo (76) es idempotente", async () => {
+    it("#2 cargar las equivalencias del formato nuevo (85) es idempotente", async () => {
       const texto = readFileSync(RUTA_EQUIVALENCIAS, "utf-8");
       await cargarEquivalencias({ admin, textoCsv: texto });
       const segunda = await cargarEquivalencias({ admin, textoCsv: texto });
-      expect(segunda).toMatchObject({ total: 76, creados: 0, actualizados: 0 });
+      expect(segunda).toMatchObject({ total: 85, creados: 0, actualizados: 0 });
       const { data } = await admin
         .from("proveedor_alias")
         .select("destino, modo, proveedor:proveedor_id(nombre, ciudad)")

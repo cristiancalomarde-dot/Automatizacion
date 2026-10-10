@@ -127,10 +127,10 @@ describe("transfers-tour.csv (spec M1-07 §3 #4)", () => {
 });
 
 describe("equivalencias-proveedores.csv (spec M1-07 §3 #2)", () => {
-  it("Cuenca del Plata ahora es Analia (el Excel corregido ya no dice Natalia)", async () => {
+  it("Cuenca del Plata apunta a El Pueblito (el owner separó Cuenca del Plata por hotel, 2026-10-10)", async () => {
     const { readFileSync } = await import("node:fs");
     const texto = readFileSync("data/equivalencias-proveedores.csv", "utf-8");
-    expect(texto).not.toMatch(/Natalia/);
-    expect(texto.match(/Cuenca Del Plata \(Analia \)/g)).toHaveLength(2);
+    expect(texto).not.toMatch(/Natalia|Analia/);
+    expect(texto.match(/"El Pueblito, proveedor Cuenca del Plata"/g)).toHaveLength(2);
   });
 });

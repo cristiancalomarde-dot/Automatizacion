@@ -1,6 +1,6 @@
 destino,nombre_en_excel,proveedor_en_directorio,modo,estado,nota
-IGR,Cuenca del Plata,Cuenca Del Plata (Analia ),alias,confirmado,"No es ""Cuenca del Plata, +"" (sin mail)"
-IGR,Cuenca del Plana,Cuenca Del Plata (Analia ),alias,confirmado,Typo del Excel de paquetes (OD010C/D)
+IGR,Cuenca del Plata,"El Pueblito, proveedor Cuenca del Plata",alias,confirmado,"No es ""Cuenca del Plata, +"" (sin mail)"
+IGR,Cuenca del Plana,"El Pueblito, proveedor Cuenca del Plata",alias,confirmado,Typo del Excel de paquetes (OD010C/D)
 IGR,Nacional Inn,nacional inn foz,alias,confirmado,No es Nacional inn Copacabana
 IGR,Nacional inn Foz,nacional inn foz,alias,confirmado,
 IGR,Nacional Inn Foz 3*,nacional inn foz,alias,confirmado,
@@ -75,3 +75,12 @@ SAO,Nacionalinn,Nacional Inn Jaragua Sao Paulo,alias,confirmado,"Confirmado por 
 USH,Los Acebos,Las Hayas y los Acebos,alias,confirmado,"Mismo proveedor que Las Hayas (Tremun Ushuaia, un solo mail)"
 SPA,La Casa de Don Tomas,Hotel La Casa de Don Tomas,alias,confirmado,"Mismo hotel, en el directorio con ""Hotel"" adelante"
 BUE,Buquebus,,manual,confirmado,"Colonia Day Trip (OD020): se reserva manual por el sistema de ellos (owner 2026-10-05)"
+CHA,Chalten Travel,Chalten Travel,alias,confirmado,"Owner (2026-10-10): Chalten Travel (agencias@chaltentravel.com) reserva Rancho Grande, Poincenot, Andino Aparts y Destino Sur en El Chaltén, y los buses FTE-CHA-BRC"
+FTE,Chalten Travel,Chalten Travel,alias,confirmado,"Owner (2026-10-10): Chalten Travel (agencias@chaltentravel.com) reserva Rancho Grande, Poincenot, Andino Aparts y Destino Sur en El Chaltén, y los buses FTE-CHA-BRC"
+CHA,Rancho Grande,Chalten Travel,alias,confirmado,"Owner (2026-10-10): Chalten Travel (agencias@chaltentravel.com) reserva Rancho Grande, Poincenot, Andino Aparts y Destino Sur en El Chaltén, y los buses FTE-CHA-BRC"
+CHA,Poincenot,Chalten Travel,alias,confirmado,"Owner (2026-10-10): Chalten Travel (agencias@chaltentravel.com) reserva Rancho Grande, Poincenot, Andino Aparts y Destino Sur en El Chaltén, y los buses FTE-CHA-BRC"
+CHA,Andino Aparts,Chalten Travel,alias,confirmado,"Owner (2026-10-10): Chalten Travel (agencias@chaltentravel.com) reserva Rancho Grande, Poincenot, Andino Aparts y Destino Sur en El Chaltén, y los buses FTE-CHA-BRC"
+CHA,Destino Sur,Chalten Travel,alias,confirmado,"Owner (2026-10-10): Chalten Travel (agencias@chaltentravel.com) reserva Rancho Grande, Poincenot, Andino Aparts y Destino Sur en El Chaltén, y los buses FTE-CHA-BRC"
+CHA,Vertical Lodge,Hosteria Fitz roy,alias,confirmado,"Owner (2026-10-10): Patagonian Group (info@patagoniangroup.com.ar) es el proveedor de Hostería Fitz Roy, Vertical Lodge y Hostería El Paraíso en El Chaltén y de Puerto San Julián en El Calafate"
+CHA,El Paraiso,Hosteria Fitz roy,alias,confirmado,"Owner (2026-10-10): Patagonian Group (info@patagoniangroup.com.ar) es el proveedor de Hostería Fitz Roy, Vertical Lodge y Hostería El Paraíso en El Chaltén y de Puerto San Julián en El Calafate"
+FTE,Puerto San Julian,Hosteria Fitz roy,alias,confirmado,"Owner (2026-10-10): Patagonian Group (info@patagoniangroup.com.ar) es el proveedor de Hostería Fitz Roy, Vertical Lodge y Hostería El Paraíso en El Chaltén y de Puerto San Julián en El Calafate"

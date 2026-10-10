@@ -1,6 +1,6 @@
 # Los 7 tours compuestos (M1-05)
 
-Armé los tours top-seller con los códigos de RutasenBus y el itinerario día por día de los Word de catálogo (2026-10-09). Leí: RutasenBus2020.xls, Multi Destination Independent Tours 1 Jun 2026 - 31 Dec 2027.docx, Two Destination Tours 1 Jun 2026 - 31 Dec 2027.docx, One Destination Tours 1 Jun 2026 - 31 Dec 2027.docx, Unique Tours 1 Jun 2026 - 31 Dec 2027.docx, Construccion de Paquetes 2019 con 3 y 4 estrellas.xls.
+Armé los tours top-seller con los códigos de RutasenBus y el itinerario día por día de los Word de catálogo (2026-10-10). Leí: RutasenBus2020.xls, Multi Destination Independent Tours 1 Jun 2026 - 31 Dec 2027.docx, Two Destination Tours 1 Jun 2026 - 31 Dec 2027.docx, One Destination Tours 1 Jun 2026 - 31 Dec 2027.docx, Unique Tours 1 Jun 2026 - 31 Dec 2027.docx, Construccion de Paquetes 2019 con 3 y 4 estrellas.xls.
 
 - Armados: **7 de 7**. Para revisar: **0**.
 - Cada tour guarda su secuencia: cada paquete con sus noches en el tour y el día en que empieza, y cada bus con el día en que sale y si es nocturno. Las fechas reales se calculan cuando llegue la reserva con su fecha de inicio.

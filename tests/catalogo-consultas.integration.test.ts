@@ -112,7 +112,7 @@ const CORRE = credencialesSupabaseDisponibles();
     const directorio = await cargarDirectorio(cliente);
     expect(directorio.length).toBeGreaterThan(200);
     expect(directorio.some((p) => p.mails.length === 0)).toBe(true);
-    const cuenca = directorio.find((p) => p.mails.includes("reservas3@cuencadelplata.com"))!;
+    const cuenca = directorio.find((p) => p.nombre === "El Pueblito, proveedor Cuenca del Plata")!;
     expect(cuenca.cantidadProductos).toBeGreaterThanOrEqual(4);
   }, 30_000);
 

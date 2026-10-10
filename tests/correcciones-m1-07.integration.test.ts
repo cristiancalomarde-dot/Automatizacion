@@ -93,16 +93,17 @@ interface FilaServicio {
     expect(tetris).toHaveLength(1);
     expect(tetris[0]).toMatchObject({ ciudad: "FOZ DO IGUAZU", canal: "whatsapp" });
     expect(await buscar("Natalia")).toEqual([]);
-    const cuenca = await buscar("Analia");
-    expect(cuenca.map((c) => c.nombre)).toEqual(["Cuenca Del Plata (Analia )"]);
+    // 2026-10-10: el owner separó Cuenca del Plata por hotel; el registro de antes ahora es El Pueblito
+    const cuenca = await buscar("El Pueblito");
+    expect(cuenca.map((c) => c.nombre)).toEqual(["El Pueblito, proveedor Cuenca del Plata"]);
     const antarctica = await buscar("Antarctica Hostel");
     expect(antarctica).toHaveLength(1);
     expect(antarctica[0].mails.length > 0 || antarctica[0].canal === "whatsapp").toBe(true);
     expect(await buscar("Selina La Paz")).toEqual([]);
   }, TIMEOUT);
 
-  it("#2 los servicios de OD010C/OD010D que nombran Cuenca del Plata/Plana siguen yendo a Cuenca del Plata (Analia)", async () => {
-    const { data: cuenca } = await admin.from("proveedor").select("id").eq("nombre", "Cuenca Del Plata (Analia )").single();
+  it("#2 los servicios de OD010C/OD010D que nombran Cuenca del Plata/Plana siguen yendo a Cuenca del Plata (El Pueblito)", async () => {
+    const { data: cuenca } = await admin.from("proveedor").select("id").eq("nombre", "El Pueblito, proveedor Cuenca del Plata").single();
     for (const codigo of ["OD010C", "OD010D"]) {
       const deCuenca = (await servicios(codigo)).filter((s) => /cuenca del pla(t|n)a/i.test(s.booking_supplier_nombre ?? ""));
       expect(deCuenca.length, codigo).toBeGreaterThan(0);

@@ -112,10 +112,10 @@ interface FilaProveedorDB {
       expect(filasTrasPrimera).toHaveLength(primera.procesados);
     });
 
-    it("#2 destino y categoría del Excel quedan en el registro (IGUAZU / Hotel, FOZ DO IGUAZU / Hostel)", () => {
-      const tangoinn = buscar(filasTrasPrimera, "Tangoinn Bed & Brewery IGR");
-      expect(tangoinn.ciudad).toBe("IGUAZU");
-      expect(tangoinn.aclaraciones?.split("\n")).toContain("Categoría: Hotel");
+    it("#2 destino y categoría del Excel quedan en el registro (IGUAZU / Hotel, FOZ DO IGUAZU / Hostel; el owner pasó Tangoinn a Hostel el 2026-10-10)", () => {
+      const pueblito = buscar(filasTrasPrimera, "El Pueblito, proveedor Cuenca del Plata");
+      expect(pueblito.ciudad).toBe("IGUAZU");
+      expect(pueblito.aclaraciones?.split("\n")).toContain("Categoría: Hotel");
 
       const bambu = buscar(filasTrasPrimera, "Bambu hostel");
       expect(bambu.ciudad).toBe("FOZ DO IGUAZU");

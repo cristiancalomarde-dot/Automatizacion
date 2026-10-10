@@ -122,18 +122,18 @@ interface FilaServicioDB {
 
     // M1-04d: la lista pasó al formato con destino y modo (76 filas: las 15 de
     // Iguazú, con destino IGR, más las de los 17 paquetes de los tours).
-    it("#1 cargar la lista real deja 76 alias; los 68 que nombran un proveedor apuntan a uno existente; una segunda carga deja 76", async () => {
+    it("#1 cargar la lista real deja 85 alias; los 77 que nombran un proveedor apuntan a uno existente; una segunda carga deja 85", async () => {
       const texto = readFileSync(RUTA_EQUIVALENCIAS, "utf-8");
       const primera = await cargarEquivalencias({ admin, textoCsv: texto });
-      expect(primera.total).toBe(76);
-      expect(await contarAlias()).toBe(76);
+      expect(primera.total).toBe(85);
+      expect(await contarAlias()).toBe(85);
 
       const { data, error } = await admin
         .from("proveedor_alias")
         .select("destino, alias, alias_normalizado, estado, nota, proveedor_id, proveedor:proveedor_id(id, nombre)");
       expect(error).toBeNull();
       const conId = data!.filter((a) => a.proveedor_id !== null);
-      expect(conId).toHaveLength(68);
+      expect(conId).toHaveLength(77);
       expect(conId.every((a) => a.proveedor !== null)).toBe(true); // apuntan a un proveedor existente
       expect(data!.filter((a) => a.destino === "IGR")).toHaveLength(15);
       const tetris = data!.find((a) => a.destino === "IGR" && a.alias_normalizado === "tetris")!;
@@ -141,11 +141,11 @@ interface FilaServicioDB {
       expect(tetris.proveedor_id).not.toBeNull();
       expect(tetris.nota).toContain("WhatsApp");
       const plana = data!.find((a) => a.alias_normalizado === "cuenca del plana")!;
-      expect((plana.proveedor as unknown as { nombre: string }).nombre).toBe("Cuenca Del Plata (Analia )"); // M1-07: el owner corrigió Natalia → Analia
+      expect((plana.proveedor as unknown as { nombre: string }).nombre).toBe("El Pueblito, proveedor Cuenca del Plata"); // Natalia → Analia (M1-07) → El Pueblito (el owner separó Cuenca del Plata por hotel, 2026-10-10)
 
       const segunda = await cargarEquivalencias({ admin, textoCsv: texto });
-      expect(segunda).toMatchObject({ total: 76, creados: 0, actualizados: 0, sinCambios: 76 });
-      expect(await contarAlias()).toBe(76);
+      expect(segunda).toMatchObject({ total: 85, creados: 0, actualizados: 0, sinCambios: 85 });
+      expect(await contarAlias()).toBe(85);
     }, TIMEOUT);
 
     it("#2 un CSV que nombra un proveedor inexistente falla con un mensaje claro: 0 proveedores y 0 alias nuevos", async () => {
@@ -308,8 +308,8 @@ interface FilaServicioDB {
       return porProducto.flat();
     }
 
-    it("M1-04b #3 el typo 'Cuenca del Plana' (OD010C/D) queda emparejado con Cuenca Del Plata (Analia, antes Natalia: M1-07)", async () => {
-      const { data: cuenca } = await admin.from("proveedor").select("id").eq("nombre", "Cuenca Del Plata (Analia )").single();
+    it("M1-04b #3 el typo 'Cuenca del Plana' (OD010C/D) queda emparejado con Cuenca del Plata (El Pueblito; antes Natalia y Analia)", async () => {
+      const { data: cuenca } = await admin.from("proveedor").select("id").eq("nombre", "El Pueblito, proveedor Cuenca del Plata").single();
       const plana = (await todasLasFilas()).filter((f) => f.booking_supplier_nombre === "Cuenca del Plana");
       expect(plana.map((f) => f.codigo)).toEqual(["OD010C", "OD010D"]);
       for (const f of plana) {
@@ -406,7 +406,7 @@ interface FilaServicioDB {
       expect(data.detalle.proveedores_sin_resolver.length).toBe(resumen.proveedoresSinResolver.length);
       expect(data.detalle.proveedores_para_revisar).toHaveLength(0);
       expect(data.detalle.nombres_sin_resolver).toEqual([]);
-      expect(data.detalle.alias_cargados).toBe(76);
+      expect(data.detalle.alias_cargados).toBe(85);
       expect(data.detalle.bloques_que_necesitan_ia).toEqual(resumen.bloquesQueNecesitanIA);
     });
   });
