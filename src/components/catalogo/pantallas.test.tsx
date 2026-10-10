@@ -387,3 +387,151 @@ describe("Noches por servicio y tours dentro de tours (spec M1-07 #9, #10)", () 
     expect(within(itinerario).queryByText("Es un tour. Ver su itinerario completo.")).toBeNull();
   });
 });
+
+describe("Traslados según el tour y servicios a pedido (spec M1-08 #5, #6, #9)", () => {
+  const greeters = { id: "prov-greeters", nombre: "GREETERS", mails: ["r@greeters.com"], canal: "mail" as const, telefono: null };
+  const imperio = { id: "prov-imperio", nombre: "Imperio Inca", mails: ["r@imperio.com"], canal: "mail" as const, telefono: null };
+  function paquete(id: string, codigo: string, dia: number, servicios: ReturnType<typeof unServicio>[]) {
+    return {
+      orden: dia,
+      tipo: "paquete" as const,
+      diaDesde: dia,
+      noches: 2,
+      nocturno: null,
+      transferIn: false,
+      transferOut: false,
+      descripcionRuta: null,
+      producto: { id, codigo, nombre: `Paquete ${codigo}`, ciudades: [], destino: null, updatedAt: "2026-10-10T10:00:00Z", esTour: false, servicios },
+    };
+  }
+  const tour = {
+    ...chb31,
+    id: "prod-5c01",
+    codigo: "5C01",
+    servicios: [],
+    componentes: [
+      paquete("prod-od020", "OD020", 11, [
+        unServicio({
+          productoId: "prod-od020",
+          tipo: "traslado",
+          orden: 6,
+          descripcion: "Transfer EZE o AEP - Hotel - EZE o AEP. Booking Supplier: Greeters",
+          bookingSupplierNombre: "Greeters",
+          bookingSupplier: greeters,
+          sentido: "ida_y_vuelta",
+          ajusteTour: { accion: "anular", texto: null, motivo: "llega en bus desde Iguazú y sale en bus a Mendoza", origen: "regla" },
+        }),
+      ]),
+      paquete("prod-od018", "OD018", 13, [
+        unServicio({
+          productoId: "prod-od018",
+          tipo: "traslado",
+          orden: 6,
+          descripcion: "Transfer EZE o AEP - Hotel - EZE o AEP. Booking Supplier: Greeters",
+          bookingSupplierNombre: "Greeters",
+          bookingSupplier: greeters,
+          ajusteTour: { accion: "solo_llegada", texto: null, motivo: "sale en bus a Puerto Madryn", origen: "regla" },
+        }),
+      ]),
+      paquete("prod-od031", "OD031", 28, [
+        unServicio({
+          productoId: "prod-od031",
+          tipo: "traslado",
+          orden: 3,
+          descripcion: "Transfer La Paz Airport - La Paz Accommodation: Booking Supplier: Imperio Inca",
+          bookingSupplierNombre: "Imperio Inca",
+          bookingSupplier: imperio,
+          ajusteTour: { accion: "reemplazar", texto: "Transfer terminal de buses de La Paz - alojamiento en La Paz", motivo: "Owner (2026-10-10): llega en bus desde Uyuni", origen: "excepcion" },
+        }),
+      ]),
+      paquete("prod-od030", "OD030", 30, [
+        unServicio({
+          productoId: "prod-od030",
+          tipo: "traslado",
+          orden: 3,
+          descripcion: "Transfer in CJC - Accommodation in San Pedro de Atacama. Booking Supplier: Transvipp",
+          reservaManual: true,
+          bookingSupplierNombre: "Transvipp",
+          ajusteTour: { accion: "invertir", texto: "Transfer alojamiento en San Pedro de Atacama - aeropuerto de Calama (CJC)", motivo: "Owner: pasa a ser de salida", origen: "excepcion" },
+        }),
+      ]),
+    ],
+  };
+
+  function filaCon(tabla: HTMLElement, texto: string) {
+    return within(tabla).getAllByRole("row").find((f) => f.textContent?.includes(texto)) as HTMLTableRowElement;
+  }
+
+  it("dentro del tour: el anulado aparece tachado con el motivo, el reemplazado con su texto nuevo y el de un solo lado con su marca", async () => {
+    consultas.cargarProducto.mockResolvedValue(tour);
+    render(<DetalleProductoPantalla id="prod-5c01" />);
+    const itinerario = await screen.findByRole("table", { name: "Itinerario día por día" });
+
+    const od020 = filaCon(itinerario, "EZE o AEP - Hotel - EZE o AEP");
+    expect(od020.textContent).toContain("No se pide en este tour");
+    expect(od020.textContent).toContain("llega en bus desde Iguazú y sale en bus a Mendoza");
+    expect(within(od020).getByText("Transfer EZE o AEP - Hotel - EZE o AEP").tagName).toBe("S");
+
+    const od018 = within(itinerario).getAllByRole("row").filter((f) => f.textContent?.includes("EZE o AEP"))[1];
+    expect(od018.textContent).toContain("Solo llegada");
+    expect(od018.textContent).toContain("sale en bus a Puerto Madryn");
+
+    const od031 = filaCon(itinerario, "terminal de buses de La Paz");
+    expect(od031.textContent).toContain("Cambiado en este tour");
+    expect(od031.textContent).toContain("En el Excel: Transfer La Paz Airport - La Paz Accommodation");
+
+    const od030 = filaCon(itinerario, "aeropuerto de Calama (CJC)");
+    expect(od030.textContent).toContain("Sentido invertido");
+  });
+
+  it("el paquete abierto solo sigue mostrando todos sus servicios, con la marca a pedido o según la reserva", async () => {
+    consultas.cargarProducto.mockResolvedValue({
+      ...od010a,
+      codigo: "OD016",
+      servicios: [
+        unServicio({
+          tipo: "traslado",
+          orden: 5,
+          descripcion: "Transfer El Calafate Accommodation - FTE Airport. Booking Supplier: Chalten Travel",
+          bookingSupplier: greeters,
+          aPedido: "a_pedido",
+          aPedidoNota: "el traslado de salida es opcional",
+        }),
+        unServicio({
+          tipo: "traslado",
+          orden: 4,
+          descripcion: "Transfers: Remis Mendoza. Booking Booking Supplier: Remis Mendoza",
+          bookingSupplier: greeters,
+          aPedido: "segun_reserva",
+          aPedidoNota: "solo si el paquete es CON traslados",
+        }),
+      ],
+    });
+    render(<DetalleProductoPantalla id="prod-od016" />);
+    const tabla = await screen.findByRole("table", { name: "Servicios" });
+    const salida = filaCon(tabla, "El Calafate Accommodation - FTE Airport");
+    expect(salida.textContent).toContain("A pedido");
+    expect(salida.textContent).toContain("el traslado de salida es opcional");
+    expect(filaCon(tabla, "Remis Mendoza").textContent).toContain("Según la reserva");
+    expect(screen.queryByText("No se pide en este tour")).toBeNull();
+  });
+
+  it("OD010D solo, día por día: noches 1-2 en Foz y la 3 en Puerto Iguazú", async () => {
+    const foz = { nocheDesde: 1, noches: 2, lugar: "Foz do Iguaçu (lado brasileño)" };
+    const arg = { nocheDesde: 3, noches: 1, lugar: "Puerto Iguazú (lado argentino)" };
+    consultas.cargarProducto.mockResolvedValue({
+      ...od010a,
+      codigo: "OD010D",
+      servicios: [
+        unServicio({ orden: 3, nivel: "Hotel 3*", serviceProviderNombre: "Nacional inn Foz", tramosNoches: [foz] }),
+        unServicio({ orden: 4, nivel: "Hotel 3*", serviceProviderNombre: "El Pueblito", tramosNoches: [arg] }),
+        unServicio({ orden: 7, tipo: "excursion", descripcion: "Excursion: Paquete Receptvo 105 Premium x Foz. Booking Supplier: Cuenca del Plata" }),
+      ],
+    });
+    render(<DetalleProductoPantalla id="prod-od010d" />);
+    const tabla = await screen.findByRole("table", { name: "Día por día" });
+    expect(within(tabla).getByText("Día 1 · 2 noches en Foz do Iguaçu (lado brasileño)")).toBeInTheDocument();
+    expect(within(tabla).getByText("Día 3 · 1 noche en Puerto Iguazú (lado argentino)")).toBeInTheDocument();
+    expect(filaCon(tabla, "El Pueblito")).toBeDefined();
+  });
+});

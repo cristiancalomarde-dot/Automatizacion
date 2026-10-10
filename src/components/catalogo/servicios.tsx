@@ -16,13 +16,28 @@ const TONO_ESTADO: Record<ReturnType<typeof estadoServicio>["tipo"], TonoChip> =
   sin_resolver: "aviso",
 };
 
-/** Chips de estado de un servicio (#15): siempre con la etiqueta escrita. */
+const TONO_AJUSTE: Record<NonNullable<Servicio["ajusteTour"]>["accion"], TonoChip> = {
+  anular: "atenuado",
+  solo_llegada: "info",
+  solo_salida: "info",
+  reemplazar: "aviso",
+  invertir: "aviso",
+};
+
+/**
+ * Chips de estado de un servicio (#15): siempre con la etiqueta escrita. M1-08:
+ * dentro de un tour, cómo queda en ese tour; en el paquete, si es a pedido o
+ * según la reserva.
+ */
 export function ChipsServicio({ servicio }: { servicio: Servicio }) {
   const estado = estadoServicio(servicio);
+  const ajuste = servicio.ajusteTour;
   return (
     <span className={ui.chips}>
+      {ajuste ? <Chip tono={TONO_AJUSTE[ajuste.accion]}>{T.ajuste[ajuste.accion]}</Chip> : null}
       <Chip tono={TONO_ESTADO[estado.tipo]}>{E[estado.tipo]}</Chip>
       {servicio.opcional ? <Chip tono="atenuado">{E.opcional}</Chip> : null}
+      {servicio.aPedido ? <Chip tono="atenuado">{E[servicio.aPedido]}</Chip> : null}
     </span>
   );
 }
@@ -60,14 +75,22 @@ export function FilaServicio({
   const nivelYOpcion = [mostrarNivel ? servicio.nivel : null, opcion ? T.opcionN(opcion) : null]
     .filter(Boolean)
     .join(" · ");
+  const ajuste = servicio.ajusteTour;
+  const anulado = ajuste?.accion === "anular";
+  const textoNuevo = ajuste && (ajuste.accion === "reemplazar" || ajuste.accion === "invertir") ? ajuste.texto : null;
+  const clase = anulado ? ui.filaAnulada : estado.tipo === "sin_resolver" ? ui.filaAtencion : undefined;
 
   return (
-    <tr className={estado.tipo === "sin_resolver" ? ui.filaAtencion : undefined}>
+    <tr className={clase}>
       {celdaInicial !== undefined ? <td className={ui.nowrap}>{celdaInicial}</td> : null}
       <td title={servicio.descripcion ?? undefined}>
-        <div>{queEs(servicio)}</div>
+        <div>{anulado ? <s>{queEs(servicio)}</s> : (textoNuevo ?? queEs(servicio))}</div>
         {servicio.tipo !== "alojamiento" ? <div className={ui.meta}>{T.tipos[servicio.tipo]}</div> : null}
-        {estado.motivo ? <div className={ui.meta}>{estado.motivo}</div> : null}
+        {ajuste ? <div className={ui.meta}>{ajuste.motivo}</div> : null}
+        {textoNuevo ? <div className={ui.meta}>{T.enElExcel(queEs(servicio))}</div> : null}
+        {ajuste && !textoNuevo && !anulado && ajuste.texto ? <div className={ui.meta}>{ajuste.texto}</div> : null}
+        {servicio.aPedido && servicio.aPedidoNota ? <div className={ui.meta}>{servicio.aPedidoNota}</div> : null}
+        {estado.motivo && !anulado ? <div className={ui.meta}>{estado.motivo}</div> : null}
       </td>
       <td className={`${ui.secundario} ${ui.nowrap}`}>{nivelYOpcion}</td>
       <td>

@@ -90,6 +90,14 @@ export const TEXTOS = {
     tramoExterno: "Tramo externo pendiente de emitir",
     tramoEmite: "Pasaje que emite HI Travel. Sin proveedor.",
     esTourEnlace: "Es un tour. Ver su itinerario completo.",
+    ajuste: {
+      anular: "No se pide en este tour",
+      solo_llegada: "Solo llegada",
+      solo_salida: "Solo salida",
+      reemplazar: "Cambiado en este tour",
+      invertir: "Sentido invertido",
+    },
+    enElExcel: (texto: string) => `En el Excel: ${texto}`,
     tipos: {
       alojamiento: "Alojamiento",
       excursion: "Excursión",
@@ -105,6 +113,8 @@ export const TEXTOS = {
     manual: "Manual en sistema propio",
     sin_resolver: "Sin resolver",
     opcional: "Opcional",
+    a_pedido: "A pedido",
+    segun_reserva: "Según la reserva",
     motivoNoEnDirectorio: (nombre: string) =>
       `«${nombre}» no está en el directorio. Se carga en el ${EXCEL.proveedores}.`,
     motivoSinProveedor: `El servicio no tiene proveedor. Se completa en el ${EXCEL.paquetes}.`,

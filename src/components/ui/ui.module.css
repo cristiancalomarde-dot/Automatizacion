@@ -210,6 +210,11 @@
   box-shadow: inset 3px 0 0 var(--color-aviso-texto);
 }
 
+/* Servicio que no se pide en este tour (M1-08): atenuado, con el motivo escrito. */
+.tabla tbody tr.filaAnulada td {
+  color: var(--color-texto-secundario);
+}
+
 /* Fila de grupo (nivel de alojamiento, día del tour). */
 .tabla tbody tr.filaGrupo td {
   background: var(--color-primario-tenue);

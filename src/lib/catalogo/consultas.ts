@@ -12,6 +12,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { esPendiente, estadoServicio, proveedoresDeServicios } from "./reglas";
 import type {
+  AjusteEnTour,
   Canal,
   CodigoExterno,
   ComponenteTour,
@@ -31,7 +32,7 @@ const CAMPOS_PROVEEDOR = "id,nombre,mails,canal,telefono";
 const CAMPOS_SERVICIO =
   "id,producto_id,tipo_servicio,nivel,orden,prioridad,descripcion,opcional,reserva_manual," +
   "proveedor_sin_resolver,proveedor_para_revisar,proveedor_nota,fila_excel," +
-  "service_provider_nombre,booking_supplier_nombre," +
+  "service_provider_nombre,booking_supplier_nombre,sentido,a_pedido,a_pedido_nota," +
   `sp:service_provider_id(${CAMPOS_PROVEEDOR}),bs:booking_supplier_id(${CAMPOS_PROVEEDOR})`;
 const CAMPOS_PRODUCTO = "id,codigo,nombre,ciudades,destino,updated_at";
 
@@ -72,6 +73,9 @@ function aServicio(fila: any): Servicio {
     bookingSupplierNombre: fila.booking_supplier_nombre ?? null,
     serviceProvider: aProveedor(fila.sp),
     bookingSupplier: aProveedor(fila.bs),
+    sentido: fila.sentido ?? null,
+    aPedido: fila.a_pedido ?? null,
+    aPedidoNota: fila.a_pedido_nota ?? null,
   };
 }
 
@@ -210,7 +214,31 @@ export async function cargarProducto(supabase: SupabaseClient, id: string): Prom
   }
   const toursEntreComponentes = new Set(filasAdentro.map((c) => c.producto_id as string));
   const idsAdentro = filasAdentro.map((c) => c.comp?.id).filter(Boolean) as string[];
-  const servicios = await serviciosDe(supabase, [...new Set([id, ...idsComponentes, ...idsAdentro])]);
+  const [servicios, ajustes] = await Promise.all([
+    serviciosDe(supabase, [...new Set([id, ...idsComponentes, ...idsAdentro])]),
+    filasComponente.length > 0
+      ? supabase.from("tour_servicio_ajuste").select("paquete_id,orden,accion,texto,motivo,origen").eq("tour_id", id)
+      : Promise.resolve({ data: [], error: null }),
+  ]);
+
+  // M1-08: dentro de este tour, cada servicio de sus paquetes (también los del
+  // tour de adentro) lleva su ajuste. El paquete abierto solo no los lleva.
+  const ajustePorClave = new Map<string, AjusteEnTour>();
+  for (const a of verificar(ajustes) as any[]) {
+    ajustePorClave.set(`${a.paquete_id}:${a.orden}`, { accion: a.accion, texto: a.texto ?? null, motivo: a.motivo, origen: a.origen });
+  }
+  if (ajustePorClave.size > 0) {
+    for (const [productoId, lista] of servicios) {
+      if (productoId === id) continue;
+      servicios.set(
+        productoId,
+        lista.map((s) => {
+          const ajuste = ajustePorClave.get(`${s.productoId}:${s.orden}`);
+          return ajuste ? { ...s, ajusteTour: ajuste } : s;
+        }),
+      );
+    }
+  }
 
   const adentroPorTour = agruparPor(filasAdentro, (c) => c.producto_id);
   const listaComponentes: ComponenteTour[] = filasComponente.map((c) => {

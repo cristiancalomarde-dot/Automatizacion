@@ -16,6 +16,17 @@ export interface ProveedorResumen {
   telefono: string | null;
 }
 
+export type SentidoTraslado = "llegada" | "salida" | "ida_y_vuelta" | "sin_sentido";
+
+/** Cómo queda un servicio de un paquete dentro de un tour (M1-08, `tour_servicio_ajuste`). */
+export interface AjusteEnTour {
+  accion: "anular" | "solo_llegada" | "solo_salida" | "reemplazar" | "invertir";
+  /** Texto nuevo (reemplazar; opcional en las demás). */
+  texto: string | null;
+  motivo: string;
+  origen: "regla" | "excepcion";
+}
+
 /** En qué noches del paquete va un servicio (M1-07, `producto_servicio_noches`). */
 export interface TramoNoches {
   nocheDesde: number;
@@ -43,6 +54,13 @@ export interface Servicio {
   bookingSupplier: ProveedorResumen | null;
   /** Vacío o ausente = el servicio no dice en qué noches va (se muestra como un bloque). */
   tramosNoches?: TramoNoches[];
+  /** Solo traslados (M1-08). Ausente = sin dato. */
+  sentido?: SentidoTraslado | null;
+  /** M1-08: no se pide siempre (a pedido del pax/vendedor, o según la variante vendida). */
+  aPedido?: "a_pedido" | "segun_reserva" | null;
+  aPedidoNota?: string | null;
+  /** M1-08: solo dentro de un tour, cómo queda en ese tour. Ausente = se pide tal cual. */
+  ajusteTour?: AjusteEnTour;
 }
 
 export interface CodigoExterno {
