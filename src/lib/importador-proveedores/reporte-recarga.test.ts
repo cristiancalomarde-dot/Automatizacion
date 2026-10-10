@@ -46,7 +46,7 @@ describe("reporte de la recarga del directorio para el owner (spec M1-07 §3 #11
   });
 
   it("cuenta qué cambió: altas, movidos, renombrados y contactos", () => {
-    expect(md).toContain("# Recarga del directorio de proveedores (M1-07)");
+    expect(md).toContain("# Recarga del directorio de proveedores");
     expect(md).toMatch(/Madidi Amazon Lodge.*BOLIVIA/);
     expect(md).toMatch(/Tetris Hostel Foz do Iguacu.*BRASIL.*FOZ DO IGUAZU/);
     expect(md).toMatch(/Cuenca Del Plata \(Natalia \).*Cuenca Del Plata \(Analia \)/);
@@ -82,5 +82,24 @@ describe("reporte de la recarga del directorio para el owner (spec M1-07 §3 #11
       enUso: new Map(),
     });
     expect(vuelto).toMatch(/Selina La Paz.*BOLIVIA.*volvió a aparecer.*no lo cargué/);
+  });
+
+  it("una fila duplicada que el owner pidió borrar se avisa una sola vez, en su sección y con la nota (M1-08 §3 #8)", () => {
+    const md2 = reporteRecargaMarkdown({
+      fecha: "x",
+      archivo: "x",
+      resumen: { procesados: 0, insertados: 0, actualizados: 0 },
+      cambios: compararDirectorio([], []),
+      borrados: [
+        { nombre: "Hosteria Fitz roy", nombreNormalizado: "hosteria fitz roy", ciudad: "CHALTEN", nota: "sección vieja" },
+        { nombre: "Hosteria Fitz roy", nombreNormalizado: "hosteria fitz roy", ciudad: "EL CHALTEN", nota: "Fila suelta duplicada de la de Patagonian Group" },
+      ],
+      borradosQueVolvieron: [registro("Hosteria Fitz roy", "EL CHALTEN")],
+      directorio: [],
+      enUso: new Map(),
+    });
+    expect(md2.match(/volvió a aparecer/g)).toHaveLength(1);
+    expect(md2).toContain("**Hosteria Fitz roy** (EL CHALTEN) volvió a aparecer en el Excel: no lo cargué (Fila suelta duplicada de la de Patagonian Group).");
+    expect(md2).toContain("- Hosteria Fitz roy (CHALTEN): no está en el Excel ni volvió a la base.");
   });
 });

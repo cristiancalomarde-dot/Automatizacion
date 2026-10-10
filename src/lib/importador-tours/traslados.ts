@@ -152,8 +152,8 @@ export function ajustesDeTraslados(entrada: {
           break;
         case "ida_y_vuelta":
           if (llega && sale) [accion, motivo] = ["anular", ambos];
-          else if (sale) [accion, motivo] = ["solo_llegada", `${sale}: solo se pide la llegada`];
-          else if (llega) [accion, motivo] = ["solo_salida", `${llega}: solo se pide la salida`];
+          else if (sale) [accion, motivo] = ["solo_llegada", sale];
+          else if (llega) [accion, motivo] = ["solo_salida", llega];
           break;
         default:
           // sin sentido deducido: solo se anula si no hace falta ningún lado

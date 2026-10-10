@@ -93,7 +93,7 @@ describe("reporte de los tours para el owner (spec M1-05 §3 #10)", () => {
     };
     const texto = reporteToursMarkdown({ ...r, tours: [conAjuste] }, { fecha: "x", archivos: [] });
     expect(texto).toContain("Traslados en este tour (M1-08, detalle en M1-08-traslados.md):");
-    expect(texto).toContain("- **OD016** · Transfer El Calafate Accommodation - FTE Airport (Chalten Travel): llega en bus desde El Chaltén y sale en bus a Puerto Natales.");
+    expect(texto).toContain("- **OD016** · Transfer El Calafate Accommodation - FTE Airport (Chalten Travel): no se pide — llega en bus desde El Chaltén y sale en bus a Puerto Natales.");
     expect(md).not.toContain("Traslados en este tour");
   });
 

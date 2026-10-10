@@ -4,7 +4,7 @@ Armé los tours top-seller con los códigos de RutasenBus y el itinerario día p
 
 - Armados: **7 de 7**. Para revisar: **0**.
 - Cada tour guarda su secuencia: cada paquete con sus noches en el tour y el día en que empieza, y cada bus con el día en que sale y si es nocturno. Las fechas reales se calculan cuando llegue la reserva con su fecha de inicio.
-- Transfer: solo la llegada del primer destino y la salida del último. Iguazú conserva los suyos aunque esté en el medio.
+- Transfer: solo la llegada del primer destino y la salida del último. Iguazú conserva los suyos aunque esté en el medio. Dentro de cada tour, los traslados del paquete al que se llega o del que se sale en bus no se piden (M1-08); el detalle está en M1-08-traslados.md.
 
 ## Resumen
 
@@ -12,7 +12,7 @@ Armé los tours top-seller con los códigos de RutasenBus y el itinerario día p
 |---|---|---|---|---|---|---|
 | CHB31 | Overland San Pedro de Atacama to Uyuni, end in La Paz | 6 | armado | OD030 → COMPBO20 | 0 | 1 |
 | BOCHI04R | OVERLAND UYUNI TO SAN PEDRO DE ATACAMA BEGINNING IN LA PAZ | 6 | armado | COMPBO20 → OD030 | 0 | 1 |
-| ARCH31 | Patagonia Highlights | 8 | armado | OD033 → OD016 → OD017 | 1 | 0 |
+| ARCH31 | Patagonia Highlights | 8 | armado | OD033 → OD016 → OD017 | 1 | 1 |
 | ARCH33 | Patagonia, Trekking Paradise with W-Trek | 11 | armado | OD033 → OD016 → CH10 | 1 | 1 |
 | AR09 | Patagonia Adventure Tour | 15 | armado | OD018 → OD025 → OD013 → OD022 | 5 | 0 |
 | BRARCH26 | From Rio de Janeiro to Santiago de Chile | 16 | armado | OD032 → OD010A → OD018 → OD019 → OD029 | 4 | 0 |
@@ -40,9 +40,13 @@ Empieza en La Paz y termina en San Pedro de Atacama. Itinerario: Multi Destinati
 | 2 | **COMPBO20** Overland Tour San Pedro - Uyuni 3 dias / 2 noches en Villamar y en Salt Hostel (Uyuni) | 2 noches | transfer de llegada |
 | 4 | **OD030** San Pedro de Atacama Explorer (San Pedro de Atacama) | 3 noches | transfer de salida |
 
+Traslados en este tour (M1-08, detalle en M1-08-traslados.md):
+
+- **OD030** · Transfer in CJC - Accommodation in San Pedro de Atacama (Transvipp): cambia de sentido: “Transfer alojamiento en San Pedro de Atacama - aeropuerto de Calama (CJC)” — Owner (2026-10-10): en BOCHI04R el Transvip pasa a ser de salida, San Pedro → CJC (data/traslados-tour.csv).
+
 ### ARCH31 · Patagonia Highlights (8 noches, 9 días)
 
-Empieza en El Chaltén y termina en Puerto Natales. Itinerario: Multi Destination Independent Tours 1 Jun 2026 - 31 Dec 2027.docx; códigos: RutasenBus, fila 344.
+Empieza en El Chaltén y termina en Punta Arenas. Itinerario: Multi Destination Independent Tours 1 Jun 2026 - 31 Dec 2027.docx; códigos: RutasenBus, fila 344.
 
 | Día | Qué | Noches | Transfer / quién lo reserva |
 |---|---|---|---|
@@ -50,10 +54,17 @@ Empieza en El Chaltén y termina en Puerto Natales. Itinerario: Multi Destinatio
 | 4 | **OD016** El Calafate Starter Package (El Calafate) | 3 noches (1 noche más que el paquete solo) | sin transfer |
 | 7 | Bus El Calafate – Puerto Natales (diurno) | — | lo emite HI Travel (tarea manual) |
 | 7 | **OD017** Puerto Natales & Torres del Paine Adventure (Puerto Natales) | 2 noches | transfer de salida |
+| 9 | Bus Puerto Natales – Punta Arenas (diurno) o a pedido, traslado al aeropuerto de Puerto Natales con Patagonia Planet | — | se reserva a mano en Kupos.cl (sistema propio, no se le escribe) |
 
 - “El Calafate airport shuttle or bus to El Chalten or bus from El Calafate to El Chalten”: lo trae el paquete OD033 (“Transfer El Calafate Airport to El Chalten. Booking Supplier: Chalten Travel / Transporte Las Lengas”), no se carga aparte.
 - “Bus El Chalten to El Calafate”: lo trae el paquete OD033 (“Public Bus El Chalten Bus Station - El Calafate Bus Station. Booking Supplier: Chalten Travel”), no se carga aparte.
 - “Punta Arenas Airport Drop Off or Bus from Puerto Natales to El Calafate” va después de la última estadía: lo cubre el paquete de la punta, no se carga como tramo.
+- La salida de Puerto Natales (Bus Puerto Natales – Punta Arenas o a pedido, traslado al aeropuerto de Puerto Natales con Patagonia Planet) la pone data/tramos-con-proveedor.csv como último paso del tour (día 9).
+
+Traslados en este tour (M1-08, detalle en M1-08-traslados.md):
+
+- **OD016** · Transfer El Calafate Accommodation - FTE Airport (Chalten Travel): no se pide — sale en bus a Puerto Natales.
+- **OD017** · Bus Punta Arenas - Puerto Natales (Kupos): no se pide — Owner (2026-10-10): en ARCH31 se llega a Puerto Natales en bus desde El Calafate, sin el bus Punta Arenas → Puerto Natales (data/traslados-tour.csv).
 
 ### ARCH33 · Patagonia, Trekking Paradise with W-Trek (11 noches, 12 días)
 
@@ -72,6 +83,10 @@ Empieza en El Chaltén y termina en Punta Arenas. Itinerario: Multi Destination 
 - “Bus from El Chalten to El Calafate”: lo trae el paquete OD033 (“Public Bus El Chalten Bus Station - El Calafate Bus Station. Booking Supplier: Chalten Travel”), no se carga aparte.
 - “Bus from Port of Lake Pehoe to Puerto Natales” va después de la última estadía: lo cubre el paquete de la punta, no se carga como tramo.
 
+Traslados en este tour (M1-08, detalle en M1-08-traslados.md):
+
+- **OD016** · Transfer El Calafate Accommodation - FTE Airport (Chalten Travel): no se pide — sale en bus a Puerto Natales.
+
 ### AR09 · Patagonia Adventure Tour (15 noches, 16 días)
 
 Empieza en Buenos Aires y termina en Ushuaia. Itinerario: Multi Destination Independent Tours 1 Jun 2026 - 31 Dec 2027.docx; códigos: RutasenBus, fila 82.
@@ -87,6 +102,13 @@ Empieza en Buenos Aires y termina en Ushuaia. Itinerario: Multi Destination Inde
 | 13 | Bus El Calafate – Río Gallegos (diurno) | — | lo emite HI Travel (tarea manual) |
 | 13 | Bus Río Gallegos – Ushuaia (diurno) | — | lo emite HI Travel (tarea manual) |
 | 13 | **OD022** Ushuaia, end of the World (Ushuaia) | 3 noches | transfer de salida |
+
+Traslados en este tour (M1-08, detalle en M1-08-traslados.md):
+
+- **OD018** · Transfer EZE o AEP - Hotel - EZE o AEP (Greeters): solo la llegada — sale en bus a Puerto Madryn.
+- **OD025** · Transfer REL - accommodation (All Peninsula): no se pide — llega en bus desde Buenos Aires.
+- **OD013** · Transfer Round Trip (Chalten Travel): no se pide — llega en bus desde Puerto Madryn y sale en bus a Ushuaia.
+- **OD022** · Transfer Round Trip: Rumbo Sur (Rumbo Sur): solo la salida — llega en bus desde El Calafate.
 
 ### BRARCH26 · From Rio de Janeiro to Santiago de Chile (16 noches, 17 días)
 
@@ -105,6 +127,13 @@ Empieza en Río de Janeiro y termina en Santiago de Chile. Itinerario: Multi Des
 | 15 | **OD029** Santiago de Chile Starter Package (Santiago de Chile) | 2 noches | sin transfer |
 
 - Transfer de OD029 cambiado a mano (data/transfers-tour.csv): Owner (2026-10-09): Santiago, al final de BRARCH26, va sin transfer de salida.
+
+Traslados en este tour (M1-08, detalle en M1-08-traslados.md):
+
+- **OD010A** · Excursion: Paquete Receptvo 105 Premium (Cuenca del Plata): se pide como “Paquete Receptvo 105 Premium con transfer in desde la Rodoviaria de Foz y transfer out a la terminal de buses de Puerto Iguazú” — Owner (2026-10-10): en BRARCH26 llega en bus a Foz y sigue en bus desde Puerto Iguazú (data/traslados-tour.csv).
+- **OD018** · Transfer EZE o AEP - Hotel - EZE o AEP (Greeters): no se pide — llega en bus desde Iguazú y sale en bus a Mendoza.
+- **OD019** · Transfers: Remis Mendoza (Remis Mendoza): no se pide — llega en bus desde Buenos Aires y sale en bus a Santiago de Chile.
+- **OD029** · Transfer SCL - accommodation (CL Mundo): no se pide — Owner (2026-10-10): sin el traslado SCL de CL Mundo en BRARCH26, también al final del tour (data/traslados-tour.csv).
 
 ### 5C01 · 5 Countries: Rio de Janeiro to la Paz (29 noches, 30 días)
 
@@ -128,7 +157,19 @@ Empieza en Río de Janeiro y termina en La Paz. Itinerario: Multi Destination In
 | 21 | Bus Valparaíso – Calama (nocturno, llega el día 22) | — | lo emite HI Travel (tarea manual) |
 | 22 | Bus Calama – San Pedro de Atacama (diurno) | — | se reserva a mano en Kupos.cl (sistema propio, no se le escribe) |
 | 22 | **CHB31** (tour completo: Overland San Pedro de Atacama to Uyuni, end in La Paz) | 6 noches | sin transfer |
-| 28 | **OD031** La Paz Bolivia Starter package (La Paz) | 2 noches | transfer de salida |
+| 28 | **OD031** La Paz Bolivia Starter package (La Paz) | 2 noches | transfer de llegada |
+
+- Transfer de OD031 cambiado a mano (data/transfers-tour.csv): Owner (2026-10-10): en 5C01 se llega a La Paz en bus desde Uyuni y el traslado es desde la terminal de buses (data/traslados-tour.csv); OD031 no trae traslado de salida.
+
+Traslados en este tour (M1-08, detalle en M1-08-traslados.md):
+
+- **OD010D** · Excursion: Paquete Receptvo 105 Premium x Foz (Cuenca del Plata): se pide como “Paquete Receptvo 105 Premium x Foz con transfer in desde la Rodoviaria de Foz y transfer out a la terminal de buses de Puerto Iguazú” — Owner (2026-10-10): en 5C01 llega en bus a Foz y sigue en bus desde Puerto Iguazú (data/traslados-tour.csv).
+- **OD020** · Transfer EZE o AEP - Hotel - EZE o AEP (Greeters): no se pide — llega en bus desde Iguazú y sale en bus a Mendoza.
+- **OD019** · Transfers: Remis Mendoza (Remis Mendoza): no se pide — llega en bus desde Buenos Aires y sale en bus a Santiago de Chile.
+- **OD029** · Transfer SCL - accommodation (CL Mundo): no se pide — Owner (2026-10-10): sin el traslado SCL de CL Mundo en 5C01. Se reactiva (o no) con el cambio de precios de marzo-abril (data/traslados-tour.csv).
+- **COMPCH01** · Public Bus Santiago - Valparaiso - Santiago (Kupos.cl): solo la llegada (“Bus Santiago - Valparaíso, solo ida”) — Owner (2026-10-10): en 5C01 el bus Kupos queda solo de ida Santiago → Valparaíso (después sigue a Calama) (data/traslados-tour.csv).
+- **OD030** · Transfer in CJC - Accommodation in San Pedro de Atacama (Transvipp): no se pide — llega en bus desde Valparaíso.
+- **OD031** · Transfer La Paz Airport - La Paz Accommodation (Imperio Inca): se pide como “Transfer terminal de buses de La Paz - alojamiento en La Paz” — Owner (2026-10-10): en 5C01 llega en bus desde Uyuni: el traslado es desde la terminal de buses, no desde el aeropuerto de La Paz (data/traslados-tour.csv).
 
 ## Lo que necesito que confirmes
 

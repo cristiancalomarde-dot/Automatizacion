@@ -41,7 +41,7 @@ function claveSeccion(ciudad: string): string {
 export function reporteRecargaMarkdown(d: DatosReporteRecarga): string {
   const { cambios } = d;
   const out: string[] = [];
-  out.push("# Recarga del directorio de proveedores (M1-07)", "");
+  out.push("# Recarga del directorio de proveedores", "");
   out.push(
     `Recargué el directorio desde **${d.archivo}** (${d.fecha}). Leí ${d.resumen.procesados} proveedores: ` +
       `${d.resumen.insertados} nuevos y ${d.resumen.actualizados} que ya estaban (con sus datos al día).`,
@@ -82,13 +82,18 @@ export function reporteRecargaMarkdown(d: DatosReporteRecarga): string {
 
   out.push("## Borrados con tu OK", "");
   for (const b of d.borrados) {
-    const vueltos = d.borradosQueVolvieron.filter((r) => r.nombre_normalizado === b.nombreNormalizado);
+    // M1-08: el borrado vale en su sección (vacía = en cualquiera), como en apartarBorrados.
+    const vueltos = d.borradosQueVolvieron.filter(
+      (r) => r.nombre_normalizado === b.nombreNormalizado && (b.ciudad === null || b.ciudad === r.ciudad),
+    );
     if (vueltos.length) {
       for (const v of vueltos) {
-        out.push(`- [ ] **${b.nombre}** (${seccion(v.ciudad)}) volvió a aparecer en el Excel: no lo cargué. Si tiene que volver, sacalo de \`data/proveedores-borrados.csv\`.`);
+        out.push(
+          `- [ ] **${b.nombre}** (${seccion(v.ciudad)}) volvió a aparecer en el Excel: no lo cargué${b.nota ? ` (${b.nota})` : ""}. Si tiene que volver, sacalo de \`data/proveedores-borrados.csv\`.`,
+        );
       }
     } else {
-      out.push(`- ${b.nombre}: no está en el Excel ni volvió a la base.`);
+      out.push(`- ${b.nombre}${b.ciudad ? ` (${b.ciudad})` : ""}: no está en el Excel ni volvió a la base.`);
     }
   }
   out.push("");

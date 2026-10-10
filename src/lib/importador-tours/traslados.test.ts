@@ -77,7 +77,7 @@ describe("la regla general de traslados en un tour (spec M1-08 §3 #2)", () => {
   it("OD018 en AR09 con Greeters solo de llegada; OD022 solo de salida (Rumbo Sur)", () => {
     expect(de("AR09", "OD018")).toEqual([[6, "solo_llegada", "regla"]]);
     expect(de("AR09", "OD022")).toEqual([[4, "solo_salida", "regla"]]);
-    expect(ajustes("AR09").find((a) => a.paquete === "OD018")!.motivo).toBe("sale en bus a Puerto Madryn: solo se pide la llegada");
+    expect(ajustes("AR09").find((a) => a.paquete === "OD018")!.motivo).toBe("sale en bus a Puerto Madryn");
   });
 
   it("el primer paquete conserva la llegada; los buses y lo que no es traslado no se tocan", () => {

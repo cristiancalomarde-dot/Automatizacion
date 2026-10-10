@@ -20,8 +20,8 @@ describe("reporte de traslados por tour para el owner (spec M1-08 §3 #10)", () 
       codigo: "AR09",
       nombre: "Patagonia Adventure Tour",
       ajustes: [
-        a({ tour: "AR09", paquete: "OD018", accion: "solo_llegada", motivo: "sale en bus a Puerto Madryn: solo se pide la llegada" }),
-        a({ tour: "AR09", paquete: "OD022", accion: "solo_salida", motivo: "llega en bus desde El Calafate: solo se pide la salida" }),
+        a({ tour: "AR09", paquete: "OD018", accion: "solo_llegada", motivo: "sale en bus a Puerto Madryn" }),
+        a({ tour: "AR09", paquete: "OD022", accion: "solo_salida", motivo: "llega en bus desde El Calafate" }),
       ],
     },
     { codigo: "CHB31", nombre: "Overland", ajustes: [] },
@@ -33,8 +33,8 @@ describe("reporte de traslados por tour para el owner (spec M1-08 §3 #10)", () 
 
   it("por tour: qué se anuló, qué se reemplazó y qué quedó de un solo lado, en llano", () => {
     expect(md).toContain("## 5C01 · 5 Countries");
-    expect(md).toMatch(/\*\*Se anulan\*\*[\s\S]*\*\*OD020\*\* · Transfer EZE o AEP - Hotel - EZE o AEP \(Greeters\): llega en bus desde Iguazú y sale en bus a Mendoza/);
-    expect(md).toMatch(/\*\*Cambian\*\*[\s\S]*\*\*OD031\*\* · Transfer X \(Y\): se pide como “Transfer terminal de buses de La Paz - alojamiento”\. Owner \(2026-10-10\)/);
+    expect(md).toMatch(/\*\*Se anulan\*\*[\s\S]*\*\*OD020\*\* · Transfer EZE o AEP - Hotel - EZE o AEP \(Greeters\): no se pide — llega en bus desde Iguazú y sale en bus a Mendoza/);
+    expect(md).toMatch(/\*\*Cambian\*\*[\s\S]*\*\*OD031\*\* · Transfer X \(Y\): se pide como “Transfer terminal de buses de La Paz - alojamiento” — Owner \(2026-10-10\)/);
     expect(md).toMatch(/\*\*De un solo lado\*\*[\s\S]*\*\*OD018\*\* · Transfer X \(Y\): solo la llegada/);
     expect(md).toContain("solo la salida");
     expect(md).toMatch(/## CHB31 · Overland\n\nSin cambios: cada paquete pide sus traslados como se vende solo\./);
@@ -44,7 +44,16 @@ describe("reporte de traslados por tour para el owner (spec M1-08 §3 #10)", () 
     expect(md).toMatch(/## Traslados sin sentido deducido[\s\S]*\*\*OD019\*\* · Transfers: Remis Mendoza \(Remis Mendoza\)/);
   });
 
-  it("una línea por acción", () => {
+  it("una línea por acción: qué pasa — por qué", () => {
+    expect(lineaAjuste(a({ paquete: "OD016", accion: "anular", motivo: "sale en bus a Puerto Natales" }))).toBe(
+      "- **OD016** · Transfer X (Y): no se pide — sale en bus a Puerto Natales.",
+    );
+    expect(lineaAjuste(a({ paquete: "OD018", accion: "solo_llegada", motivo: "sale en bus a Puerto Madryn" }))).toBe(
+      "- **OD018** · Transfer X (Y): solo la llegada — sale en bus a Puerto Madryn.",
+    );
+    expect(lineaAjuste(a({ paquete: "COMPCH01", accion: "solo_llegada", origen: "excepcion", texto: "solo ida", motivo: "Owner: va a Calama" }))).toBe(
+      "- **COMPCH01** · Transfer X (Y): solo la llegada (“solo ida”) — Owner: va a Calama (data/traslados-tour.csv).",
+    );
     expect(lineaAjuste(a({ paquete: "OD030", accion: "invertir", texto: "San Pedro → CJC" }))).toContain("cambia de sentido: “San Pedro → CJC”");
   });
 });

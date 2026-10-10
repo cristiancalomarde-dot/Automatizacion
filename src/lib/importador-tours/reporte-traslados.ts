@@ -29,10 +29,10 @@ function queHace(x: AjusteTraslado): string {
 }
 
 export function lineaAjuste(x: AjusteTraslado): string {
-  const porque = x.origen === "excepcion" ? `${x.motivo} (data/traslados-tour.csv)` : x.motivo;
-  const que = x.accion === "anular" ? porque : `${queHace(x)}. ${porque}`;
-  const texto = x.accion !== "anular" && x.texto && x.accion.startsWith("solo") ? ` (“${x.texto}”)` : "";
-  return `- **${x.paquete}** · ${servicioEnLlano(x.servicio)}: ${que}${texto}.`.replace(/\.\.$/, ".");
+  const motivo = x.motivo.replace(/\.$/, "");
+  const porque = x.origen === "excepcion" ? `${motivo} (data/traslados-tour.csv)` : motivo;
+  const texto = x.texto && (x.accion === "anular" || x.accion === "solo_llegada" || x.accion === "solo_salida") ? ` (“${x.texto}”)` : "";
+  return `- **${x.paquete}** · ${servicioEnLlano(x.servicio)}: ${queHace(x)}${texto} — ${porque}.`;
 }
 
 export function reporteTrasladosMarkdown(

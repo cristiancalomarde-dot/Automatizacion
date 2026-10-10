@@ -3,10 +3,10 @@
 Cargué en el sistema los paquetes de un destino de los 7 tours desde **Construccion de Paquetes 2019 con 3 y 4 estrellas.xls** (2026-10-10). Cada servicio de cada paquete ya sabe a qué proveedor pedírselo, salvo los de la lista de abajo.
 
 - Paquetes: 17. Servicios (cada opción de hotel o excursión cuenta una vez): 146.
-- Con proveedor y mail: **130**.
+- Con proveedor y mail: **131**.
 - Por WhatsApp (el pedido lo hace una persona): **10**.
 - Manuales, no se le escribe a nadie (se reservan a mano en el sistema de ellos: Kupos.cl, Buquebus, Transvipp): **4**.
-- Sin resolver: **2**.
+- Sin resolver: **1**.
 
 ## Por paquete
 
@@ -16,7 +16,7 @@ Cargué en el sistema los paquetes de un destino de los 7 tours desde **Construc
 | OD016 | FTE | 11 | 11 | 0 | 0 | 0 | 0 |
 | OD017 | PNT | 11 | 10 | 0 | 1 | 0 | 0 |
 | OD018 | BUE | 14 | 14 | 0 | 0 | 0 | 0 |
-| OD019 | MDZ | 6 | 4 | 1 | 0 | 1 | 0 |
+| OD019 | MDZ | 6 | 5 | 1 | 0 | 0 | 0 |
 | OD020 | BUE | 14 | 13 | 0 | 1 | 0 | 0 |
 | OD022 | USH | 11 | 10 | 1 | 0 | 0 | 0 |
 | OD025 | PMY | 10 | 8 | 2 | 0 | 0 | 0 |
@@ -34,7 +34,6 @@ Cargué en el sistema los paquetes de un destino de los 7 tours desde **Construc
 
 Estos servicios todavía no saben a quién escribirle. Cuando completes el dato en el Excel de proveedores, alcanza con volver a correr la importación.
 
-- [ ] **OD019** (fila 83): 4* NH Cordillera → «NH Cordillera». Falta el mail: el owner lo está averiguando.
 - [ ] **COMPBR10** (fila 2671): O Hostel GRU → «O Hostel GRU». "O Hostel GRU" no está en el directorio ni en las equivalencias de SAO.
 
 ## Detalle: servicio → nivel → opción → a quién se le pide → contacto
@@ -47,7 +46,7 @@ Estos servicios todavía no saben a quién escribirle. Cuando completes el dato 
 | 216 | alojamiento | Hostel | 2 | Calafate Hostel | Always Glaciers | ALWAYS Glaciers | calafatehostel@alwaysglaciers.com |
 | 221 | alojamiento | Budget Hotel | 1 | Budget Hotel Del Glaciar Libertador | Del Glaciar | Del Glaciar / Juan Pablo | reservas@glaciar.com |
 | 221 | alojamiento | Budget Hotel | 2 | Hosteria HI | Always Glaciers | ALWAYS Glaciers | calafatehostel@alwaysglaciers.com |
-| 221 | alojamiento | Budget Hotel | 3 | Puerto San Julian | Patagonian Group | Hosteria Fitz roy | info@patagoniangroup.com.ar |
+| 221 | alojamiento | Budget Hotel | 3 | Puerto San Julian | Patagonian Group | Hosteria Puerto San Julian, proveedor Patagonian Group | info@patagoniangroup.com.ar |
 | 226 | alojamiento | Hotel 3* | 1 | Holtel 3* Rincon del Calafate | Tremun | Rincon del calafate | reservas@rincondelcalafate.com.ar |
 | 226 | alojamiento | Hotel 3* | 2 | Hotel * Sent Calafate | Tremun | Sent | reservas@sentcalafate.com.ar |
 | 231 | alojamiento | Hotel 4* | 1 | Hotel 4* Mirador del Lago | Tremun | Mirador del Lago | reservas@miradordellago.com.ar |
@@ -64,7 +63,7 @@ Estos servicios todavía no saben a quién escribirle. Cuando completes el dato 
 | 216 | alojamiento | Hostel | 2 | Calafate Hostel | Always Glaciers | ALWAYS Glaciers | calafatehostel@alwaysglaciers.com |
 | 221 | alojamiento | Budget Hotel | 1 | Budget Hotel Del Glaciar Libertador | Del Glaciar | Del Glaciar / Juan Pablo | reservas@glaciar.com |
 | 221 | alojamiento | Budget Hotel | 2 | Hosteria HI | Always Glaciers | ALWAYS Glaciers | calafatehostel@alwaysglaciers.com |
-| 221 | alojamiento | Budget Hotel | 3 | Puerto San Julian | Patagonian Group | Hosteria Fitz roy | info@patagoniangroup.com.ar |
+| 221 | alojamiento | Budget Hotel | 3 | Puerto San Julian | Patagonian Group | Hosteria Puerto San Julian, proveedor Patagonian Group | info@patagoniangroup.com.ar |
 | 226 | alojamiento | Hotel 3* | 1 | Holtel 3* Rincon del Calafate | Tremun | Rincon del calafate | reservas@rincondelcalafate.com.ar |
 | 226 | alojamiento | Hotel 3* | 2 | Hotel * Sent Calafate | Tremun | Sent | reservas@sentcalafate.com.ar |
 | 231 | alojamiento | Hotel 4* | 1 | Hotel 4* Mirador del Lago | Tremun | Mirador del Lago | reservas@miradordellago.com.ar |
@@ -113,7 +112,7 @@ Estos servicios todavía no saben a quién escribirle. Cuando completes el dato 
 |---|---|---|---|---|---|---|---|
 | 75 | alojamiento | Hostel | 1 | Lagares Hostel | Lagares Hostel | Hostel Lagares Mendoza | WhatsApp |
 | 79 | alojamiento | Hotel 3* | 1 | 3* Hotel Argentino | Hotel Argentino Mendoza | Argentino Hotel | info@argentino-hotel.com.ar |
-| 83 | alojamiento | Hotel 4* | 1 | 4* NH Cordillera | NH Cordillera | — | **sin resolver** |
+| 83 | alojamiento | Hotel 4* | 1 | 4* NH Cordillera | NH Cordillera | NH Cordillera | lb.ermocida@minor-hotels.com |
 | 83 | alojamiento | Hotel 4* | 2 | Hotel MOD | Hotel MOD | Mod Hotel | reservas@the-mod.com |
 | 89 | traslado | — | 1 | Remis Mendoza | Remis Mendoza | Remis Mendoza | info@mendozaremis.com |
 | 90 | excursion | — | 1 | Bodegas half Day and Alta Montaña | Huentata | Huentata | ventas2@huentata.tur.ar, ventas@huentata.tur.ar |
@@ -209,7 +208,7 @@ Estos servicios todavía no saben a quién escribirle. Cuando completes el dato 
 | 869 | alojamiento | Hostel | 3 | Bamboo Rio Hostel | Bamboo Rio Hostel | Bamboo Hostel Rio | WhatsApp |
 | 869 | alojamiento | Hostel | 4 | El Misti Ipanema | El Misti Ipanema | El Misti Hostel Ipanema | info@elmistihostels.com |
 | 875 | alojamiento | Hotel 3* | 1 | National Inn Copacabana | Nacional Inn | Nacional inn Copacabana | reservas@nacionalinncopacabana.com.br, rio.lazer@nacionalinn.com |
-| 875 | alojamiento | Hotel 3* | 2 | Copacabana Mar Hostel | Copacabana Mar | Copacabana Mar hotel | reserva@copacabanamar.com.br |
+| 875 | alojamiento | Hotel 3* | 2 | Copacabana Mar Hostel | Copacabana Mar | Copacabana Mar hotel | romulo.santos@hotelbb.com, vera.reis@hotelbb.com |
 | 881 | traslado | — | 1 | GIG - Accommodation in Rio | Buzios Transfers | buzios transfer | buziostransfer@hotmail.com |
 | 881 | traslado | — | 2 | GIG - Accommodation in Rio | Alex | Alex | WhatsApp |
 | 882 | excursion | — | 1 | Big Dude | Local 55 | Rodrigo Perez | perez@local55.com |
@@ -223,9 +222,9 @@ Estos servicios todavía no saben a quién escribirle. Cuando completes el dato 
 | 1029 | alojamiento | Hostel | 3 | Patagonia | Patagonia | Patagonia Hostel El Chalten | patagoniahostel.agencias@gmail.com |
 | 1034 | alojamiento | Budget Hotel | 1 | Kau Si Aike | Kau Si Aike | Kau si ake | hosteriakausiaike@gmail.com |
 | 1034 | alojamiento | Budget Hotel | 2 | Poincenot | Chalten Travel | Chalten Travel | agencias@chaltentravel.com |
-| 1034 | alojamiento | Budget Hotel | 3 | Fitz Roy | Patagonian Group | Hosteria Fitz roy | info@patagoniangroup.com.ar |
-| 1034 | alojamiento | Budget Hotel | 4 | Vertical Lodge | Patagonian Group | Hosteria Fitz roy | info@patagoniangroup.com.ar |
-| 1034 | alojamiento | Budget Hotel | 5 | El Paraiso | Patagonian Group | Hosteria Fitz roy | info@patagoniangroup.com.ar |
+| 1034 | alojamiento | Budget Hotel | 3 | Fitz Roy | Patagonian Group | Hosteria Fitz roy, proveedor Patagonian Group | info@patagoniangroup.com.ar |
+| 1034 | alojamiento | Budget Hotel | 4 | Vertical Lodge | Patagonian Group | Vertical Lodge, proveedor Patagonian Group | info@patagoniangroup.com.ar |
+| 1034 | alojamiento | Budget Hotel | 5 | El Paraiso | Patagonian Group | Hosteria El Paraiso, proveedor Patagonian Group | info@patagoniangroup.com.ar |
 | 1038 | otro (opcional) | — | 1 | 2nd Night at Fitz Camp | Receptivo Chalten | Fitz Camp / Receptivo Chalten | info@receptivochalten.com |
 | 1042 | traslado | — | 1 | El Calafate Airport to El Chalten | Chalten Travel | Chalten Travel | agencias@chaltentravel.com |
 | 1042 | traslado | — | 2 | El Calafate Airport to El Chalten | Transporte Las Lengas | Las Lengas | info@lengas.com |
