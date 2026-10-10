@@ -347,6 +347,7 @@ export function armarTour(e: EntradaArmado): TourArmado {
   type Elemento = { tipo: "grupo"; grupo: Grupo } | { tipo: "bus"; paso: Paso };
   const secuencia: Elemento[] = [];
   const serviciosPropios: ServicioPropio[] = [];
+  const tramosUsados = new Set<TramoConProveedor>();
   const ciudades: string[] = [];
   const sumarCiudad = (d: string) => {
     const n = nombreDestino(d);
@@ -380,6 +381,7 @@ export function armarTour(e: EntradaArmado): TourArmado {
     const antes = i < primera ? undefined : grupoAntes(i);
     const despues = i > ultima ? undefined : grupoDespues(i);
     const propio = e.tramosConProveedor.find((t) => t.tour === e.codigo && mismaRuta(t, bus.desde, bus.hasta));
+    if (propio) tramosUsados.add(propio);
     // Un bus que el paquete de una de sus puntas ya trae como servicio propio
     // (misma ruta, en cualquier sentido) no es ni tramo ni servicio del tour.
     // Si el paquete tiene más de uno con esa ruta, se cita el del mismo sentido.
@@ -460,6 +462,33 @@ export function armarTour(e: EntradaArmado): TourArmado {
     }
   }
   if (motivos.length) return revisar();
+
+  // M1-08: un tramo con proveedor que sale del último destino y que el Word
+  // no trae como bus de esa ruta (ARCH31: "Punta Arenas Airport Drop Off or
+  // Bus from Puerto Natales to El Calafate") va como salida del tour, el
+  // último día.
+  const final = grupoDePaso.get(ultima)!;
+  for (const t of e.tramosConProveedor.filter((x) => x.tour === e.codigo && !tramosUsados.has(x))) {
+    const desde = final.destinos.has(t.desde) ? t.desde : final.destinos.has(t.hasta) ? t.hasta : null;
+    if (!desde) continue;
+    const hasta = desde === t.desde ? t.hasta : t.desde;
+    const diaDesde = diaGrupo.get(final)! + (nochesGrupo.get(final) ?? 0);
+    serviciosPropios.push({
+      ruta: t.ruta,
+      desde: t.desde,
+      hasta: t.hasta,
+      bookingSupplier: t.bookingSupplier,
+      ambosSentidos: t.ambosSentidos,
+      diaDesde,
+      nocturno: false,
+      sentido: ruta(desde, hasta),
+      ...(t.alternativa ? { alternativa: t.alternativa } : {}),
+    });
+    sumarCiudad(hasta);
+    base.notas.push(
+      `La salida de ${nombreDestino(desde)} (${t.ruta}${t.alternativa ? ` o ${t.alternativa}` : ""}) la pone data/tramos-con-proveedor.csv como último paso del tour (día ${diaDesde}).`,
+    );
+  }
 
   // --- 5. componentes y transfers ---
   const componentes: ComponenteArmado[] = secuencia.map((el, k) => {

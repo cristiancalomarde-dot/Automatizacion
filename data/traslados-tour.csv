@@ -1,0 +1,9 @@
+tour,paquete,servicio,accion,texto,nota
+5C01,OD029,SCL - accommodation,anular,,"Owner (2026-10-10): sin el traslado SCL de CL Mundo en 5C01. Se reactiva (o no) con el cambio de precios de marzo-abril"
+BRARCH26,OD029,SCL - accommodation,anular,,"Owner (2026-10-10): sin el traslado SCL de CL Mundo en BRARCH26, también al final del tour"
+5C01,OD010D,Paquete Receptvo 105 Premium x Foz,reemplazar,"Paquete Receptvo 105 Premium x Foz con transfer in desde la Rodoviaria de Foz y transfer out a la terminal de buses de Puerto Iguazú","Owner (2026-10-10): en 5C01 llega en bus a Foz y sigue en bus desde Puerto Iguazú"
+BRARCH26,OD010A,Paquete Receptvo 105 Premium,reemplazar,"Paquete Receptvo 105 Premium con transfer in desde la Rodoviaria de Foz y transfer out a la terminal de buses de Puerto Iguazú","Owner (2026-10-10): en BRARCH26 llega en bus a Foz y sigue en bus desde Puerto Iguazú"
+5C01,OD031,La Paz Airport - La Paz Accommodation,reemplazar,"Transfer terminal de buses de La Paz - alojamiento en La Paz","Owner (2026-10-10): en 5C01 llega en bus desde Uyuni: el traslado es desde la terminal de buses, no desde el aeropuerto de La Paz"
+BOCHI04R,OD030,in CJC - Accommodation in San Pedro de Atacama,invertir,"Transfer alojamiento en San Pedro de Atacama - aeropuerto de Calama (CJC)","Owner (2026-10-10): en BOCHI04R el Transvip pasa a ser de salida, San Pedro → CJC"
+5C01,COMPCH01,Santiago - Valparaiso - Santiago,solo_llegada,"Bus Santiago - Valparaíso, solo ida","Owner (2026-10-10): en 5C01 el bus Kupos queda solo de ida Santiago → Valparaíso (después sigue a Calama)"
+ARCH31,OD017,Punta Arenas - Puerto Natales,anular,,"Owner (2026-10-10): en ARCH31 se llega a Puerto Natales en bus desde El Calafate, sin el bus Punta Arenas → Puerto Natales"

@@ -1,5 +1,6 @@
 import { nombreDestino } from "./ciudades";
 import type { ResumenImportacionTours, ResumenTour } from "./importar";
+import { lineaAjuste } from "./reporte-traslados";
 
 /**
  * Reporte para el owner (spec M1-05 §3 #10): cada tour con su secuencia día
@@ -69,7 +70,10 @@ export function reporteToursMarkdown(r: ResumenImportacionTours, meta: { fecha: 
   out.push(
     "- Cada tour guarda su secuencia: cada paquete con sus noches en el tour y el día en que empieza, y cada bus con el día en que sale y si es nocturno. Las fechas reales se calculan cuando llegue la reserva con su fecha de inicio.",
   );
-  out.push("- Transfer: solo la llegada del primer destino y la salida del último. Iguazú conserva los suyos aunque esté en el medio.", "");
+  out.push(
+    "- Transfer: solo la llegada del primer destino y la salida del último. Iguazú conserva los suyos aunque esté en el medio. Dentro de cada tour, los traslados del paquete al que se llega o del que se sale en bus no se piden (M1-08); el detalle está en M1-08-traslados.md.",
+    "",
+  );
 
   out.push("## Resumen", "", "| Tour | Nombre | Noches | Estado | Paquetes | Buses que emite HI Travel | Buses con proveedor |", "|---|---|---|---|---|---|---|");
   for (const t of r.tours) {
@@ -98,6 +102,9 @@ export function reporteToursMarkdown(r: ResumenImportacionTours, meta: { fecha: 
     if (t.notas.length) {
       for (const n of t.notas) out.push(`- ${n}`);
       out.push("");
+    }
+    if (t.ajustes.length) {
+      out.push("Traslados en este tour (M1-08, detalle en M1-08-traslados.md):", "", ...t.ajustes.map(lineaAjuste), "");
     }
   }
 

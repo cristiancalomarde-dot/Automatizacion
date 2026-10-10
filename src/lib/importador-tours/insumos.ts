@@ -13,6 +13,7 @@ import {
 } from "./datos";
 import type { DocumentoWord } from "./importar";
 import { HOJA_TOURS } from "./rutas";
+import { parsearTrasladosTour, type ExcepcionTraslado } from "./traslados";
 import { leerParrafosDocx } from "./word";
 
 /**
@@ -39,6 +40,8 @@ export interface InsumosTours {
   tramosConProveedor: TramoConProveedor[];
   categoriasTour: CategoriaTour[];
   excepcionesTransfer: ExcepcionTransfer[];
+  /** data/traslados-tour.csv (M1-08). */
+  excepcionesTraslado: ExcepcionTraslado[];
   archivos: { rutas: string; paquetes: string };
 }
 
@@ -75,6 +78,9 @@ export function leerInsumosTours(raiz: string): InsumosTours {
     categoriasTour: parsearCategoriasTour(texto("data/categorias-tour.csv")),
     excepcionesTransfer: existsSync(resolve(raiz, "data/transfers-tour.csv"))
       ? parsearTransfersTour(texto("data/transfers-tour.csv"))
+      : [],
+    excepcionesTraslado: existsSync(resolve(raiz, "data/traslados-tour.csv"))
+      ? parsearTrasladosTour(texto("data/traslados-tour.csv"))
       : [],
     archivos: { rutas: basename(RUTA_RUTAS), paquetes: basename(RUTA_PAQUETES) },
   };

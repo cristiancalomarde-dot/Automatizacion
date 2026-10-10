@@ -26,8 +26,10 @@ import { createClient } from "@supabase/supabase-js";
 import { importarToursCompuestos } from "@/lib/importador-tours/importar";
 import { leerInsumosTours } from "@/lib/importador-tours/insumos";
 import { reporteToursMarkdown } from "@/lib/importador-tours/reporte";
+import { reporteTrasladosMarkdown } from "@/lib/importador-tours/reporte-traslados";
 
 const REPORTE = "docs/sdd/diagnosticos/M1-05-tours.md";
+const REPORTE_TRASLADOS = "docs/sdd/diagnosticos/M1-08-traslados.md";
 
 function variable(nombre: string): string {
   const valor = process.env[nombre];
@@ -56,6 +58,14 @@ async function main() {
     }),
   );
 
+  writeFileSync(
+    resolve(raiz, REPORTE_TRASLADOS),
+    reporteTrasladosMarkdown(
+      { tours: resumen.tours.filter((t) => t.estado === "armado"), sinSentido: resumen.trasladosSinSentido },
+      { fecha: new Date().toISOString().slice(0, 10) },
+    ),
+  );
+
   console.log(
     JSON.stringify(
       {
@@ -65,7 +75,9 @@ async function main() {
         actualizados: resumen.actualizados,
         eliminados: resumen.eliminados,
         filasParaRevisar: resumen.filasParaRevisar,
+        trasladosSinSentido: resumen.trasladosSinSentido.length,
         reporte: REPORTE,
+        reporteTraslados: REPORTE_TRASLADOS,
       },
       null,
       2,

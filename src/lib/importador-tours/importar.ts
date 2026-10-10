@@ -7,6 +7,14 @@ import { verificarCategorias, type CategoriaFaltante } from "./categorias";
 import type { CategoriaTour, ExcepcionTransfer, TramoConProveedor } from "./datos";
 import { nochesBasePaquete } from "./noches-base";
 import { resolverProveedorTramo } from "./proveedor-tramo";
+import {
+  ajustesDeTraslados,
+  secuenciaDePaquetes,
+  validarExcepcionesTraslado,
+  type AjusteTraslado,
+  type ExcepcionTraslado,
+  type ServicioDePaquete,
+} from "./traslados";
 import { leerTourRutas, type TourExcel } from "./rutas";
 import { leerItinerario, type ItinerarioWord } from "./word";
 
@@ -28,6 +36,11 @@ import { leerItinerario, type ItinerarioWord } from "./word";
  *   queda con 0 componentes.
  * - No toca los productos simples (los paquetes): solo los lee.
  * - Nunca crea proveedores.
+ *
+ * M1-08: además calcula cómo queda cada traslado de cada paquete dentro del
+ * tour (regla general + `data/traslados-tour.csv`, ver `traslados.ts`) y lo
+ * guarda en `tour_servicio_ajuste` (identidad: tour + paquete + orden). Si
+ * una excepción no cierra, corta antes de escribir nada.
  */
 
 export const TIPO_CORRIDA_TOURS = "tours-compuestos";
@@ -63,15 +76,19 @@ export interface ResumenTour {
   columnasSinCodigo: Array<{ columna: string; encabezado: string }>;
   /** Días del itinerario que el Word no escribe como "DAY N:". */
   diasSinEncabezado: number[];
+  /** Cómo queda cada traslado de cada paquete en este tour (M1-08). */
+  ajustes: AjusteTraslado[];
 }
 
 export interface ResumenImportacionTours {
   importacionId: string;
   tours: ResumenTour[];
   nochesBase: Record<string, number | null>;
-  creados: { productos: number; componentes: number; servicios: number; codigos: number };
-  actualizados: { productos: number; componentes: number; servicios: number };
-  eliminados: { componentes: number; servicios: number };
+  creados: { productos: number; componentes: number; servicios: number; codigos: number; ajustes: number };
+  actualizados: { productos: number; componentes: number; servicios: number; ajustes: number };
+  eliminados: { componentes: number; servicios: number; ajustes: number };
+  /** Traslados de los paquetes cuyo sentido no se deduce del texto (M1-08, se reportan). */
+  trasladosSinSentido: Array<{ paquete: string; orden: number; servicio: string }>;
   filasParaRevisar: number;
 }
 
@@ -139,6 +156,8 @@ export async function importarToursCompuestos(opciones: {
   categoriasTour: CategoriaTour[];
   /** data/transfers-tour.csv (M1-07). Una fila que no cierra corta la carga antes de escribir. */
   excepcionesTransfer?: ExcepcionTransfer[];
+  /** data/traslados-tour.csv (M1-08). Una fila que no cierra corta la carga antes de escribir. */
+  excepcionesTraslado?: ExcepcionTraslado[];
   archivos: { rutas: string; paquetes: string };
   tours?: string[];
 }): Promise<ResumenImportacionTours> {
@@ -209,6 +228,55 @@ export async function importarToursCompuestos(opciones: {
     );
   }
 
+  // --- M1-08: cómo queda cada traslado en cada tour (antes de escribir nada) ---
+  const { data: deLosPaquetes, error: errorDeLosPaquetes } = await admin
+    .from("producto_servicio")
+    .select("producto_id, orden, prioridad, tipo_servicio, service_provider_nombre, descripcion, sentido")
+    .in("producto_id", [...paquetes.keys()].map((c) => productoPorCodigo.get(c)!.id))
+    .not("orden", "is", null);
+  if (errorDeLosPaquetes) throw new Error(`No se pudo leer los servicios de los paquetes: ${errorDeLosPaquetes.message}`);
+  const codigoDeId = new Map([...paquetes.keys()].map((c) => [productoPorCodigo.get(c)!.id, c]));
+  const serviciosPorPaquete = new Map<string, ServicioDePaquete[]>();
+  for (const s of deLosPaquetes ?? []) {
+    const codigo = codigoDeId.get(s.producto_id as string)!;
+    serviciosPorPaquete.set(codigo, [
+      ...(serviciosPorPaquete.get(codigo) ?? []),
+      {
+        orden: s.orden as number,
+        prioridad: s.prioridad as number,
+        tipo: s.tipo_servicio as string,
+        serviceProviderNombre: (s.service_provider_nombre as string | null) ?? null,
+        descripcion: (s.descripcion as string | null) ?? null,
+        sentido: (s.sentido as ServicioDePaquete["sentido"]) ?? null,
+      },
+    ]);
+  }
+  const trasladosSinSentido = [...serviciosPorPaquete.entries()]
+    .flatMap(([paquete, lista]) =>
+      lista
+        .filter((s) => s.tipo === "traslado" && s.sentido === "sin_sentido" && s.prioridad === 1)
+        .map((s) => ({ paquete, orden: s.orden, servicio: (s.descripcion ?? "").split("\n")[0] })),
+    )
+    .sort((a, b) => a.paquete.localeCompare(b.paquete) || a.orden - b.orden);
+  // Una excepción de un tour que no se carga en esta corrida se ignora; la de un tour desconocido corta.
+  const excepcionesTraslado = (opciones.excepcionesTraslado ?? []).filter(
+    (x) => codigosTour.includes(x.tour) || !TOURS_PILOTO.includes(x.tour),
+  );
+  const toursArmados = codigosTour.filter((c) => armados.get(c)!.estado === "armado");
+  validarExcepcionesTraslado(excepcionesTraslado, toursArmados);
+  const ajustesPorTour = new Map<string, AjusteTraslado[]>();
+  for (const codigo of toursArmados) {
+    ajustesPorTour.set(
+      codigo,
+      ajustesDeTraslados({
+        tour: codigo,
+        secuencia: secuenciaDePaquetes(armados.get(codigo)!, armados, (c) => paquetes.get(c)?.destino ?? ""),
+        servicios: serviciosPorPaquete,
+        excepciones: excepcionesTraslado,
+      }),
+    );
+  }
+
   // --- proveedores (para los buses con proveedor): solo se leen ---
   const { data: proveedores, error: errorProveedores } = await admin
     .from("proveedor")
@@ -236,9 +304,9 @@ export async function importarToursCompuestos(opciones: {
     nivelesPorId.set(n.producto_id, (nivelesPorId.get(n.producto_id) ?? new Set()).add(n.nivel as string));
   }
 
-  const creados = { productos: 0, componentes: 0, servicios: 0, codigos: 0 };
-  const actualizados = { productos: 0, componentes: 0, servicios: 0 };
-  const eliminados = { componentes: 0, servicios: 0 };
+  const creados = { productos: 0, componentes: 0, servicios: 0, codigos: 0, ajustes: 0 };
+  const actualizados = { productos: 0, componentes: 0, servicios: 0, ajustes: 0 };
+  const eliminados = { componentes: 0, servicios: 0, ajustes: 0 };
 
   // --- 1. el producto de cada tour (también los que quedan para revisar) ---
   for (const codigo of codigosTour) {
@@ -304,6 +372,7 @@ export async function importarToursCompuestos(opciones: {
       filaRutas: excel?.fila ?? null,
       columnasSinCodigo: excel?.columnasSinCodigo ?? [],
       diasSinEncabezado: diasFaltantes(wordPorTour.get(codigo)?.word ?? null),
+      ajustes: ajustesPorTour.get(codigo) ?? [],
     };
     resumenes.push(resumen);
     if (t.estado !== "armado") continue;
@@ -405,6 +474,41 @@ export async function importarToursCompuestos(opciones: {
       eliminados.servicios += sobrantesServicio.length;
     }
 
+    // ajustes de traslados (M1-08; identidad: tour + paquete + orden)
+    const { data: ajustesActuales, error: errorAjustes } = await admin
+      .from("tour_servicio_ajuste")
+      .select("id, paquete_id, orden, accion, texto, motivo, origen")
+      .eq("tour_id", productoId);
+    if (errorAjustes) throw new Error(`No se pudo leer los ajustes de ${codigo}: ${errorAjustes.message}`);
+    const ajustePorClave = new Map(((ajustesActuales ?? []) as Fila[]).map((f) => [`${f.paquete_id}:${f.orden}`, f]));
+    for (const a of resumen.ajustes) {
+      const paqueteId = productoPorCodigo.get(a.paquete)!.id;
+      const fila: Fila = { accion: a.accion, texto: a.texto, motivo: a.motivo, origen: a.origen };
+      const clave = `${paqueteId}:${a.orden}`;
+      const actual = ajustePorClave.get(clave);
+      ajustePorClave.delete(clave);
+      if (!actual) {
+        const { error: e } = await admin
+          .from("tour_servicio_ajuste")
+          .insert({ tour_id: productoId, paquete_id: paqueteId, orden: a.orden, ...fila });
+        if (e) throw new Error(`No se pudo guardar un ajuste de ${codigo}: ${e.message}`);
+        creados.ajustes++;
+      } else if (!iguales(fila, actual, ["accion", "texto", "motivo", "origen"])) {
+        const { error: e } = await admin
+          .from("tour_servicio_ajuste")
+          .update({ ...fila, updated_at: ahora })
+          .eq("id", actual.id as string);
+        if (e) throw new Error(`No se pudo actualizar un ajuste de ${codigo}: ${e.message}`);
+        actualizados.ajustes++;
+      }
+    }
+    const ajustesSobrantes = [...ajustePorClave.values()].map((f) => f.id as string);
+    if (ajustesSobrantes.length) {
+      const { error: e } = await admin.from("tour_servicio_ajuste").delete().in("id", ajustesSobrantes);
+      if (e) throw new Error(`No se pudieron borrar ajustes viejos de ${codigo}: ${e.message}`);
+      eliminados.ajustes += ajustesSobrantes.length;
+    }
+
     // categorías tour ↔ paquete (se informan; el tour se carga igual)
     resumen.categoriasFaltantes = verificarCategorias(
       codigo,
@@ -454,16 +558,18 @@ export async function importarToursCompuestos(opciones: {
           servicios_propios: r.serviciosPropios.map((s) => ({ ruta: s.sentido, booking_supplier: s.bookingSupplier, dia: s.diaDesde, nocturno: s.nocturno, sin_resolver: s.sinResolver })),
           categorias: r.categorias,
           categorias_faltantes: r.categoriasFaltantes,
+          ajustes: r.ajustes.map((a) => ({ paquete: a.paquete, orden: a.orden, accion: a.accion, texto: a.texto, motivo: a.motivo, origen: a.origen })),
         })),
         noches_base: nochesBase,
         creados,
         actualizados,
         eliminados,
+        traslados_sin_sentido: trasladosSinSentido,
       },
     })
     .select("id")
     .single();
   if (errorImportacion) throw new Error(`No se pudo registrar la importación: ${errorImportacion.message}`);
 
-  return { importacionId: importacion.id, tours: resumenes, nochesBase, creados, actualizados, eliminados, filasParaRevisar };
+  return { importacionId: importacion.id, tours: resumenes, nochesBase, creados, actualizados, eliminados, filasParaRevisar, trasladosSinSentido };
 }

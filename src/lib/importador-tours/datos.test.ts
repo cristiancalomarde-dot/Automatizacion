@@ -35,10 +35,13 @@ describe("tramos-con-proveedor.csv (spec M1-05 §3 #6)", () => {
       ["5C01", "SCL", "VLP", "Kupos.cl", false],
       ["5C01", "CJC", "SPA", "Kupos.cl", false],
       ["ARCH33", "PNT", "PUQ", "Kupos.cl", false],
+      ["ARCH31", "PNT", "PUQ", "Kupos.cl", false],
     ]);
     // M1-07 #3: Transvip queda solo como traslado del aeropuerto de Calama (en OD030), no en 5C01.
     expect(texto).not.toMatch(/transvip/i);
     expect(tramos.find((t) => t.tour === "ARCH33")!.alternativa).toMatch(/Patagonia Planet/);
+    // M1-08 (f): ARCH31 termina con la misma salida de Puerto Natales, el traslado a pedido
+    expect(tramos.find((t) => t.tour === "ARCH31")!.alternativa).toMatch(/a pedido.*Patagonia Planet/);
   });
 
   it("alternativa es opcional", () => {
@@ -119,10 +122,13 @@ describe("transfers-tour.csv (spec M1-07 §3 #4)", () => {
     expect(() => parsearTransfersTour(`${enc}BRARCH26,OD029,,\n`)).toThrow(/fila 2.*no cambia nada/);
   });
 
-  it("el archivo real: BRARCH26 OD029 sin transfer de salida (owner, 2026-10-09)", async () => {
+  it("el archivo real: BRARCH26 OD029 sin transfer de salida (owner, 2026-10-09); 5C01 OD031 llega a la terminal (M1-08)", async () => {
     const { readFileSync } = await import("node:fs");
     const filas = parsearTransfersTour(readFileSync("data/transfers-tour.csv", "utf-8"));
-    expect(filas.map((f) => [f.tour, f.codigo, f.transferIn, f.transferOut])).toEqual([["BRARCH26", "OD029", null, false]]);
+    expect(filas.map((f) => [f.tour, f.codigo, f.transferIn, f.transferOut])).toEqual([
+      ["BRARCH26", "OD029", null, false],
+      ["5C01", "OD031", true, false],
+    ]);
   });
 });
 

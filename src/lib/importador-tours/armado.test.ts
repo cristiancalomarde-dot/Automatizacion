@@ -321,4 +321,24 @@ describe("correcciones del probalo vos de M1 (spec M1-07)", () => {
     expect(t.serviciosPropios).toEqual([]);
     expect(t.notas.join(" ")).toMatch(/está incluida en CH10/);
   });
+
+  it("ARCH31 (M1-08): termina con la salida de Puerto Natales aunque el Word no la traiga como bus de esa ruta", () => {
+    const kupos = { ...KUPOS_PNT, tour: "ARCH31", alternativa: "a pedido, traslado al aeropuerto de Puerto Natales con Patagonia Planet" };
+    const t = armarTour(entrada("ARCH31", RUTAS_ARCH31, WORD_ARCH31, { tramosConProveedor: [kupos] }));
+    expect(resumen(t)).toEqual(["1 OD033 d1 3n IN", "2 bus CHA-FTE d4", "3 OD016 d4 3n", "4 bus FTE-PNT d7", "5 OD017 d7 2n OUT"]);
+    if (t.estado !== "armado") return;
+    expect(t.serviciosPropios).toEqual([
+      expect.objectContaining({
+        sentido: "Puerto Natales – Punta Arenas",
+        bookingSupplier: "Kupos.cl",
+        diaDesde: 9,
+        nocturno: false,
+        alternativa: "a pedido, traslado al aeropuerto de Puerto Natales con Patagonia Planet",
+      }),
+    ]);
+    expect(t.notas.join(" ")).toMatch(/salida de Puerto Natales.*tramos-con-proveedor/);
+    // ARCH33 no la duplica (ya la trae el Word)
+    const a33 = armarTour(entrada("ARCH33", RUTAS_ARCH33, WORD_ARCH33, { tramosConProveedor: [KUPOS_PNT] }));
+    expect(a33.estado === "armado" && a33.serviciosPropios.length).toBe(1);
+  });
 });

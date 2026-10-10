@@ -1,2 +1,3 @@
 tour,codigo,transfer_in,transfer_out,nota
 BRARCH26,OD029,,no,"Owner (2026-10-09): Santiago, al final de BRARCH26, va sin transfer de salida"
+5C01,OD031,si,no,"Owner (2026-10-10): en 5C01 se llega a La Paz en bus desde Uyuni y el traslado es desde la terminal de buses (data/traslados-tour.csv); OD031 no trae traslado de salida"

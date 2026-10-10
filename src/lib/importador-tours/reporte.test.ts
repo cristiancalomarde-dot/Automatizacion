@@ -34,6 +34,7 @@ function resumenDe(codigo: string, filas: string[][], word: string[]): ResumenTo
     filaRutas: excel.fila,
     columnasSinCodigo: excel.columnasSinCodigo,
     diasSinEncabezado: [],
+    ajustes: [],
   };
 }
 
@@ -54,10 +55,11 @@ describe("reporte de los tours para el owner (spec M1-05 §3 #10)", () => {
       },
     ],
     nochesBase: { OD016: 2, OD033: null },
-    creados: { productos: 0, componentes: 0, servicios: 0, codigos: 0 },
-    actualizados: { productos: 0, componentes: 0, servicios: 0 },
-    eliminados: { componentes: 0, servicios: 0 },
+    creados: { productos: 0, componentes: 0, servicios: 0, codigos: 0, ajustes: 0 },
+    actualizados: { productos: 0, componentes: 0, servicios: 0, ajustes: 0 },
+    eliminados: { componentes: 0, servicios: 0, ajustes: 0 },
     filasParaRevisar: 1,
+    trasladosSinSentido: [],
   };
   r.tours[0].categoriasFaltantes = [
     { tour: "ARCH31", categoriaTour: "Budget Hotel", componente: "OD017", buscada: "Budget Hotel", porArchivo: false, disponibles: ["Hostel", "Hotel 3*"] },
@@ -69,6 +71,30 @@ describe("reporte de los tours para el owner (spec M1-05 §3 #10)", () => {
     expect(md).toContain("| 4 | Bus El Chaltén – El Calafate (diurno) | — | lo emite HI Travel (tarea manual) |");
     expect(md).toContain("3 noches (1 noche más que el paquete solo)");
     expect(md).toContain("| 6 | Bus Uyuni – La Paz (nocturno, llega el día 7) | — | lo reserva Imperio Inca (servicio del tour) |");
+  });
+
+  it("cada tour dice cómo quedan sus traslados (M1-08)", () => {
+    const base = resumenDe("ARCH31", RUTAS_ARCH31, WORD_ARCH31);
+    const conAjuste: ResumenTour = {
+      ...base,
+      ajustes: [
+        {
+          tour: "ARCH31",
+          paquete: "OD016",
+          orden: 5,
+          accion: "anular",
+          texto: null,
+          motivo: "llega en bus desde El Chaltén y sale en bus a Puerto Natales",
+          origen: "regla",
+          servicio: "Transfer El Calafate Accommodation - FTE Airport. Booking Supplier: Chalten Travel",
+          sentido: "salida",
+        },
+      ],
+    };
+    const texto = reporteToursMarkdown({ ...r, tours: [conAjuste] }, { fecha: "x", archivos: [] });
+    expect(texto).toContain("Traslados en este tour (M1-08, detalle en M1-08-traslados.md):");
+    expect(texto).toContain("- **OD016** · Transfer El Calafate Accommodation - FTE Airport (Chalten Travel): llega en bus desde El Chaltén y sale en bus a Puerto Natales.");
+    expect(md).not.toContain("Traslados en este tour");
   });
 
   it("lista los tours para revisar con su motivo", () => {
