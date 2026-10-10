@@ -20,7 +20,9 @@
  * agrega filas. Escribe `docs/sdd/diagnosticos/M1-04d-carga.md`.
  *
  * Después carga `data/noches-servicio.csv` (M1-07): en qué noches del paquete
- * va cada servicio (CH10: alojamiento noche 1 y 6, W Trek noches 2 a 5).
+ * va cada servicio (CH10: alojamiento noche 1 y 6, W Trek noches 2 a 5; M1-08:
+ * OD010D noches 1-2 en Foz y 3 en Puerto Iguazú), y `data/servicios-a-pedido.csv`
+ * (M1-08): los servicios que no se piden siempre (salida de OD016, Remis de OD019).
  *
  * Variables de entorno (regla #2 — nunca en el código; en local se leen de
  * `.env.local`): NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY y,
@@ -36,6 +38,7 @@ import { crearRegistroUsoIASupabase } from "@/lib/ia/registro-uso-ia-supabase";
 import { crearConsultorIABloque } from "@/lib/importador-productos/ia-bloque";
 import { CODIGOS_PILOTO, importarProductosSimples, leerFilasPaquetes } from "@/lib/importador-productos/importar";
 import { cargarNochesServicio, parsearNochesServicio } from "@/lib/importador-productos/noches-servicio";
+import { cargarServiciosAPedido, parsearServiciosAPedido } from "@/lib/importador-productos/a-pedido";
 import { nochesBasePaquete } from "@/lib/importador-tours/noches-base";
 import { parsearNivelesConfirmados } from "@/lib/importador-productos/niveles-confirmados";
 import { parsearPaquetesPiloto } from "@/lib/importador-productos/paquetes-piloto";
@@ -47,6 +50,7 @@ const CODIGOS_TR = "Insumos/Codigos Productos Tourradar.xlsx";
 const LISTA = "data/paquetes-piloto.csv";
 const NIVELES_CONFIRMADOS = "data/niveles-confirmados.csv";
 const NOCHES_SERVICIO = "data/noches-servicio.csv";
+const A_PEDIDO = "data/servicios-a-pedido.csv";
 const REPORTE = "docs/sdd/diagnosticos/M1-04d-carga.md";
 
 function variable(nombre: string): string {
@@ -106,6 +110,9 @@ async function main() {
         nochesPaquete: (codigo) => nochesBasePaquete(filasPaquetes, codigo),
       })
     : null;
+  const aPedido = existsSync(resolve(process.cwd(), A_PEDIDO))
+    ? await cargarServiciosAPedido({ admin, filas: parsearServiciosAPedido(readFileSync(archivo(A_PEDIDO), "utf-8")) })
+    : null;
 
   const carga = resumirCarga(await leerServiciosCargados(admin, paquetes.map((p) => p.codigo)));
   // Iguazú (M1-04) no se recarga acá, pero lo que le falta también es del piloto.
@@ -134,6 +141,7 @@ async function main() {
         totales: carga.totales,
         sinResolver: carga.sinResolver.length,
         nochesPorServicio: noches,
+        serviciosAPedido: aPedido,
         reporte: REPORTE,
       },
       null,

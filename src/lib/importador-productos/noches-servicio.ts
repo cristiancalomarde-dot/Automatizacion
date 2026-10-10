@@ -16,6 +16,11 @@ import { leerCsv } from "./csv";
  * Controles (si no cierran, se corta antes de escribir): el servicio existe
  * en el paquete; para cada nivel de alojamiento, sus noches más las de los
  * otros servicios no se pisan y suman las noches del paquete.
+ *
+ * M1-08: un alojamiento también se puede nombrar por su hotel, cuando la
+ * línea del Excel junta dos ("2 Nights Nacional inn Foz + 1 Night El
+ * Pueblito" ya se carga como dos servicios del mismo nivel): OD010D va noches
+ * 1-2 en Foz y 3 en Puerto Iguazú. Los hoteles de un mismo nivel suman juntos.
  */
 
 export interface FilaNochesServicio {
@@ -32,6 +37,8 @@ export interface ServicioDelPaquete {
   prioridad: number;
   tipo: string;
   serviceProviderNombre: string | null;
+  /** Nivel de alojamiento (M1-08): los hoteles de un mismo nivel suman juntos (OD010D: Foz + Puerto Iguazú). */
+  nivel?: string | null;
 }
 
 export interface NochesDeServicio {
@@ -82,6 +89,11 @@ export function planNochesServicio(
   const propias = filas.filter((f) => f.paquete === paquete);
   const plan: NochesDeServicio[] = [];
   const alojamientos = [...new Set(servicios.filter((s) => s.tipo === "alojamiento").map((s) => s.orden))];
+  // El nivel de cada alojamiento (sin nivel cargado, cada servicio es su propio grupo, como en CH10).
+  const grupoDe = new Map<number, string>();
+  for (const s of servicios) {
+    if (s.tipo === "alojamiento" && !grupoDe.has(s.orden)) grupoDe.set(s.orden, s.nivel ?? `orden-${s.orden}`);
+  }
   const otrosConNoches = new Set<number>();
   for (const f of propias) {
     let ordenes: number[];
@@ -96,7 +108,7 @@ export function planNochesServicio(
             .map((s) => s.orden),
         ),
       ];
-      for (const o of ordenes) otrosConNoches.add(o);
+      for (const o of ordenes) if (!grupoDe.has(o)) otrosConNoches.add(o);
     }
     if (ordenes.length === 0) {
       throw new Error(`noches-servicio.csv: ${paquete} no tiene el servicio "${f.servicio}" (¿está cargado el paquete?).`);
@@ -112,9 +124,9 @@ export function planNochesServicio(
 
   // Cada nivel de alojamiento + los otros servicios con noches = el viaje entero, sin pisarse.
   const otros = plan.filter((p) => otrosConNoches.has(p.orden));
-  const niveles = alojamientos.filter((o) => plan.some((p) => p.orden === o));
+  const niveles = [...new Set(alojamientos.filter((o) => plan.some((p) => p.orden === o)).map((o) => grupoDe.get(o)!))];
   for (const nivel of niveles.length ? niveles : [null]) {
-    const partes = [...plan.filter((p) => p.orden === nivel), ...otros];
+    const partes = [...plan.filter((p) => nivel !== null && grupoDe.get(p.orden) === nivel), ...otros];
     const ocupadas = new Set<number>();
     for (const p of partes) {
       for (let n = p.nocheDesde; n < p.nocheDesde + p.noches; n++) {
@@ -161,7 +173,7 @@ export async function cargarNochesServicio(opciones: {
   for (const codigo of codigos) {
     const { data: servicios, error: e } = await admin
       .from("producto_servicio")
-      .select("orden, prioridad, tipo_servicio, service_provider_nombre")
+      .select("orden, prioridad, tipo_servicio, service_provider_nombre, nivel")
       .eq("producto_id", idDe.get(codigo)!)
       .not("orden", "is", null);
     if (e) throw new Error(`No se pudo leer los servicios de ${codigo}: ${e.message}`);
@@ -175,6 +187,7 @@ export async function cargarNochesServicio(opciones: {
           prioridad: s.prioridad as number,
           tipo: s.tipo_servicio as string,
           serviceProviderNombre: (s.service_provider_nombre as string | null) ?? null,
+          nivel: (s.nivel as string | null) ?? null,
         })),
         opciones.nochesPaquete(codigo),
       ),

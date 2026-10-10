@@ -1,0 +1,3 @@
+paquete,servicio,marca,nota
+OD016,El Calafate Accommodation - FTE Airport,a_pedido,"Owner (2026-10-10): en OD016 vendido solo, el traslado de salida al aeropuerto de El Calafate es opcional (a pedido del pax o del vendedor). El de llegada se pide siempre, pero el Excel no tiene esa línea"
+OD019,Remis Mendoza,segun_reserva,"Owner (2026-10-10): Remis Mendoza solo si el paquete es CON traslados (el pax llega en avión). Elegir la variante con la reserva es M2"
