@@ -3,18 +3,15 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
 
 # Dónde retomar
 
-- **Retomar acá (2026-10-11):** M1-10 (motivos visibles sin notas internas) tiene el código hecho
-  (`ba498ab`) y la verificación 1 + build en verde. Falta recargar la base: al Programador le
-  negaron el permiso de escribir en Supabase. **Pedirle al owner que corra él:**
-  `! cd /c/Users/gs/dev/hi-travel-automatizacion && npm run importar:paquetes && npm run importar:tours`.
-  Después:
-  1. Suite completa + `tests/recorrido-m1-10.integration.test.tsx`.
-  2. Commitear el `M1-08-traslados.md` regenerado. Descartar los reportes que solo cambian la fecha.
-  3. M1-10 ✅ en la tabla.
-  4. **Deploy (el owner ya dio OK):** `git -C <repo Drive> push origin main`. Vercel publica desde
-     `main`. El checklist del deploy-engineer dio GO el 2026-10-11.
-  5. El owner revisa los tours en https://automatizacion-dun.vercel.app. Con su OK, archivar M1 y
-     arrancar M2 (`/roadmap M2`).
+- **Retomar acá (2026-10-11):**
+  - M1-10 terminada: 645/645 + lint, con la base recargada por el owner.
+  - **Publicado en Vercel** con OK del owner: push `b5fb19a` a GitHub. Vercel quedó "Deployment
+    has completed". Se publica con `git push origin main` desde el repo de Drive.
+  - **Siguiente:**
+    1. El owner revisa los tours en https://automatizacion-dun.vercel.app.
+    2. Con su OK, archivar M1 en `docs/sdd/roadmaps/archive/`.
+    3. Armar la planilla borrador de Journaway.
+    4. Arrancar M2 con `/roadmap M2`.
   - Hallazgos menores de la auditoría UX, para después:
     - chips "Transfer de llegada/salida" con el mismo fondo que la fila del paquete;
     - ámbar usado en ajustes ya resueltos;
