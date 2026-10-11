@@ -25,6 +25,17 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
     `https://automatizacion-dun.vercel.app/**`; si no, el login local lo devuelve a Vercel.
   - Costo: hoy US$ 0 (Vercel Hobby + Supabase Free). Para uso comercial corresponde Vercel Pro
     (US$ 20/mes), a decidir.
+  - **Para M2 (owner, 2026-10-11):**
+    - Confirmado el riesgo de la pregunta abierta 8 del PRD: los mails que el antispam de Ferozo
+      manda a Spam en `sales@` NO se reenvían al Gmail de automation (pasó con TourRadar). Moverlos
+      al Inbox después tampoco los reenvía.
+    - Opciones: lista blanca en el antispam de Ferozo (tourradar, kilroy, journaway), o que M2 lea
+      `sales@` por IMAP incluida la carpeta Spam (c1391889.ferozo.com:993). Se decide en
+      `/roadmap M2`.
+    - SMTP para M3: c1391889.ferozo.com:465 SSL, usuario operations@hitravel.com.ar.
+    - El panel avisa que el hosting está cerca de la capacidad máxima.
+    - Mails de ejemplo en `Insumos/Mails`: Kilroy, Journaway, PDFs de TourRadar y pedidos a
+      proveedores.
   - Estimación dada al owner: primera prueba de M2 (un mail real entra como reserva) en unas 2
     semanas; recorrido completo en 4 a 6 semanas.
 
