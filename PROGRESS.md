@@ -3,21 +3,18 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
 
 # Dónde retomar
 
-- **M1-08 terminada (2026-10-10):** 606/606 tests + lint en verde (verificado por el loop principal),
-  migración 0009 aplicada (`producto_servicio.sentido/a_pedido/a_pedido_nota`, tabla
-  `tour_servicio_ajuste`). Reporte para el owner: `docs/sdd/diagnosticos/M1-08-traslados.md`.
-  **Siguiente:** el owner recorre en localhost 5C01, AR09, ARCH31, BOCHI04R y BRARCH26; con su OK se
-  archiva M1 y se ofrece `/deploy`. Pendientes del owner:
-  - Borrar el proveedor huérfano "Hosteria Fitz roy" (EL CHALTEN, id `8277b82e-…`, sin servicios,
-    lo creó un test): necesita su OK y probablemente que lo corra él con `!`.
-  - Faltan en el Excel de paquetes: traslado de llegada de OD016 (FTE → alojamiento) y de OD017
-    (PNT → alojamiento, a pedido). Sin esas líneas no se pueden mostrar.
-  - Confirmar: 5C01 anula el Transvip CJC de OD030 (se llega en bus); el bus Kupos de COMPCH01 en
-    5C01 se superpone con el tramo propio "Bus Santiago – Valparaíso" (¿anular en vez de solo ida?).
-  - Detalles de pantalla: ARCH31 figura terminando en Punta Arenas; OD017 en ARCH31 (y CH10 en
-    ARCH33) siguen con el chip "Transfer de salida".
-  - Borrar la fila 119 del Excel de proveedores cuando le quede cómodo (el sistema ya la ignora).
-- **Respuestas del owner a M1-08 (2026-10-10), en curso como M1-09:**
+- **M1-08 y M1-09 terminadas (2026-10-11):** 635/635 tests + lint en verde (verificado por el loop
+  principal). Migración 0009 aplicada. Reportes: `docs/sdd/diagnosticos/M1-08-traslados.md` y
+  `M1-09-recarga.md`.
+  **Siguiente:** el owner recorre en localhost 5C01, AR09, ARCH31, ARCH33, BOCHI04R, BRARCH26,
+  OD016 y OD017. Con su OK se archiva M1 y se ofrece `/deploy`.
+  - Para que confirme el owner (M1-09):
+    - Las etiquetas siguen la regla "si se llega o se sale con un bus del tour, no aparece". Por
+      eso también cambian COMPBO20 (en 5C01, BOCHI04R y CHB31) y OD030 en 5C01.
+    - Si Imperio Inca recoge en la terminal de Uyuni, hace falta una excepción.
+    - OD017 muestra "Opcional" y "A pedido". ¿Sobra una?
+    - El Excel corrigió "Avi Verde" → "Aji Verde" en OD030.
+- **Respuestas del owner a M1-08 (2026-10-10), resueltas en M1-09:**
   - OK: 5C01 sin el Transvip de Calama en OD030.
   - OK: ARCH31 termina en Punta Arenas, salvo pedido de traslado al aeropuerto PNT.
   - Corrigió el Excel de paquetes: OD016 ahora tiene la llegada; OD017 tiene la llegada PNT a pedido.
