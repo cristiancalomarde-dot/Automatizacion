@@ -4,7 +4,7 @@
  * contar y decir el estado de cada servicio.
  */
 import { TEXTOS } from "@/lib/textos";
-import type { FilaCatalogo, FilaDirectorio, Servicio } from "./tipos";
+import type { ComponenteTour, FilaCatalogo, FilaDirectorio, Servicio } from "./tipos";
 
 // === Estado de un servicio (#15) ==============================================
 
@@ -143,6 +143,112 @@ export function duracionTour(
     fin = fin === null ? dia : Math.max(fin, dia);
   }
   return fin;
+}
+
+// === Etiquetas de transfer dentro de un tour (M1-09 #4) ============================
+
+/**
+ * Destinos que conservan sus traslados aunque estén en el medio del tour: el
+ * transfer va dentro del 105 Premium. Es la misma lista que la regla general
+ * de M1-08 (`src/lib/importador-tours/traslados.ts`).
+ */
+const DESTINOS_CON_TRANSFER = new Set(["IGR", "IGU"]);
+
+type Lado = "in" | "out";
+
+/** De qué lado queda cada traslado del paquete después de los ajustes del tour, y de cuál se anuló. */
+function ladosDeTraslados(servicios: Servicio[]): { conserva: Set<Lado>; anulado: Set<Lado> } {
+  const conserva = new Set<Lado>();
+  const anulado = new Set<Lado>();
+  for (const s of servicios) {
+    if (s.tipo !== "traslado") continue;
+    const lados: Lado[] =
+      s.sentido === "llegada" ? ["in"] : s.sentido === "salida" ? ["out"] : s.sentido === "ida_y_vuelta" ? ["in", "out"] : [];
+    const accion = s.ajusteTour?.accion;
+    if (accion === "anular") {
+      for (const l of lados.length ? lados : (["in", "out"] as Lado[])) anulado.add(l);
+      continue;
+    }
+    const quedan: Lado[] =
+      accion === "solo_llegada"
+        ? ["in"]
+        : accion === "solo_salida"
+          ? ["out"]
+          : accion === "invertir"
+            ? lados.map((l): Lado => (l === "in" ? "out" : "in"))
+            : lados;
+    for (const l of lados) if (!quedan.includes(l)) anulado.add(l);
+    for (const l of quedan) conserva.add(l);
+  }
+  return { conserva, anulado };
+}
+
+interface PasoDelTour {
+  componente: ComponenteTour;
+  /** Día del tour de afuera en que empieza. */
+  dia: number | null;
+}
+
+/**
+ * Los paquetes de un tour en orden, con los de un tour de adentro (CHB31 en
+ * 5C01) desplegados, y los días de los buses del tour (los propios y los de
+ * los tours de adentro), en días del tour de afuera.
+ */
+function desplegar(componentes: ComponenteTour[], serviciosDelTour: Servicio[], desfase: number, pasos: PasoDelTour[], buses: number[]): void {
+  for (const s of serviciosDelTour) {
+    const dia = s.tipo === "bus" ? diaDeServicioDelTour(s.descripcion) : null;
+    if (dia !== null) buses.push(dia + desfase);
+  }
+  for (const c of componentes) {
+    const dia = c.diaDesde !== null ? c.diaDesde + desfase : null;
+    if (c.tipo === "tramo_bus" || !c.producto) continue;
+    const adentro = c.producto.esTour && c.producto.componentes?.length ? c.producto.componentes : null;
+    if (adentro) desplegar(adentro, c.producto.servicios, (dia ?? 1) - 1, pasos, buses);
+    else pasos.push({ componente: c, dia });
+  }
+}
+
+/**
+ * Las marcas "Transfer de llegada / de salida" de cada paquete de un tour,
+ * coherentes con lo que se pide de verdad (spec M1-09 §3 #4). Un lado se
+ * muestra si el paquete conserva un traslado de ese lado después de los
+ * ajustes de M1-08, o si la marca del componente lo pide, no hay ajuste que
+ * lo anule y no se llega (o sale) con un bus del tour.
+ *
+ * Se llega en bus a todo paquete que no es el primero y se sale en bus de
+ * todo el que no es el último (la regla de M1-08). El primero llega en bus si
+ * el tour tiene un bus propio ese día o antes (BOCHI04R); el último sale en
+ * bus si el tour tiene un bus propio después de que empieza (la salida de
+ * Puerto Natales de ARCH31 y ARCH33). Iguazú conserva sus marcas.
+ *
+ * Devuelve componentes nuevos (también los del tour de adentro); no muta.
+ */
+export function etiquetasTransferEnTour(componentes: ComponenteTour[], serviciosDelTour: Servicio[]): ComponenteTour[] {
+  const pasos: PasoDelTour[] = [];
+  const buses: number[] = [];
+  desplegar(componentes, serviciosDelTour, 0, pasos, buses);
+  const efectivas = new Map<ComponenteTour, { in: boolean; out: boolean }>();
+  pasos.forEach((paso, i) => {
+    const c = paso.componente;
+    const producto = c.producto!;
+    if (DESTINOS_CON_TRANSFER.has(producto.destino ?? "")) return;
+    const llegaEnBus = i > 0 || (paso.dia !== null && buses.some((b) => b <= paso.dia!));
+    const saleEnBus = i < pasos.length - 1 || (paso.dia !== null && buses.some((b) => b > paso.dia!));
+    const { conserva, anulado } = ladosDeTraslados(producto.servicios);
+    efectivas.set(c, {
+      in: conserva.has("in") || (c.transferIn && !llegaEnBus && !anulado.has("in")),
+      out: conserva.has("out") || (c.transferOut && !saleEnBus && !anulado.has("out")),
+    });
+  });
+
+  const aplicar = (lista: ComponenteTour[]): ComponenteTour[] =>
+    lista.map((c) => {
+      const e = efectivas.get(c);
+      const adentro = c.producto?.componentes;
+      const conAdentro = adentro && c.producto ? { ...c, producto: { ...c.producto, componentes: aplicar(adentro) } } : c;
+      return e ? { ...conAdentro, transferIn: e.in, transferOut: e.out } : conAdentro;
+    });
+  return aplicar(componentes);
 }
 
 // === Noches por servicio (M1-07 #8, #9) ============================================

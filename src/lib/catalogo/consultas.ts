@@ -10,7 +10,7 @@
  * muestre su mensaje de error con "Reintentar" y nunca datos parciales (#12).
  */
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { esPendiente, estadoServicio, proveedoresDeServicios } from "./reglas";
+import { esPendiente, estadoServicio, etiquetasTransferEnTour, proveedoresDeServicios } from "./reglas";
 import type {
   AjusteEnTour,
   Canal,
@@ -255,7 +255,8 @@ export async function cargarProducto(supabase: SupabaseClient, id: string): Prom
     esTour: listaComponentes.length > 0,
     codigosExternos: (verificar(codigos) as any[]).map(aCodigoExterno),
     servicios: servicios.get(id) ?? [],
-    componentes: listaComponentes,
+    // M1-09: las marcas de transfer de cada paquete, coherentes con sus ajustes en este tour.
+    componentes: etiquetasTransferEnTour(listaComponentes, servicios.get(id) ?? []),
   };
 }
 
