@@ -20,6 +20,10 @@ describe("sentido de un traslado de paquete (spec M1-08 §3 #1)", () => {
     ["Transfer REL - accommodation. Bookinkg Supplier: All Peninsula", "llegada"],
     ["Transfer La Paz Airport - La Paz Accommodation: Booking Supplier: Imperio Inca", "llegada"],
     ["Transfer El Calafate Airport to El Chalten. Booking Supplier: Chalten Travel / Transporte Las Lengas", "llegada"],
+    // M1-09: los textos que el owner corrigió en el Excel del 2026-10-10
+    ["Transfer FTE Airport - El Calafate Accommodation. Booking Supplier: Chalten Travel", "llegada"],
+    ["Optiona Transfer PNT Airport - PNT accommodation if requested.Booking Supplier: Patagonia Planet", "llegada"],
+    ["Optional Transfer PNT Airport - PNT accommodation", "llegada"],
   ] as const)("%s → %s", (texto, sentido) => {
     expect(sentidoDelTraslado(texto)).toBe(sentido);
   });

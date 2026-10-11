@@ -7,7 +7,9 @@
  * - "Round Trip" (o "in + out") → ida y vuelta.
  * - Se parte en tramos por " - " o " to ". Un tramo es un *punto de llegada
  *   o salida* si nombra un aeropuerto, una terminal o un código de tres
- *   letras en mayúsculas (SCL, FTE, EZE, CJC…).
+ *   letras en mayúsculas (SCL, FTE, EZE, CJC…). Un tramo que nombra el
+ *   alojamiento sin aeropuerto ni terminal no es un punto aunque lleve el
+ *   código de la ciudad ("PNT accommodation", M1-09).
  *   - punto al principio y al final ("EZE o AEP - Hotel - EZE o AEP") → ida y vuelta;
  *   - punto al principio ("SCL - accommodation", "El Calafate Airport to El Chalten") → llegada;
  *   - punto al final ("El Calafate Accommodation - FTE Airport") → salida;
@@ -22,9 +24,12 @@ const PREFIJO = /^\s*transfers?\b\s*[:.]?\s*/i;
 const IDA_Y_VUELTA = /\bround\s*trip\b|\bin\s*\+\s*out\b|\bida\s+y\s+vuelta\b/i;
 const PUNTO = /\b(airport|aeropuerto|terminal|bus station|rodoviaria)\b/i;
 const CODIGO = /\b[A-Z]{3}\b/;
+const ALOJAMIENTO = /\b(accommodation|alojamiento|hotel|hostel)\b/i;
 
 function esPunto(tramo: string): boolean {
-  return PUNTO.test(tramo) || CODIGO.test(tramo);
+  if (PUNTO.test(tramo)) return true;
+  if (ALOJAMIENTO.test(tramo)) return false;
+  return CODIGO.test(tramo);
 }
 
 export function sentidoDelTraslado(texto: string): SentidoTraslado {

@@ -7,7 +7,7 @@ import { leerCsv } from "./csv";
  * #6), desde `data/servicios-a-pedido.csv` (paquete, servicio, marca, nota) a
  * `producto_servicio.a_pedido` / `a_pedido_nota` (migración 0009):
  *
- * - `a_pedido`: lo pide el pax o el vendedor (OD016: el traslado de salida).
+ * - `a_pedido`: lo pide el pax o el vendedor (OD017: el traslado de llegada, M1-09).
  * - `segun_reserva`: depende de la variante que se venda (OD019: Remis
  *   Mendoza solo si el paquete es CON traslados; elegir la variante es M2).
  *
