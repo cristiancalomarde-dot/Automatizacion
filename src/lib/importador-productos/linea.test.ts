@@ -258,6 +258,15 @@ describe("clasificarLinea — lo que confirmó el owner sobre los 17 paquetes (s
     expect(c.servicios[0].opcional ?? false).toBe(false);
   });
 
+  it("M1-09: \"Optiona Transfer …\" (typo del Excel del 2026-10-10, OD017) → traslado opcional", () => {
+    const r = clasificarLinea("Optiona Transfer PNT Airport - PNT accommodation if requested.Booking Supplier: Patagonia Planet");
+    if (r.clase !== "servicio") throw new Error(r.clase);
+    expect(r.servicios[0]).toMatchObject({ tipo: "traslado", opcional: true });
+    expect(r.servicios[0].opciones).toEqual([
+      { prioridad: 1, serviceProvider: "PNT Airport - PNT accommodation if requested", bookingSupplier: "Patagonia Planet" },
+    ]);
+  });
+
   it("#7 los títulos de sección \"Excursions en …\" / \"Excursions in …\" / \"Excursions Aventura\" se ignoran", () => {
     for (const t of ["Excursions en Natales", "Excursions en San Pedro", "Excursions in La Paz", "Excursions Aventura"]) {
       expect(clasificarLinea(t).clase, t).toBe("etiqueta");

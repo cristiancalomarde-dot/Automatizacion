@@ -80,8 +80,12 @@ const TIPOS: Array<[RegExp, TipoServicio]> = [
 
 const PREFIJO_SERVICIO =
   /^(accomm?odations?|excursions?|transfers?|public bus(?:es)?|bus(?:es)?|cruises?|ferry|ferries|car rentals?|other services?)\b\s*[:.]?\s*(.*)$/i;
-/** "Optional Excursion: …" / "Optional: …" (M1-04d #6): el resto se lee como cualquier línea. */
-const OPCIONAL = /^optional\b\s*:?\s*/i;
+/**
+ * "Optional Excursion: …" / "Optional: …" (M1-04d #6): el resto se lee como
+ * cualquier línea. También "Optiona Transfer …", el typo del Excel del
+ * 2026-10-10 en OD017 (M1-09).
+ */
+const OPCIONAL = /^optional?\b\s*:?\s*/i;
 /**
  * "Excursions en Natales", "Excursions in La Paz", "Excursions Aventura":
  * títulos de sección (confirmado por el owner, M1-04d #7). En plural, sin ":"
