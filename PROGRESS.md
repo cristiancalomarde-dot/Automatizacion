@@ -17,6 +17,18 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
   - Detalles de pantalla: ARCH31 figura terminando en Punta Arenas; OD017 en ARCH31 (y CH10 en
     ARCH33) siguen con el chip "Transfer de salida".
   - Borrar la fila 119 del Excel de proveedores cuando le quede cómodo (el sistema ya la ignora).
+- **Respuestas del owner a M1-08 (2026-10-10), en curso como M1-09:**
+  - OK: 5C01 sin el Transvip de Calama en OD030.
+  - OK: ARCH31 termina en Punta Arenas, salvo pedido de traslado al aeropuerto PNT.
+  - Corrigió el Excel de paquetes: OD016 ahora tiene la llegada; OD017 tiene la llegada PNT a pedido.
+  - Borró la fila 119 del Excel de proveedores. El huérfano "Hosteria Fitz roy" ya se borró de la
+    base con su OK.
+  - Pidió corregir las etiquetas "Transfer de salida" dentro de ARCH31 y ARCH33.
+  - **Para M3 (costos):** el bus SCL–VLP de 5C01 se cuenta dos veces en RutasenBus.
+    - Una vez en la columna "SCL - VLP" (12,5 neto) y otra en "VLP 2 n", que es el total de
+      COMPCH01 e incluye el bus ida y vuelta de 26 neto.
+    - Recomendado: en los tours, COMPCH01 sin bus y el tramo en su columna, como los demás buses.
+    - El owner lo deja para más adelante.
 - **Ojo:** el test de M1-03 ahora usa `data/proveedores-borrados.csv`; antes reinsertaba filas
   borradas en la base real.
 
