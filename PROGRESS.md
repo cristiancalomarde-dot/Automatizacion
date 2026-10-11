@@ -36,6 +36,15 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
     - El panel avisa que el hosting está cerca de la capacidad máxima.
     - Mails de ejemplo en `Insumos/Mails`: Kilroy, Journaway, PDFs de TourRadar y pedidos a
       proveedores.
+  - **Journaway (3ª agencia en volumen; piloto de M2):**
+    - Tarifario en `Insumos/San Pedro de Atacama, Iguazu, Patagonia and Easter Island Prices for
+      Journaway 2027.docx`: ~45 productos simples (SPA, IGR, Patagonia, Ushuaia, Pascua, W Trek) y
+      el Trip D, SPA + Overland privado con Tayka.
+    - Reservan por nombre de tour, sin código. Van código HI Travel propio + nombre JW en
+      `codigo_externo`.
+    - **Pendiente acordado con el owner:** después de cerrar M1, armarle una planilla borrador
+      (código sugerido, nombre JW, destino y proveedor deducido del directorio, en blanco si no se
+      sabe). Él completa los proveedores.
   - Estimación dada al owner: primera prueba de M2 (un mail real entra como reserva) en unas 2
     semanas; recorrido completo en 4 a 6 semanas.
 
