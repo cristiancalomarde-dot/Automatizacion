@@ -1,6 +1,6 @@
 # Los 7 tours compuestos (M1-05)
 
-Armé los tours top-seller con los códigos de RutasenBus y el itinerario día por día de los Word de catálogo (2026-10-10). Leí: RutasenBus2020.xls, Multi Destination Independent Tours 1 Jun 2026 - 31 Dec 2027.docx, Two Destination Tours 1 Jun 2026 - 31 Dec 2027.docx, One Destination Tours 1 Jun 2026 - 31 Dec 2027.docx, Unique Tours 1 Jun 2026 - 31 Dec 2027.docx, Construccion de Paquetes 2019 con 3 y 4 estrellas.xls.
+Armé los tours top-seller con los códigos de RutasenBus y el itinerario día por día de los Word de catálogo (2026-10-11). Leí: RutasenBus2020.xls, Multi Destination Independent Tours 1 Jun 2026 - 31 Dec 2027.docx, Two Destination Tours 1 Jun 2026 - 31 Dec 2027.docx, One Destination Tours 1 Jun 2026 - 31 Dec 2027.docx, Unique Tours 1 Jun 2026 - 31 Dec 2027.docx, Construccion de Paquetes 2019 con 3 y 4 estrellas.xls.
 
 - Armados: **7 de 7**. Para revisar: **0**.
 - Cada tour guarda su secuencia: cada paquete con sus noches en el tour y el día en que empieza, y cada bus con el día en que sale y si es nocturno. Las fechas reales se calculan cuando llegue la reserva con su fecha de inicio.
@@ -63,8 +63,9 @@ Empieza en El Chaltén y termina en Punta Arenas. Itinerario: Multi Destination 
 
 Traslados en este tour (M1-08, detalle en M1-08-traslados.md):
 
-- **OD016** · Transfer El Calafate Accommodation - FTE Airport (Chalten Travel): no se pide — sale en bus a Puerto Natales.
+- **OD016** · Transfer FTE Airport - El Calafate Accommodation (Chalten Travel): no se pide — llega en bus desde El Chaltén.
 - **OD017** · Bus Punta Arenas - Puerto Natales (Kupos): no se pide — Owner (2026-10-10): en ARCH31 se llega a Puerto Natales en bus desde El Calafate, sin el bus Punta Arenas → Puerto Natales (data/traslados-tour.csv).
+- **OD017** · Optiona Transfer PNT Airport - PNT accommodation if requested (Patagonia Planet): no se pide — llega en bus desde El Calafate.
 
 ### ARCH33 · Patagonia, Trekking Paradise with W-Trek (11 noches, 12 días)
 
@@ -85,7 +86,7 @@ Empieza en El Chaltén y termina en Punta Arenas. Itinerario: Multi Destination 
 
 Traslados en este tour (M1-08, detalle en M1-08-traslados.md):
 
-- **OD016** · Transfer El Calafate Accommodation - FTE Airport (Chalten Travel): no se pide — sale en bus a Puerto Natales.
+- **OD016** · Transfer FTE Airport - El Calafate Accommodation (Chalten Travel): no se pide — llega en bus desde El Chaltén.
 
 ### AR09 · Patagonia Adventure Tour (15 noches, 16 días)
 

@@ -1,9 +1,9 @@
 # Carga de los paquetes de los 7 tours (M1-04d)
 
-Cargué en el sistema los paquetes de un destino de los 7 tours desde **Construccion de Paquetes 2019 con 3 y 4 estrellas.xls** (2026-10-10). Cada servicio de cada paquete ya sabe a qué proveedor pedírselo, salvo los de la lista de abajo.
+Cargué en el sistema los paquetes de un destino de los 7 tours desde **Construccion de Paquetes 2019 con 3 y 4 estrellas.xls** (2026-10-11). Cada servicio de cada paquete ya sabe a qué proveedor pedírselo, salvo los de la lista de abajo.
 
-- Paquetes: 17. Servicios (cada opción de hotel o excursión cuenta una vez): 146.
-- Con proveedor y mail: **131**.
+- Paquetes: 17. Servicios (cada opción de hotel o excursión cuenta una vez): 147.
+- Con proveedor y mail: **132**.
 - Por WhatsApp (el pedido lo hace una persona): **10**.
 - Manuales, no se le escribe a nadie (se reservan a mano en el sistema de ellos: Kupos.cl, Buquebus, Transvipp): **4**.
 - Sin resolver: **1**.
@@ -14,7 +14,7 @@ Cargué en el sistema los paquetes de un destino de los 7 tours desde **Construc
 |---|---|---|---|---|---|---|---|
 | OD013 | FTE | 12 | 12 | 0 | 0 | 0 | 0 |
 | OD016 | FTE | 11 | 11 | 0 | 0 | 0 | 0 |
-| OD017 | PNT | 11 | 10 | 0 | 1 | 0 | 0 |
+| OD017 | PNT | 12 | 11 | 0 | 1 | 0 | 0 |
 | OD018 | BUE | 14 | 14 | 0 | 0 | 0 | 0 |
 | OD019 | MDZ | 6 | 5 | 1 | 0 | 0 | 0 |
 | OD020 | BUE | 14 | 13 | 0 | 1 | 0 | 0 |
@@ -68,7 +68,7 @@ Estos servicios todavía no saben a quién escribirle. Cuando completes el dato 
 | 226 | alojamiento | Hotel 3* | 2 | Hotel * Sent Calafate | Tremun | Sent | reservas@sentcalafate.com.ar |
 | 231 | alojamiento | Hotel 4* | 1 | Hotel 4* Mirador del Lago | Tremun | Mirador del Lago | reservas@miradordellago.com.ar |
 | 231 | alojamiento | Hotel 4* | 2 | Hotel 4* Calafate Parque | Tremun | Calafate Parque | reservas@calafateparquehotel.com.ar |
-| 238 | traslado | — | 1 | El Calafate Accommodation - FTE Airport | Chalten Travel | Chalten Travel | agencias@chaltentravel.com |
+| 238 | traslado | — | 1 | FTE Airport - El Calafate Accommodation | Chalten Travel | Chalten Travel | agencias@chaltentravel.com |
 | 239 | excursion | — | 1 | Perito Moreno Glaciar Excursion | Chalten Travel | Chalten Travel | agencias@chaltentravel.com |
 
 ### OD017 · Puerto Natales & Torres del Paine Adventure
@@ -86,6 +86,7 @@ Estos servicios todavía no saben a quién escribirle. Cuando completes el dato 
 | 743 | bus | — | 1 | Punta Arenas - Puerto Natales | Kupos | — | manual (no se le escribe) |
 | 744 | excursion | — | 1 | Torres del Paine Full Day from Puerto Natales | Patagonia Planet | Patagonia planet | excursiones@patagoniaplanet.com |
 | 745 | excursion (opcional) | — | 1 | Base Torres Trek no food | Patagonia Planet | Patagonia planet | excursiones@patagoniaplanet.com |
+| 746 | traslado (opcional) | — | 1 | PNT Airport - PNT accommodation if requested | Patagonia Planet | Patagonia planet | excursiones@patagoniaplanet.com |
 
 ### OD018 · Buenos Aires, Tango City
 
@@ -184,7 +185,7 @@ Estos servicios todavía no saben a quién escribirle. Cuando completes el dato 
 | Fila | Servicio | Nivel | Opción | Hotel / servicio | Se le pide a | Proveedor del directorio | Contacto |
 |---|---|---|---|---|---|---|---|
 | 796 | alojamiento | Hostel | 1 | San Pedro Backpackers | San Pedro Backpackers | Backpacker San Pedro Hostel | WhatsApp |
-| 796 | alojamiento | Hostel | 2 | Aji Verde | Avi Verde | Aji Verde | WhatsApp |
+| 796 | alojamiento | Hostel | 2 | Aji Verde | Aji Verde | Aji Verde | WhatsApp |
 | 801 | alojamiento | Hotel 3* | 1 | Hotel Don Raul | Hotel Don Raul | Hotel don raul | reservas@donraul.cl |
 | 801 | alojamiento | Hotel 3* | 2 | La Casa de Don Tomas | La Casa de Don Tomas | Hotel La Casa de Don Tomas | reservas@dontomas.cl |
 | 808 | traslado | — | 1 | in CJC - Accommodation in San Pedro de Atacama | Transvipp | — | manual (no se le escribe) |

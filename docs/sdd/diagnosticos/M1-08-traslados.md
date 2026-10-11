@@ -1,6 +1,6 @@
 # Los traslados de cada paquete según el tour (M1-08)
 
-Generado el 2026-10-10 por la carga de los tours. Dentro de un tour, entre un paquete y el siguiente se viaja en bus: al paquete al que se llega en bus no se le pide el traslado de llegada, y al que se sale en bus no se le pide el de salida. Un traslado de ida y vuelta queda solo del lado que corresponde. El primer paquete conserva la llegada y el último la salida. Iguazú conserva los suyos. Las excepciones que pediste están en `data/traslados-tour.csv` y le ganan a la regla.
+Generado el 2026-10-11 por la carga de los tours. Dentro de un tour, entre un paquete y el siguiente se viaja en bus: al paquete al que se llega en bus no se le pide el traslado de llegada, y al que se sale en bus no se le pide el de salida. Un traslado de ida y vuelta queda solo del lado que corresponde. El primer paquete conserva la llegada y el último la salida. Iguazú conserva los suyos. Las excepciones que pediste están en `data/traslados-tour.csv` y le ganan a la regla.
 
 El paquete vendido solo sigue con todos sus servicios. Esto vale solo dentro de cada tour.
 
@@ -18,14 +18,15 @@ Sin cambios: cada paquete pide sus traslados como se vende solo.
 
 **Se anulan**
 
-- **OD016** · Transfer El Calafate Accommodation - FTE Airport (Chalten Travel): no se pide — sale en bus a Puerto Natales.
+- **OD016** · Transfer FTE Airport - El Calafate Accommodation (Chalten Travel): no se pide — llega en bus desde El Chaltén.
 - **OD017** · Bus Punta Arenas - Puerto Natales (Kupos): no se pide — Owner (2026-10-10): en ARCH31 se llega a Puerto Natales en bus desde El Calafate, sin el bus Punta Arenas → Puerto Natales (data/traslados-tour.csv).
+- **OD017** · Optiona Transfer PNT Airport - PNT accommodation if requested (Patagonia Planet): no se pide — llega en bus desde El Calafate.
 
 ## ARCH33 · Patagonia, Trekking Paradise with W-Trek
 
 **Se anulan**
 
-- **OD016** · Transfer El Calafate Accommodation - FTE Airport (Chalten Travel): no se pide — sale en bus a Puerto Natales.
+- **OD016** · Transfer FTE Airport - El Calafate Accommodation (Chalten Travel): no se pide — llega en bus desde El Chaltén.
 
 ## AR09 · Patagonia Adventure Tour
 
