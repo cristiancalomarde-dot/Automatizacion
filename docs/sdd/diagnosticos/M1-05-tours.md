@@ -42,7 +42,7 @@ Empieza en La Paz y termina en San Pedro de Atacama. Itinerario: Multi Destinati
 
 Traslados en este tour (M1-08, detalle en M1-08-traslados.md):
 
-- **OD030** · Transfer in CJC - Accommodation in San Pedro de Atacama (Transvipp): cambia de sentido: “Transfer alojamiento en San Pedro de Atacama - aeropuerto de Calama (CJC)” — Owner (2026-10-10): en BOCHI04R el Transvip pasa a ser de salida, San Pedro → CJC (data/traslados-tour.csv).
+- **OD030** · Transfer in CJC - Accommodation in San Pedro de Atacama (Transvipp): cambia de sentido: “Transfer alojamiento en San Pedro de Atacama - aeropuerto de Calama (CJC)” — En este tour el traslado es de salida, de San Pedro al aeropuerto de Calama (data/traslados-tour.csv).
 
 ### ARCH31 · Patagonia Highlights (8 noches, 9 días)
 
@@ -63,9 +63,9 @@ Empieza en El Chaltén y termina en Punta Arenas. Itinerario: Multi Destination 
 
 Traslados en este tour (M1-08, detalle en M1-08-traslados.md):
 
-- **OD016** · Transfer FTE Airport - El Calafate Accommodation (Chalten Travel): no se pide — llega en bus desde El Chaltén.
-- **OD017** · Bus Punta Arenas - Puerto Natales (Kupos): no se pide — Owner (2026-10-10): en ARCH31 se llega a Puerto Natales en bus desde El Calafate, sin el bus Punta Arenas → Puerto Natales (data/traslados-tour.csv).
-- **OD017** · Optiona Transfer PNT Airport - PNT accommodation if requested (Patagonia Planet): no se pide — llega en bus desde El Calafate.
+- **OD016** · Transfer FTE Airport - El Calafate Accommodation (Chalten Travel): no se pide — Llega en bus desde El Chaltén.
+- **OD017** · Bus Punta Arenas - Puerto Natales (Kupos): no se pide — Llega a Puerto Natales en bus desde El Calafate (data/traslados-tour.csv).
+- **OD017** · Optiona Transfer PNT Airport - PNT accommodation if requested (Patagonia Planet): no se pide — Llega en bus desde El Calafate.
 
 ### ARCH33 · Patagonia, Trekking Paradise with W-Trek (11 noches, 12 días)
 
@@ -86,7 +86,7 @@ Empieza en El Chaltén y termina en Punta Arenas. Itinerario: Multi Destination 
 
 Traslados en este tour (M1-08, detalle en M1-08-traslados.md):
 
-- **OD016** · Transfer FTE Airport - El Calafate Accommodation (Chalten Travel): no se pide — llega en bus desde El Chaltén.
+- **OD016** · Transfer FTE Airport - El Calafate Accommodation (Chalten Travel): no se pide — Llega en bus desde El Chaltén.
 
 ### AR09 · Patagonia Adventure Tour (15 noches, 16 días)
 
@@ -106,10 +106,10 @@ Empieza en Buenos Aires y termina en Ushuaia. Itinerario: Multi Destination Inde
 
 Traslados en este tour (M1-08, detalle en M1-08-traslados.md):
 
-- **OD018** · Transfer EZE o AEP - Hotel - EZE o AEP (Greeters): solo la llegada — sale en bus a Puerto Madryn.
-- **OD025** · Transfer REL - accommodation (All Peninsula): no se pide — llega en bus desde Buenos Aires.
-- **OD013** · Transfer Round Trip (Chalten Travel): no se pide — llega en bus desde Puerto Madryn y sale en bus a Ushuaia.
-- **OD022** · Transfer Round Trip: Rumbo Sur (Rumbo Sur): solo la salida — llega en bus desde El Calafate.
+- **OD018** · Transfer EZE o AEP - Hotel - EZE o AEP (Greeters): solo la llegada — Sale en bus a Puerto Madryn.
+- **OD025** · Transfer REL - accommodation (All Peninsula): no se pide — Llega en bus desde Buenos Aires.
+- **OD013** · Transfer Round Trip (Chalten Travel): no se pide — Llega en bus desde Puerto Madryn y sale en bus a Ushuaia.
+- **OD022** · Transfer Round Trip: Rumbo Sur (Rumbo Sur): solo la salida — Llega en bus desde El Calafate.
 
 ### BRARCH26 · From Rio de Janeiro to Santiago de Chile (16 noches, 17 días)
 
@@ -131,10 +131,10 @@ Empieza en Río de Janeiro y termina en Santiago de Chile. Itinerario: Multi Des
 
 Traslados en este tour (M1-08, detalle en M1-08-traslados.md):
 
-- **OD010A** · Excursion: Paquete Receptvo 105 Premium (Cuenca del Plata): se pide como “Paquete Receptvo 105 Premium con transfer in desde la Rodoviaria de Foz y transfer out a la terminal de buses de Puerto Iguazú” — Owner (2026-10-10): en BRARCH26 llega en bus a Foz y sigue en bus desde Puerto Iguazú (data/traslados-tour.csv).
-- **OD018** · Transfer EZE o AEP - Hotel - EZE o AEP (Greeters): no se pide — llega en bus desde Iguazú y sale en bus a Mendoza.
-- **OD019** · Transfers: Remis Mendoza (Remis Mendoza): no se pide — llega en bus desde Buenos Aires y sale en bus a Santiago de Chile.
-- **OD029** · Transfer SCL - accommodation (CL Mundo): no se pide — Owner (2026-10-10): sin el traslado SCL de CL Mundo en BRARCH26, también al final del tour (data/traslados-tour.csv).
+- **OD010A** · Excursion: Paquete Receptvo 105 Premium (Cuenca del Plata): se pide como “Paquete Receptvo 105 Premium con transfer in desde la Rodoviaria de Foz y transfer out a la terminal de buses de Puerto Iguazú” — Llega en bus a Foz y sigue en bus desde Puerto Iguazú (data/traslados-tour.csv).
+- **OD018** · Transfer EZE o AEP - Hotel - EZE o AEP (Greeters): no se pide — Llega en bus desde Iguazú y sale en bus a Mendoza.
+- **OD019** · Transfers: Remis Mendoza (Remis Mendoza): no se pide — Llega en bus desde Buenos Aires y sale en bus a Santiago de Chile.
+- **OD029** · Transfer SCL - accommodation (CL Mundo): no se pide — Hoy no se pide este traslado en el tour (data/traslados-tour.csv).
 
 ### 5C01 · 5 Countries: Rio de Janeiro to la Paz (29 noches, 30 días)
 
@@ -164,13 +164,13 @@ Empieza en Río de Janeiro y termina en La Paz. Itinerario: Multi Destination In
 
 Traslados en este tour (M1-08, detalle en M1-08-traslados.md):
 
-- **OD010D** · Excursion: Paquete Receptvo 105 Premium x Foz (Cuenca del Plata): se pide como “Paquete Receptvo 105 Premium x Foz con transfer in desde la Rodoviaria de Foz y transfer out a la terminal de buses de Puerto Iguazú” — Owner (2026-10-10): en 5C01 llega en bus a Foz y sigue en bus desde Puerto Iguazú (data/traslados-tour.csv).
-- **OD020** · Transfer EZE o AEP - Hotel - EZE o AEP (Greeters): no se pide — llega en bus desde Iguazú y sale en bus a Mendoza.
-- **OD019** · Transfers: Remis Mendoza (Remis Mendoza): no se pide — llega en bus desde Buenos Aires y sale en bus a Santiago de Chile.
-- **OD029** · Transfer SCL - accommodation (CL Mundo): no se pide — Owner (2026-10-10): sin el traslado SCL de CL Mundo en 5C01. Se reactiva (o no) con el cambio de precios de marzo-abril (data/traslados-tour.csv).
-- **COMPCH01** · Public Bus Santiago - Valparaiso - Santiago (Kupos.cl): solo la llegada (“Bus Santiago - Valparaíso, solo ida”) — Owner (2026-10-10): en 5C01 el bus Kupos queda solo de ida Santiago → Valparaíso (después sigue a Calama) (data/traslados-tour.csv).
-- **OD030** · Transfer in CJC - Accommodation in San Pedro de Atacama (Transvipp): no se pide — llega en bus desde Valparaíso.
-- **OD031** · Transfer La Paz Airport - La Paz Accommodation (Imperio Inca): se pide como “Transfer terminal de buses de La Paz - alojamiento en La Paz” — Owner (2026-10-10): en 5C01 llega en bus desde Uyuni: el traslado es desde la terminal de buses, no desde el aeropuerto de La Paz (data/traslados-tour.csv).
+- **OD010D** · Excursion: Paquete Receptvo 105 Premium x Foz (Cuenca del Plata): se pide como “Paquete Receptvo 105 Premium x Foz con transfer in desde la Rodoviaria de Foz y transfer out a la terminal de buses de Puerto Iguazú” — Llega en bus a Foz y sigue en bus desde Puerto Iguazú (data/traslados-tour.csv).
+- **OD020** · Transfer EZE o AEP - Hotel - EZE o AEP (Greeters): no se pide — Llega en bus desde Iguazú y sale en bus a Mendoza.
+- **OD019** · Transfers: Remis Mendoza (Remis Mendoza): no se pide — Llega en bus desde Buenos Aires y sale en bus a Santiago de Chile.
+- **OD029** · Transfer SCL - accommodation (CL Mundo): no se pide — Hoy no se pide este traslado en el tour (data/traslados-tour.csv).
+- **COMPCH01** · Public Bus Santiago - Valparaiso - Santiago (Kupos.cl): solo la llegada (“Bus Santiago - Valparaíso, solo ida”) — Solo ida: desde Valparaíso el tour sigue en bus a Calama (data/traslados-tour.csv).
+- **OD030** · Transfer in CJC - Accommodation in San Pedro de Atacama (Transvipp): no se pide — Llega en bus desde Valparaíso.
+- **OD031** · Transfer La Paz Airport - La Paz Accommodation (Imperio Inca): se pide como “Transfer terminal de buses de La Paz - alojamiento en La Paz” — Llega en bus desde Uyuni: el traslado es desde la terminal de buses (data/traslados-tour.csv).
 
 ## Lo que necesito que confirmes
 
