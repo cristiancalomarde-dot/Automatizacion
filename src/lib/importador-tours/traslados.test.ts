@@ -47,7 +47,7 @@ const SECUENCIAS: Record<string, PaqueteEnTour[]> = {
   CHB31: sec("OD030", "COMPBO20"),
 };
 
-function ajustes(tour: string, excepciones = parsearTrasladosTour("tour,paquete,servicio,accion,texto,nota\n")) {
+function ajustes(tour: string, excepciones = parsearTrasladosTour("tour,paquete,servicio,accion,texto,motivo,nota\n")) {
   return ajustesDeTraslados({ tour, secuencia: SECUENCIAS[tour], servicios: SERVICIOS, excepciones });
 }
 const de = (tour: string, paquete: string, excepciones?: Parameters<typeof ajustes>[1]) =>
@@ -56,7 +56,7 @@ const de = (tour: string, paquete: string, excepciones?: Parameters<typeof ajust
 describe("la regla general de traslados en un tour (spec M1-08 §3 #2)", () => {
   it("OD020 en 5C01 sin Greeters (llega y sale en bus)", () => {
     expect(de("5C01", "OD020")).toEqual([[6, "anular", "regla"]]);
-    expect(ajustes("5C01").find((a) => a.paquete === "OD020")!.motivo).toBe("llega en bus desde Iguazú y sale en bus a Mendoza");
+    expect(ajustes("5C01").find((a) => a.paquete === "OD020")!.motivo).toBe("Llega en bus desde Iguazú y sale en bus a Mendoza.");
   });
 
   it("OD019 en 5C01 y BRARCH26 sin Remis Mendoza (aunque el texto no diga el sentido)", () => {
@@ -77,7 +77,7 @@ describe("la regla general de traslados en un tour (spec M1-08 §3 #2)", () => {
   it("OD018 en AR09 con Greeters solo de llegada; OD022 solo de salida (Rumbo Sur)", () => {
     expect(de("AR09", "OD018")).toEqual([[6, "solo_llegada", "regla"]]);
     expect(de("AR09", "OD022")).toEqual([[4, "solo_salida", "regla"]]);
-    expect(ajustes("AR09").find((a) => a.paquete === "OD018")!.motivo).toBe("sale en bus a Puerto Madryn");
+    expect(ajustes("AR09").find((a) => a.paquete === "OD018")!.motivo).toBe("Sale en bus a Puerto Madryn.");
   });
 
   it("el primer paquete conserva la llegada; los buses y lo que no es traslado no se tocan", () => {
@@ -98,7 +98,7 @@ describe("excepciones por tour (data/traslados-tour.csv, spec M1-08 §3 #3 y #4)
 
   it("una excepción cambia solo ese servicio en ese tour y pisa la regla", () => {
     const excepciones = parsearTrasladosTour(
-      "tour,paquete,servicio,accion,texto,nota\nBOCHI04R,OD030,in CJC - Accommodation in San Pedro de Atacama,invertir,San Pedro → CJC,owner\n",
+      "tour,paquete,servicio,accion,texto,motivo,nota\nBOCHI04R,OD030,in CJC - Accommodation in San Pedro de Atacama,invertir,San Pedro → CJC,Sale al aeropuerto.,owner\n",
     );
     expect(de("BOCHI04R", "OD030", excepciones)).toEqual([[3, "invertir", "excepcion"]]);
     expect(de("BOCHI04R", "OD030")).toEqual([[3, "anular", "regla"]]);
@@ -139,16 +139,61 @@ describe("excepciones por tour (data/traslados-tour.csv, spec M1-08 §3 #3 y #4)
   });
 
   it("si nombra un tour, un paquete del tour o un servicio que no existe, falla con un mensaje claro", () => {
-    const una = (fila: string) => parsearTrasladosTour(`tour,paquete,servicio,accion,texto,nota\n${fila}\n`);
-    expect(() => validarExcepcionesTraslado(una("ZZ99,OD029,SCL - accommodation,anular,,"), Object.keys(SECUENCIAS))).toThrow(
+    const una = (fila: string) => parsearTrasladosTour(`tour,paquete,servicio,accion,texto,motivo,nota\n${fila}\n`);
+    expect(() => validarExcepcionesTraslado(una("ZZ99,OD029,SCL - accommodation,anular,,Motivo.,"), Object.keys(SECUENCIAS))).toThrow(
       /traslados-tour.csv.*ZZ99/,
     );
-    expect(() => ajustes("AR09", una("AR09,OD029,SCL - accommodation,anular,,"))).toThrow(/traslados-tour.csv.*AR09.*OD029/);
-    expect(() => ajustes("5C01", una("5C01,OD029,Transfer de Marte,anular,,"))).toThrow(/traslados-tour.csv.*OD029.*Transfer de Marte/);
+    expect(() => ajustes("AR09", una("AR09,OD029,SCL - accommodation,anular,,Motivo.,"))).toThrow(/traslados-tour.csv.*AR09.*OD029/);
+    expect(() => ajustes("5C01", una("5C01,OD029,Transfer de Marte,anular,,Motivo.,"))).toThrow(/traslados-tour.csv.*OD029.*Transfer de Marte/);
   });
 
   it("el archivo valida lo que escribe: acción conocida y texto en los reemplazos", () => {
-    expect(() => parsearTrasladosTour("tour,paquete,servicio,accion,texto,nota\n5C01,OD031,x,borrar,,\n")).toThrow(/fila 2.*acción/);
-    expect(() => parsearTrasladosTour("tour,paquete,servicio,accion,texto,nota\n5C01,OD031,x,reemplazar,,\n")).toThrow(/fila 2.*texto/);
+    expect(() => parsearTrasladosTour("tour,paquete,servicio,accion,texto,motivo,nota\n5C01,OD031,x,borrar,,M.,\n")).toThrow(/fila 2.*acción/);
+    expect(() => parsearTrasladosTour("tour,paquete,servicio,accion,texto,motivo,nota\n5C01,OD031,x,reemplazar,,M.,\n")).toThrow(/fila 2.*texto/);
+  });
+});
+
+describe("el motivo que ve el operativo (spec M1-10)", () => {
+  const CABECERA = "tour,paquete,servicio,accion,texto,motivo,nota\n";
+  const REAL = parsearTrasladosTour(readFileSync("data/traslados-tour.csv", "utf-8"));
+  const INTERNO = /Owner|M2|M3|data\/|\d{4}-\d{2}-\d{2}/;
+
+  it("#1 lee el motivo aparte de la nota; el ajuste lleva el motivo, nunca la nota", () => {
+    const [x] = parsearTrasladosTour(`${CABECERA}ARCH31,OD017,Punta Arenas - Puerto Natales,anular,,Llega a Puerto Natales en bus.,Owner (2026-10-10): interno\n`);
+    expect(x).toMatchObject({ motivo: "Llega a Puerto Natales en bus.", nota: "Owner (2026-10-10): interno" });
+    const [a] = ajustes("ARCH31", [x]).filter((y) => y.paquete === "OD017");
+    expect(a.motivo).toBe("Llega a Puerto Natales en bus.");
+  });
+
+  it("#1 una fila sin motivo hace fallar el importador con el número de fila", () => {
+    expect(() =>
+      parsearTrasladosTour(`${CABECERA}5C01,OD029,SCL - accommodation,anular,,Motivo.,\n5C01,OD029,SCL - accommodation,anular,,,nota\n`),
+    ).toThrow(/traslados-tour.csv, fila 3.*motivo/);
+    expect(() => parsearTrasladosTour("tour,paquete,servicio,accion,texto,nota\n5C01,OD029,SCL - accommodation,anular,,nota\n")).toThrow(/fila 2.*motivo/);
+  });
+
+  it("#1 #2 el archivo real tiene el motivo de la ficha en cada fila, sin notas internas", () => {
+    expect(REAL.map((x) => `${x.tour} · ${x.paquete} · ${x.motivo}`)).toEqual([
+      "5C01 · OD029 · Hoy no se pide este traslado en el tour.",
+      "BRARCH26 · OD029 · Hoy no se pide este traslado en el tour.",
+      "5C01 · OD010D · Llega en bus a Foz y sigue en bus desde Puerto Iguazú.",
+      "BRARCH26 · OD010A · Llega en bus a Foz y sigue en bus desde Puerto Iguazú.",
+      "5C01 · OD031 · Llega en bus desde Uyuni: el traslado es desde la terminal de buses.",
+      "BOCHI04R · OD030 · En este tour el traslado es de salida, de San Pedro al aeropuerto de Calama.",
+      "5C01 · COMPCH01 · Solo ida: desde Valparaíso el tour sigue en bus a Calama.",
+      "ARCH31 · OD017 · Llega a Puerto Natales en bus desde El Calafate.",
+    ]);
+    for (const x of REAL) expect(x.motivo).not.toMatch(INTERNO);
+    for (const tour of Object.keys(SECUENCIAS)) {
+      for (const a of ajustes(tour, REAL)) expect(a.motivo, `${tour} ${a.paquete}`).not.toMatch(INTERNO);
+    }
+  });
+
+  it("#4 los motivos de la regla empiezan con mayúscula y terminan en punto", () => {
+    expect(ajustes("AR09").find((a) => a.paquete === "OD013")!.motivo).toBe("Llega en bus desde Puerto Madryn y sale en bus a Ushuaia.");
+    expect(ajustes("AR09").find((a) => a.paquete === "OD022")!.motivo).toBe("Llega en bus desde El Calafate.");
+    for (const tour of Object.keys(SECUENCIAS)) {
+      for (const a of ajustes(tour)) expect(a.motivo, `${tour} ${a.paquete}`).toMatch(/^[A-ZÁÉÍÓÚÑ].*\.$/);
+    }
   });
 });

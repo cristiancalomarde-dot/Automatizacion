@@ -26,7 +26,9 @@ import type { TourArmado } from "./armado";
  * del 105 Premium y lo cambia una excepción.
  *
  * **Excepciones** (`data/traslados-tour.csv`: tour, paquete, servicio,
- * acción, texto, nota): pisan la regla en ese tour y ese servicio. Si una
+ * acción, texto, motivo, nota): pisan la regla en ese tour y ese servicio.
+ * `motivo` es la frase que ve el operativo (obligatoria, spec M1-10); `nota`
+ * es el registro interno de la decisión y no se usa nunca. Si una
  * fila nombra un tour, un paquete del tour o un servicio que no existe, se
  * corta con un mensaje claro antes de escribir nada.
  *
@@ -43,6 +45,9 @@ export interface ExcepcionTraslado {
   servicio: string;
   accion: AccionAjuste;
   texto?: string;
+  /** Lo que ve el operativo en la pantalla. */
+  motivo: string;
+  /** Registro interno de la decisión: no se muestra ni se guarda en la base. */
   nota?: string;
 }
 
@@ -62,7 +67,7 @@ export interface AjusteTraslado {
   accion: AccionAjuste;
   /** Texto nuevo (reemplazar; opcional en las demás acciones). */
   texto: string | null;
-  /** Por qué ("llega en bus desde Iguazú", o la nota del owner). */
+  /** Por qué, en una frase para el operativo ("Llega en bus desde Iguazú.", o el motivo de la excepción). */
   motivo: string;
   origen: "regla" | "excepcion";
   /** El servicio tal como lo escribe el Excel (para los reportes). */
@@ -86,8 +91,10 @@ export function parsearTrasladosTour(texto: string): ExcepcionTraslado[] {
     }
     const nuevo = (r.texto ?? "").trim();
     if (accion === "reemplazar" && !nuevo) throw new Error(`${ARCHIVO}, fila ${fila}: un reemplazo necesita el texto nuevo.`);
+    const motivo = (r.motivo ?? "").trim();
+    if (!motivo) throw new Error(`${ARCHIVO}, fila ${fila}: falta el motivo (la frase que ve el operativo en el tour).`);
     const nota = (r.nota ?? "").trim();
-    return { tour, paquete, servicio, accion, ...(nuevo ? { texto: nuevo } : {}), ...(nota ? { nota } : {}) };
+    return { tour, paquete, servicio, accion, ...(nuevo ? { texto: nuevo } : {}), motivo, ...(nota ? { nota } : {}) };
   });
 }
 
@@ -117,6 +124,11 @@ export function secuenciaDePaquetes(
     });
 }
 
+/** "llega en bus desde Uyuni" → "Llega en bus desde Uyuni." (spec M1-10 §3 #4). */
+function frase(texto: string): string {
+  return `${texto.charAt(0).toUpperCase()}${texto.slice(1)}.`;
+}
+
 function textoCorto(s: ServicioBuscable): string {
   return (s.descripcion ?? s.serviceProviderNombre ?? "").split("\n")[0];
 }
@@ -134,15 +146,17 @@ export function ajustesDeTraslados(entrada: {
   // --- regla general ---
   secuencia.forEach((p, i) => {
     if (DESTINOS_CON_TRANSFER.has(p.destino)) return;
-    const llega = i > 0 ? `llega en bus desde ${nombreDestino(secuencia[i - 1].destino)}` : null;
-    const sale = i < n - 1 ? `sale en bus a ${nombreDestino(secuencia[i + 1].destino)}` : null;
+    const llegaEn = i > 0 ? `llega en bus desde ${nombreDestino(secuencia[i - 1].destino)}` : null;
+    const saleEn = i < n - 1 ? `sale en bus a ${nombreDestino(secuencia[i + 1].destino)}` : null;
+    const ambos = frase([llegaEn, saleEn].filter(Boolean).join(" y "));
+    const llega = llegaEn && frase(llegaEn);
+    const sale = saleEn && frase(saleEn);
     const vistos = new Set<number>();
     for (const s of [...(servicios.get(p.codigo) ?? [])].sort((a, b) => a.orden - b.orden || a.prioridad - b.prioridad)) {
       if (s.tipo !== "traslado" || vistos.has(s.orden)) continue;
       vistos.add(s.orden);
       let accion: AccionAjuste | null = null;
       let motivo = "";
-      const ambos = [llega, sale].filter(Boolean).join(" y ");
       switch (s.sentido) {
         case "llegada":
           if (llega) [accion, motivo] = ["anular", llega];
@@ -190,7 +204,7 @@ export function ajustesDeTraslados(entrada: {
       orden,
       accion: x.accion,
       texto: x.texto ?? null,
-      motivo: x.nota ?? "excepción del owner (data/traslados-tour.csv)",
+      motivo: x.motivo,
       origen: "excepcion",
       servicio: textoCorto(s),
       sentido: s.sentido,

@@ -17,15 +17,22 @@ describe("servicios a pedido o según la reserva (spec M1-08 §3 #6)", () => {
     expect(() => buscarServicio(OD016, "Chalten Travel", "OD016")).toThrow(/OD016.*más de un servicio/);
   });
 
-  it("lee el archivo: paquete, servicio, marca (a_pedido | segun_reserva) y nota", () => {
-    const filas = parsearServiciosAPedido("paquete,servicio,marca,nota\nod016,El Calafate Accommodation - FTE Airport,a_pedido,opcional\n");
-    expect(filas).toEqual([{ paquete: "OD016", servicio: "El Calafate Accommodation - FTE Airport", marca: "a_pedido", nota: "opcional" }]);
-    expect(() => parsearServiciosAPedido("paquete,servicio,marca,nota\nOD016,x,siempre,\n")).toThrow(/fila 2.*marca/);
+  it("lee el archivo: paquete, servicio, marca (a_pedido | segun_reserva), motivo y nota", () => {
+    const filas = parsearServiciosAPedido("paquete,servicio,marca,motivo,nota\nod016,El Calafate Accommodation - FTE Airport,a_pedido,Solo si lo pide.,Owner: interno\n");
+    expect(filas).toEqual([
+      { paquete: "OD016", servicio: "El Calafate Accommodation - FTE Airport", marca: "a_pedido", motivo: "Solo si lo pide.", nota: "Owner: interno" },
+    ]);
+    expect(() => parsearServiciosAPedido("paquete,servicio,marca,motivo,nota\nOD016,x,siempre,M.,\n")).toThrow(/fila 2.*marca/);
   });
 
-  it("marca todas las opciones del servicio (mismo orden) con su nota", () => {
-    const filas = parsearServiciosAPedido("paquete,servicio,marca,nota\nOD016,El Calafate Accommodation - FTE Airport,a_pedido,opcional\n");
-    expect(planAPedido("OD016", filas, OD016)).toEqual([{ orden: 5, marca: "a_pedido", nota: "opcional" }]);
+  it("una fila sin motivo hace fallar el importador con el número de fila (spec M1-10 §3 #1)", () => {
+    expect(() => parsearServiciosAPedido("paquete,servicio,marca,motivo,nota\nOD016,x,a_pedido,,nota\n")).toThrow(/servicios-a-pedido.csv, fila 2.*motivo/);
+    expect(() => parsearServiciosAPedido("paquete,servicio,marca,nota\nOD016,x,a_pedido,nota\n")).toThrow(/fila 2.*motivo/);
+  });
+
+  it("marca todas las opciones del servicio (mismo orden) con su motivo, nunca con la nota", () => {
+    const filas = parsearServiciosAPedido("paquete,servicio,marca,motivo,nota\nOD016,El Calafate Accommodation - FTE Airport,a_pedido,Solo si lo pide.,Owner: interno\n");
+    expect(planAPedido("OD016", filas, OD016)).toEqual([{ orden: 5, marca: "a_pedido", motivo: "Solo si lo pide." }]);
   });
 
   it("el archivo real marca solo el Remis de OD019 (OD016 y OD017 sin marca: OD017 queda Opcional, owner 2026-10-11)", () => {
@@ -33,5 +40,7 @@ describe("servicios a pedido o según la reserva (spec M1-08 §3 #6)", () => {
     expect(filas.map((f) => [f.paquete, f.servicio, f.marca])).toEqual([
       ["OD019", "Remis Mendoza", "segun_reserva"],
     ]);
+    expect(filas[0].motivo).toBe("Solo si el paquete se vende con traslados (el pasajero llega en avión).");
+    for (const f of filas) expect(f.motivo).not.toMatch(/Owner|M2|M3|data\/|\d{4}-\d{2}-\d{2}/);
   });
 });

@@ -1,2 +1,2 @@
-paquete,servicio,marca,nota
-OD019,Remis Mendoza,segun_reserva,"Owner (2026-10-10): Remis Mendoza solo si el paquete es CON traslados (el pax llega en avión). Elegir la variante con la reserva es M2"
+paquete,servicio,marca,motivo,nota
+OD019,Remis Mendoza,segun_reserva,"Solo si el paquete se vende con traslados (el pasajero llega en avión).","Owner (2026-10-10): Remis Mendoza solo si el paquete es CON traslados (el pax llega en avión). Elegir la variante con la reserva es M2"

@@ -118,7 +118,7 @@ interface FilaServicio {
     if (!hayInsumosTours(RAIZ)) return;
     const insumos = leerInsumosTours(RAIZ);
     const antes = await ajustes("5C01");
-    const fila = (tour: string, paquete: string, servicio: string) => ({ tour, paquete, servicio, accion: "anular" as const });
+    const fila = (tour: string, paquete: string, servicio: string) => ({ tour, paquete, servicio, accion: "anular" as const, motivo: "Motivo." });
     await expect(
       importarToursCompuestos({ admin, ...insumos, excepcionesTraslado: [fila("5C01", "OD018", "EZE o AEP - Hotel - EZE o AEP")] }),
     ).rejects.toThrow(/traslados-tour\.csv.*5C01.*OD018/);
@@ -274,7 +274,7 @@ interface FilaServicio {
       expect(del("OD031").find((s) => s.tipo === "traslado")!.ajusteTour).toMatchObject({ accion: "reemplazar" });
       const chb31 = t.componentes.find((c) => c.producto?.codigo === "CHB31")!;
       const od030 = chb31.producto!.componentes!.find((c) => c.producto?.codigo === "OD030")!.producto!.servicios;
-      expect(od030.find((s) => s.tipo === "traslado")!.ajusteTour).toMatchObject({ accion: "anular", motivo: expect.stringMatching(/llega en bus/) });
+      expect(od030.find((s) => s.tipo === "traslado")!.ajusteTour).toMatchObject({ accion: "anular", motivo: expect.stringMatching(/^Llega en bus/) });
       const solo = await cargarProducto(cliente, await idDe("OD020"));
       expect(solo.servicios.some((s) => s.ajusteTour)).toBe(false);
       // CHB31 solo: OD030 conserva su llegada

@@ -419,7 +419,7 @@ describe("Traslados según el tour y servicios a pedido (spec M1-08 #5, #6, #9)"
           bookingSupplierNombre: "Greeters",
           bookingSupplier: greeters,
           sentido: "ida_y_vuelta",
-          ajusteTour: { accion: "anular", texto: null, motivo: "llega en bus desde Iguazú y sale en bus a Mendoza", origen: "regla" },
+          ajusteTour: { accion: "anular", texto: null, motivo: "Llega en bus desde Iguazú y sale en bus a Mendoza.", origen: "regla" },
         }),
       ]),
       paquete("prod-od018", "OD018", 13, [
@@ -430,7 +430,7 @@ describe("Traslados según el tour y servicios a pedido (spec M1-08 #5, #6, #9)"
           descripcion: "Transfer EZE o AEP - Hotel - EZE o AEP. Booking Supplier: Greeters",
           bookingSupplierNombre: "Greeters",
           bookingSupplier: greeters,
-          ajusteTour: { accion: "solo_llegada", texto: null, motivo: "sale en bus a Puerto Madryn", origen: "regla" },
+          ajusteTour: { accion: "solo_llegada", texto: null, motivo: "Sale en bus a Puerto Madryn.", origen: "regla" },
         }),
       ]),
       paquete("prod-od031", "OD031", 28, [
@@ -441,7 +441,7 @@ describe("Traslados según el tour y servicios a pedido (spec M1-08 #5, #6, #9)"
           descripcion: "Transfer La Paz Airport - La Paz Accommodation: Booking Supplier: Imperio Inca",
           bookingSupplierNombre: "Imperio Inca",
           bookingSupplier: imperio,
-          ajusteTour: { accion: "reemplazar", texto: "Transfer terminal de buses de La Paz - alojamiento en La Paz", motivo: "Owner (2026-10-10): llega en bus desde Uyuni", origen: "excepcion" },
+          ajusteTour: { accion: "reemplazar", texto: "Transfer terminal de buses de La Paz - alojamiento en La Paz", motivo: "Llega en bus desde Uyuni: el traslado es desde la terminal de buses.", origen: "excepcion" },
         }),
       ]),
       paquete("prod-od030", "OD030", 30, [
@@ -452,7 +452,7 @@ describe("Traslados según el tour y servicios a pedido (spec M1-08 #5, #6, #9)"
           descripcion: "Transfer in CJC - Accommodation in San Pedro de Atacama. Booking Supplier: Transvipp",
           reservaManual: true,
           bookingSupplierNombre: "Transvipp",
-          ajusteTour: { accion: "invertir", texto: "Transfer alojamiento en San Pedro de Atacama - aeropuerto de Calama (CJC)", motivo: "Owner: pasa a ser de salida", origen: "excepcion" },
+          ajusteTour: { accion: "invertir", texto: "Transfer alojamiento en San Pedro de Atacama - aeropuerto de Calama (CJC)", motivo: "En este tour el traslado es de salida, de San Pedro al aeropuerto de Calama.", origen: "excepcion" },
         }),
       ]),
     ],
@@ -469,12 +469,12 @@ describe("Traslados según el tour y servicios a pedido (spec M1-08 #5, #6, #9)"
 
     const od020 = filaCon(itinerario, "EZE o AEP - Hotel - EZE o AEP");
     expect(od020.textContent).toContain("No se pide en este tour");
-    expect(od020.textContent).toContain("llega en bus desde Iguazú y sale en bus a Mendoza");
+    expect(od020.textContent).toContain("Llega en bus desde Iguazú y sale en bus a Mendoza.");
     expect(within(od020).getByText("Transfer EZE o AEP - Hotel - EZE o AEP").tagName).toBe("S");
 
     const od018 = within(itinerario).getAllByRole("row").filter((f) => f.textContent?.includes("EZE o AEP"))[1];
     expect(od018.textContent).toContain("Solo llegada");
-    expect(od018.textContent).toContain("sale en bus a Puerto Madryn");
+    expect(od018.textContent).toContain("Sale en bus a Puerto Madryn.");
 
     const od031 = filaCon(itinerario, "terminal de buses de La Paz");
     expect(od031.textContent).toContain("Cambiado en este tour");

@@ -85,10 +85,10 @@ const TIMEOUT = 120_000;
 
   it("#2 dentro de ARCH31 y ARCH33 la llegada de OD016 no se pide (llega en bus desde El Chaltén)", async () => {
     for (const tour of ["ARCH31", "ARCH33"]) {
-      expect((await ajustes(tour)).filter((a) => a.startsWith("OD016")), tour).toEqual(["OD016 5 anular regla — llega en bus desde El Chaltén"]);
+      expect((await ajustes(tour)).filter((a) => a.startsWith("OD016")), tour).toEqual(["OD016 5 anular regla — Llega en bus desde El Chaltén."]);
     }
     const reporte = readFileSync(resolve(RAIZ, "docs/sdd/diagnosticos/M1-08-traslados.md"), "utf-8");
-    const linea = "- **OD016** · Transfer FTE Airport - El Calafate Accommodation (Chalten Travel): no se pide — llega en bus desde El Chaltén.";
+    const linea = "- **OD016** · Transfer FTE Airport - El Calafate Accommodation (Chalten Travel): no se pide — Llega en bus desde El Chaltén.";
     expect(reporte.split(linea).length - 1).toBe(2);
     expect(reporte).not.toContain("El Calafate Accommodation - FTE Airport");
   }, TIMEOUT);
@@ -101,7 +101,7 @@ const TIMEOUT = 120_000;
     expect(lista[0].descripcion).toMatch(/PNT Airport - PNT accommodation/);
     expect((await ajustes("ARCH31")).filter((a) => a.startsWith("OD017"))).toEqual([
       expect.stringMatching(/^OD017 3 anular excepcion/),
-      `OD017 ${lista[0].orden} anular regla — llega en bus desde El Calafate`,
+      `OD017 ${lista[0].orden} anular regla — Llega en bus desde El Calafate.`,
     ]);
   }, TIMEOUT);
 

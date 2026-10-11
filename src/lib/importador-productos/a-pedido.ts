@@ -4,8 +4,10 @@ import { leerCsv } from "./csv";
 
 /**
  * Servicios del paquete vendido solo que no se piden siempre (spec M1-08 §3
- * #6), desde `data/servicios-a-pedido.csv` (paquete, servicio, marca, nota) a
- * `producto_servicio.a_pedido` / `a_pedido_nota` (migración 0009):
+ * #6), desde `data/servicios-a-pedido.csv` (paquete, servicio, marca, motivo,
+ * nota) a `producto_servicio.a_pedido` / `a_pedido_nota` (migración 0009).
+ * `a_pedido_nota` se llena con `motivo`, la frase que ve el operativo
+ * (obligatoria, spec M1-10); `nota` es el registro interno y no se guarda:
  *
  * - `a_pedido`: lo pide el pax o el vendedor. Hoy ningún servicio la usa: el
  *   traslado PNT de OD017 queda solo "Opcional", como los demás opcionales
@@ -26,6 +28,9 @@ export interface FilaAPedido {
   paquete: string;
   servicio: string;
   marca: MarcaAPedido;
+  /** Lo que ve el operativo en la pantalla. */
+  motivo: string;
+  /** Registro interno de la decisión: no se muestra ni se guarda en la base. */
   nota?: string;
 }
 
@@ -71,21 +76,24 @@ export function parsearServiciosAPedido(texto: string): FilaAPedido[] {
     if (!MARCAS_A_PEDIDO.includes(marca)) {
       throw new Error(`servicios-a-pedido.csv, fila ${fila}: la marca tiene que ser ${MARCAS_A_PEDIDO.join(" o ")} (dice "${r.marca ?? ""}").`);
     }
+    const motivo = (r.motivo ?? "").trim();
+    if (!motivo) throw new Error(`servicios-a-pedido.csv, fila ${fila}: falta el motivo (la frase que ve el operativo).`);
     const nota = (r.nota ?? "").trim();
-    return { paquete, servicio, marca, ...(nota ? { nota } : {}) };
+    return { paquete, servicio, marca, motivo, ...(nota ? { nota } : {}) };
   });
 }
 
 export interface MarcaDeServicio {
   orden: number;
   marca: MarcaAPedido;
-  nota: string | null;
+  /** Va a `a_pedido_nota`. */
+  motivo: string;
 }
 
 export function planAPedido(paquete: string, filas: FilaAPedido[], servicios: ServicioBuscable[]): MarcaDeServicio[] {
   return filas
     .filter((f) => f.paquete === paquete)
-    .map((f) => ({ orden: buscarServicio(servicios, f.servicio, paquete), marca: f.marca, nota: f.nota ?? null }));
+    .map((f) => ({ orden: buscarServicio(servicios, f.servicio, paquete), marca: f.marca, motivo: f.motivo }));
 }
 
 export interface ResumenAPedido {
@@ -149,11 +157,11 @@ export async function cargarServiciosAPedido(opciones: { admin: SupabaseClient; 
       .eq("producto_id", productoId)
       .eq("orden", Number(orden));
     if (ea) throw new Error(`No se pudo leer un servicio a marcar: ${ea.message}`);
-    const cambian = (actuales ?? []).filter((s) => s.a_pedido !== m.marca || (s.a_pedido_nota ?? null) !== m.nota).map((s) => s.id);
+    const cambian = (actuales ?? []).filter((s) => s.a_pedido !== m.marca || (s.a_pedido_nota ?? null) !== m.motivo).map((s) => s.id);
     if (cambian.length === 0) continue;
     const { error: e } = await admin
       .from("producto_servicio")
-      .update({ a_pedido: m.marca, a_pedido_nota: m.nota, updated_at: ahora })
+      .update({ a_pedido: m.marca, a_pedido_nota: m.motivo, updated_at: ahora })
       .in("id", cambian);
     if (e) throw new Error(`No se pudo marcar un servicio: ${e.message}`);
     resumen.marcados += cambian.length;
