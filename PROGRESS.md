@@ -8,7 +8,13 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
   - El plan está archivado en `docs/sdd/roadmaps/archive/m1-catalogo-y-proveedores.md`.
   - Se publica con `git push origin main` desde el repo de Drive.
   - **Siguiente:**
-    1. Armar la planilla borrador de Journaway (ver abajo).
+    1. **Planilla borrador de Journaway: hecha.**
+       - Está en `Insumos/Borrador productos Journaway.xlsx`: 52 filas. 9 proveedores salen del
+         Excel de paquetes, 21 son deducidos y 22 no tienen dato.
+       - Falta que el owner complete la columna "PROVEEDOR CONFIRMADO".
+       - Faltan en el directorio: Tayka y Hotel Vai Moana.
+       - El owner puso a los clientes en la whitelist del antispam de Ferozo (2026-10-11):
+         verificar que funcione.
     2. Arrancar M2 con `/roadmap M2`.
   - **Detalles menores que marcó el owner, para la próxima publicación:**
     - Los tramos de bus que emite HI Travel dicen "Pasaje que emite HI Travel. Sin proveedor."
