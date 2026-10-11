@@ -135,6 +135,14 @@ Rodoviaria de Foz; el Transvip de OD030 en BOCHI04R de salida). Si una fila nomb
 paquete del tour o un servicio que no existe, el importador falla antes de escribir. El paquete
 abierto solo sigue mostrando todos sus servicios.
 
+**Las etiquetas "Transfer de llegada / de salida" en la pantalla (M1-09).** No se guardan: la
+consulta del detalle (`etiquetasTransferEnTour`, `src/lib/catalogo/reglas.ts`) las calcula a partir
+de las marcas de `producto_componente` y de `tour_servicio_ajuste`. Un lado se muestra si el
+paquete conserva un traslado de ese lado después de los ajustes, o si la marca lo pide, ningún
+ajuste lo anula y no se llega (o sale) con un bus del tour. El primer paquete llega en bus si el
+tour tiene un bus propio ese día o antes; el último sale en bus si el tour tiene un bus propio
+después (la salida de Puerto Natales de ARCH31 y ARCH33). Iguazú conserva sus marcas.
+
 ### Dos cosas que parecen lo mismo y no lo son
 
 - **Un servicio "Bus" dentro de `producto_servicio`** (ej. el traslado Uyuni→La Paz que da el
