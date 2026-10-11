@@ -86,7 +86,7 @@ const CORRE = credencialesSupabaseDisponibles();
     expect(detalle.servicios.map((s) => s.bookingSupplier?.nombre)).toContain("Imperio Inca");
   }, 30_000);
 
-  it("#16 ARCH31: OD033 → OD016 → bus → OD017, transfers solo en las puntas", async () => {
+  it("#16 ARCH31: OD033 → OD016 → bus → OD017, transfer solo a la llegada (la salida es el bus del tour)", async () => {
     const detalle = await cargarProducto(cliente, await idDe("ARCH31"));
     expect(detalle.componentes.map((c) => c.producto?.codigo ?? c.tipo)).toEqual([
       "OD033",
@@ -98,7 +98,8 @@ const CORRE = credencialesSupabaseDisponibles();
       [true, false],
       [false, false],
       [false, false],
-      [false, true],
+      // M1-09: OD017 sale con el bus del tour a Punta Arenas: sin "Transfer de salida"
+      [false, false],
     ]);
   }, 30_000);
 

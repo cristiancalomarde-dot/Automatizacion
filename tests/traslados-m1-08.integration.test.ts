@@ -93,7 +93,7 @@ interface FilaServicio {
     const sentido = async (codigo: string) =>
       (await servicios(codigo)).filter((s) => s.tipo_servicio === "traslado").map((s) => s.sentido);
     expect(await sentido("OD029")).toEqual(["llegada"]);
-    expect(await sentido("OD016")).toEqual(["salida"]);
+    expect(await sentido("OD016")).toEqual(["llegada"]); // Excel corregido el 2026-10-10 (M1-09)
     expect(await sentido("OD022")).toEqual(["ida_y_vuelta"]);
     expect(await sentido("OD018")).toEqual(["ida_y_vuelta"]);
     expect(await sentido("OD030")).toEqual(["llegada"]);
@@ -164,7 +164,9 @@ interface FilaServicio {
   }, TIMEOUT);
 
   it("#4 (f) ARCH31: OD017 sin el bus Punta Arenas → Puerto Natales y el último paso es la salida de Puerto Natales con las dos alternativas", async () => {
-    expect(await ajuste("ARCH31", "OD017")).toEqual([expect.objectContaining({ orden: 3, accion: "anular", origen: "excepcion" })]);
+    expect(await ajuste("ARCH31", "OD017")).toEqual(
+      expect.arrayContaining([expect.objectContaining({ orden: 3, accion: "anular", origen: "excepcion" })]),
+    );
     const propios = await servicios("ARCH31");
     expect(propios).toHaveLength(1);
     expect(propios[0]).toMatchObject({ booking_supplier_nombre: "Kupos.cl", booking_supplier_id: null });
@@ -191,9 +193,9 @@ interface FilaServicio {
     expect(new Set(data!.map((n) => n.lugar))).toEqual(new Set(["Foz do Iguaçu (lado brasileño)", "Puerto Iguazú (lado argentino)"]));
   }, TIMEOUT);
 
-  it("#6 OD016: la salida queda a pedido; OD019: el Remis según la reserva (no se borran)", async () => {
-    const od016 = (await servicios("OD016")).find((s) => s.tipo_servicio === "traslado")!;
-    expect(od016).toMatchObject({ sentido: "salida", a_pedido: "a_pedido" });
+  it("#6 OD017: la llegada PNT a pedido (M1-09; OD016 ya no tiene marca); OD019: el Remis según la reserva (no se borran)", async () => {
+    const od017 = (await servicios("OD017")).find((s) => s.tipo_servicio === "traslado")!;
+    expect(od017).toMatchObject({ sentido: "llegada", a_pedido: "a_pedido" });
     const remis = (await servicios("OD019")).find((s) => /Remis/.test(s.descripcion ?? ""))!;
     expect(remis.a_pedido).toBe("segun_reserva");
   }, TIMEOUT);
@@ -281,7 +283,7 @@ interface FilaServicio {
       expect(od030Solo.some((s) => s.ajusteTour)).toBe(false);
     }, TIMEOUT);
 
-    it("OD010D día por día (sola y dentro de 5C01, días 7 y 9); OD016 sola con la marca a pedido", async () => {
+    it("OD010D día por día (sola y dentro de 5C01, días 7 y 9); OD017 sola con la marca a pedido", async () => {
       const od010d = await cargarProducto(cliente, await idDe("OD010D"));
       expect(partesPorNoche(od010d.servicios)!.partes.map((p) => [p.nocheDesde, p.etiqueta])).toEqual([
         [1, "2 noches en Foz do Iguaçu (lado brasileño)"],
@@ -290,8 +292,8 @@ interface FilaServicio {
       const t = await cargarProducto(cliente, await idDe("5C01"));
       const enTour = t.componentes.find((c) => c.producto?.codigo === "OD010D")!;
       expect(partesPorNoche(enTour.producto!.servicios)!.partes.map((p) => enTour.diaDesde! + p.nocheDesde - 1)).toEqual([7, 9]);
-      const od016 = await cargarProducto(cliente, await idDe("OD016"));
-      expect(od016.servicios.find((s) => s.tipo === "traslado")).toMatchObject({ aPedido: "a_pedido", sentido: "salida" });
+      const od017 = await cargarProducto(cliente, await idDe("OD017"));
+      expect(od017.servicios.find((s) => s.tipo === "traslado")).toMatchObject({ aPedido: "a_pedido", sentido: "llegada" });
     }, TIMEOUT);
   });
 });

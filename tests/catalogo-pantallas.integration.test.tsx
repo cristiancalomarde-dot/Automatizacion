@@ -161,7 +161,8 @@ function clienteInalcanzable(): SupabaseClient {
       expect(posiciones.every((p, i) => p > -1 && (i === 0 || p > posiciones[i - 1]))).toBe(true);
       expect(within(itinerario).getByText("Tramo externo pendiente de emitir")).toBeInTheDocument();
       expect(within(itinerario).getAllByText("Transfer de llegada")).toHaveLength(1);
-      expect(within(itinerario).getAllByText("Transfer de salida")).toHaveLength(1);
+      // M1-09: OD017 sale con el bus del tour a Punta Arenas, sin "Transfer de salida"
+      expect(within(itinerario).queryAllByText("Transfer de salida")).toHaveLength(0);
     }, 40_000);
 
     it("Directorio → 'Proveedores sin mail' → abrir uno → dice dónde completarlo", async () => {
