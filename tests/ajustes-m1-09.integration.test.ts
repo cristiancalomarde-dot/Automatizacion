@@ -93,10 +93,10 @@ const TIMEOUT = 120_000;
     expect(reporte).not.toContain("El Calafate Accommodation - FTE Airport");
   }, TIMEOUT);
 
-  it("#3 OD017: traslado aeropuerto PNT → alojamiento, de llegada, a pedido, con Patagonia Planet; en ARCH31 no se pide", async () => {
+  it("#3 OD017: traslado aeropuerto PNT → alojamiento, de llegada, opcional (sin marca a pedido), con Patagonia Planet; en ARCH31 no se pide", async () => {
     const lista = await traslados("OD017");
     expect(lista).toHaveLength(1);
-    expect(lista[0]).toMatchObject({ sentido: "llegada", a_pedido: "a_pedido", booking_supplier_nombre: "Patagonia Planet" });
+    expect(lista[0]).toMatchObject({ sentido: "llegada", a_pedido: null, opcional: true, booking_supplier_nombre: "Patagonia Planet" });
     expect(lista[0].bs?.nombre).toMatch(/patagonia planet/i);
     expect(lista[0].descripcion).toMatch(/PNT Airport - PNT accommodation/);
     expect((await ajustes("ARCH31")).filter((a) => a.startsWith("OD017"))).toEqual([

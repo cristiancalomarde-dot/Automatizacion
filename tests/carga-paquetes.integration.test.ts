@@ -228,7 +228,7 @@ interface Fila {
     });
 
     it("#6 opcionales: OD022, OD025, OD017 y OD033 tienen su servicio opcional con proveedor", async () => {
-      // OD017: la Base Torres Trek y, desde el Excel del 2026-10-10, el traslado PNT a pedido (M1-09)
+      // OD017: la Base Torres Trek y, desde el Excel del 2026-10-10, el traslado PNT opcional (M1-09)
       const esperados: Record<string, number> = { OD022: 1, OD025: 2, OD017: 2, OD033: 1 };
       for (const [codigo, cantidad] of Object.entries(esperados)) {
         const opcionales = (await servicios(codigo)).filter((s) => s.opcional);

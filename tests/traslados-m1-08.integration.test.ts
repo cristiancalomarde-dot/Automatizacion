@@ -193,9 +193,9 @@ interface FilaServicio {
     expect(new Set(data!.map((n) => n.lugar))).toEqual(new Set(["Foz do Iguaçu (lado brasileño)", "Puerto Iguazú (lado argentino)"]));
   }, TIMEOUT);
 
-  it("#6 OD017: la llegada PNT a pedido (M1-09; OD016 ya no tiene marca); OD019: el Remis según la reserva (no se borran)", async () => {
+  it("#6 OD017: la llegada PNT, opcional y sin marca a pedido (owner 2026-10-11; OD016 tampoco tiene marca); OD019: el Remis según la reserva (no se borran)", async () => {
     const od017 = (await servicios("OD017")).find((s) => s.tipo_servicio === "traslado")!;
-    expect(od017).toMatchObject({ sentido: "llegada", a_pedido: "a_pedido" });
+    expect(od017).toMatchObject({ sentido: "llegada", a_pedido: null });
     const remis = (await servicios("OD019")).find((s) => /Remis/.test(s.descripcion ?? ""))!;
     expect(remis.a_pedido).toBe("segun_reserva");
   }, TIMEOUT);
@@ -283,7 +283,7 @@ interface FilaServicio {
       expect(od030Solo.some((s) => s.ajusteTour)).toBe(false);
     }, TIMEOUT);
 
-    it("OD010D día por día (sola y dentro de 5C01, días 7 y 9); OD017 sola con la marca a pedido", async () => {
+    it("OD010D día por día (sola y dentro de 5C01, días 7 y 9); OD017 sola con la llegada, sin marca a pedido", async () => {
       const od010d = await cargarProducto(cliente, await idDe("OD010D"));
       expect(partesPorNoche(od010d.servicios)!.partes.map((p) => [p.nocheDesde, p.etiqueta])).toEqual([
         [1, "2 noches en Foz do Iguaçu (lado brasileño)"],
@@ -293,7 +293,7 @@ interface FilaServicio {
       const enTour = t.componentes.find((c) => c.producto?.codigo === "OD010D")!;
       expect(partesPorNoche(enTour.producto!.servicios)!.partes.map((p) => enTour.diaDesde! + p.nocheDesde - 1)).toEqual([7, 9]);
       const od017 = await cargarProducto(cliente, await idDe("OD017"));
-      expect(od017.servicios.find((s) => s.tipo === "traslado")).toMatchObject({ aPedido: "a_pedido", sentido: "llegada" });
+      expect(od017.servicios.find((s) => s.tipo === "traslado")).toMatchObject({ aPedido: null, sentido: "llegada" });
     }, TIMEOUT);
   });
 });

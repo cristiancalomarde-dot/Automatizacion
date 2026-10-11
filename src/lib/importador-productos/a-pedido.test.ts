@@ -28,11 +28,10 @@ describe("servicios a pedido o según la reserva (spec M1-08 §3 #6)", () => {
     expect(planAPedido("OD016", filas, OD016)).toEqual([{ orden: 5, marca: "a_pedido", nota: "opcional" }]);
   });
 
-  it("el archivo real marca el Remis de OD019 y la llegada de OD017; OD016 ya no tiene marca (M1-09)", () => {
+  it("el archivo real marca solo el Remis de OD019 (OD016 y OD017 sin marca: OD017 queda Opcional, owner 2026-10-11)", () => {
     const filas = parsearServiciosAPedido(readFileSync("data/servicios-a-pedido.csv", "utf-8"));
     expect(filas.map((f) => [f.paquete, f.servicio, f.marca])).toEqual([
       ["OD019", "Remis Mendoza", "segun_reserva"],
-      ["OD017", "PNT Airport - PNT accommodation", "a_pedido"],
     ]);
   });
 });

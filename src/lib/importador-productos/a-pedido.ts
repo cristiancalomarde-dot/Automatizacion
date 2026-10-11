@@ -7,7 +7,9 @@ import { leerCsv } from "./csv";
  * #6), desde `data/servicios-a-pedido.csv` (paquete, servicio, marca, nota) a
  * `producto_servicio.a_pedido` / `a_pedido_nota` (migración 0009):
  *
- * - `a_pedido`: lo pide el pax o el vendedor (OD017: el traslado de llegada, M1-09).
+ * - `a_pedido`: lo pide el pax o el vendedor. Hoy ningún servicio la usa: el
+ *   traslado PNT de OD017 queda solo "Opcional", como los demás opcionales
+ *   (owner, 2026-10-11).
  * - `segun_reserva`: depende de la variante que se venda (OD019: Remis
  *   Mendoza solo si el paquete es CON traslados; elegir la variante es M2).
  *

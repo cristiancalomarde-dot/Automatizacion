@@ -99,12 +99,13 @@ function textoDe(tabla: HTMLElement, codigo: string): string {
     expect(tabla.textContent).not.toContain("El Calafate Accommodation - FTE Airport");
   }, 60_000);
 
-  it("OD017 solo: el traslado de llegada desde el aeropuerto PNT, con la marca a pedido", async () => {
+  it("OD017 solo: el traslado de llegada desde el aeropuerto PNT, solo con la marca Opcional (owner, 2026-10-11)", async () => {
     await abrir("OD017");
     const tabla = await screen.findByRole("table", { name: "Servicios" }, ESPERA);
     const llegada = filas(tabla).find((f) => f.textContent?.includes("PNT Airport - PNT accommodation"))!;
     expect(llegada).toBeDefined();
-    expect(llegada.textContent).toContain("A pedido");
+    expect(llegada.textContent).toContain("Opcional");
+    expect(llegada.textContent).not.toContain("A pedido");
     expect(llegada.textContent).toMatch(/patagonia planet/i);
     expect(document.body.textContent).not.toContain("No se pide en este tour");
   }, 60_000);

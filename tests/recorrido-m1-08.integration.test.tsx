@@ -112,7 +112,7 @@ function textoDe(tabla: HTMLElement, codigo: string): string {
     expect(textoDe(t, "OD032")).not.toContain("No se pide en este tour");
   }, 60_000);
 
-  it("el paquete solo sigue con todos sus servicios: OD020 con Greeters; OD017 con la llegada a pedido (M1-09)", async () => {
+  it("el paquete solo sigue con todos sus servicios: OD020 con Greeters; OD017 con la llegada opcional (M1-09)", async () => {
     await abrir("OD020");
     const servicios = await screen.findByRole("table", { name: "Servicios" }, ESPERA);
     expect(servicios.textContent).toContain("EZE o AEP - Hotel - EZE o AEP");
@@ -121,6 +121,6 @@ function textoDe(tabla: HTMLElement, codigo: string): string {
     await abrir("OD017");
     const od017 = await screen.findByRole("table", { name: "Servicios" }, ESPERA);
     const llegada = filas(od017).find((f) => f.textContent?.includes("PNT Airport"))!;
-    expect(llegada.textContent).toContain("A pedido");
+    expect(llegada.textContent).toContain("Opcional");
   }, 60_000);
 });
