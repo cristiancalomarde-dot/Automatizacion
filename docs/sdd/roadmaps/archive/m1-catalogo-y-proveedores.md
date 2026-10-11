@@ -107,11 +107,15 @@ el diagnóstico muestra que algún destino trae mucho lío, M1-04d se parte por 
 
 ## 6. Cuándo está terminado el milestone
 
-- [ ] Todas las filas de la tabla en ✅ (cada una con sus 3 verificaciones en verde, regla #5).
-- [ ] Las condiciones de M1 en `docs/prd.md` se cumplen y se pueden demostrar: catálogo cargado
+- [x] Todas las filas de la tabla en ✅ (cada una con sus 3 verificaciones en verde, regla #5).
+- [x] Las condiciones de M1 en `docs/prd.md` se cumplen y se pueden demostrar: catálogo cargado
       (simples + tours compuestos), directorio con mails, y "dado un producto → sus proveedores
       con mail" visible en pantalla.
-- [ ] **El owner lo probó con sus ojos:** el agente le dejó la app levantada y el link servido, y
+- [x] **El owner lo probó con sus ojos:** el agente le dejó la app levantada y el link servido, y
       él confirmó que lo que ve está bien (buscar el Overland CHB31 y ver sus proveedores es la
       prueba sugerida).
-- [ ] Este plan movido a `docs/sdd/roadmaps/archive/`.
+- [x] Este plan movido a `docs/sdd/roadmaps/archive/`.
+
+**Cerrado el 2026-10-11.** El owner revisó la versión publicada en https://automatizacion-dun.vercel.app
+y confirmó: "lo importante ESTA MUY BIEN, podemos dar por cerrado". Los detalles menores que
+marcó quedan anotados en `PROGRESS.md` para la próxima publicación.

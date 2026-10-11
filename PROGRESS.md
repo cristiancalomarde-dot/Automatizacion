@@ -3,15 +3,21 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
 
 # Dónde retomar
 
-- **Retomar acá (2026-10-11):**
-  - M1-10 terminada: 645/645 + lint, con la base recargada por el owner.
-  - **Publicado en Vercel** con OK del owner: push `b5fb19a` a GitHub. Vercel quedó "Deployment
-    has completed". Se publica con `git push origin main` desde el repo de Drive.
+- **Retomar acá (2026-10-11): M1 CERRADO.**
+  - El owner revisó la versión publicada en Vercel (push `b5fb19a`) y dio el OK.
+  - El plan está archivado en `docs/sdd/roadmaps/archive/m1-catalogo-y-proveedores.md`.
+  - Se publica con `git push origin main` desde el repo de Drive.
   - **Siguiente:**
-    1. El owner revisa los tours en https://automatizacion-dun.vercel.app.
-    2. Con su OK, archivar M1 en `docs/sdd/roadmaps/archive/`.
-    3. Armar la planilla borrador de Journaway.
-    4. Arrancar M2 con `/roadmap M2`.
+    1. Armar la planilla borrador de Journaway (ver abajo).
+    2. Arrancar M2 con `/roadmap M2`.
+  - **Detalles menores que marcó el owner, para la próxima publicación:**
+    - Los tramos de bus que emite HI Travel dicen "Pasaje que emite HI Travel. Sin proveedor."
+      (`TEXTOS.tramoEmite`). El proveedor es **Plataforma10**: mostrarlo así.
+    - "Transvipp" con doble p (viene del Excel de paquetes y de `data/equivalencias-proveedores.csv`).
+      Corregir a "Transvip".
+    - "Optiona" en vez de "Optional" en el traslado PNT de OD017. Viene del Excel de paquetes: que
+      lo corrija el owner en el Excel, o normalizarlo al importar.
+    - "También cosas menores" sin detallar: preguntarle cuáles.
   - Hallazgos menores de la auditoría UX, para después:
     - chips "Transfer de llegada/salida" con el mismo fondo que la fila del paquete;
     - ámbar usado en ajustes ya resueltos;
