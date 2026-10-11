@@ -3,6 +3,31 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
 
 # Dónde retomar
 
+- **Retomar acá (2026-10-11):** M1-10 (motivos visibles sin notas internas) tiene el código hecho
+  (`ba498ab`) y la verificación 1 + build en verde. Falta recargar la base: al Programador le
+  negaron el permiso de escribir en Supabase. **Pedirle al owner que corra él:**
+  `! cd /c/Users/gs/dev/hi-travel-automatizacion && npm run importar:paquetes && npm run importar:tours`.
+  Después:
+  1. Suite completa + `tests/recorrido-m1-10.integration.test.tsx`.
+  2. Commitear el `M1-08-traslados.md` regenerado. Descartar los reportes que solo cambian la fecha.
+  3. M1-10 ✅ en la tabla.
+  4. **Deploy (el owner ya dio OK):** `git -C <repo Drive> push origin main`. Vercel publica desde
+     `main`. El checklist del deploy-engineer dio GO el 2026-10-11.
+  5. El owner revisa los tours en https://automatizacion-dun.vercel.app. Con su OK, archivar M1 y
+     arrancar M2 (`/roadmap M2`).
+  - Hallazgos menores de la auditoría UX, para después:
+    - chips "Transfer de llegada/salida" con el mismo fondo que la fila del paquete;
+    - ámbar usado en ajustes ya resueltos;
+    - chip de proveedor en filas anuladas;
+    - "Solo ida" en vez de "Solo llegada" para buses;
+    - columna Origen repetitiva.
+  - Supabase Auth: `uri_allow_list` vacía. El owner tiene que agregar `http://localhost:3000/**` y
+    `https://automatizacion-dun.vercel.app/**`; si no, el login local lo devuelve a Vercel.
+  - Costo: hoy US$ 0 (Vercel Hobby + Supabase Free). Para uso comercial corresponde Vercel Pro
+    (US$ 20/mes), a decidir.
+  - Estimación dada al owner: primera prueba de M2 (un mail real entra como reserva) en unas 2
+    semanas; recorrido completo en 4 a 6 semanas.
+
 - **M1-08 y M1-09 terminadas (2026-10-11):** 635/635 tests + lint en verde (verificado por el loop
   principal). Migración 0009 aplicada. Reportes: `docs/sdd/diagnosticos/M1-08-traslados.md` y
   `M1-09-recarga.md`.
