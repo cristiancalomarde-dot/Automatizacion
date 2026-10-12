@@ -43,6 +43,38 @@ mano. Ver `docs/prd.md` M2.
   - Plataforma10 es el sistema donde HI Travel emite los pasajes a mano: queda como tarea, no
     como mail.
 
+**Respuestas del owner a las preguntas de las fichas (2026-10-12).** Pisan lo que diga cada
+ficha.
+
+- **M2-03, códigos y productos:**
+  - `HI_ARGENTINA_OVERLAND_7DAYS-677` es siempre CHB31.
+  - El código de BOCHI04R en Kilroy está en un mail de ejemplo nuevo, en `Insumos/Mails`.
+  - "Argentina and Uruguay, heart of the River Plate" (TourRadar) es **ARUY01**, que no está
+    cargado: queda "para revisión" con motivo "producto no cargado".
+- **M2-03 y M2-04, cancelaciones:** quedan "para revisión" y las resuelve una persona.
+- **M2-04, vuelos que llegan después:** si lo único que faltaba era el vuelo, la reserva **pasa
+  sola a "recibida"**.
+- **M2-08, Cuenca del Plata:** IGRP02, IGRT01 e IGRE03 se piden al **mail general de Cuenca del
+  Plata** (`reservas3@cuencadelplata.com`). No hacen falta filas propias.
+- **M2-08, buses con Plataforma10:**
+  - Los tramos USH ↔ PUQ (BUS02) y FTE ↔ PNT (BUS03, en los dos sentidos) se emiten en
+    Plataforma10 como tarea manual.
+  - Si ese día no hay bus, se pide la opción a **Patagonia Planet**: es la alternativa, con
+    proveedor y mail.
+- **M2-08 y M2-09, SPAP05 y SPAP06:**
+  - Para HI Travel son **el mismo tour**, con los mismos servicios y precio. Journaway solo le da
+    al pasajero una noche extra sin servicios.
+  - No hace falta distinguirlos: se puede cargar un solo producto (o dos con los mismos
+    servicios), y elegir entre 7N/8D y 8N/9D nunca manda la reserva a revisión.
+  - El owner piensa ofrecer una sola opción.
+- **M2-01, remitentes:**
+  - TourRadar escribe desde `explore@mail.tourradar.com` y `msg@notify.tourradar.com`. Los
+    statements llegan desde `system@sent-via.netsuite.com` (TourRadar Finance,
+    finance@tourradar.com).
+  - Jysk escribe desde los mails personales de su gente: dominio a confirmar.
+  - Kilroy escribe desde todos los países donde opera: reconocer cualquier dominio `kilroy.*`.
+    El owner puede pasar el listado.
+
 **Tareas del owner (no bloquean el plan; sí la pieza que las usa):**
 - **Crear la clave de Claude** (`ANTHROPIC_API_KEY`) y cargarla. Hace falta desde M2-02.
 - **Pasar la clave de `sales@`** para cargarla como variable de entorno. Hace falta desde M2-07.
