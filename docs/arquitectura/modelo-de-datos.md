@@ -68,6 +68,25 @@ separación por usuario.
   ciudades, habitación/categoría, **datos de vuelo** (número, aerolínea, horario de
   llegada/salida — obligatorios si el producto incluye un traslado; si faltan, la reserva va a
   `para_revision`), pedidos especiales, estado, flags (posible duplicada, pedido incompleto).
+- **mail_recibido** — el mail original de una reserva, tal cual llegó (M2-01, migración 0010):
+  remitente (dirección en minúscula y nombre), destinatarios, asunto, fecha, de dónde salió
+  (`imap` con su carpeta Inbox o Spam y su UID, o `archivo` de `Insumos/` en el modo prueba), el
+  Message-ID, el cuerpo y los adjuntos. Se guarda **una sola vez por huella**: el Message-ID
+  normalizado o, si no tiene, un `sha256:` del remitente, la fecha, el asunto y el cuerpo
+  (`src/lib/reservas/huella.ts`). El mismo mail visto en Inbox y en Spam queda una vez, y así la
+  lectura automática sabe qué ya procesó sin marcar nada en la casilla. De los PDF se guarda el
+  archivo en el bucket privado `mail-adjuntos` (ruta `<id del mail>/<nombre>`, lo lee el equipo,
+  lo escribe solo el servidor); de los demás adjuntos, solo nombre, tipo y tamaño. `agencia` sale
+  del remitente con `data/agencias.csv` (`src/lib/reservas/agencias.ts`); null si no se reconoció.
+- **reserva_componente** — las partes de una reserva, en orden (M2-01): los componentes de un tour
+  compuesto, o la lista de tours sueltos que manda Journaway. Cada una es un paquete (con su
+  producto si se reconoció, y el `producto_componente` del tour) o un tramo de bus, con sus fechas
+  y el texto tal como lo mandó la agencia. El estado de cada parte (pedido, confirmado, bus
+  emitido) lo agrega M3.
+- **ia_llamada** — cada llamada a la IA (M2-01, la llena M2-02): tarea, modelo, versión de las
+  instrucciones, tokens, costo y resultado (`ok`, `cortada`, `invalida`, `error`,
+  `sin_presupuesto`), con el mail y la reserva asociados. **No guarda el contenido del mail.** Ver
+  [`integraciones-ia.md`](integraciones-ia.md).
 - **reserva_pedido** — un pedido a un proveedor para una reserva. Proveedor, mail enviado (asunto
   + cuerpo), cuándo se envió, quién lo aprobó, resultado.
 - **evento_reserva** — el historial: cada cambio de estado, edición de campo y envío, con autor y
@@ -169,6 +188,18 @@ después (la salida de Puerto Natales de ARCH31 y ARCH33). Iguazú conserva sus 
 - `reserva.estado` como enum: `recibida | para_revision | pedido_a_proveedor | confirmada |
   con_cambios | rechazada | cerrada | descartada`.
 - `evento_reserva` es **append-only** (no se edita ni se borra): es el registro de auditoría.
+  Lo hace cumplir la base (0010): un trigger rechaza cualquier edición o borrado, también desde el
+  servidor. Las entradas `creada` (con el estado y los motivos iniciales) y `estado_cambiado`
+  (anterior y nuevo) las escriben triggers de `reserva`; el autor es siempre `auth.uid()` (null =
+  el sistema). `mail_agregado` y `posible_duplicada` las agrega el código (M2-04).
+- Una reserva **nace solo en `recibida` o `para_revision`** (trigger), y `para_revision` lleva
+  siempre uno o más `motivos_revision` escritos para el operativo (check: `para_revision` ⇔ hay
+  motivos). Una reserva real no se borra (trigger): se cierra o se descarta.
+- **Datos de prueba:** `reserva`, `mail_recibido` e `ia_llamada` llevan `de_prueba` (por defecto
+  no). `public.borrar_datos_de_prueba()` (solo service role) borra todo lo marcado — llamadas a la
+  IA, componentes, historial, reservas y mails — y devuelve las rutas de sus PDF, que borra el
+  servidor (`borrarDatosDePrueba` en `src/lib/reservas/guardar.ts`). Es la única forma de borrar
+  historial, y solo de reservas de prueba.
 - `proveedor.nombre_normalizado` para el emparejado (el README de los Excel pide "escribir el
   nombre del proveedor siempre igual"; se normaliza al importar).
 - Emparejado de producto: primero por `codigo_externo` exacto → `producto`. Si no hay código o no
