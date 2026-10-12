@@ -14,7 +14,16 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
     `integraciones-ia.md` reescrito (modelo por tarea en `modelos.ts` con Sonnet 5.5,
     instrucciones versionadas, `eval:lectura`, `ia_llamada`, controles de fechas y pax). Ajustes
     sumados a las fichas M2-01 (fila 11), M2-02 (filas 25-29), M2-03 y M2-06 (anexos).
-  - **Siguiente:** `/implementar M2-01`.
+  - **M2-01 terminada (2026-10-12):** migración 0010 aplicada (5 tablas + bucket
+    `mail-adjuntos`), `data/agencias.csv`, `src/lib/reservas/{agencias,huella,guardar,tipos}.ts`.
+    703/703 tests (flaky al correr todo junto: "6 tablas iguales" y `correcciones-m1-07` "#1 un
+    solo Tetris"; pasan solos). Commits `35a1e77`, `2a2bf1a`, `5f1298c`.
+    - **Antes de M2-06:** los tests limpian con `borrar_datos_de_prueba()`, que borra TODO lo de
+      prueba. Con el modo prueba en uso borrarían las reservas que revisa el owner. Hacer que los
+      tests limpien solo lo suyo (prefijo `[test …]`).
+    - `de_prueba` todavía se puede cambiar en una fila existente; `crearReserva` no es
+      transaccional (reserva y componentes en dos llamadas).
+  - **Siguiente:** `/implementar M2-02` (o M2-08, que también depende solo de M2-01).
   - Respuestas del owner a las preguntas de las fichas: en §3 del plan (2026-10-12). Quedan
     abiertos: el dominio de Jysk, el listado de países de Kilroy (el owner lo ofrece; mientras
     tanto, cualquier `kilroy.*`) y si se lee `INBOX.Promociones`.
