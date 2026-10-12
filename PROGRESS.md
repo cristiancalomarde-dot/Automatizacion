@@ -3,6 +3,18 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
 
 # Dónde retomar
 
+- **M2 planificado (2026-10-11):**
+  - Plan en `docs/sdd/roadmaps/active/m2-entrada-de-reservas.md`, con 9 piezas.
+  - Decisiones del owner:
+    - Lectura por IMAP de `sales@` en Ferozo, incluida la carpeta Spam.
+    - Journaway entra en M2.
+    - Primero modo prueba; la lectura automática se activa recién con su OK.
+  - **Siguiente:** `/specs` para escribir las fichas, después `/implementar M2-01`.
+  - Tareas del owner:
+    - `ANTHROPIC_API_KEY` (hace falta para M2-02).
+    - Clave de `sales@` (para M2-07).
+    - Pedirle a Journaway que mande a `sales@` con el código HI Travel.
+    - Copiar a `Insumos/` el Excel de proveedores con Patagonia Profunda.
 - **Retomar acá (2026-10-11): M1 CERRADO.**
   - El owner revisó la versión publicada en Vercel (push `b5fb19a`) y dio el OK.
   - El plan está archivado en `docs/sdd/roadmaps/archive/m1-catalogo-y-proveedores.md`.

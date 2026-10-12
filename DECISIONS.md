@@ -6,6 +6,25 @@ Formato mínimo por entrada: qué decisión, por qué, alternativa rechazada, co
 
 # Decisiones de diseño
 
+## 2026-10-11: M2 lee la casilla sales@ directo en Ferozo (IMAP), incluida la carpeta Spam
+- **Decisión:** la ingesta de reservas entra por IMAP a `sales@hitravel.com.ar` en Ferozo (`c1391889.ferozo.com:993`, SSL) y revisa el Inbox y la carpeta Spam. No marca, mueve ni borra mails: recuerda cuáles ya procesó.
+- **Razón:** el owner comprobó que el antispam de Ferozo manda mails de TourRadar a Spam. Esos mails nunca se reenvían al Gmail de automation, y moverlos después al Inbox tampoco dispara el reenvío. Leyendo el Gmail, una reserva podía perderse sin aviso.
+- **Alternativa rechazada:** seguir leyendo el Gmail de automation por Gmail API (OAuth) y confiar en la whitelist del antispam. Depende de que la whitelist esté siempre completa y suma la configuración de OAuth de Google.
+- **Constraint:**
+  - La clave de `sales@` va en variables de entorno (#2).
+  - Leer no es un efecto hacia afuera: la #4 no aplica a la ingesta.
+  - El envío a proveedores (M3) se decide aparte, con las opciones A, B o C de `integraciones.md`.
+  - El hosting de Ferozo está cerca de su capacidad máxima. Si la casilla se llena, los mails rebotan antes de que la app los vea.
+
+## 2026-10-11: Journaway entra en M2 como tercera agencia piloto
+- **Decisión:** M2 trabaja con Kilroy, TourRadar y Journaway. Journaway entra con las últimas piezas del plan, cuando el circuito ya funciona con los dos formatos estándar.
+- **Razón:** es la tercera agencia en volumen del owner, y su catálogo ya está relevado: `Insumos/Borrador productos Journaway.xlsx`, completado por el owner.
+- **Alternativa rechazada:** dejar Journaway para un milestone posterior al MVP, como decía el PRD §5. Hubiera seguido a mano la tercera agencia por más tiempo.
+- **Constraint:**
+  - Journaway reserva por nombre de tour, que cambia y a veces llega en alemán.
+  - Un paquete llega como una lista de tours sueltos.
+  - El owner les va a pedir que manden a `sales@` e incluyan el código HI Travel. Mientras no lo hagan, se empareja por nombre, y si no hay confianza la reserva queda "para revisión".
+
 ## 2026-10-06: En el MVP los datos se corrigen en los Excel, no en la app (M1-06 es de solo lectura)
 - **Decisión:** las pantallas de Catálogo y Directorio solo muestran. Proveedores, paquetes y tours se corrigen en los Excel del owner, que se copian a `Insumos/` y se re-importan. La app marca con claridad lo que falta completar y en qué Excel.
 - **Razón:** hoy los Excel son la fuente de la verdad. Editar en la app haría que una re-importación, o la suite de tests, pisara las correcciones (ya pasó con el segundo mail de Beer). El owner prefiere controlar el contenido desde los Excel.

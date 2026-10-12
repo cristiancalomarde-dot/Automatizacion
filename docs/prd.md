@@ -157,7 +157,9 @@ Lo de abajo **no se construye en el MVP**:
   mandando una persona por fuera.
 - **Emitir o gestionar boletos de bus desde la app** — la emisión de los tramos de bus público
   sigue haciéndose en el sistema de emisión existente; la app solo la marca como pendiente.
-- **Productos y mails de Journaway** — formato propio (alemán mezclado con inglés), códigos de
+- ~~**Productos y mails de Journaway**~~ — **cambió el 2026-10-11: Journaway entra en M2** como
+  tercera agencia piloto (ver `DECISIONS.md`). Texto original: formato propio (alemán mezclado
+  con inglés), códigos de
   producto distintos, catálogo separado de solo 6-7 productos (varios son excursiones de un día).
   Se suman en un milestone posterior, una vez validado el circuito con los formatos estándar
   (Kilroy/Jysk, TourRadar). Detectarlos será por remitente **y** por código de producto, ambos

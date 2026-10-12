@@ -5,6 +5,13 @@
 
 ## Los sistemas externos
 
+0. **Cambió el 2026-10-11 (ver `DECISIONS.md`): la ingesta lee `sales@hitravel.com.ar` directo
+   en Ferozo por IMAP**, incluida la carpeta **Spam**, en vez del Gmail dedicado.
+   - Servidor `c1391889.ferozo.com:993`, con SSL.
+   - Motivo: lo que el antispam de Ferozo manda a Spam no se reenvía al Gmail.
+   - La app no marca, mueve ni borra mails: guarda qué mensajes ya procesó.
+   - Lo que sigue sobre la lectura del Gmail queda reemplazado. Sobre el envío sigue valiendo,
+     según la opción que se elija de "Abierto".
 1. **Gmail (casilla dedicada de reservas)** — la app **lee** esa casilla cada ~5 minutos buscando
    mails de reserva, y **envía** desde ella los pedidos a proveedores (así las respuestas de los
    proveedores vuelven al mismo lugar). **Resuelto:** es el Gmail ya existente al que Ferozo

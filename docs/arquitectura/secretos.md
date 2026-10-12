@@ -21,6 +21,7 @@ para saber qué hay que configurar. El `.gitignore` ya bloquea los `.env` con va
 | `GMAIL_REFRESH_TOKEN` | Token de larga duración de la cuenta de mail dedicada | Vercel |
 | `SUPABASE_URL` / `SUPABASE_ANON_KEY` | Conexión de la app a la base y al login | Vercel |
 | `SUPABASE_SERVICE_ROLE_KEY` | Operaciones de servidor (ingesta, importador) que saltan RLS | Vercel (solo servidor) |
+| `SALES_IMAP_HOST` / `SALES_IMAP_USER` / `SALES_IMAP_PASSWORD` | Leer `sales@hitravel.com.ar` en Ferozo por IMAP, Inbox y Spam (M2, decisión 2026-10-11) | Vercel |
 | `CRON_SECRET` | Que solo Vercel Cron pueda disparar la ingesta y el importador | Vercel |
 | Credenciales de Postgres | Las administra Supabase | Supabase |
 
