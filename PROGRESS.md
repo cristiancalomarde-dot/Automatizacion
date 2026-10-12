@@ -24,6 +24,16 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
     - reservas de prueba: ¿se ocultan cuando arranca la lectura en vivo?
     - `max_tokens` 4000 y tope de US$ 0,10 por mail: llevarlos a `integraciones-ia.md`.
   - Antes de la verificación 3 de M2-02: copiar `Insumos/Mails` del Drive al clon.
+  - **Claves cargadas y verificadas (2026-10-12)** en `.env.local` del clon:
+    - `ANTHROPIC_API_KEY`: la API responde 200. Modelos disponibles: `claude-sonnet-5-5`,
+      `claude-opus-5-5`, `claude-haiku-5-5`. Las specs dicen `claude-sonnet-5`: revisarlo en
+      `/revisar-ia`.
+    - `SALES_IMAP_*`: el login IMAP da OK. Solo se probó LOGIN + LIST + LOGOUT, sin tocar mails.
+  - **Carpetas reales de sales@:** `INBOX`, `INBOX.spam` (sin la marca `\Junk`; M2-07 la
+    encuentra por el nombre), **`INBOX.Promociones`**, Trash, Sent Items y Drafts.
+    - Preguntarle al owner si `INBOX.Promociones` también se lee: puede ser un filtro que
+      desvía mails.
+    - Todavía faltan cargar en Vercel.
   - Tareas del owner:
     - `ANTHROPIC_API_KEY` (hace falta para M2-02).
     - Clave de `sales@` (para M2-07).
