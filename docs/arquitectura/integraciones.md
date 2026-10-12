@@ -83,7 +83,8 @@ Overland): ese sí genera un pedido a proveedor por mail, como cualquier otro se
 
 - Gmail API con OAuth de la cuenta dedicada. Scopes: `gmail.readonly` (ingesta), `gmail.send`
   (pedidos). Client id/secret + refresh token en variables de entorno ([`secretos.md`](secretos.md)).
-- Ingesta: Vercel Cron `*/5 * * * *` → Route Handler protegido con `CRON_SECRET`. Filtro de
+- **Ingesta (2026-10-11):** IMAP a `sales@` en Ferozo, Inbox + Spam, solo lectura (EXAMINE/BODY.PEEK), Vercel Cron diario `0 15 * * *` (12 hs Argentina). Ver spec M2-07. Lo de la línea siguiente queda reemplazado.
+- (Reemplazado) Ingesta: Vercel Cron `*/5 * * * *` → Route Handler protegido con `CRON_SECRET`. Filtro de
   búsqueda tipo `subject:(NEW BOOKING) newer_than:30d` (ajustable por agencia). Marca los mails
   procesados (label o `historyId`) para no re-procesar.
 - Envío: los pedidos se mandan como mails nuevos por proveedor desde la casilla. El asunto lleva

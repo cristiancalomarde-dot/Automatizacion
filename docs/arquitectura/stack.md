@@ -62,7 +62,8 @@ reescritura de la app.
   estructura lista para agregar `en.ts` el día que haga falta.
 - Supabase: Postgres + Auth (proveedor Google, dominio restringido). RLS activada aunque el
   modelo sea de datos compartidos (defensa en profundidad); ver [`modelo-de-datos.md`](modelo-de-datos.md).
-- Ingesta Gmail: Route Handler protegido, disparado por Vercel Cron (`*/5 * * * *`), que usa la
+- **Cambió el 2026-10-11 (DECISIONS):** la ingesta lee `sales@` en Ferozo por IMAP (Inbox + Spam), una vez por día a las 12 hs (Vercel Cron `0 15 * * *`, plan Hobby). Lo que sigue queda solo para el envío si se elige la opción A de `integraciones.md`.
+- (Reemplazado para la lectura) Ingesta Gmail: Route Handler protegido, disparado por Vercel Cron (`*/5 * * * *`), que usa la
   Gmail API (`gmail.readonly` para leer, `gmail.send` para enviar) con OAuth de la cuenta
   dedicada (client id/secret + refresh token en variables de entorno).
 - IA: SDK `@anthropic-ai/sdk`, modelo `claude-sonnet-5`, `thinking: {type: "adaptive"}`, salida
