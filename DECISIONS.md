@@ -6,6 +6,17 @@ Formato mínimo por entrada: qué decisión, por qué, alternativa rechazada, co
 
 # Decisiones de diseño
 
+## 2026-10-12: La IA de M2 con modelo por tarea, instrucciones versionadas, set de evaluación y registro por llamada
+- **Decisión:** aplicar la revisión de IA (`docs/arquitectura/revision-ia.md`), con el OK del owner:
+  - el modelo de cada tarea vive en un solo archivo (`src/lib/ia/modelos.ts`), y arranca en Sonnet 5.5;
+  - las instrucciones de la IA son archivos versionados (`lectura-mail.v1`, `propuesta-producto.v1`);
+  - `npm run eval:lectura` mide el % de aciertos sobre 6 mails con la ficha correcta validada por el owner;
+  - cada llamada queda en `ia_llamada`, sin el contenido del mail;
+  - el código controla fechas y pax por su cuenta, además de la confianza que da la IA.
+- **Razón:** las instrucciones son lo que más define la calidad. Sin un set de evaluación, cambiar de modelo o de instrucciones se decide a ojo. La confianza que se pone la IA suele ser optimista.
+- **Alternativa rechazada:** seguir con `claude-sonnet-5` escrito en cada archivo y comparar a mano. Tampoco se persigue cada modelo nuevo: se cambia solo si la evaluación no empeora.
+- **Constraint / consecuencia:** ningún archivo fuera de `modelos.ts` nombra un modelo. Cambiar instrucciones o modelo exige correr `eval:lectura`. Sonnet 5.5 vs Opus 5.5 se decide en M2-06 con esos números.
+
 ## 2026-10-11: La casilla se lee una vez por día, a las 12 del mediodía
 - **Decisión:** la lectura automática de `sales@` (M2-07) corre una vez por día, a las 12:00 hora
   Argentina (15:00 UTC).

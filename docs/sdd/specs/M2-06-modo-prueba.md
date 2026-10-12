@@ -141,7 +141,14 @@ En total: **15 archivos con IA y unas 17 reservas de prueba**.
 - **Dónde va cada cosa (orientativo):**
   - **Script:** `scripts/probar-mails.ts`, con `"probar:mails": "tsx scripts/probar-mails.ts"` en
     `package.json`. Flags: ruta (archivo o carpeta; por defecto `Insumos/Mails`), `--borrar`,
-    `--resumen` y `--modelo opus|sonnet` (por defecto el de `integraciones-ia.md`).
+    `--resumen` y `--modelo <id>` (por defecto el de `lectura_mail` en `src/lib/ia/modelos.ts`).
+  - **Ajustes por la revisión de IA (owner, 2026-10-12; ver `docs/arquitectura/revision-ia.md`):**
+    - La comparación de modelos es `claude-sonnet-5-5` contra `claude-opus-5-5`. Primero se corre
+      `npm run eval:lectura` (M2-02) con cada uno, y el resumen incluye los dos % por campo, el
+      costo de cada uno y la versión de las instrucciones.
+    - El modelo elegido se fija en `modelos.ts` con el OK del owner y se anota en `DECISIONS.md`.
+    - Cada llamada de la corrida deja su fila en `ia_llamada` con `de_prueba = true`; `--borrar`
+      también las limpia (el gasto en `uso_ia` sigue sin borrarse).
   - **Lectores:** `src/lib/modo-prueba/leer-archivo.ts`. Devuelven el mismo tipo de "mail de
     entrada" que va a producir el lector IMAP de M2-07, para que el circuito sea uno solo:
     - **.eml:** con `mailparser` (es probable que M2-07 lo use igual).

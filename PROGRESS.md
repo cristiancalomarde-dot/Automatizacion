@@ -10,24 +10,19 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
     - Journaway entra en M2.
     - Primero modo prueba; la lectura automática se activa recién con su OK.
   - **Las 9 fichas están escritas** (`docs/sdd/specs/M2-0*.md`, commit `a2c96cd`).
-  - **Siguiente:** `/revisar-ia` (opcional, M2-02, M2-03 y M2-09 usan IA) y después
-    `/implementar M2-01`.
-  - Preguntas abiertas del owner, que no bloquean:
-    - código Kilroy `HI_ARGENTINA_OVERLAND_7DAYS-677`: ¿siempre CHB31? ¿qué código usa BOCHI04R?
-    - "Heart of the River Plate" de TourRadar: ¿es OD020?
-    - cancelaciones: ¿solo "para revisión"?
-    - cuando llegan los vuelos después: ¿pasa sola a "recibida"?
-    - Cuenca del Plata no tiene fila para IGRP02, IGRT01 ni IGRE03;
-    - BUS02 y BUS03: ¿Patagonia Planet como segunda opción?
-    - "7 Days" en el título: ¿siempre es 7N/8D?
-    - remitentes de TourRadar, de Jysk y de los otros países de Kilroy;
-    - reservas de prueba: ¿se ocultan cuando arranca la lectura en vivo?
-    - `max_tokens` 4000 y tope de US$ 0,10 por mail: llevarlos a `integraciones-ia.md`.
+  - **Revisión de IA hecha y aplicada (2026-10-12, OK del owner):** `revision-ia.md`,
+    `integraciones-ia.md` reescrito (modelo por tarea en `modelos.ts` con Sonnet 5.5,
+    instrucciones versionadas, `eval:lectura`, `ia_llamada`, controles de fechas y pax). Ajustes
+    sumados a las fichas M2-01 (fila 11), M2-02 (filas 25-29), M2-03 y M2-06 (anexos).
+  - **Siguiente:** `/implementar M2-01`.
+  - Respuestas del owner a las preguntas de las fichas: en §3 del plan (2026-10-12). Quedan
+    abiertos: el dominio de Jysk, el listado de países de Kilroy (el owner lo ofrece; mientras
+    tanto, cualquier `kilroy.*`) y si se lee `INBOX.Promociones`.
+  - En M2-02 el owner valida las 6 fichas correctas del set de evaluación (las arma el builder).
   - Antes de la verificación 3 de M2-02: copiar `Insumos/Mails` del Drive al clon.
   - **Claves cargadas y verificadas (2026-10-12)** en `.env.local` del clon:
     - `ANTHROPIC_API_KEY`: la API responde 200. Modelos disponibles: `claude-sonnet-5-5`,
-      `claude-opus-5-5`, `claude-haiku-5-5`. Las specs dicen `claude-sonnet-5`: revisarlo en
-      `/revisar-ia`.
+      `claude-opus-5-5`, `claude-haiku-5-5`. Resuelto en la revisión de IA: Sonnet 5.5.
     - `SALES_IMAP_*`: el login IMAP da OK. Solo se probó LOGIN + LIST + LOGOUT, sin tocar mails.
   - **Carpetas reales de sales@:** `INBOX`, `INBOX.spam` (sin la marca `\Junk`; M2-07 la
     encuentra por el nombre), **`INBOX.Promociones`**, Trash, Sent Items y Drafts.

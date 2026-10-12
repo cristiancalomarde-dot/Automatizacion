@@ -36,6 +36,7 @@ el producto (M2-03) y lo muestran (M2-05). Esta pieza no lee mails ni tiene pant
 | 8 | **Remitentes conocidos de cada agencia en `data/agencias.csv`.** Cada fila es una dirección exacta o un dominio, con su agencia y si está confirmado. Filas iniciales: **Kilroy** con los dominios `kilroy.dk` (aarhus@, copenhagen@, y personas como emhe@ "en nombre de KILROY Copenhagen"), `kilroy.no` (oslo@) y `kilroy.co.uk` (travels@), confirmados por los ejemplos. **Journaway** con `operations@journaway.com` y `de@journaway.com`, confirmados. **TourRadar** con el dominio `tourradar.com`, **a confirmar** (ver preguntas abiertas). Jysk no lleva fila hasta saber su dirección | Unitario: el archivo real se lee sin errores. Ninguna dirección o dominio aparece dos veces ni en dos agencias. Ninguna fila es de `hitravel.com.ar` |
 | 9 | **Reconocer la agencia de un remitente.** Dada la dirección del remitente, la app devuelve la agencia o "desconocida". Primero busca la dirección exacta y después el dominio, sin importar mayúsculas | Unitario: `aarhus@kilroy.dk`, `Copenhagen@Kilroy.DK`, `oslo@kilroy.no` y `travels@kilroy.co.uk` → Kilroy; `de@journaway.com` → Journaway. **No debe pasar:** que `info@journaway.com` (no está en la lista), `alguien@kilroy.dk.ejemplo.com`, `x@notkilroy.dk`, `sales@hitravel.com.ar` o un mail con "journaway" solo en el nombre visible devuelvan una agencia |
 | 10 | **Solo el equipo ve las reservas.** Las cuatro tablas y los PDF guardados se leen solo con sesión del equipo | Integración: un usuario del equipo lee la reserva y su mail. **No debe pasar:** que alguien sin sesión lea una reserva, un mail, un historial o un PDF |
+| 11 | **Registro de cada llamada a la IA** (revisión de IA, owner 2026-10-12). Tabla `ia_llamada`: fecha, tarea, modelo, versión de las instrucciones, tokens de entrada y de salida, costo, resultado (`ok`, `cortada`, `invalida`, `error`, `sin_presupuesto`), y el mail y la reserva asociados (pueden faltar). **No tiene columna para el contenido del mail.** Lleva la marca "de prueba" y el borrado de prueba la limpia. La llena M2-02 | Integración: se guarda una llamada y se lee igual; el borrado de prueba la elimina. **No debe pasar:** que alguien sin sesión la lea, ni guardar un resultado fuera de la lista |
 
 ## 5. Qué queda afuera
 - **Leer la casilla `sales@`:** es M2-07. Lo que llega de remitentes que no son de una agencia no
@@ -122,7 +123,12 @@ el producto (M2-03) y lo muestran (M2-05). Esta pieza no lee mails ni tiene pant
     `creada` y `after update of estado` → `estado_cambiado`. Trigger `before update or delete`
     en `evento_reserva` que lanza un error, salvo dentro del borrado de prueba y solo para
     reservas `de_prueba`.
-  - **RLS** en las cuatro tablas, con el criterio de 0002: `authenticated` select/insert/update y
+  - **`ia_llamada`** (fila 11): `id`, `created_at`, `tarea text`, `modelo text`,
+    `version_instrucciones text`, `tokens_in int`, `tokens_out int`, `costo_usd numeric`,
+    `resultado` (check en la lista de la fila 11), `mail_recibido_id` (null), `reserva_id` (null),
+    `de_prueba`. Solo select/insert para `authenticated`; escribe el servidor (service role).
+    `borrar_datos_de_prueba()` también la limpia. Ver `docs/arquitectura/integraciones-ia.md`.
+  - **RLS** en las cinco tablas, con el criterio de 0002: `authenticated` select/insert/update y
     sin delete. `evento_reserva` solo select/insert.
   - **Borrado de prueba:** función `public.borrar_datos_de_prueba()`, solo para `service_role`
     (revoke a public/anon/authenticated, como `sumar_uso_ia` en 0003). Borra componentes,

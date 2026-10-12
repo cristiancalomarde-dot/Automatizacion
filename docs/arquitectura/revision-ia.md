@@ -52,8 +52,8 @@ Además: un registro de cada llamada a la IA (⚠️, dimensión 8) y desconfiar
 
 ## Choques con specs ya escritas (se derivan a `/specs`)
 
-Ninguno obliga a rehacer una spec: son ajustes que se suman. Se aplican en las fichas solo con el
-OK del owner.
+Ninguno obliga a rehacer una spec: son ajustes que se suman. **Aplicados el 2026-10-12 con el OK
+del owner**, junto con `integraciones-ia.md` y una entrada en `DECISIONS.md`.
 
 - **M2-01:** sumar la tabla `ia_llamada` (dimensión 8).
 - **M2-02:**

@@ -123,6 +123,17 @@ lo dice. Con esto M3 sabe qué pedirle a cada proveedor y M2-05 puede mostrar la
     "manual" de `data/equivalencias-proveedores.csv` (Kupos y similares) son tarea.
   - Umbral: una constante (`UMBRAL_CONFIANZA_PRODUCTO = 0.9`), documentada en
     `docs/arquitectura/integraciones-ia.md`.
+- **Ajustes por la revisión de IA (owner, 2026-10-12; ver `docs/arquitectura/revision-ia.md`):**
+  - Modelo y precio de la tarea `propuesta_producto` desde `src/lib/ia/modelos.ts` (lo crea
+    M2-02). Ningún nombre de modelo escrito acá.
+  - El `system` sale de `src/lib/reservas/instrucciones/propuesta-producto.v1.md`, con el texto de
+    `integraciones-ia.md`. `effort: "low"`, `thinking: { type: "adaptive" }`, `max_tokens` 1000.
+    Salida `{ codigo, confianza, motivo }`, con `codigo` como enum de los códigos de la lista
+    cerrada más `"ninguno"`.
+  - Cada propuesta escribe su fila en `ia_llamada` (tarea `propuesta_producto`, la versión de las
+    instrucciones y la reserva).
+  - Unitario: el cliente falso recibe el texto del archivo como `system`, `effort` bajo y el enum
+    con la lista cerrada.
   - Documentar el emparejado en `docs/arquitectura/modelo-de-datos.md` (anexo "Emparejado de
     producto").
 - **Migraciones:** M2-01 ya deja `reserva.motivos_revision` (con el `check` de "para revisión" ⇔
