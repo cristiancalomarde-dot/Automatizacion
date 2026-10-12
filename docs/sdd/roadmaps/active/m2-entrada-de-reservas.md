@@ -52,10 +52,10 @@ mano. Ver `docs/prd.md` M2.
 - **Copiar el Excel de proveedores actualizado** (con Patagonia Profunda) a `Insumos/`.
 
 **Abiertas, no bloquean:**
-- **Cada cuánto se lee la casilla.** El plan Hobby de Vercel solo permite tareas programadas una
-  vez por día. Para leer cada ~5 minutos hay tres caminos: Vercel Pro (US$ 20/mes, que igual
-  corresponde por uso comercial), un disparador externo gratuito o `pg_cron` de Supabase. Se
-  decide en M2-07, con el owner.
+- ~~Cada cuánto se lee la casilla~~ — **resuelto (owner, 2026-10-11): una vez por día, a las 12 del
+  mediodía (hora Argentina).** Las reservas llegan mayormente desde Europa y con mucha
+  anticipación, así que no hace falta leer cada 5 minutos. Alcanza con el cron diario del plan
+  Hobby de Vercel. Si hiciera falta más seguido, se revisa.
 - **El modelo de IA** (Sonnet vs. Opus): se decide con la precisión medida en el modo prueba.
 
 **Riesgos y su límite aceptado:**
@@ -88,7 +88,7 @@ mano. Ver `docs/prd.md` M2.
 | M2-04 | **Mismo intercambio, no reserva nueva.** Mismo booking_id + mismo producto → se agrega al historial de la reserva existente (por ejemplo, cuando mandan los vuelos). Producto distinto → reserva nueva. Ambiguo → "para revisión". Además, la marca de "posible duplicada" | ⬜ pendiente | M2-03 | `docs/sdd/specs/M2-04-mismo-intercambio.md` |
 | M2-05 | **Ver las reservas que entraron.** Lista y detalle de solo lectura: agencia, producto, fechas, pax, vuelos, estado y motivo de revisión, más el mail original. Es la base de la bandeja de M4 | ⬜ pendiente | M2-03 | `docs/sdd/specs/M2-05-ver-las-reservas.md` |
 | M2-06 | **Modo prueba con mails reales.** Procesa los mails de `Insumos/Mails` (.docx, .pdf y .eml) por el circuito completo, con las reservas marcadas "de prueba". Entrega un reporte por mail para el owner (qué entendió y qué no) y mide el % que necesita corrección | ⬜ pendiente | M2-04, M2-05 | `docs/sdd/specs/M2-06-modo-prueba.md` |
-| M2-07 | **Lectura automática de sales@.** Por IMAP en Ferozo, Inbox y Spam, cada ~5 minutos. Solo los remitentes de las agencias. No marca, mueve ni borra nada, y no reprocesa. Se activa con el OK del owner sobre el modo prueba | ⬜ pendiente | M2-06 | `docs/sdd/specs/M2-07-lectura-automatica.md` |
+| M2-07 | **Lectura automática de sales@.** Por IMAP en Ferozo, Inbox y Spam, **una vez por día a las 12 (hora Argentina)**. Solo los remitentes de las agencias. No marca, mueve ni borra nada, y no reprocesa. Se activa con el OK del owner sobre el modo prueba | ⬜ pendiente | M2-06 | `docs/sdd/specs/M2-07-lectura-automatica.md` |
 | M2-08 | **Catálogo de Journaway.** Carga la planilla completada por el owner: productos simples, paquetes SPAP como combinaciones de excursiones, SPAP05 y SPAP06 con el Overland de Imperio Inca, y los nombres de Journaway como `codigo_externo`. Recarga el directorio (Patagonia Profunda) | ⬜ pendiente | M2-01 | `docs/sdd/specs/M2-08-catalogo-journaway.md` |
 | M2-09 | **Reservas de Journaway.** Reconoce el paquete a partir de la lista de tours sueltos con fecha, los hoteles Tayka o el título. Lee los vuelos en alemán. Separa los hoteles que reserva Journaway ("booked by us") de lo que pide a HI Travel. Pasa por el modo prueba con los mails de ejemplo | ⬜ pendiente | M2-06, M2-08 | `docs/sdd/specs/M2-09-reservas-journaway.md` |
 

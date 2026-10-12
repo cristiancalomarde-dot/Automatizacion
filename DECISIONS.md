@@ -6,6 +6,19 @@ Formato mínimo por entrada: qué decisión, por qué, alternativa rechazada, co
 
 # Decisiones de diseño
 
+## 2026-10-11: La casilla se lee una vez por día, a las 12 del mediodía
+- **Decisión:** la lectura automática de `sales@` (M2-07) corre una vez por día, a las 12:00 hora
+  Argentina (15:00 UTC).
+- **Razón:** las reservas vienen mayormente de Europa y con mucha anticipación. Que estén cargadas
+  todas juntas al mediodía alcanza para la operación (palabras del owner: "NO necesitamos tanta
+  velocidad").
+- **Alternativa rechazada:** leer cada 5 minutos. Exige Vercel Pro o un disparador externo, y no
+  le da al equipo nada que necesite.
+- **Constraint:**
+  - Alcanza con el cron diario del plan Hobby de Vercel. En Hobby el horario exacto puede variar
+    dentro de esa hora.
+  - Si hace falta más seguido, se revisa esta decisión.
+
 ## 2026-10-11: M2 lee la casilla sales@ directo en Ferozo (IMAP), incluida la carpeta Spam
 - **Decisión:** la ingesta de reservas entra por IMAP a `sales@hitravel.com.ar` en Ferozo (`c1391889.ferozo.com:993`, SSL) y revisa el Inbox y la carpeta Spam. No marca, mueve ni borra mails: recuerda cuáles ya procesó.
 - **Razón:** el owner comprobó que el antispam de Ferozo manda mails de TourRadar a Spam. Esos mails nunca se reenvían al Gmail de automation, y moverlos después al Inbox tampoco dispara el reenvío. Leyendo el Gmail, una reserva podía perderse sin aviso.
