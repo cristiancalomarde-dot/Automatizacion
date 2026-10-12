@@ -14,6 +14,7 @@
 | Recorrido del usuario | [`user-flow.md`](user-flow.md) | — | ✅ escrito |
 | Marca: identidad visual y tono | [`marca.md`](marca.md) | — | ✅ escrito |
 | Integraciones con IA + techo de gasto | [`integraciones-ia.md`](integraciones-ia.md) | #3 | ✅ aplica — Claude lee los mails de reserva y ayuda al importador |
+| Revisión del diseño de IA *(la escribe `/revisar-ia`)* | [`revision-ia.md`](revision-ia.md) | — | ✅ 2026-10-12 — M2: listo con 1 arreglo 🔴 (instrucciones versionadas) y 4 ⚠️ |
 | Integraciones con otros sistemas | [`integraciones.md`](integraciones.md) | #4 | ✅ aplica — Gmail (lectura de la casilla + envío a proveedores) |
 | Autenticación y permisos | [`auth-y-permisos.md`](auth-y-permisos.md) | — | ✅ aplica — login con Google restringido al dominio, rol único |
 | Costo mensual estimado *(lo escribe `/costo`)* | `costos.md` | — | ⬜ pendiente — estimación gruesa en `stack.md` |
