@@ -9,7 +9,21 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
     - Lectura por IMAP de `sales@` en Ferozo, incluida la carpeta Spam.
     - Journaway entra en M2.
     - Primero modo prueba; la lectura automática se activa recién con su OK.
-  - **Siguiente:** `/specs` para escribir las fichas, después `/implementar M2-01`.
+  - **Las 9 fichas están escritas** (`docs/sdd/specs/M2-0*.md`, commit `a2c96cd`).
+  - **Siguiente:** `/revisar-ia` (opcional, M2-02, M2-03 y M2-09 usan IA) y después
+    `/implementar M2-01`.
+  - Preguntas abiertas del owner, que no bloquean:
+    - código Kilroy `HI_ARGENTINA_OVERLAND_7DAYS-677`: ¿siempre CHB31? ¿qué código usa BOCHI04R?
+    - "Heart of the River Plate" de TourRadar: ¿es OD020?
+    - cancelaciones: ¿solo "para revisión"?
+    - cuando llegan los vuelos después: ¿pasa sola a "recibida"?
+    - Cuenca del Plata no tiene fila para IGRP02, IGRT01 ni IGRE03;
+    - BUS02 y BUS03: ¿Patagonia Planet como segunda opción?
+    - "7 Days" en el título: ¿siempre es 7N/8D?
+    - remitentes de TourRadar, de Jysk y de los otros países de Kilroy;
+    - reservas de prueba: ¿se ocultan cuando arranca la lectura en vivo?
+    - `max_tokens` 4000 y tope de US$ 0,10 por mail: llevarlos a `integraciones-ia.md`.
+  - Antes de la verificación 3 de M2-02: copiar `Insumos/Mails` del Drive al clon.
   - Tareas del owner:
     - `ANTHROPIC_API_KEY` (hace falta para M2-02).
     - Clave de `sales@` (para M2-07).
