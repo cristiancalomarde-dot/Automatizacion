@@ -71,9 +71,15 @@ ficha.
   - TourRadar escribe desde `explore@mail.tourradar.com` y `msg@notify.tourradar.com`. Los
     statements llegan desde `system@sent-via.netsuite.com` (TourRadar Finance,
     finance@tourradar.com).
-  - Jysk escribe desde los mails personales de su gente: dominio a confirmar.
-  - Kilroy escribe desde todos los países donde opera: reconocer cualquier dominio `kilroy.*`.
-    El owner puede pasar el listado.
+  - **Listado de dominios del owner (2026-10-12), pisa lo anterior:**
+    - Kilroy: `kilroy.dk`, `kilroy.se`, `kilroy.no`, `kilroy.fi`, `kilroy.nl`, `kilroy.is`,
+      `kilroy.be`, `kilroy.net`, `kilroy.uk`, más `kilroy.co.uk`, que aparece en los ejemplos.
+    - Jysk: `jr.dk`.
+    - TourRadar: `tourradar.com` y sus subdominios (`notify.`, `mail.`). Además, la dirección
+      exacta `system@sent-via.netsuite.com`; el dominio entero no, porque NetSuite lo usan miles
+      de empresas.
+    - Journaway: todo el dominio `journaway.com`, no solo operations@ y de@.
+  - `INBOX.Promociones` no se lee: el owner confirma que en Ferozo nunca entra nada ahí.
 
 **Tareas del owner (no bloquean el plan; sí la pieza que las usa):**
 - **Crear la clave de Claude** (`ANTHROPIC_API_KEY`) y cargarla. Hace falta desde M2-02.
