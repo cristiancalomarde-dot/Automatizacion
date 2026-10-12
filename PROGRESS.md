@@ -11,8 +11,26 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
     1. **Planilla borrador de Journaway: hecha.**
        - Está en `Insumos/Borrador productos Journaway.xlsx`: 52 filas. 9 proveedores salen del
          Excel de paquetes, 21 son deducidos y 22 no tienen dato.
-       - Falta que el owner complete la columna "PROVEEDOR CONFIRMADO".
-       - Faltan en el directorio: Tayka y Hotel Vai Moana.
+       - **El owner la completó (2026-10-11).** Todos los proveedores quedaron con "ok".
+       - Los códigos van sin guion (SPAE05, IGRE01…). En celeste, lo que JW pide de verdad. Los
+         tours sueltos de San Pedro (salvo SPAE05) solo vienen dentro de paquetes: el código queda
+         como interno.
+       - Tayka va dentro del Overland y lo reserva Imperio Inca. El Hotel Vai Moana se pide a CL
+         Mundo. Don Raul no lo reservamos para JW.
+       - Faltan en el directorio: **Patagonia Profunda** (FTEE03) y **Plataforma10** (BUS02 y
+         BUS03, que son pasajes que emite HI Travel). Plataforma10 es tarea manual, no mail.
+       - BUS04 dice el comentario "exacto, cuenca", pero el proveedor es Chalten Travel:
+         probablemente sea un error de copiado.
+       - El owner puso los códigos en el Word de precios de JW. Faltan algunos (SPAP01, SPAP02,
+         SPAP04, SPAP06, SPAE05, BUS, FTE, PNTW, IGRT01 y la mayoría de IPC).
+     - **Formato de los mails de JW (para M2):**
+       - El nombre del tour cambia de una reserva a otra y a veces llega en alemán ("nach",
+         "Abflug", "Reisender").
+       - Un paquete llega como una lista de tours sueltos con fecha. El mail de SPAP05 trae 7 tours:
+         4 de San Pedro + los 3 días del Overland.
+       - Los hoteles los reserva JW y los vuelos vienen en el cuerpo del mail.
+       - Hoy las mandan a operaciones3@ con copia al owner, no a sales@.
+       - Propuesta del owner: pedirles que pongan nuestro código en cada reserva.
        - El owner puso a los clientes en la whitelist del antispam de Ferozo (2026-10-11):
          verificar que funcione.
     2. Arrancar M2 con `/roadmap M2`.
