@@ -1,0 +1,15 @@
+agencia,tipo,valor,estado,nota
+Kilroy,dominio,kilroy.dk,confirmado,"Listado del owner (2026-10-12). Ejemplos: Kilroy Aarhus y Copenhague (aarhus@kilroy.dk)"
+Kilroy,dominio,kilroy.se,confirmado,Listado del owner (2026-10-12)
+Kilroy,dominio,kilroy.no,confirmado,"Listado del owner (2026-10-12). Ejemplo: Kilroy Oslo (ARCH31)"
+Kilroy,dominio,kilroy.fi,confirmado,Listado del owner (2026-10-12)
+Kilroy,dominio,kilroy.nl,confirmado,Listado del owner (2026-10-12)
+Kilroy,dominio,kilroy.is,confirmado,Listado del owner (2026-10-12)
+Kilroy,dominio,kilroy.be,confirmado,Listado del owner (2026-10-12)
+Kilroy,dominio,kilroy.net,confirmado,Listado del owner (2026-10-12)
+Kilroy,dominio,kilroy.uk,confirmado,Listado del owner (2026-10-12)
+Kilroy,dominio,kilroy.co.uk,confirmado,"Listado del owner (2026-10-12). Ejemplo: Kilroy UK (5C01)"
+Jysk,dominio,jr.dk,confirmado,"Listado del owner (2026-10-12). Jysk Rejsebureau, mismo formato que Kilroy; lo que llegue de mails personales no se reconoce"
+TourRadar,dominio,tourradar.com,confirmado,"Listado del owner (2026-10-12). Incluye subdominios: explore@mail.tourradar.com, msg@notify.tourradar.com"
+TourRadar,direccion,system@sent-via.netsuite.com,confirmado,"Listado del owner (2026-10-12). Booking Statements en PDF (TourRadar Finance). Solo esta dirección: el dominio lo usan miles de empresas"
+Journaway,dominio,journaway.com,confirmado,"Listado del owner (2026-10-12). Todo el dominio (operations@, de@ y el resto). Ejemplos: Reserva de Cliente Journaway"
