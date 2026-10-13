@@ -10,11 +10,13 @@
  *   `RegistroUsoIA`, así se prueba sin red.
  */
 
+import { MODELOS, type PreciosModelo } from "./modelos";
+
 export const TECHO_MENSUAL_USD = 20;
 export const UMBRAL_AVISO = 0.8;
 
-/** Precios de `claude-sonnet-5` en US$ por millón de tokens (integraciones-ia.md, Anexo técnico). */
-export const PRECIOS_SONNET_5 = { entradaPorMillon: 2, salidaPorMillon: 10 };
+/** Precios por defecto: los del importador (`modelos.ts`). Cada tarea pasa los de su modelo. */
+const PRECIOS_POR_DEFECTO: PreciosModelo = MODELOS.importador.precios;
 
 export interface UsoTokens {
   tokensIn: number;
@@ -28,7 +30,7 @@ export interface RegistroUsoIA {
   sumar(mes: string, uso: UsoTokens & { costo: number }): Promise<void>;
 }
 
-export function costoUSD(uso: UsoTokens, precios = PRECIOS_SONNET_5): number {
+export function costoUSD(uso: UsoTokens, precios: PreciosModelo = PRECIOS_POR_DEFECTO): number {
   return (
     (uso.tokensIn * precios.entradaPorMillon + uso.tokensOut * precios.salidaPorMillon) / 1_000_000
   );
@@ -48,6 +50,8 @@ export async function llamarConTecho<T>(opciones: {
   /** Peor caso de costo de ESTA llamada (entrada estimada + `max_tokens` de salida). */
   costoMaximoLlamada: number;
   llamar: () => Promise<{ resultado: T; uso: UsoTokens }>;
+  /** Precios del modelo de esta llamada (`modelos.ts`); por defecto, los del importador. */
+  precios?: PreciosModelo;
   techo?: number;
   avisar?: (mensaje: string) => void;
 }): Promise<ResultadoConTecho<T>> {
@@ -59,7 +63,7 @@ export async function llamarConTecho<T>(opciones: {
   }
 
   const { resultado, uso } = await opciones.llamar();
-  const costo = costoUSD(uso);
+  const costo = costoUSD(uso, opciones.precios);
   await opciones.registro.sumar(opciones.mes, { ...uso, costo });
 
   const gastoNuevo = gastoPrevio + costo;

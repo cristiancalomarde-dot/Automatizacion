@@ -1,4 +1,5 @@
 import type Anthropic from "@anthropic-ai/sdk";
+import { MODELOS } from "@/lib/ia/modelos";
 import { costoUSD, llamarConTecho, type RegistroUsoIA } from "@/lib/ia/techo-gasto";
 import type { ConsultaBloqueIA, InterpretarBloque, RespuestaBloqueIA } from "./plan";
 
@@ -13,7 +14,8 @@ import type { ConsultaBloqueIA, InterpretarBloque, RespuestaBloqueIA } from "./p
  * escritos literalmente en el bloque.
  */
 
-export const MODELO_IA = "claude-sonnet-5";
+export const MODELO_IA = MODELOS.importador.modelo;
+const PRECIOS = MODELOS.importador.precios;
 const MAX_TOKENS = 2000;
 /** Peor caso de entrada: prompt fijo + sección 1 de un bloque (acotada abajo). */
 const TOKENS_ENTRADA_MAXIMOS = 4000;
@@ -135,7 +137,7 @@ export function crearConsultorIABloque(opciones: {
   avisar?: (mensaje: string) => void;
 }): ConsultorIABloque {
   const stats = { llamadas: 0, cortadasPorTecho: 0, errores: 0 };
-  const costoMaximoLlamada = costoUSD({ tokensIn: TOKENS_ENTRADA_MAXIMOS, tokensOut: MAX_TOKENS });
+  const costoMaximoLlamada = costoUSD({ tokensIn: TOKENS_ENTRADA_MAXIMOS, tokensOut: MAX_TOKENS }, PRECIOS);
 
   async function interpretar(consulta: ConsultaBloqueIA): Promise<RespuestaBloqueIA | null> {
     try {
@@ -143,6 +145,7 @@ export function crearConsultorIABloque(opciones: {
         registro: opciones.registro,
         mes: opciones.mes,
         costoMaximoLlamada,
+        precios: PRECIOS,
         avisar: opciones.avisar,
         llamar: async () => {
           stats.llamadas++;

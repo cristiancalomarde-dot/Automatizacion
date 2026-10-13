@@ -26,7 +26,7 @@ describe("techo de gasto de IA (regla #3)", () => {
     expect(TECHO_MENSUAL_USD).toBe(20);
   });
 
-  it("costo con precios de claude-sonnet-5 (US$ 2 / US$ 10 por millón in/out)", () => {
+  it("costo con los precios por defecto (Sonnet 5.5: US$ 2 / US$ 10 por millón in/out)", () => {
     expect(costoUSD({ tokensIn: 1_000_000, tokensOut: 0 })).toBeCloseTo(2);
     expect(costoUSD({ tokensIn: 0, tokensOut: 1_000_000 })).toBeCloseTo(10);
     expect(costoUSD({ tokensIn: 3000, tokensOut: 500 })).toBeCloseTo(0.011);
@@ -73,5 +73,19 @@ describe("techo de gasto de IA (regla #3)", () => {
       avisar,
     });
     expect(avisar).toHaveBeenCalledTimes(1);
+  });
+
+  it("con los precios de otro modelo, suma el costo real a esos precios (M2-02 fila 25)", async () => {
+    const { registro, sumar } = registroFake(0);
+    const precios = { entradaPorMillon: 4, salidaPorMillon: 20 };
+    const r = await llamarConTecho({
+      registro,
+      mes: "2026-09",
+      costoMaximoLlamada: 0.1,
+      precios,
+      llamar: async () => ({ resultado: "ok", uso: { tokensIn: 3000, tokensOut: 500 } }),
+    });
+    expect(r).toEqual({ llamada: true, resultado: "ok", costo: 0.022 });
+    expect(sumar).toHaveBeenCalledWith("2026-09", { tokensIn: 3000, tokensOut: 500, costo: 0.022 });
   });
 });

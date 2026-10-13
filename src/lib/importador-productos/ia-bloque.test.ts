@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
+import { MODELOS } from "@/lib/ia/modelos";
 import type { RegistroUsoIA } from "@/lib/ia/techo-gasto";
 import { crearConsultorIABloque, MODELO_IA, type ClienteMensajesIA } from "./ia-bloque";
 import type { ConsultaBloqueIA } from "./plan";
@@ -52,7 +53,7 @@ describe("crearConsultorIABloque (spec M1-04 §3 #10, regla #3)", () => {
 
     const params = (create.mock.calls[0] as unknown[])[0] as Record<string, unknown>;
     expect(params.model).toBe(MODELO_IA);
-    expect(MODELO_IA).toBe("claude-sonnet-5");
+    expect(MODELO_IA).toBe(MODELOS.importador.modelo);
     expect(params.output_config).toMatchObject({ format: { type: "json_schema" } });
     expect(JSON.stringify(params.messages)).toContain("Green + Dann Inn");
     expect(JSON.stringify(params.messages)).toContain("OD010C");

@@ -1,4 +1,5 @@
 import type Anthropic from "@anthropic-ai/sdk";
+import { MODELOS } from "@/lib/ia/modelos";
 import { costoUSD, llamarConTecho, type RegistroUsoIA } from "@/lib/ia/techo-gasto";
 import type { ConsultaIA, ConsultarIA, RespuestaIA } from "./resolver";
 
@@ -13,7 +14,8 @@ import type { ConsultaIA, ConsultarIA, RespuestaIA } from "./resolver";
  * confianza por debajo del umbral.
  */
 
-export const MODELO_IA = "claude-sonnet-5";
+export const MODELO_IA = MODELOS.importador.modelo;
+const PRECIOS = MODELOS.importador.precios;
 const MAX_TOKENS = 1500;
 /** Peor caso de entrada: prompt fijo + una celda y sus aclaraciones (acotadas abajo). */
 const TOKENS_ENTRADA_MAXIMOS = 2000;
@@ -70,7 +72,7 @@ export function crearConsultorIAMailAmbiguo(opciones: {
   avisar?: (mensaje: string) => void;
 }): ConsultorIA {
   const stats = { llamadas: 0, cortadasPorTecho: 0, errores: 0 };
-  const costoMaximoLlamada = costoUSD({ tokensIn: TOKENS_ENTRADA_MAXIMOS, tokensOut: MAX_TOKENS });
+  const costoMaximoLlamada = costoUSD({ tokensIn: TOKENS_ENTRADA_MAXIMOS, tokensOut: MAX_TOKENS }, PRECIOS);
 
   async function consultar(consulta: ConsultaIA): Promise<RespuestaIA | null> {
     try {

@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
+import { MODELOS } from "@/lib/ia/modelos";
 import type { RegistroUsoIA } from "@/lib/ia/techo-gasto";
 import { MODELO_IA, crearConsultorIAMailAmbiguo, type ClienteMensajesIA } from "./ia-mail-ambiguo";
 
@@ -37,7 +38,7 @@ describe("crearConsultorIAMailAmbiguo — respaldo de IA celda por celda (spec M
     expect(create).toHaveBeenCalledTimes(1);
     const params = (create.mock.calls[0] as unknown[])[0] as Record<string, unknown>;
     expect(params.model).toBe(MODELO_IA);
-    expect(MODELO_IA).toBe("claude-sonnet-5");
+    expect(MODELO_IA).toBe(MODELOS.importador.modelo);
     expect(params.thinking).toEqual({ type: "adaptive" });
     expect(params.output_config).toMatchObject({ format: { type: "json_schema" } });
     // en el prompt va solo la celda, sus aclaraciones y el nombre — no el archivo entero
