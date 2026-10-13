@@ -6,6 +6,12 @@ Formato mínimo por entrada: qué decisión, por qué, alternativa rechazada, co
 
 # Decisiones de diseño
 
+## 2026-10-13: La IA lee solo los mails originales de reserva, y no lee Jysk
+- **Decisión:** la lectura de `sales@` manda a la IA solo los mails que no son una respuesta ni un reenvío, es decir, cuyo asunto no empieza con `Re:`, `SV:`, `AW:`, `VS:`, `Fwd:`, `FW:` o `RV:`. Los mails de Jysk (`jr.dk`) no se procesan.
+- **Razón:** en sales@, el 12 y 13 de octubre hubo 44 mails de agencias, y solo unos 7 eran reservas nuevas. El resto eran conversaciones: si la IA las leyera, se acercaría al techo de gasto y llenaría "para revisión" de ruido. El 95% de lo de Jysk son viajes a medida, fuera del catálogo.
+- **Alternativa rechazada:** leer también las respuestas sobre reservas ya cargadas, para tomar vuelos que llegan después. Se descartó por simplicidad y costo; los mails nuevos tipo "NEW FLIGHT: <booking>" sí se leen.
+- **Constraint / consecuencia:** un dato que llega solo en una respuesta lo carga una persona. Si Jysk alguna vez reserva un paquete del catálogo, se carga a mano.
+
 ## 2026-10-12: La IA de M2 con modelo por tarea, instrucciones versionadas, set de evaluación y registro por llamada
 - **Decisión:** aplicar la revisión de IA (`docs/arquitectura/revision-ia.md`), con el OK del owner:
   - el modelo de cada tarea vive en un solo archivo (`src/lib/ia/modelos.ts`), y arranca en Sonnet 5.5;

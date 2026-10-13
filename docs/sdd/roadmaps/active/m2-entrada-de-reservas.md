@@ -55,7 +55,8 @@ ficha.
 - **M2-04, vuelos que llegan después:** si lo único que faltaba era el vuelo, la reserva **pasa
   sola a "recibida"**.
 - **M2-08, Cuenca del Plata:** IGRP02, IGRT01 e IGRE03 se piden al **mail general de Cuenca del
-  Plata** (`reservas3@cuencadelplata.com`). No hacen falta filas propias.
+  Plata** (`reservas8@cuencadelplata.com`; antes era reservas3@, el owner lo cambió en el Excel
+  de proveedores el 2026-10-13 y se carga al recargar el directorio en M2-08). No hacen falta filas propias.
 - **M2-08, buses con Plataforma10:**
   - Los tramos USH ↔ PUQ (BUS02) y FTE ↔ PNT (BUS03, en los dos sentidos) se emiten en
     Plataforma10 como tarea manual.
@@ -80,6 +81,23 @@ ficha.
       de empresas.
     - Journaway: todo el dominio `journaway.com`, no solo operations@ y de@.
   - `INBOX.Promociones` no se lee: el owner confirma que en Ferozo nunca entra nada ahí.
+
+**Qué mails lee la IA (owner, 2026-10-13, tras ver sales@ del 12 y 13 de octubre).** Pisa lo que
+diga cada ficha.
+- **Contexto:** en esos dos días hubo 44 mails de agencias (23 Kilroy, 21 Jysk). Unos 7 eran
+  reservas nuevas, y el resto conversaciones (respuestas, cotizaciones, cambios).
+- **Solo los mails originales:** la IA lee únicamente los mails que no son una respuesta ni un
+  reenvío. Se descartan los que tienen un asunto que empieza con `Re:`, `RE:`, `SV:`, `Sv:`,
+  `AW:`, `VS:`, `Fwd:`, `FW:`, `RV:` (también repetidos, como "Sv: Sv: RV:"). Las respuestas no
+  pasan por la IA ni crean reservas.
+  - Afecta a M2-04 y a M2-07.
+  - Los mails nuevos sobre una reserva existente (por ejemplo, "NEW FLIGHT: DK1562336 …", sin
+    `Re:`) sí se leen, y M2-04 los une a la reserva.
+  - Un vuelo que llega solo como respuesta no actualiza la reserva sola: lo carga una persona.
+- **Jysk no se lee:** el 95% son viajes a medida, y sus 3 o 4 tours propios no están en el
+  catálogo de HI Travel. `jr.dk` queda en `data/agencias.csv` para reconocer al remitente, pero
+  M2-07 no procesa sus mails. Si algún día Jysk reserva un paquete del catálogo, se carga a mano.
+- **Costo:** con esto, la IA lee del orden de 3 a 5 mails por día, muy por debajo del techo.
 
 **Tareas del owner (no bloquean el plan; sí la pieza que las usa):**
 - **Crear la clave de Claude** (`ANTHROPIC_API_KEY`) y cargarla. Hace falta desde M2-02.
@@ -121,7 +139,7 @@ ficha.
 | ID | Pieza | Estado | Depende de | Ficha |
 |---|---|---|---|---|
 | M2-01 | **Reservas en la base.** Tablas `reserva`, `reserva_componente`, `evento_reserva` y `mail_recibido` (migración con RLS). Agencias y remitentes conocidos en `data/agencias.csv`: Kilroy/Jysk, TourRadar y Journaway, con operations@ y de@journaway.com | ✅ terminada | — | `docs/sdd/specs/M2-01-reservas-en-la-base.md` |
-| M2-02 | **Leer un mail con IA.** Un mail (cuerpo, o el PDF adjunto si hay) pasa a datos ordenados: agencia, booking_id, producto o tours nombrados, fechas, pax, pasajeros, vuelos y pedidos especiales, con confianza por campo. Funciona con mails en alemán. Bajo el techo de gasto | ⬜ pendiente | M2-01 | `docs/sdd/specs/M2-02-leer-mail-con-ia.md` |
+| M2-02 | **Leer un mail con IA.** Un mail (cuerpo, o el PDF adjunto si hay) pasa a datos ordenados: agencia, booking_id, producto o tours nombrados, fechas, pax, pasajeros, vuelos y pedidos especiales, con confianza por campo. Funciona con mails en alemán. Bajo el techo de gasto | 🔵 en curso | M2-01 | `docs/sdd/specs/M2-02-leer-mail-con-ia.md` |
 | M2-03 | **Reconocer el producto (Kilroy y TourRadar).** Código exacto → nombre de la agencia (`codigo_externo`) → propuesta de la IA con confianza. Tour compuesto con sus componentes. Va a "para revisión" si: no hay confianza, el producto no está cargado, o falta el vuelo y el producto tiene traslado | ⬜ pendiente | M2-02 | `docs/sdd/specs/M2-03-reconocer-el-producto.md` |
 | M2-04 | **Mismo intercambio, no reserva nueva.** Mismo booking_id + mismo producto → se agrega al historial de la reserva existente (por ejemplo, cuando mandan los vuelos). Producto distinto → reserva nueva. Ambiguo → "para revisión". Además, la marca de "posible duplicada" | ⬜ pendiente | M2-03 | `docs/sdd/specs/M2-04-mismo-intercambio.md` |
 | M2-05 | **Ver las reservas que entraron.** Lista y detalle de solo lectura: agencia, producto, fechas, pax, vuelos, estado y motivo de revisión, más el mail original. Es la base de la bandeja de M4 | ⬜ pendiente | M2-03 | `docs/sdd/specs/M2-05-ver-las-reservas.md` |
