@@ -13,11 +13,12 @@ import type { MailParaLeer } from "@/lib/reservas/preparar-mail";
  *   el archivo entero es el cuerpo y el remitente sale de `datos`.
  * - `.html` → el cuerpo en HTML (como los "new booking" de Kilroy).
  * - `.pdf` → un mail con ese PDF adjunto (como los Booking Statement de
- *   TourRadar, que llegan desde system@sent-via.netsuite.com).
+ *   TourRadar, que llegan desde system@sent-via.netsuite.com). `nombre_adjunto`
+ *   evita que viaje el nombre del archivo de ejemplo (con notas del owner).
  */
 export function mailDeArchivo(
   ruta: string,
-  datos: { remitente?: string; asunto?: string; cuerpo?: string } = {},
+  datos: { remitente?: string; asunto?: string; cuerpo?: string; nombre_adjunto?: string } = {},
 ): MailParaLeer {
   const ext = extname(ruta).toLowerCase();
   if (ext === ".pdf") {
@@ -25,7 +26,7 @@ export function mailDeArchivo(
       remitente: datos.remitente ?? "system@sent-via.netsuite.com",
       asunto: datos.asunto ?? basename(ruta, ext),
       cuerpoTexto: datos.cuerpo ?? "",
-      adjuntos: [{ nombre: basename(ruta), tipo: "application/pdf", contenido: new Uint8Array(readFileSync(ruta)) }],
+      adjuntos: [{ nombre: datos.nombre_adjunto ?? basename(ruta), tipo: "application/pdf", contenido: new Uint8Array(readFileSync(ruta)) }],
     };
   }
   const texto = readFileSync(ruta, "utf-8");

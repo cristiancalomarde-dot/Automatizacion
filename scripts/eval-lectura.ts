@@ -37,7 +37,7 @@ const DIR = resolve(process.cwd(), "Insumos", "evals", "lectura");
 interface CasoEval {
   descripcion?: string;
   validado_por_owner?: boolean;
-  mail: { archivo: string; remitente?: string; asunto?: string; cuerpo?: string };
+  mail: { archivo: string; remitente?: string; asunto?: string; cuerpo?: string; nombre_adjunto?: string };
   esperado: FichaEsperada;
 }
 
