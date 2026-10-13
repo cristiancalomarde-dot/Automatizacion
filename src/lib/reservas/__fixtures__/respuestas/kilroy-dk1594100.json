@@ -1,0 +1,23 @@
+{
+  "id": "msg_grabado",
+  "type": "message",
+  "role": "assistant",
+  "model": "modelo-grabado",
+  "content": [
+    {
+      "type": "thinking",
+      "thinking": "…",
+      "signature": "grabada"
+    },
+    {
+      "type": "text",
+      "text": "{\"tipo_mail\":{\"valor\":\"reserva_nueva\",\"confianza\":0.9},\"agencia\":{\"valor\":\"Kilroy\",\"confianza\":1},\"numero_reserva\":{\"valor\":\"DK1594100/maga\",\"confianza\":1},\"titulo_paquete\":{\"valor\":null,\"confianza\":0},\"productos\":[{\"nombre\":\"Iguazu Falls Combined (2 nights in Brazil 1 night in Argentina)\",\"codigo\":\"HI_ARGENTINA_OD010D-677\",\"fecha_inicio\":\"2027-01-06\",\"fecha_fin\":\"2027-01-09\",\"noches\":null,\"habitacion\":\"Dormitory - Hostel\",\"punto_recogida\":null,\"opcionales\":[],\"confianza\":1},{\"nombre\":\"El Calafate & El Chalten full day - 4 nights\",\"codigo\":\"HI_ARGENTINA_OD014-677\",\"fecha_inicio\":\"2027-01-12\",\"fecha_fin\":\"2027-01-16\",\"noches\":4,\"habitacion\":\"Double Room - Hostel\",\"punto_recogida\":null,\"opcionales\":[],\"confianza\":1},{\"nombre\":\"Overland San Pedro de Atacama to Uyuni and La Paz - 7 Days\",\"codigo\":\"HI_ARGENTINA_OVERLAND_7DAYS-677\",\"fecha_inicio\":\"2027-01-18\",\"fecha_fin\":\"2027-01-24\",\"noches\":null,\"habitacion\":\"Double Room - Hostel\",\"punto_recogida\":null,\"opcionales\":[],\"confianza\":1}],\"fecha_inicio\":{\"valor\":\"2027-01-06\",\"confianza\":1},\"fecha_fin\":{\"valor\":\"2027-01-24\",\"confianza\":1},\"pax\":{\"valor\":2,\"confianza\":1},\"pasajeros\":[{\"nombre\":\"Elio\",\"apellido\":\"Muestra\",\"nacionalidad\":\"Denmark\",\"fecha_nacimiento\":\"2005-02-21\",\"confianza\":1},{\"nombre\":\"Fede\",\"apellido\":\"Modelo\",\"nacionalidad\":\"Denmark\",\"fecha_nacimiento\":\"2005-05-02\",\"confianza\":1}],\"vuelos\":[],\"hoteles_agencia\":[],\"todos_hoteles_agencia\":{\"valor\":false,\"confianza\":1},\"pedidos_especiales\":[],\"pdf_ilegible\":false,\"aviso\":null}"
+    }
+  ],
+  "stop_reason": "end_turn",
+  "stop_sequence": null,
+  "usage": {
+    "input_tokens": 3000,
+    "output_tokens": 500
+  }
+}

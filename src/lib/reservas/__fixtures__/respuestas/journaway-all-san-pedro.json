@@ -1,0 +1,23 @@
+{
+  "id": "msg_grabado",
+  "type": "message",
+  "role": "assistant",
+  "model": "modelo-grabado",
+  "content": [
+    {
+      "type": "thinking",
+      "thinking": "…",
+      "signature": "grabada"
+    },
+    {
+      "type": "text",
+      "text": "{\"tipo_mail\":{\"valor\":\"reserva_nueva\",\"confianza\":1},\"agencia\":{\"valor\":\"Journaway\",\"confianza\":1},\"numero_reserva\":{\"valor\":\"62992\",\"confianza\":1},\"titulo_paquete\":{\"valor\":\"Package All San Pedro de Atacama 8 Days - Transport + Activities\",\"confianza\":1},\"productos\":[{\"nombre\":\"San Pedro de Atacama: Astronomy Tour in the Atacama Desert\",\"codigo\":null,\"fecha_inicio\":\"2027-03-16\",\"fecha_fin\":null,\"noches\":null,\"habitacion\":null,\"punto_recogida\":null,\"opcionales\":[],\"confianza\":1},{\"nombre\":\"San Pedro de Atacama: Tour to the Tatio Geysers\",\"codigo\":null,\"fecha_inicio\":\"2027-03-17\",\"fecha_fin\":null,\"noches\":null,\"habitacion\":null,\"punto_recogida\":null,\"opcionales\":[],\"confianza\":1}],\"fecha_inicio\":{\"valor\":null,\"confianza\":0},\"fecha_fin\":{\"valor\":null,\"confianza\":0},\"pax\":{\"valor\":2,\"confianza\":1},\"pasajeros\":[{\"nombre\":\"Ines\",\"apellido\":\"Probe\",\"nacionalidad\":\"Deutschland\",\"fecha_nacimiento\":\"1974-01-29\",\"confianza\":1},{\"nombre\":\"Jule\",\"apellido\":\"Test\",\"nacionalidad\":\"Deutschland\",\"fecha_nacimiento\":\"1985-05-26\",\"confianza\":1}],\"vuelos\":[{\"numero\":\"LA156\",\"aerolinea\":\"LATAM Airlines Group\",\"origen\":\"SCL\",\"destino\":\"CJC\",\"fecha_salida\":\"2027-03-16\",\"hora_salida\":\"15:33\",\"fecha_llegada\":\"2027-03-16\",\"hora_llegada\":\"17:41\",\"confianza\":1},{\"numero\":\"LA377\",\"aerolinea\":\"LATAM Airlines Group\",\"origen\":\"CJC\",\"destino\":\"SCL\",\"fecha_salida\":\"2027-03-23\",\"hora_salida\":\"20:39\",\"fecha_llegada\":\"2027-03-23\",\"hora_llegada\":\"22:43\",\"confianza\":1}],\"hoteles_agencia\":[],\"todos_hoteles_agencia\":{\"valor\":true,\"confianza\":1},\"pedidos_especiales\":[],\"pdf_ilegible\":false,\"aviso\":null}"
+    }
+  ],
+  "stop_reason": "end_turn",
+  "stop_sequence": null,
+  "usage": {
+    "input_tokens": 3000,
+    "output_tokens": 500
+  }
+}

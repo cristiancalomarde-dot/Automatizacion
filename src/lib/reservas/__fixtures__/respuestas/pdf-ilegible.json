@@ -1,0 +1,23 @@
+{
+  "id": "msg_grabado",
+  "type": "message",
+  "role": "assistant",
+  "model": "modelo-grabado",
+  "content": [
+    {
+      "type": "thinking",
+      "thinking": "…",
+      "signature": "grabada"
+    },
+    {
+      "type": "text",
+      "text": "{\"tipo_mail\":{\"valor\":\"reserva_nueva\",\"confianza\":1},\"agencia\":{\"valor\":\"TourRadar\",\"confianza\":1},\"numero_reserva\":{\"valor\":null,\"confianza\":0},\"titulo_paquete\":{\"valor\":null,\"confianza\":0},\"productos\":[],\"fecha_inicio\":{\"valor\":null,\"confianza\":0},\"fecha_fin\":{\"valor\":null,\"confianza\":0},\"pax\":{\"valor\":null,\"confianza\":0},\"pasajeros\":[],\"vuelos\":[],\"hoteles_agencia\":[],\"todos_hoteles_agencia\":{\"valor\":false,\"confianza\":1},\"pedidos_especiales\":[],\"pdf_ilegible\":true,\"aviso\":\"No pude leer el PDF adjunto.\"}"
+    }
+  ],
+  "stop_reason": "end_turn",
+  "stop_sequence": null,
+  "usage": {
+    "input_tokens": 3000,
+    "output_tokens": 500
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "id": "msg_grabado",
+  "type": "message",
+  "role": "assistant",
+  "model": "modelo-grabado",
+  "content": [
+    {
+      "type": "thinking",
+      "thinking": "…",
+      "signature": "grabada"
+    },
+    {
+      "type": "text",
+      "text": "{\"tipo_mail\":{\"valor\":\"reserva_nueva\",\"confianza\":1},\"agencia\":{\"valor\":\"Kilroy\",\"confianza\":1},\"numero_reserva\":{\"valor\":\"UK1586142/fagu\",\"confianza\":1},\"titulo_paquete\":{\"valor\":null,\"confianza\":0},\"productos\":[{\"nombre\":\"5 Countries: Rio de Janeiro to La Paz (29 nights)\",\"codigo\":\"HI_TRAVEL_5C01-677\",\"fecha_inicio\":\"2026-11-01\",\"fecha_fin\":\"2026-11-30\",\"noches\":29,\"habitacion\":\"Dormitory - Hostel\",\"punto_recogida\":null,\"opcionales\":[],\"confianza\":1}],\"fecha_inicio\":{\"valor\":\"2026-11-01\",\"confianza\":1},\"fecha_fin\":{\"valor\":\"2026-11-30\",\"confianza\":1},\"pax\":{\"valor\":4,\"confianza\":1},\"pasajeros\":[{\"nombre\":\"Pasajero\",\"apellido\":\"Uno\",\"nacionalidad\":\"United Kingdom\",\"fecha_nacimiento\":\"2004-03-02\",\"confianza\":1},{\"nombre\":\"Pasajero\",\"apellido\":\"Dos\",\"nacionalidad\":\"United Kingdom\",\"fecha_nacimiento\":\"2004-12-26\",\"confianza\":1},{\"nombre\":\"Pasajero\",\"apellido\":\"Tres\",\"nacionalidad\":\"United Kingdom\",\"fecha_nacimiento\":\"2004-09-02\",\"confianza\":1},{\"nombre\":\"Pasajero\",\"apellido\":\"Cuatro\",\"nacionalidad\":\"United Kingdom\",\"fecha_nacimiento\":\"2003-11-25\",\"confianza\":1}],\"vuelos\":[],\"hoteles_agencia\":[],\"todos_hoteles_agencia\":{\"valor\":false,\"confianza\":1},\"pedidos_especiales\":[],\"pdf_ilegible\":false,\"aviso\":null}"
+    }
+  ],
+  "stop_reason": "end_turn",
+  "stop_sequence": null,
+  "usage": {
+    "input_tokens": 3000,
+    "output_tokens": 500
+  }
+}

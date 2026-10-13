@@ -1,0 +1,23 @@
+{
+  "id": "msg_grabado",
+  "type": "message",
+  "role": "assistant",
+  "model": "modelo-grabado",
+  "content": [
+    {
+      "type": "thinking",
+      "thinking": "…",
+      "signature": "grabada"
+    },
+    {
+      "type": "text",
+      "text": "{\"tipo_mail\":{\"valor\":\"reserva_nueva\",\"confianza\":1},\"agencia\":{\"valor\":\"Journaway\",\"confianza\":1},\"numero_reserva\":{\"valor\":null,\"confianza\":0},\"titulo_paquete\":{\"valor\":null,\"confianza\":0},\"productos\":[{\"nombre\":\"From Foz do Iguaçu: Half-day tour to the Argentinean side of Iguazú Falls\",\"codigo\":null,\"fecha_inicio\":\"2027-06-14\",\"fecha_fin\":null,\"noches\":null,\"habitacion\":null,\"punto_recogida\":\"Hotel Rafain Centro\",\"opcionales\":[],\"confianza\":1}],\"fecha_inicio\":{\"valor\":\"2027-06-14\",\"confianza\":1},\"fecha_fin\":{\"valor\":null,\"confianza\":0},\"pax\":{\"valor\":2,\"confianza\":1},\"pasajeros\":[{\"nombre\":\"Klara Katharina\",\"apellido\":\"Ejemplo\",\"nacionalidad\":\"Deutschland\",\"fecha_nacimiento\":\"1978-03-09\",\"confianza\":1},{\"nombre\":\"Lenn\",\"apellido\":\"Ejemplo\",\"nacionalidad\":\"Deutschland\",\"fecha_nacimiento\":\"2008-03-04\",\"confianza\":1}],\"vuelos\":[],\"hoteles_agencia\":[],\"todos_hoteles_agencia\":{\"valor\":false,\"confianza\":1},\"pedidos_especiales\":[],\"pdf_ilegible\":false,\"aviso\":null}"
+    }
+  ],
+  "stop_reason": "end_turn",
+  "stop_sequence": null,
+  "usage": {
+    "input_tokens": 3000,
+    "output_tokens": 500
+  }
+}

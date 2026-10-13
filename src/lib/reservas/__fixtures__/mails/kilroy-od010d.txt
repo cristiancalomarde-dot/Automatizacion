@@ -1,0 +1,37 @@
+Remitente: aarhus@kilroy.dk
+Asunto: DK1564627/cafj - Iguazu Falls Combined (2 nights in Brazil + 1 night in Argentina) - KILROY booking request
+Fecha: 2026-06-16T09:19:00Z
+
+NEW BOOKING
+Tour name: Iguazu Falls Combined (2 nights in Brazil 1 night in Argentina)
+Sub-name: 4 Days
+Type: Double Room - Hostel
+Inclusion: Arrival and departure transfers, 2 nights double room in hostel in Foz do Iguazu, 1 nights accommodation in hostel double room in Puerto Iguazu (including breakfast), full day Iguazu Falls tour (Argentinean side), half day Iguazu Falls tour (Brazilian side)
+Duration: 4 days
+Tour code: HI_ARGENTINA_OD010D-677
+Start city: Iguassu Falls
+Start date: 06 Sep 2026
+End city: Puerto Iguazu
+End date: 09 Sep 2026
+KILROY Reference.:DK1564627/cafj
+Extra Requests (transfers etc):
+Passenger 1 Information
+Last name: Pruebasen
+First name: Ana
+Nationality: Denmark
+Gender: female
+Date of birth: 30DEC03
+Email address: ana.pruebasen@example.com
+Passenger 2 Information
+Last name: Ficticia
+First name: Berta Sofie
+Nationality: Denmark
+Gender: female
+Date of birth: 19JAN05
+Email address: berta.ficticia@example.com
+This is a firm booking.
+Please reply with your confirmation as soon as possible on aarhus@kilroy.dk
+Your reply mail should include this message.
+Kind regards,
+Vendedora Ejemplo
+KILROY Aarhus

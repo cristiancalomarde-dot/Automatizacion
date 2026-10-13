@@ -1,0 +1,23 @@
+{
+  "id": "msg_grabado",
+  "type": "message",
+  "role": "assistant",
+  "model": "modelo-grabado",
+  "content": [
+    {
+      "type": "thinking",
+      "thinking": "…",
+      "signature": "grabada"
+    },
+    {
+      "type": "text",
+      "text": "{\"tipo_mail\":{\"valor\":\"reserva_nueva\",\"confianza\":1},\"agencia\":{\"valor\":\"TourRadar\",\"confianza\":1},\"numero_reserva\":{\"valor\":\"1376833\",\"confianza\":1},\"titulo_paquete\":{\"valor\":null,\"confianza\":0},\"productos\":[{\"nombre\":\"Overland San Pedro de Atacama to Uyuni end in La Paz (7 Days)\",\"codigo\":null,\"fecha_inicio\":\"2026-10-11\",\"fecha_fin\":null,\"noches\":null,\"habitacion\":\"DOUBLE Hostel\",\"punto_recogida\":null,\"opcionales\":[],\"confianza\":1}],\"fecha_inicio\":{\"valor\":\"2026-10-11\",\"confianza\":1},\"fecha_fin\":{\"valor\":null,\"confianza\":0},\"pax\":{\"valor\":2,\"confianza\":1},\"pasajeros\":[],\"vuelos\":[],\"hoteles_agencia\":[],\"todos_hoteles_agencia\":{\"valor\":false,\"confianza\":1},\"pedidos_especiales\":[],\"pdf_ilegible\":false,\"aviso\":null}"
+    }
+  ],
+  "stop_reason": "end_turn",
+  "stop_sequence": null,
+  "usage": {
+    "input_tokens": 3000,
+    "output_tokens": 500
+  }
+}

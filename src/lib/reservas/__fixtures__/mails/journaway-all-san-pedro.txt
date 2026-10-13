@@ -1,0 +1,28 @@
+Remitente: Operaciones Ejemplo von journaway GmbH <operations@journaway.com>
+Asunto: Booking request 62992
+
+Dear all,
+please book as follows and as per agreed rates and cancellation conditions:
+Booking information:
+Trip Number: 62992
+Package All San Pedro de Atacama 8 Days - Transport + Activities
+Pax: 2
+All Hotels are booked by us.
+Additional services:
+San Pedro de Atacama: Astronomy Tour in the Atacama Desert - 16.03.2027
+San Pedro de Atacama: Tour to the Tatio Geysers - 17.03.2027
+Flights:
+16.03.2027 - Comodoro Arturo Merino Benítez International Airport(SCL) nach: El Loa Airport(CJC) LATAM Airlines Group LA156; Abflug: 15:33 - Ankunft: 17:41
+---------------------------------------
+23.03.2027 - El Loa Airport(CJC) nach: Comodoro Arturo Merino Benítez International Airport(SCL) LATAM Airlines Group LA377; Abflug: 20:39 - Ankunft: 22:43
+Travellers:
+Vorname: Ines
+Nachname: Probe
+Nationality: Deutschland
+Geburtsdatum: 29.01.1974
+Vorname: Jule
+Nachname: Test
+Nationality: Deutschland
+Geburtsdatum: 26.05.1985
+Kind regards,
+journaway

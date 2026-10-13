@@ -1,0 +1,50 @@
+Remitente: travels@kilroy.co.uk
+Asunto: UK1586142/fagu - 5 Countries: Rio de Janeiro to La Paz (29 nights) - KILROY booking request
+Fecha: 2026-09-04T17:42:00Z
+
+NEW BOOKING
+
+Tour name: 5 Countries: Rio de Janeiro to La Paz (29 nights)
+Sub-name: 30 Days
+Type: Dormitory - Hostel
+Duration: 30 days
+Tour code: HI_TRAVEL_5C01-677
+Start city: Rio de Janeiro
+Start date: 01 Nov 2026
+End city: La Paz
+End date: 30 Nov 2026
+KILROY Reference.:UK1586142/fagu
+
+NOTE:Add Flight Number, Arrival Time for arrival transfers and any other Extra Requests here:
+
+Passenger 1 Information
+Last name: Uno
+First name: Pasajero
+Nationality: United Kingdom
+Date of birth: 02MAR04
+Email address: p1@example.com
+
+Passenger 2 Information
+Last name: Dos
+First name: Pasajero
+Nationality: United Kingdom
+Date of birth: 26DEC04
+Email address: p2@example.com
+
+Passenger 3 Information
+Last name: Tres
+First name: Pasajero
+Nationality: United Kingdom
+Date of birth: 02SEP04
+Email address: p3@example.com
+
+Passenger 4 Information
+Last name: Cuatro
+First name: Pasajero
+Nationality: United Kingdom
+Date of birth: 25NOV03
+Email address: p4@example.com
+
+This is a firm booking.
+Kind regards,
+KILROY Bristol

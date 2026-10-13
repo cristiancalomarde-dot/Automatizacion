@@ -1,0 +1,35 @@
+Remitente: aarhus@kilroy.dk
+Asunto: DK1576836-26196085 - HI - Rio de Janeiro Starter Package (Cabanacopa Hostel) - KILROY booking request
+Fecha: 2026-08-07T07:44:59Z
+
+NEW BOOKING
+Referring to the KILROY contract please book and confirm:
+
+Our order number: DK1576836-26196085
+Hotel name: HI - Rio de Janeiro Starter Package (Cabanacopa Hostel)
+City: Rio de Janeiro
+
+Arrival date: 01SEP26
+Number of nights: 3
+Departure date: 04SEP26
+
+Room type: Dormitory for 2 Passengers travelling together (price per person)
+Number of adults: 2
+Number of children (under 12): 0
+
+Travelers:
+
+Passenger 1 information:
+Lastname: Ensayo
+Firstname: Gael
+Nationality: Denmark
+Date of Birth: 13DEC06
+
+Passenger 2 information:
+Lastname: Simulado
+Firstname: Hugo
+Nationality: Denmark
+Date of Birth: 04AUG05
+
+Kind regards,
+KILROY Aarhus

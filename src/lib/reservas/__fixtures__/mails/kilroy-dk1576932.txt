@@ -1,0 +1,51 @@
+Remitente: Vendedora Ejemplo <vendedora@kilroy.dk>
+Asunto: 2 NEW BOOKINGS - DK1576932/emhe - KILROY booking request
+Fecha: 2026-08-31T12:52:00Z
+
+Hello team
+I have 2 new bookings for you:
+TOUR 1
+Tour name: Patagonia, Trekking Paradise with W-Trek (12 Days) - Self Guided
+Sub-name: 12 Days
+Type: Dormitory - Hostel and W-Trek Tent
+Duration: 12 days
+Tour code: HI_ARGENTINA_W_TREK_ARCH_33-677
+Start city: El Calafate
+Start date: 23 Feb 2027
+End city: Punta Arenas
+End date: 06 Mar 2027
+KILROY Reference.:DK1576932/emhe
+Extra Requests (transfers etc):
+PLEASE NOTE CLIENTS FLIGHT AFTER TOUR ENDS ARE FROM PUERTO NATALES.
+Flight info:
+TOUR 2
+Tour name: Overland San Pedro de Atacama to Uyuni and La Paz - 7 Days
+Sub-name: 7 Days
+Type: Double Room - Hostel
+Duration: 7 days
+Tour code: HI_ARGENTINA_OVERLAND_7DAYS-677
+Start city: Calama
+Start date: 06 Mar 2027
+End city: La Paz
+End date: 12 Mar 2027
+KILROY Reference.:DK1576932/emhe
+Flight info:
+PASSENGER INFORMATION
+Passenger 1 Information
+Last name: Probando
+First name: Carla
+Nationality: Denmark
+Date of birth: 27SEP07
+Email address: carla.probando@example.com
+Phone number: +45 00000001
+Passenger 2 Information
+Last name: Ejemplar
+First name: Dora Ryum
+Nationality: Denmark
+Date of birth: 30MAR07
+Email address: dora.ejemplar@example.com
+Phone number: +45 00000002
+This is a firm booking.
+Best regards,
+Vendedora Ejemplo
+Travel Advisor

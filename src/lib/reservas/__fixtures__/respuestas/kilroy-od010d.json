@@ -1,0 +1,23 @@
+{
+  "id": "msg_grabado",
+  "type": "message",
+  "role": "assistant",
+  "model": "modelo-grabado",
+  "content": [
+    {
+      "type": "thinking",
+      "thinking": "…",
+      "signature": "grabada"
+    },
+    {
+      "type": "text",
+      "text": "{\"tipo_mail\":{\"valor\":\"reserva_nueva\",\"confianza\":1},\"agencia\":{\"valor\":\"Kilroy\",\"confianza\":1},\"numero_reserva\":{\"valor\":\"DK1564627/cafj\",\"confianza\":1},\"titulo_paquete\":{\"valor\":null,\"confianza\":0},\"productos\":[{\"nombre\":\"Iguazu Falls Combined (2 nights in Brazil 1 night in Argentina)\",\"codigo\":\"HI_ARGENTINA_OD010D-677\",\"fecha_inicio\":\"2026-09-06\",\"fecha_fin\":\"2026-09-09\",\"noches\":null,\"habitacion\":\"Double Room - Hostel\",\"punto_recogida\":null,\"opcionales\":[],\"confianza\":1}],\"fecha_inicio\":{\"valor\":\"2026-09-06\",\"confianza\":1},\"fecha_fin\":{\"valor\":\"2026-09-09\",\"confianza\":1},\"pax\":{\"valor\":2,\"confianza\":1},\"pasajeros\":[{\"nombre\":\"Ana\",\"apellido\":\"Pruebasen\",\"nacionalidad\":\"Denmark\",\"fecha_nacimiento\":\"2003-12-30\",\"confianza\":1},{\"nombre\":\"Berta Sofie\",\"apellido\":\"Ficticia\",\"nacionalidad\":\"Denmark\",\"fecha_nacimiento\":\"2005-01-19\",\"confianza\":1}],\"vuelos\":[],\"hoteles_agencia\":[],\"todos_hoteles_agencia\":{\"valor\":false,\"confianza\":1},\"pedidos_especiales\":[],\"pdf_ilegible\":false,\"aviso\":null}"
+    }
+  ],
+  "stop_reason": "end_turn",
+  "stop_sequence": null,
+  "usage": {
+    "input_tokens": 3000,
+    "output_tokens": 500
+  }
+}
