@@ -1,0 +1,2 @@
+# Los PDF de prueba son binarios: sin conversión de fin de línea (rompería sus offsets).
+*.pdf binary
