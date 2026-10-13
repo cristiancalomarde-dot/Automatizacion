@@ -66,3 +66,29 @@ describe("esquema de la ficha (fila 5)", () => {
     }
   });
 });
+
+describe("esquema compatible con la API (límite de 16 parámetros con unión)", () => {
+  it("el esquema que va a la API no tiene uniones (anyOf ni listas de tipos)", () => {
+    const texto = JSON.stringify(ESQUEMA_FICHA_IA);
+    expect(texto).not.toMatch(/anyOf|oneOf|"type":\[/);
+  });
+
+  it("la IA marca lo vacío con \"\" (y 0 en pax y noches): se lee como vacío", () => {
+    const x = fichaGrabada("kilroy-od010d") as Record<string, unknown> & { productos: Array<Record<string, unknown>> };
+    x.titulo_paquete = { valor: "", confianza: 0 };
+    x.agencia = { valor: "", confianza: 0 };
+    x.pax = { valor: 0, confianza: 0 };
+    x.aviso = "";
+    x.productos[0].codigo = "";
+    x.productos[0].noches = 0;
+    x.productos[0].fecha_fin = "";
+    const r = validarFichaIA(x);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.ficha.titulo_paquete.valor).toBeNull();
+    expect(r.ficha.agencia.valor).toBeNull();
+    expect(r.ficha.pax.valor).toBeNull();
+    expect(r.ficha.aviso).toBeNull();
+    expect(r.ficha.productos[0]).toMatchObject({ codigo: null, noches: null, fecha_fin: null });
+  });
+});

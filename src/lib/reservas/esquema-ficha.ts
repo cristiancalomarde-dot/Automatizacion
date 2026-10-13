@@ -117,10 +117,15 @@ export interface FichaLectura extends Omit<FichaIA, "numero_reserva" | "pdf_ileg
 }
 
 // --- Esquema JSON para la API (estricto) ---------------------------------------------
+//
+// La API acepta hasta 16 parámetros con unión (nullable) por esquema y la
+// ficha tiene más: en el esquema no hay uniones. Lo vacío viaja como "" (y
+// como 0 en pax y noches) y `validarFichaIA` lo vuelve null.
 
 const texto = { type: "string" } as const;
-const textoONulo = { anyOf: [{ type: "string" }, { type: "null" }] } as const;
-const fecha = (descripcion: string) => ({ anyOf: [{ type: "string" }, { type: "null" }], description: descripcion });
+const VACIO = 'Vacío ("") si el mail no lo escribe.';
+const textoONulo = { type: "string", description: VACIO } as const;
+const fecha = (descripcion: string) => ({ type: "string", description: `${descripcion} ${VACIO}` });
 const confianza = { type: "number", description: "De 0 a 1." } as const;
 
 function objeto(properties: Record<string, unknown>, description?: string) {
@@ -137,9 +142,9 @@ const campo = (valor: unknown, description?: string) => objeto({ valor, confianz
 
 export const ESQUEMA_FICHA_IA = objeto({
   tipo_mail: campo({ type: "string", enum: [...TIPOS_MAIL] }),
-  agencia: campo({ anyOf: [{ type: "string", enum: [...AGENCIAS_PILOTO] }, { type: "null" }] }),
-  numero_reserva: campo(textoONulo, "El número de reserva de la agencia, copiado tal cual (con barras o guiones)."),
-  titulo_paquete: campo(textoONulo, "El título del paquete si el mail lo nombra aparte de los tours."),
+  agencia: campo({ type: "string", enum: [...AGENCIAS_PILOTO, ""] }),
+  numero_reserva: campo(textoONulo, `El número de reserva de la agencia, copiado tal cual (con barras o guiones). ${VACIO}`),
+  titulo_paquete: campo(textoONulo, `El título del paquete si el mail lo nombra aparte de los tours. ${VACIO}`),
   productos: {
     type: "array",
     description: "Cada producto, tour o excursión que se pide, en el orden del mail.",
@@ -147,8 +152,8 @@ export const ESQUEMA_FICHA_IA = objeto({
       nombre: texto,
       codigo: textoONulo,
       fecha_inicio: fecha("Año-mes-día."),
-      fecha_fin: fecha("Año-mes-día. Null si el mail no la escribe."),
-      noches: { anyOf: [{ type: "integer" }, { type: "null" }], description: "Solo si el mail escribe la cantidad de noches." },
+      fecha_fin: fecha("Año-mes-día."),
+      noches: { type: "integer", description: "Solo si el mail escribe la cantidad de noches; 0 si no." },
       habitacion: textoONulo,
       punto_recogida: textoONulo,
       opcionales: { type: "array", items: texto },
@@ -157,7 +162,7 @@ export const ESQUEMA_FICHA_IA = objeto({
   },
   fecha_inicio: campo(fecha("Inicio del viaje, año-mes-día.")),
   fecha_fin: campo(fecha("Fin del viaje, año-mes-día.")),
-  pax: campo({ anyOf: [{ type: "integer" }, { type: "null" }] }, "Cantidad de pasajeros."),
+  pax: campo({ type: "integer" }, "Cantidad de pasajeros; 0 si el mail no la escribe."),
   pasajeros: {
     type: "array",
     items: objeto({
@@ -174,8 +179,8 @@ export const ESQUEMA_FICHA_IA = objeto({
     items: objeto({
       numero: textoONulo,
       aerolinea: textoONulo,
-      origen: { ...textoONulo, description: "Código IATA del aeropuerto si está escrito." },
-      destino: { ...textoONulo, description: "Código IATA del aeropuerto si está escrito." },
+      origen: { ...textoONulo, description: `Código IATA del aeropuerto si está escrito. ${VACIO}` },
+      destino: { ...textoONulo, description: `Código IATA del aeropuerto si está escrito. ${VACIO}` },
       fecha_salida: fecha("Año-mes-día."),
       hora_salida: textoONulo,
       fecha_llegada: fecha("Año-mes-día."),
@@ -213,17 +218,19 @@ function conf(x: unknown, donde: string): void {
   }
 }
 
-function tipoValor(v: unknown, tipo: string, donde: string, nulo: boolean) {
-  if (v === null && nulo) return;
+/** Chequea el tipo y devuelve el valor, con lo vacío ("", o 0 en un entero) como null. */
+function tipoValor(v: unknown, tipo: string, donde: string, nulo: boolean): unknown {
+  if (nulo && (v === null || v === "" || (tipo === "integer" && v === 0))) return null;
   const ok = tipo === "integer" ? Number.isInteger(v) : typeof v === tipo;
   if (!ok) throw new Invalida(`${donde}: tipo inválido`);
+  return v;
 }
 
 function validarCampo(x: unknown, donde: string, tipo: string, nulo: boolean, enumeracion?: readonly string[]) {
   if (!esObjeto(x)) throw new Invalida(`${donde}: no es { valor, confianza }`);
   claves(x, ["valor", "confianza"], donde);
   conf(x.confianza, donde);
-  tipoValor(x.valor, tipo, donde, nulo);
+  x.valor = tipoValor(x.valor, tipo, donde, nulo);
   if (enumeracion && x.valor !== null && !enumeracion.includes(x.valor as string)) {
     throw new Invalida(`${donde}: valor desconocido`);
   }
@@ -245,7 +252,7 @@ function validarLista(
         if (!Array.isArray(el[k]) || !(el[k] as unknown[]).every((s) => typeof s === "string")) {
           throw new Invalida(`${aqui}.${k}: no es una lista de textos`);
         }
-      } else tipoValor(el[k], def.tipo, `${aqui}.${k}`, def.nulo ?? false);
+      } else el[k] = tipoValor(el[k], def.tipo, `${aqui}.${k}`, def.nulo ?? false);
     }
   });
 }
@@ -253,8 +260,10 @@ function validarLista(
 const T = { tipo: "string" };
 const TN = { tipo: "string", nulo: true };
 
-export function validarFichaIA(x: unknown): Resultado {
+export function validarFichaIA(respuesta: unknown): Resultado {
   try {
+    // Sobre una copia: lo vacío ("" / 0) se vuelve null sin tocar la respuesta original.
+    const x: unknown = structuredClone(respuesta);
     if (!esObjeto(x)) throw new Invalida("la respuesta no es un objeto");
     claves(x, Object.keys(ESQUEMA_FICHA_IA.properties), "ficha");
     validarCampo(x.tipo_mail, "tipo_mail", "string", false, TIPOS_MAIL);
@@ -289,7 +298,7 @@ export function validarFichaIA(x: unknown): Resultado {
     validarLista(x.hoteles_agencia, "hoteles_agencia", { nombre: T, fecha_entrada: TN, fecha_salida: TN });
     validarLista(x.pedidos_especiales, "pedidos_especiales", { texto: T });
     tipoValor(x.pdf_ilegible, "boolean", "pdf_ilegible", false);
-    tipoValor(x.aviso, "string", "aviso", true);
+    x.aviso = tipoValor(x.aviso, "string", "aviso", true);
     return { ok: true, ficha: x as unknown as FichaIA };
   } catch (e) {
     if (e instanceof Invalida) return { ok: false, error: e.message };
