@@ -136,9 +136,9 @@ del mail** (ese ya está en `mail_recibido`). `uso_ia` sigue sumando el gasto de
 - **Modelos disponibles con la clave** (2026-10-12, `GET /v1/models`): `claude-sonnet-5`,
   `claude-sonnet-5-5`, `claude-opus-5-5`, `claude-haiku-5-5`, `claude-fable-5-1`. Todos soportan
   `effort`; ninguno admite temperatura.
-- **Precios:** los de los 5.5 se confirman en la página de precios de Anthropic al construir
-  `modelos.ts` (M2-02). Referencia anterior: Sonnet 5 US$ 2 / US$ 10 por millón de tokens in/out;
-  Opus 5 US$ 5 / US$ 25.
+- **Precios** (US$ por millón de tokens in/out, tarifa estándar; confirmados en la página oficial
+  de precios de Anthropic el 2026-10-13, M2-02): Sonnet 5.5 US$ 2 / US$ 10; Opus 5.5 US$ 4 /
+  US$ 20; Sonnet 5 US$ 2 / US$ 10. Viven en `src/lib/ia/modelos.ts`.
 - **Parámetros:**
 
   | Tarea | `model` | `effort` | `thinking` | `max_tokens` | Salida |
@@ -160,6 +160,23 @@ del mail** (ese ya está en `mail_recibido`). `uso_ia` sigue sumando el gasto de
 - `scripts/eval-lectura.ts`: compara campo por campo (exacto en códigos, números y fechas;
   normalizado en nombres). Imprime el % por campo y el total, con el modelo y la versión de las
   instrucciones.
+- **Lectura del mail, cómo quedó construida (M2-02):**
+  - `max_tokens` 4000 (el SPAP05, con 7 tours, 6 vuelos y 8 hoteles, más el pensamiento, no
+    entra en menos). `stop_reason = max_tokens` → "para revisión" (se pagó y se registra).
+  - **Tope por mail US$ 0,10**, con el peor caso antes de llamar: (caracteres de instrucciones +
+    esquema + asunto + cuerpo) / 3 + 3.000 tokens por página de PDF, más 4000 de salida, a los
+    precios del modelo. Topes duros: cuerpo de hasta 30.000 caracteres después de la limpieza, PDF
+    de hasta 10 páginas y 5 MB.
+  - **Adjuntos:** solo viaja el PDF de la reserva (un PDF de TourRadar o uno llamado "Booking
+    Statement"), como bloque `document`. Pasaportes, imágenes y cualquier otro adjunto no se
+    mandan: se anotan por nombre en la ficha. Un PDF que no empieza con `%PDF`, vacío o con
+    `/Encrypt` no se manda y el mail queda "para revisión".
+  - **Cuerpo:** el texto plano si lo hay; si el mail es solo HTML (los "new booking" automáticos
+    de Kilroy), se pasa a texto (renglones por `<br>`, párrafos y filas; celdas con " | "). Se
+    sacan la firma ("-- ") y los mails citados que repiten lo de arriba. Los controles literales
+    (número de reserva, vuelos, fechas) se hacen contra el cuerpo entero, sin limpiar.
+  - El mail va en el mensaje del usuario dentro de la etiqueta `<mail>`; si el mail trae esa
+    etiqueta, se neutraliza.
 - Umbral para auto-aceptar la propuesta de producto: 0,9. Se ajusta con los datos del modo prueba
   (PRD riesgo #1: si más del 20% necesita corrección manual, se frena).
 
