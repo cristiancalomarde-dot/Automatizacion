@@ -23,7 +23,15 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
       tests limpien solo lo suyo (prefijo `[test …]`).
     - `de_prueba` todavía se puede cambiar en una fila existente; `crearReserva` no es
       transaccional (reserva y componentes en dos llamadas).
-  - **Siguiente:** `/implementar M2-02` (o M2-08, que también depende solo de M2-01).
+  - **M2-02 construida (2026-10-13), queda 🔵 hasta que el owner valide las fichas esperadas:**
+    eval real con Sonnet 5.5 = 97,6% (pax 83,3%, por la cancelación), US$ 0,14 por corrida.
+    Verificaciones 1 y 2 en verde, y el build OK. Commits `4f66c34`…`2b11a84`. Set de evaluación
+    y `LEEME-para-validar.md` en `Insumos/evals/lectura/` del clon. Al validar: poner
+    `validado_por_owner: true`, ajustar lo que diga el owner y volver a correr `npm run eval:lectura`.
+    - Precios oficiales (2026-10-13): Sonnet 5.5 a US$ 2 / 10; Opus 5.5 a US$ 4 / 20.
+    - Hay 44 mails reales de sales@ del 12 y 13 de octubre en `Insumos/Mails-reales-2026-10/`
+      (clon), para M2-06. Se leyeron por IMAP en modo solo lectura.
+  - **Siguiente:** cerrar M2-02 con la validación del owner → `/implementar M2-03` (o M2-08).
   - Respuestas del owner a las preguntas de las fichas: en §3 del plan (2026-10-12). Quedan
     abiertos: el dominio de Jysk, el listado de países de Kilroy (el owner lo ofrece; mientras
     tanto, cualquier `kilroy.*`) y si se lee `INBOX.Promociones`.
