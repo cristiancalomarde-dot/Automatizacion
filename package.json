@@ -14,7 +14,9 @@
     "importar:equivalencias": "tsx scripts/cargar-equivalencias-proveedores.ts",
     "importar:paquetes": "tsx scripts/importar-paquetes-tours.ts",
     "importar:tours": "tsx scripts/importar-tours-compuestos.ts",
-    "diagnosticar:paquetes": "tsx scripts/diagnosticar-paquetes.ts"
+    "diagnosticar:paquetes": "tsx scripts/diagnosticar-paquetes.ts",
+    "probar:lectura": "tsx --conditions=react-server scripts/probar-lectura-mail.ts",
+    "eval:lectura": "tsx --conditions=react-server scripts/eval-lectura.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.128.0",
