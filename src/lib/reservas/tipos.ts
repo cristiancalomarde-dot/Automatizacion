@@ -221,3 +221,86 @@ export interface EventoReserva {
   autor_id: string | null;
   created_at: string;
 }
+
+// --- Pantallas de reservas (spec M2-05) ----------------------------------------------
+// Lo que leen la lista y el detalle, ya armado para mostrar (camelCase).
+
+export interface ProductoDeReserva {
+  id: string;
+  codigo: string;
+  nombre: string;
+}
+
+/** Una fila de la lista de reservas. */
+export interface FilaReserva {
+  id: string;
+  estado: EstadoReserva;
+  agencia: string;
+  /** El número de la agencia tal como vino (o el normalizado si no está el original). */
+  numero: string | null;
+  producto: ProductoDeReserva | null;
+  fechaInicio: string | null;
+  fechaFin: string | null;
+  pax: number | null;
+  /** Fecha y hora del primer mail (o de la carga, si el mail no la trae). ISO. */
+  llego: string;
+  /** Tal como los guardó la base: se muestran con `fraseDeMotivo`. */
+  motivos: string[];
+  posibleDuplicada: boolean;
+  dePrueba: boolean;
+}
+
+/** Un vuelo como lo dice el mail: fechas y horas del aeropuerto, sin convertir. */
+export interface VueloDeReserva {
+  numero: string | null;
+  aerolinea: string | null;
+  origen: string | null;
+  destino: string | null;
+  fechaSalida: string | null;
+  horaSalida: string | null;
+  fechaLlegada: string | null;
+  horaLlegada: string | null;
+}
+
+/** Una parte de un tour compuesto, en orden. */
+export interface ParteDeReserva {
+  orden: number;
+  tipo: TipoComponenteReserva;
+  producto: ProductoDeReserva | null;
+  descripcion: string | null;
+  fechaInicio: string | null;
+  fechaFin: string | null;
+  esTarea: boolean;
+}
+
+export interface PdfDelMail {
+  nombre: string;
+  /** Ruta en el bucket privado `mail-adjuntos`. */
+  ruta: string;
+}
+
+export interface MailDeReserva {
+  id: string;
+  remitente: string;
+  remitenteNombre: string | null;
+  asunto: string | null;
+  /** ISO; null si el mail no trae fecha. */
+  fecha: string | null;
+  spam: boolean;
+  /** El cuerpo en texto (el HTML ya pasado a texto). Nunca se interpreta como página. */
+  cuerpo: string;
+  pdfs: PdfDelMail[];
+}
+
+export interface DetalleReserva extends FilaReserva {
+  productoTextoAgencia: string | null;
+  duplicadaDeId: string | null;
+  /** Nombres de los pasajeros, si el mail los trae. */
+  pasajeros: string[];
+  habitacion: string | null;
+  pedidosEspeciales: string | null;
+  vuelos: VueloDeReserva[];
+  partes: ParteDeReserva[];
+  /** Por orden de llegada: el primero es el que creó la reserva. */
+  mails: MailDeReserva[];
+}

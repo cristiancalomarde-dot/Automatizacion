@@ -44,3 +44,16 @@ describe("decidirRedireccion", () => {
     });
   });
 });
+
+describe("las reservas necesitan sesión (spec M2-05 #15)", () => {
+  it.each(["/reservas", "/reservas/6f1c2b4e-2d3a-4b5c-9d8e-0a1b2c3d4e5f", "/reservas/no-existe"])(
+    "sin sesión, %s lleva al login con sesión vencida",
+    (pathname) => {
+      expect(esRutaPublica(pathname)).toBe(false);
+      expect(decidirRedireccion({ pathname, haySesion: false })).toEqual({
+        tipo: "redirigir",
+        destino: "/login?error=sesion_vencida",
+      });
+    },
+  );
+});
