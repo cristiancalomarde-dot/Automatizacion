@@ -140,6 +140,12 @@ diga cada ficha.
 - **Jysk no se lee:** el 95% son viajes a medida, y sus 3 o 4 tours propios no están en el
   catálogo de HI Travel. `jr.dk` queda en `data/agencias.csv` para reconocer al remitente, pero
   M2-07 no procesa sus mails. Si algún día Jysk reserva un paquete del catálogo, se carga a mano.
+  - **Para después de M2 (anotado 2026-10-14): el BPA de Jysk.** Jysk vende el "Backpacker
+    Adventure Tour" (BPA): grupos privados de 10 a 18 pax, 8 a 10 salidas por año (octubre a
+    mayo/junio). Es un CHB31 con variantes: sin geysers del Tatio, sin bus Uyuni–La Paz, y de San
+    Pedro a Uyuni en privado con hostels (no en regular). Para automatizarlo hace falta: cargarlo
+    como producto propio (variante de CHB31), ver con mails reales cómo lo identifica Jysk (¿dice
+    "BPA" en el asunto?) y leer solo esos mails de Jysk. No entra en M2.
 - **Costo:** con esto, la IA lee del orden de 3 a 5 mails por día, muy por debajo del techo.
 
 **Tareas del owner (no bloquean el plan; sí la pieza que las usa):**
