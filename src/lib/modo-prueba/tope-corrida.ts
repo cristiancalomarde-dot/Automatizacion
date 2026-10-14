@@ -10,6 +10,10 @@ import { TECHO_MENSUAL_USD, type RegistroUsoIA } from "@/lib/ia/techo-gasto";
  * del mes y lo que queda de la corrida. El gasto real se suma igual a
  * `uso_ia`. Si una llamada no se hace, `bloqueo()` dice cuál de los dos la
  * frenó.
+ *
+ * Por eso el aviso del 80% de `llamarConTecho` no sirve con este registro (ve
+ * el margen de la corrida, no el gasto del mes): quien lo use muestra el
+ * gasto real del mes leyendo `uso_ia` aparte (`scripts/probar-mails.ts`).
  */
 
 export const TOPE_CORRIDA_USD = 2;

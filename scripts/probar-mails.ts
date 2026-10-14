@@ -178,7 +178,6 @@ async function correr(admin: SupabaseClient, opciones: ReturnType<typeof argumen
   const registroUso = crearRegistroUsoIASupabase(admin);
   const llamadas = crearRegistroLlamadasSupabase(admin);
   const mes = mesActual();
-  const avisar = (m: string) => console.log(`AVISO: ${m}`);
   console.log(`Modo prueba: ${archivos.length} archivos · modelo ${opciones.modelo} · tope de la corrida US$ ${opciones.tope}\n`);
 
   mkdirSync(DIR_REPORTES, { recursive: true });
@@ -196,7 +195,6 @@ async function correr(admin: SupabaseClient, opciones: ReturnType<typeof argumen
         mailRecibidoId: ctx.mailRecibidoId,
         dePrueba: true,
         modelo: opciones.modelo,
-        avisar,
       }),
     deps: (ctx) =>
       cargarDependenciasReservas(admin, crearProponedorIA({ cliente, registro: ctx.registro, mes, dePrueba: true, mailRecibidoId: ctx.mailRecibidoId })),
@@ -214,6 +212,10 @@ async function correr(admin: SupabaseClient, opciones: ReturnType<typeof argumen
       `no procesados: ${cuenta("no_procesado")} · con error: ${cuenta("error")}`,
   );
   console.log(`Gasto de la corrida: US$ ${resultado.gasto.toFixed(4)} (${resultado.lecturasIA} lecturas con IA)`);
+  // El aviso del 80% de llamarConTecho no se usa acá: con el tope de la corrida, el gasto que ve es
+  // el del margen de la corrida, no el del mes. El del mes, real, sale de uso_ia.
+  const delMes = await registroUso.gastoDelMes(mes);
+  console.log(`Gasto de IA del mes ${mes}: US$ ${delMes.toFixed(2)} de US$ 20${delMes >= 16 ? " (80% o más del techo)" : ""}`);
   if (resultado.corte) console.log(`Se cortó: ${resultado.corte}`);
   console.log("Reportes: docs/sdd/diagnosticos/M2-06-mails/");
   if (cuenta("error")) process.exitCode = 1;
