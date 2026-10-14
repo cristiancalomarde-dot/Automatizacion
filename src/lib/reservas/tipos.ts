@@ -92,8 +92,18 @@ export interface MailRecibido {
 
 // --- reserva ------------------------------------------------------------------------
 
+/**
+ * paquete: un producto del catálogo; tramo_bus: un bus público; servicio: un
+ * servicio del tour mismo (el bus que reserva Imperio Inca, el transfer al
+ * aeropuerto de Puerto Natales). Migración 0011.
+ */
+export type TipoComponenteReserva = "paquete" | "tramo_bus" | "servicio";
+
+/** Cómo se reconoció el producto (M2-03): código exacto, nombre de la agencia o IA. */
+export type OrigenEmparejado = "codigo" | "nombre" | "ia";
+
 export interface ComponenteEntrada {
-  tipo: "paquete" | "tramo_bus";
+  tipo: TipoComponenteReserva;
   productoId?: string | null;
   productoComponenteId?: string | null;
   descripcionRuta?: string | null;
@@ -101,6 +111,12 @@ export interface ComponenteEntrada {
   textoAgencia?: string | null;
   fechaInicio?: string | null;
   fechaFin?: string | null;
+  /** Bus que emite HI Travel a mano (Kupos, Plataforma10): tarea, sin proveedor. */
+  esTarea?: boolean;
+  /** El servicio del catálogo del que sale la parte (buses del tour, final de ARCH31/ARCH33). */
+  productoServicioId?: string | null;
+  /** A quién se le pide una parte de tipo servicio. */
+  proveedorId?: string | null;
 }
 
 export interface ReservaEntrada {
@@ -121,6 +137,11 @@ export interface ReservaEntrada {
   motivosRevision?: string[];
   datosExtraidos?: unknown;
   dePrueba?: boolean;
+  /** M2-03: cómo se reconoció el producto (solo con producto). */
+  origenEmparejado?: OrigenEmparejado | null;
+  confianzaEmparejado?: number | null;
+  /** M2-03: lo que propuso la IA y no se aceptó (para quien revisa). */
+  sugerenciaProductoId?: string | null;
   /** En el orden del tour (o de la lista de Journaway). */
   componentes?: ComponenteEntrada[];
 }
@@ -129,13 +150,16 @@ export interface ReservaComponente {
   id: string;
   reserva_id: string;
   orden: number;
-  tipo: "paquete" | "tramo_bus";
+  tipo: TipoComponenteReserva;
   producto_id: string | null;
   producto_componente_id: string | null;
   descripcion_ruta: string | null;
   texto_agencia: string | null;
   fecha_inicio: string | null;
   fecha_fin: string | null;
+  es_tarea: boolean;
+  producto_servicio_id: string | null;
+  proveedor_id: string | null;
 }
 
 export interface Reserva {
@@ -158,6 +182,9 @@ export interface Reserva {
   duplicada_de_id: string | null;
   datos_extraidos: unknown;
   de_prueba: boolean;
+  origen_emparejado: OrigenEmparejado | null;
+  confianza_emparejado: number | null;
+  sugerencia_producto_id: string | null;
   created_at: string;
   updated_at: string;
 }

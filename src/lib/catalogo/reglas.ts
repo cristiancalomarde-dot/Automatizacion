@@ -154,7 +154,29 @@ export function duracionTour(
  */
 const DESTINOS_CON_TRANSFER = new Set(["IGR", "IGU"]);
 
-type Lado = "in" | "out";
+export type Lado = "in" | "out";
+
+/**
+ * De qué lado queda UN traslado del paquete después de su ajuste en el tour
+ * (M1-08): los lados que se piden (`quedan`) y los que el ajuste sacó
+ * (`anulados`). Sin sentido conocido no queda ninguno. Lo usan las marcas de
+ * la pantalla y los vuelos que pide una reserva (M2-03).
+ */
+export function ladosDeUnTraslado(s: Servicio): { quedan: Lado[]; anulados: Lado[] } {
+  const lados: Lado[] =
+    s.sentido === "llegada" ? ["in"] : s.sentido === "salida" ? ["out"] : s.sentido === "ida_y_vuelta" ? ["in", "out"] : [];
+  const accion = s.ajusteTour?.accion;
+  if (accion === "anular") return { quedan: [], anulados: lados.length ? lados : ["in", "out"] };
+  const quedan: Lado[] =
+    accion === "solo_llegada"
+      ? ["in"]
+      : accion === "solo_salida"
+        ? ["out"]
+        : accion === "invertir"
+          ? lados.map((l): Lado => (l === "in" ? "out" : "in"))
+          : lados;
+  return { quedan, anulados: lados.filter((l) => !quedan.includes(l)) };
+}
 
 /** De qué lado queda cada traslado del paquete después de los ajustes del tour, y de cuál se anuló. */
 function ladosDeTraslados(servicios: Servicio[]): { conserva: Set<Lado>; anulado: Set<Lado> } {
@@ -162,22 +184,8 @@ function ladosDeTraslados(servicios: Servicio[]): { conserva: Set<Lado>; anulado
   const anulado = new Set<Lado>();
   for (const s of servicios) {
     if (s.tipo !== "traslado") continue;
-    const lados: Lado[] =
-      s.sentido === "llegada" ? ["in"] : s.sentido === "salida" ? ["out"] : s.sentido === "ida_y_vuelta" ? ["in", "out"] : [];
-    const accion = s.ajusteTour?.accion;
-    if (accion === "anular") {
-      for (const l of lados.length ? lados : (["in", "out"] as Lado[])) anulado.add(l);
-      continue;
-    }
-    const quedan: Lado[] =
-      accion === "solo_llegada"
-        ? ["in"]
-        : accion === "solo_salida"
-          ? ["out"]
-          : accion === "invertir"
-            ? lados.map((l): Lado => (l === "in" ? "out" : "in"))
-            : lados;
-    for (const l of lados) if (!quedan.includes(l)) anulado.add(l);
+    const { quedan, anulados } = ladosDeUnTraslado(s);
+    for (const l of anulados) anulado.add(l);
     for (const l of quedan) conserva.add(l);
   }
   return { conserva, anulado };
@@ -208,6 +216,33 @@ function desplegar(componentes: ComponenteTour[], serviciosDelTour: Servicio[], 
   }
 }
 
+export interface PasoConLlegada extends PasoDelTour {
+  /** A este paquete se llega en bus (no hace falta vuelo de llegada). */
+  llegaEnBus: boolean;
+  /** De este paquete se sale en bus (no hace falta vuelo de salida). */
+  saleEnBus: boolean;
+}
+
+/**
+ * Los paquetes de un tour en orden (los de un tour de adentro desplegados) y
+ * si a cada uno se llega o se sale en bus. Se llega en bus a todo paquete que
+ * no es el primero y se sale en bus de todo el que no es el último (la regla
+ * de M1-08). El primero llega en bus si el tour tiene un bus propio ese día o
+ * antes (BOCHI04R); el último sale en bus si el tour tiene un bus propio
+ * después de que empieza (la salida de Puerto Natales de ARCH31 y ARCH33).
+ * Lo usan las marcas de la pantalla y los vuelos que pide una reserva (M2-03).
+ */
+export function pasosDelTour(componentes: ComponenteTour[], serviciosDelTour: Servicio[]): PasoConLlegada[] {
+  const pasos: PasoDelTour[] = [];
+  const buses: number[] = [];
+  desplegar(componentes, serviciosDelTour, 0, pasos, buses);
+  return pasos.map((paso, i) => ({
+    ...paso,
+    llegaEnBus: i > 0 || (paso.dia !== null && buses.some((b) => b <= paso.dia!)),
+    saleEnBus: i < pasos.length - 1 || (paso.dia !== null && buses.some((b) => b > paso.dia!)),
+  }));
+}
+
 /**
  * Las marcas "Transfer de llegada / de salida" de cada paquete de un tour,
  * coherentes con lo que se pide de verdad (spec M1-09 §3 #4). Un lado se
@@ -224,22 +259,16 @@ function desplegar(componentes: ComponenteTour[], serviciosDelTour: Servicio[], 
  * Devuelve componentes nuevos (también los del tour de adentro); no muta.
  */
 export function etiquetasTransferEnTour(componentes: ComponenteTour[], serviciosDelTour: Servicio[]): ComponenteTour[] {
-  const pasos: PasoDelTour[] = [];
-  const buses: number[] = [];
-  desplegar(componentes, serviciosDelTour, 0, pasos, buses);
   const efectivas = new Map<ComponenteTour, { in: boolean; out: boolean }>();
-  pasos.forEach((paso, i) => {
-    const c = paso.componente;
+  for (const { componente: c, llegaEnBus, saleEnBus } of pasosDelTour(componentes, serviciosDelTour)) {
     const producto = c.producto!;
-    if (DESTINOS_CON_TRANSFER.has(producto.destino ?? "")) return;
-    const llegaEnBus = i > 0 || (paso.dia !== null && buses.some((b) => b <= paso.dia!));
-    const saleEnBus = i < pasos.length - 1 || (paso.dia !== null && buses.some((b) => b > paso.dia!));
+    if (DESTINOS_CON_TRANSFER.has(producto.destino ?? "")) continue;
     const { conserva, anulado } = ladosDeTraslados(producto.servicios);
     efectivas.set(c, {
       in: conserva.has("in") || (c.transferIn && !llegaEnBus && !anulado.has("in")),
       out: conserva.has("out") || (c.transferOut && !saleEnBus && !anulado.has("out")),
     });
-  });
+  }
 
   const aplicar = (lista: ComponenteTour[]): ComponenteTour[] =>
     lista.map((c) => {

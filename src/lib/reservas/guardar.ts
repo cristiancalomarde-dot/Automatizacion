@@ -159,6 +159,9 @@ export async function crearReserva(
       motivos_revision: entrada.motivosRevision ?? [],
       datos_extraidos: entrada.datosExtraidos ?? null,
       de_prueba: entrada.dePrueba ?? false,
+      origen_emparejado: entrada.origenEmparejado ?? null,
+      confianza_emparejado: entrada.confianzaEmparejado ?? null,
+      sugerencia_producto_id: entrada.sugerenciaProductoId ?? null,
     })
     .select("*")
     .single();
@@ -175,6 +178,9 @@ export async function crearReserva(
     texto_agencia: c.textoAgencia ?? null,
     fecha_inicio: c.fechaInicio ?? null,
     fecha_fin: c.fechaFin ?? null,
+    es_tarea: c.esTarea ?? false,
+    producto_servicio_id: c.productoServicioId ?? null,
+    proveedor_id: c.proveedorId ?? null,
   }));
   if (filas.length === 0) return { reserva, componentes: [] };
 

@@ -18,6 +18,7 @@ export function crearRegistroLlamadasSupabase(admin: SupabaseClient): RegistroLl
         costo_usd: fila.costoUsd,
         resultado: fila.resultado,
         mail_recibido_id: fila.mailRecibidoId,
+        reserva_id: fila.reservaId ?? null,
         de_prueba: fila.dePrueba,
       });
       if (error) throw new Error(`No se pudo registrar la llamada a la IA: ${error.message}`);

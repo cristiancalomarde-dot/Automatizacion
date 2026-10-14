@@ -86,6 +86,8 @@ export interface FilaCatalogo extends ProductoBase {
 }
 
 export interface ComponenteTour {
+  /** Id de la fila de `producto_componente` (M2-03 lo guarda en la reserva). */
+  id?: string;
   orden: number;
   tipo: "paquete" | "tramo_bus";
   diaDesde: number | null;

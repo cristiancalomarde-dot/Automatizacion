@@ -174,6 +174,44 @@ function mismaFila(a: FilaServicio, b: FilaServicio): boolean {
   return CAMPOS_SERVICIO.every((campo) => (a[campo] ?? null) === (b[campo] ?? null));
 }
 
+/**
+ * Guarda un código externo (identidad: agencia + código): lo crea, lo
+ * actualiza si cambió el producto o el nombre, o lo deja como está. Lo usan
+ * este importador y la carga de `data/codigos-kilroy.csv` (M2-03).
+ */
+export async function guardarCodigoExterno(
+  admin: SupabaseClient,
+  productoId: string,
+  agencia: string,
+  codigo: string,
+  nombre: string | null,
+  ahora: string = new Date().toISOString(),
+): Promise<"creado" | "actualizado" | "sin_cambios"> {
+  const { data, error } = await admin
+    .from("codigo_externo")
+    .select("id, producto_id, nombre_externo")
+    .eq("agencia", agencia)
+    .eq("codigo", codigo)
+    .maybeSingle();
+  if (error) throw new Error(`No se pudo leer codigo_externo: ${error.message}`);
+  if (!data) {
+    const { error: e } = await admin
+      .from("codigo_externo")
+      .insert({ producto_id: productoId, agencia, codigo, nombre_externo: nombre });
+    if (e) throw new Error(`No se pudo insertar codigo_externo ${agencia} ${codigo}: ${e.message}`);
+    return "creado";
+  }
+  if (data.producto_id !== productoId || (data.nombre_externo ?? null) !== nombre) {
+    const { error: e } = await admin
+      .from("codigo_externo")
+      .update({ producto_id: productoId, nombre_externo: nombre, updated_at: ahora })
+      .eq("id", data.id);
+    if (e) throw new Error(`No se pudo actualizar codigo_externo ${agencia} ${codigo}: ${e.message}`);
+    return "actualizado";
+  }
+  return "sin_cambios";
+}
+
 export async function importarProductosSimples(opciones: {
   admin: SupabaseClient;
   rutaPaquetes: string;
@@ -247,30 +285,11 @@ export async function importarProductosSimples(opciones: {
   const resumenProductos: ResumenProducto[] = [];
   const idPorCodigo = new Map<string, string>();
 
-  async function guardarCodigoExterno(productoId: string, agencia: string, codigo: string, nombre: string | null) {
-    const { data, error } = await admin
-      .from("codigo_externo")
-      .select("id, producto_id, nombre_externo")
-      .eq("agencia", agencia)
-      .eq("codigo", codigo)
-      .maybeSingle();
-    if (error) throw new Error(`No se pudo leer codigo_externo: ${error.message}`);
-    if (!data) {
-      const { error: e } = await admin
-        .from("codigo_externo")
-        .insert({ producto_id: productoId, agencia, codigo, nombre_externo: nombre });
-      if (e) throw new Error(`No se pudo insertar codigo_externo ${agencia} ${codigo}: ${e.message}`);
-      codigosExternos.creados++;
-    } else if (data.producto_id !== productoId || (data.nombre_externo ?? null) !== nombre) {
-      const { error: e } = await admin
-        .from("codigo_externo")
-        .update({ producto_id: productoId, nombre_externo: nombre, updated_at: ahora })
-        .eq("id", data.id);
-      if (e) throw new Error(`No se pudo actualizar codigo_externo ${agencia} ${codigo}: ${e.message}`);
-      codigosExternos.actualizados++;
-    } else {
-      codigosExternos.sinCambios++;
-    }
+  async function guardarCodigoExternoDeLaCorrida(productoId: string, agencia: string, codigo: string, nombre: string | null) {
+    const r = await guardarCodigoExterno(admin, productoId, agencia, codigo, nombre, ahora);
+    if (r === "creado") codigosExternos.creados++;
+    else if (r === "actualizado") codigosExternos.actualizados++;
+    else codigosExternos.sinCambios++;
   }
 
   for (const producto of plan.productos) {
@@ -375,7 +394,7 @@ export async function importarProductosSimples(opciones: {
 
     // --- códigos externos: el propio y los partners que usan nuestro código ---
     for (const agencia of [AGENCIA_PROPIA, ...AGENCIAS_CON_NUESTRO_CODIGO]) {
-      await guardarCodigoExterno(productoId, agencia, producto.codigo, null);
+      await guardarCodigoExternoDeLaCorrida(productoId, agencia, producto.codigo, null);
     }
 
     resumenProductos.push({
@@ -409,7 +428,7 @@ export async function importarProductosSimples(opciones: {
         codigosTourRadarSinProducto.push(c); // se reporta, no se inventa el producto
         continue;
       }
-      await guardarCodigoExterno(productoId, AGENCIA_TOURRADAR, c.codigo, c.nombre);
+      await guardarCodigoExternoDeLaCorrida(productoId, AGENCIA_TOURRADAR, c.codigo, c.nombre);
     }
   }
   creados.servicios = servicios.creados;

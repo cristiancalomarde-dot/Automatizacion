@@ -18,6 +18,8 @@ export interface FilaLlamadaIA {
   costoUsd: number;
   resultado: ResultadoLlamadaIA;
   mailRecibidoId: string | null;
+  /** La reserva de la llamada (la propuesta de producto, M2-03); la lectura no la tiene. */
+  reservaId?: string | null;
   dePrueba: boolean;
 }
 

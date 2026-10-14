@@ -1,0 +1,198 @@
+{
+  "nota": "Datos de M2-02 de los mails reales de Insumos/Mails (productos, códigos, fechas y pedidos tal cual; pasajeros y vuelos anonimizados). Los usa fichaDePrueba() de cargar.ts.",
+  "kilroy-chb31-dk1547743": {
+    "agencia": "Kilroy",
+    "numero": "DK1547743/pela",
+    "productos": [
+      {
+        "nombre": "Overland San Pedro de Atacama to Uyuni and La Paz - 7 Days",
+        "codigo": "HI_ARGENTINA_OVERLAND_7DAYS-677",
+        "fecha_inicio": "2026-09-13",
+        "fecha_fin": "2026-09-19"
+      }
+    ],
+    "pax": 2
+  },
+  "kilroy-dk1576932": {
+    "agencia": "Kilroy",
+    "numero": "DK1576932/emhe",
+    "productos": [
+      {
+        "nombre": "Patagonia, Trekking Paradise with W-Trek (12 Days) - Self Guided",
+        "codigo": "HI_ARGENTINA_W_TREK_ARCH_33-677",
+        "fecha_inicio": "2027-02-23",
+        "fecha_fin": "2027-03-06"
+      },
+      {
+        "nombre": "Overland San Pedro de Atacama to Uyuni and La Paz - 7 Days",
+        "codigo": "HI_ARGENTINA_OVERLAND_7DAYS-677",
+        "fecha_inicio": "2027-03-06",
+        "fecha_fin": "2027-03-12"
+      }
+    ],
+    "pax": 2,
+    "pedidos": ["PLEASE NOTE CLIENTS FLIGHT AFTER TOUR ENDS ARE FROM PUERTO NATALES."]
+  },
+  "kilroy-od010d-dk1564627": {
+    "agencia": "Kilroy",
+    "numero": "DK1564627/cafj",
+    "productos": [
+      {
+        "nombre": "Iguazu Falls Combined (2 nights in Brazil 1 night in Argentina)",
+        "codigo": "HI_ARGENTINA_OD010D-677",
+        "fecha_inicio": "2026-09-06",
+        "fecha_fin": "2026-09-09"
+      }
+    ],
+    "pax": 2,
+    "vuelos": [
+      { "numero": "XX1001", "origen": "GRU", "destino": "IGU", "fecha_salida": "2026-09-06", "hora_salida": "08:00", "fecha_llegada": "2026-09-06", "hora_llegada": "09:45" },
+      { "numero": "XX1002", "origen": "IGR", "destino": "AEP", "fecha_salida": "2026-09-09", "hora_salida": "15:00", "fecha_llegada": "2026-09-09", "hora_llegada": "16:50" }
+    ]
+  },
+  "kilroy-arch31-no1569851": {
+    "agencia": "Kilroy",
+    "numero": "NO1569851/saha",
+    "productos": [
+      {
+        "nombre": "Patagonia Highlights - 9 Days (Start Argentina)",
+        "codigo": "HI_ARGENTINA_ARCH31-677",
+        "fecha_inicio": "2027-03-01",
+        "fecha_fin": "2027-03-09"
+      }
+    ],
+    "pax": 1
+  },
+  "kilroy-arch-exp-dk1586168": {
+    "agencia": "Kilroy",
+    "numero": "DK1586168/pela",
+    "productos": [
+      {
+        "nombre": "Patagonia, Trekking Paradise with W-Trek EXPRESS",
+        "codigo": "HI_TRAVEL_ARCH_EXP-677",
+        "fecha_inicio": "2027-01-26",
+        "fecha_fin": "2027-02-05"
+      }
+    ],
+    "pax": 2
+  },
+  "kilroy-od014-dk1594100": {
+    "agencia": "Kilroy",
+    "numero": "DK1594100/maga",
+    "productos": [
+      {
+        "nombre": "El Calafate & El Chalten full day - 4 nights",
+        "codigo": "HI_ARGENTINA_OD014-677",
+        "fecha_inicio": "2027-01-12",
+        "fecha_fin": "2027-01-16"
+      }
+    ],
+    "pax": 2
+  },
+  "kilroy-rio-starter-dk1576836": {
+    "agencia": "Kilroy",
+    "numero": "DK1576836-26196085",
+    "productos": [
+      {
+        "nombre": "HI - Rio de Janeiro Starter Package (Cabanacopa Hostel)",
+        "codigo": null,
+        "fecha_inicio": "2026-09-01",
+        "fecha_fin": "2026-09-04"
+      }
+    ],
+    "pax": 1
+  },
+  "kilroy-bochi04r-dk1559523": {
+    "agencia": "Kilroy",
+    "numero": "DK1559523/fnie",
+    "productos": [
+      {
+        "nombre": "Overland Uyuni to San Pedro de Atacama - 7 Days",
+        "codigo": "HI_TRAVEL_BOCHI04R-677",
+        "fecha_inicio": "2026-10-01",
+        "fecha_fin": "2026-10-07"
+      }
+    ],
+    "pax": 2
+  },
+  "kilroy-5c01-uk1586142": {
+    "agencia": "Kilroy",
+    "numero": "UK1586142/fagu",
+    "productos": [
+      {
+        "nombre": "5 Countries: Rio de Janeiro to La Paz (29 nights)",
+        "codigo": "HI_TRAVEL_5C01-677",
+        "fecha_inicio": "2026-11-01",
+        "fecha_fin": "2026-11-30"
+      }
+    ],
+    "pax": 1
+  },
+  "kilroy-od019-solo": {
+    "agencia": "Kilroy",
+    "numero": "DK1500019/test",
+    "productos": [
+      {
+        "nombre": "Mendoza Mountains and Wineries",
+        "codigo": "HI_ARGENTINA_OD019-677",
+        "fecha_inicio": "2027-02-10",
+        "fecha_fin": "2027-02-12"
+      }
+    ],
+    "pax": 2
+  },
+  "tourradar-overland-1376833": {
+    "agencia": "TourRadar",
+    "numero": "1376833",
+    "productos": [
+      {
+        "nombre": "Overland San Pedro de Atacama to Uyuni end in La Paz (7 Days)",
+        "codigo": null,
+        "fecha_inicio": "2026-10-11",
+        "fecha_fin": null
+      }
+    ],
+    "pax": 2
+  },
+  "tourradar-shoestring": {
+    "agencia": "TourRadar",
+    "numero": "1300001",
+    "productos": [
+      { "nombre": "Iguazu Falls on a Shoestring (3N)", "codigo": null, "fecha_inicio": "2027-02-17", "fecha_fin": null }
+    ],
+    "pax": 1
+  },
+  "tourradar-shoestring-brazil": {
+    "agencia": "TourRadar",
+    "numero": "1300002",
+    "productos": [
+      { "nombre": "Iguazu Falls on a Shoestring Brazil (4 days)", "codigo": null, "fecha_inicio": "2027-02-17", "fecha_fin": null }
+    ],
+    "pax": 1
+  },
+  "tourradar-ba-rio-1377583": {
+    "agencia": "TourRadar",
+    "numero": "1377583",
+    "productos": [
+      { "nombre": "Buenos Aires to Rio de Janeiro 12 Days", "codigo": null, "fecha_inicio": "2026-11-10", "fecha_fin": null }
+    ],
+    "pax": 1
+  },
+  "tourradar-patagonia-adventure-1377598": {
+    "agencia": "TourRadar",
+    "numero": "1377598",
+    "productos": [
+      { "nombre": "Patagonia Adventure Tour 16 Days", "codigo": null, "fecha_inicio": "2026-11-20", "fecha_fin": null }
+    ],
+    "pax": 1
+  },
+  "tourradar-cancelacion-1363612": {
+    "agencia": "TourRadar",
+    "numero": "1363612",
+    "tipo": "cancelacion",
+    "productos": [
+      { "nombre": "Iguazu Falls on a Shoestring (3N)", "codigo": null, "fecha_inicio": "2027-02-17", "fecha_fin": null }
+    ],
+    "pax": 1
+  }
+}

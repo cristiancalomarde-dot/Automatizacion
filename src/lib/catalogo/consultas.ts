@@ -148,7 +148,7 @@ export async function cargarCatalogo(supabase: SupabaseClient): Promise<FilaCata
 }
 
 const CAMPOS_COMPONENTE =
-  `producto_id,orden,tipo,dia_desde,noches,nocturno,transfer_in,transfer_out,descripcion_ruta,comp:componente_producto_id(${CAMPOS_PRODUCTO})`;
+  `id,producto_id,orden,tipo,dia_desde,noches,nocturno,transfer_in,transfer_out,descripcion_ruta,comp:componente_producto_id(${CAMPOS_PRODUCTO})`;
 
 /** Servicios de varios productos, con las noches de cada uno (M1-07), agrupados por producto. */
 async function serviciosDe(supabase: SupabaseClient, ids: string[]): Promise<Map<string, Servicio[]>> {
@@ -174,6 +174,7 @@ async function serviciosDe(supabase: SupabaseClient, ids: string[]): Promise<Map
 
 function aComponente(c: any, esTour: Set<string>, servicios: Map<string, Servicio[]>): ComponenteTour {
   return {
+    id: c.id,
     orden: c.orden,
     tipo: c.tipo,
     diaDesde: c.dia_desde ?? null,
