@@ -31,6 +31,7 @@ import { crearProponedorIA } from "@/lib/reservas/emparejar/propuesta-ia";
 import { cargarDependenciasReservas } from "@/lib/reservas/emparejar/reservas-del-mail";
 import { leerMailConIA } from "@/lib/reservas/extraer";
 import { borrarDatosDePruebaDe } from "@/lib/reservas/guardar";
+import { aNumeroDeTest as n, conNumerosDeTest } from "@/lib/reservas/numeros-de-test";
 import { procesarMail, type ResultadoProceso } from "@/lib/reservas/procesar-mail";
 import type { MailEntrada } from "@/lib/reservas/tipos";
 
@@ -115,19 +116,22 @@ const CASOS: Caso[] = [
 ];
 
 function entradaDe(caso: Caso, messageId: string): MailEntrada {
-  const base = { origen: "archivo" as const, messageId, remitente: caso.remitente, asunto: caso.asunto, fechaMail: caso.fecha, dePrueba: true };
+  // Números de reserva de test (DK1594100 → DK9594100): no choca con las reservas del modo prueba (M2-06).
+  const base = { origen: "archivo" as const, messageId, remitente: caso.remitente, asunto: n(caso.asunto), fechaMail: caso.fecha, dePrueba: true };
   if (caso.pdf) {
     const contenido = new Uint8Array(readFileSync(resolve(caso.pdf)));
     return { ...base, cuerpoTexto: "", adjuntos: [{ nombre: `${caso.asunto}.pdf`, tipo: "application/pdf", contenido }] };
   }
-  return { ...base, cuerpoTexto: caso.texto!, adjuntos: [] };
+  return { ...base, cuerpoTexto: n(caso.texto!), adjuntos: [] };
 }
 
-async function contar(admin: SupabaseClient) {
+/** Solo lo de esta corrida: puede haber otras reservas de prueba (las del modo prueba, M2-06). */
+async function contar(admin: SupabaseClient, mails: ReadonlySet<string>) {
   const { data, error } = await admin
     .from("reserva")
     .select("id,agencia,booking_id,estado,posible_duplicada,mail_recibido_id")
-    .eq("de_prueba", true);
+    .eq("de_prueba", true)
+    .in("mail_recibido_id", [...mails]);
   if (error) throw new Error(error.message);
   const { count: eventos } = await admin.from("evento_reserva").select("id", { count: "exact", head: true }).in("reserva_id", data!.map((r) => r.id));
   return { reservas: data!, eventos: eventos ?? 0 };
@@ -161,8 +165,9 @@ async function main() {
     leer: async (mail: Parameters<typeof leerMailConIA>[0], ctx: { mailRecibidoId: string }) => {
       mailsCreados.add(ctx.mailRecibidoId);
       llamadasIA += 1;
-      return leerMailConIA(mail, { cliente, registro, mes, llamadas, mailRecibidoId: ctx.mailRecibidoId, dePrueba: true });
+      return conNumerosDeTest(await leerMailConIA(mail, { cliente, registro, mes, llamadas, mailRecibidoId: ctx.mailRecibidoId, dePrueba: true }));
     },
+    alcance: () => [...mailsCreados],
     deps: ({ mailRecibidoId }: { mailRecibidoId: string }) =>
       cargarDependenciasReservas(admin, crearProponedorIA({ cliente, registro, mes, dePrueba: true, mailRecibidoId })),
   };
@@ -170,7 +175,7 @@ async function main() {
   try {
     for (const pasada of [1, 2]) {
       console.log(`\n##### Pasada ${pasada}`);
-      const antes = await contar(admin);
+      const antes = await contar(admin, mailsCreados);
       const llamadasAntes = llamadasIA;
       for (const [i, caso] of CASOS.entries()) {
         if (gasto > TOPE_CORRIDA_USD) throw new Error(`Se frenó la corrida: el gasto pasó US$ ${TOPE_CORRIDA_USD}.`);
@@ -183,15 +188,15 @@ async function main() {
             : r.pedidos.map((p) => `${p.accion}${p.enlazadas.length ? ` (enlazada a ${p.enlazadas.length})` : ""}`).join(", ");
         console.log(`- ${caso.nombre}: ${detalle} · US$ ${r.costo.toFixed(4)}`);
       }
-      const despues = await contar(admin);
+      const despues = await contar(admin, mailsCreados);
       if (pasada === 2) {
         const igual = despues.reservas.length === antes.reservas.length && despues.eventos === antes.eventos && llamadasIA === llamadasAntes;
         console.log(`Segunda pasada sin cambios: ${igual ? "sí" : "NO"} (reservas ${despues.reservas.length}, eventos ${despues.eventos}, lecturas IA ${llamadasIA - llamadasAntes})`);
       }
     }
 
-    const { reservas } = await contar(admin);
-    const de = (b: string) => reservas.filter((r) => r.booking_id === b);
+    const { reservas } = await contar(admin, mailsCreados);
+    const de = (b: string) => reservas.filter((r) => r.booking_id === n(b));
     const mailsDe = async (id: string, origen: string) => {
       const { data } = await admin.from("evento_reserva").select("mail_recibido_id").eq("reserva_id", id).eq("tipo", "mail_agregado");
       return new Set([origen, ...(data ?? []).map((e) => e.mail_recibido_id)]).size;
@@ -211,6 +216,7 @@ async function main() {
       .from("reserva")
       .select("agencia,booking_id,producto_id,producto_texto_agencia,estado,motivos_revision,posible_duplicada")
       .eq("de_prueba", true)
+      .in("mail_recibido_id", [...mailsCreados])
       .order("created_at");
     for (const r of detalle ?? []) {
       const producto = r.producto_id ? codigoDe.get(r.producto_id) : "(sin producto)";

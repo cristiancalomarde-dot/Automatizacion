@@ -136,13 +136,13 @@ function sinSesion(): SupabaseClient {
     // 4. Sin producto reconocido, llegó a spam.
     const m4 = (
       await guardarMailRecibido(
-        mailDePrueba({ carpeta: "spam", remitente: "explore@mail.tourradar.com", agencia: "TourRadar", asunto: `${PREFIJO} New booking 1377598` }),
+        mailDePrueba({ carpeta: "spam", remitente: "explore@mail.tourradar.com", agencia: "TourRadar", asunto: `${PREFIJO} New booking 9377598` }),
         admin,
       )
     ).mail;
     ids.sinProducto = (
       await crearReserva(
-        { agencia: "TourRadar", mailRecibidoId: m4.id, bookingId: "1377598", productoTextoAgencia: "Iguazu Falls on a Shoestring (3N)",
+        { agencia: "TourRadar", mailRecibidoId: m4.id, bookingId: "9377598", productoTextoAgencia: "Iguazu Falls on a Shoestring (3N)",
           productoClaveAgencia: "iguazu falls on a shoestring (3n)", estado: "para_revision", dePrueba: true,
           motivosRevision: [ME.noSeguro("Iguazu Falls on a Shoestring (3N)")] },
         admin,

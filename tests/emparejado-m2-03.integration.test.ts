@@ -12,7 +12,7 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { crearRegistroLlamadasSupabase } from "@/lib/ia/registro-llamadas-supabase";
 import { borrarDatosDePruebaDe, guardarMailRecibido } from "@/lib/reservas/guardar";
-import { fichaDePrueba } from "@/lib/reservas/emparejar/__fixtures__/cargar";
+import { fichaDePrueba as fichaDePruebaReal } from "@/lib/reservas/emparejar/__fixtures__/cargar";
 import { importarCodigosKilroy } from "@/lib/reservas/emparejar/codigos-kilroy";
 import { importarCodigosTourRadarCsv } from "@/lib/reservas/emparejar/codigos-tourradar-csv";
 import type { ProponerProducto } from "@/lib/reservas/emparejar/emparejar";
@@ -20,9 +20,17 @@ import { cargarDependenciasReservas, crearReservasDelMail } from "@/lib/reservas
 import type { FichaLectura } from "@/lib/reservas/esquema-ficha";
 import { tomarBloqueoDatosDePrueba } from "./helpers/bloqueo-datos-de-prueba";
 import { credencialesSupabaseDisponibles } from "./helpers/entorno-supabase";
+import { aNumeroDeTest, conNumerosDeTest } from "@/lib/reservas/numeros-de-test";
 
 const CSV = readFileSync(join(process.cwd(), "data", "codigos-kilroy.csv"), "utf-8");
 const CSV_TR = readFileSync(join(process.cwd(), "data", "codigos-tourradar.csv"), "utf-8");
+
+/**
+ * Las fichas con números de reserva de test (DK1576932 → DK9576932): las del
+ * modo prueba (M2-06) usan los reales en la misma base, y el índice único de
+ * booking_id + producto chocaría.
+ */
+const fichaDePrueba = (nombre: string) => conNumerosDeTest(fichaDePruebaReal(nombre));
 
 (credencialesSupabaseDisponibles() ? describe : describe.skip)(
   "M2-03 — reconocer el producto contra Supabase real",
@@ -129,7 +137,7 @@ const CSV_TR = readFileSync(join(process.cwd(), "data", "codigos-tourradar.csv")
       const creadas = await crear(fichaDePrueba("kilroy-dk1576932"));
       expect(creadas.map((c) => c.reserva.producto_id)).toEqual([idPorCodigo.get("ARCH33"), idPorCodigo.get("CHB31")]);
       for (const c of creadas) {
-        expect(c.reserva).toMatchObject({ booking_id: "DK1576932", estado: "para_revision", origen_emparejado: "codigo", de_prueba: true });
+        expect(c.reserva).toMatchObject({ booking_id: aNumeroDeTest("DK1576932"), estado: "para_revision", origen_emparejado: "codigo", de_prueba: true });
         const { data: eventos } = await admin.from("evento_reserva").select("tipo,autor_id,estado_nuevo").eq("reserva_id", c.reserva.id);
         expect(eventos).toEqual([{ tipo: "creada", autor_id: null, estado_nuevo: "para_revision" }]);
       }

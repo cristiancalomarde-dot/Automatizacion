@@ -57,6 +57,14 @@ export interface OpcionesProceso {
   llamadas?: RegistroLlamadasIA;
   dePrueba?: boolean;
   ahora?: () => Date;
+  /**
+   * Solo para los tests y los scripts de prueba: el "mismo intercambio" se
+   * busca únicamente entre las reservas nacidas de estos mails (más el que se
+   * está procesando). Así un test nunca se suma a una reserva del modo prueba
+   * (M2-06) ni de otro test, aunque compartan la base. Sin esto, se busca
+   * entre todas las de la agencia y del mismo modo.
+   */
+  alcance?: () => readonly string[];
 }
 
 export type AccionPedido = "nueva" | "sumada" | "revision_ambigua" | "posible_duplicada";
@@ -82,9 +90,18 @@ const COLUMNAS =
  * últimos 60 días. Siempre de la misma agencia y del mismo modo (prueba o
  * real, fila 10). Solo lee.
  */
-export async function cargarCandidatas(admin: Cliente, pedido: PedidoIntercambio, ahora: Date): Promise<ReservaExistente[]> {
+export async function cargarCandidatas(
+  admin: Cliente,
+  pedido: PedidoIntercambio,
+  ahora: Date,
+  /** Acota la búsqueda a las reservas nacidas de estos mails (tests y scripts de prueba). */
+  alcance?: readonly string[] | null,
+): Promise<ReservaExistente[]> {
   const porId = new Map<string, ReservaExistente>();
-  const base = () => admin.from("reserva").select(COLUMNAS).eq("agencia", pedido.agencia).eq("de_prueba", pedido.dePrueba);
+  const base = () => {
+    const q = admin.from("reserva").select(COLUMNAS).eq("agencia", pedido.agencia).eq("de_prueba", pedido.dePrueba);
+    return alcance ? q.in("mail_recibido_id", [...alcance]) : q;
+  };
   if (pedido.bookingId) {
     const { data, error } = await base().eq("booking_id", pedido.bookingId);
     if (error) throw new Error(`No se pudieron buscar las reservas de la misma referencia: ${error.message}`);
@@ -122,6 +139,7 @@ interface ContextoMail {
   fechaMail: string | null;
   deps: DependenciasReservas;
   ahora: Date;
+  alcance: readonly string[] | null;
 }
 
 const FALTA_VUELO = /^Falta el vuelo de /;
@@ -256,7 +274,7 @@ async function sumarA(ctx: ContextoMail, armada: ReservaArmada, existente: Reser
 
 async function aplicarPedido(ctx: ContextoMail, armada: ReservaArmada, pedido: PedidoIntercambio): Promise<ResultadoPedido> {
   for (let intento = 0; ; intento++) {
-    const candidatas = await cargarCandidatas(ctx.admin, pedido, ctx.ahora);
+    const candidatas = await cargarCandidatas(ctx.admin, pedido, ctx.ahora, ctx.alcance);
     const decision = decidirPedido(pedido, candidatas, { ahora: ctx.ahora });
     if (decision.tipo === "sumar_a") return sumarA(ctx, armada, candidatas.find((r) => r.id === decision.reservaId)!);
     try {
@@ -305,6 +323,7 @@ export async function procesarMail(entrada: MailEntrada, opciones: OpcionesProce
       fechaMail: mail.fecha_mail,
       deps,
       ahora: opciones.ahora?.() ?? new Date(),
+      alcance: opciones.alcance ? [...opciones.alcance(), mail.id] : null,
     };
 
     const pedidos: ResultadoPedido[] = [];
@@ -360,15 +379,19 @@ export async function cargarReservasDelAsunto(
   asunto: string | null | undefined,
   agencia: string,
   dePrueba: boolean,
+  /** Acota a las reservas nacidas de estos mails (tests y scripts de prueba). */
+  alcance?: readonly string[] | null,
 ): Promise<ReservaParaRespuesta[]> {
   const numeros = numerosDelAsunto(asunto, agencia);
   if (numeros.length === 0) return [];
-  const { data, error } = await admin
+  let consulta = admin
     .from("reserva")
     .select("id,agencia,booking_id,estado,motivos_revision,de_prueba")
     .eq("agencia", agencia)
     .eq("de_prueba", dePrueba)
     .in("booking_id", numeros);
+  if (alcance) consulta = consulta.in("mail_recibido_id", [...alcance]);
+  const { data, error } = await consulta;
   if (error) throw new Error(`No se pudieron buscar las reservas del asunto: ${error.message}`);
   return (data ?? []) as ReservaParaRespuesta[];
 }

@@ -27,6 +27,7 @@ import { crearProponedorIA } from "@/lib/reservas/emparejar/propuesta-ia";
 import { cargarDependenciasReservas, crearReservasDelMail } from "@/lib/reservas/emparejar/reservas-del-mail";
 import { leerMailConIA } from "@/lib/reservas/extraer";
 import { borrarDatosDePruebaDe, guardarMailRecibido } from "@/lib/reservas/guardar";
+import { aNumeroDeTest, conNumerosDeTest } from "@/lib/reservas/numeros-de-test";
 import { mailDeArchivo } from "./mail-de-archivo";
 
 const TOPE_CORRIDA_USD = 1;
@@ -142,7 +143,7 @@ async function main() {
           archivoOrigen: caso.archivo.split("/").pop(),
           messageId: `<probar-emparejado-${randomUUID()}@hitravel.local>`,
           remitente: mail.remitente,
-          asunto: mail.asunto,
+          asunto: aNumeroDeTest(mail.asunto),
           cuerpoTexto: mail.cuerpoTexto ?? null,
           adjuntos: mail.adjuntos,
           agencia,
@@ -151,7 +152,10 @@ async function main() {
         admin,
       );
       if (nuevo) mailsCreados.push(guardado.id);
-      const lectura = await leerMailConIA(mail, { cliente, registro, mes, llamadas, mailRecibidoId: guardado.id, dePrueba: true });
+      // Con números de reserva de test (DK1576932 → DK9576932): no choca con las reservas del modo prueba (M2-06).
+      const lectura = conNumerosDeTest(
+        await leerMailConIA(mail, { cliente, registro, mes, llamadas, mailRecibidoId: guardado.id, dePrueba: true }),
+      );
       const deps = await cargarDependenciasReservas(
         admin,
         crearProponedorIA({ cliente, registro, mes, dePrueba: true, mailRecibidoId: guardado.id }),

@@ -10,12 +10,12 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { crearRegistroLlamadasSupabase } from "@/lib/ia/registro-llamadas-supabase";
 import {
   clienteFalso,
-  fichaGrabada,
-  mailDePrueba,
+  fichaGrabada as fichaGrabadaReal,
+  mailDePrueba as mailDePruebaReal,
   pdfSintetico,
   registroFalso,
-  respuestaCon,
-  respuestaGrabada,
+  respuestaCon as respuestaConReal,
+  respuestaGrabada as respuestaGrabadaReal,
 } from "@/lib/reservas/__fixtures__/cargar";
 import { cargarDependenciasReservas, type DependenciasReservas } from "@/lib/reservas/emparejar/reservas-del-mail";
 import { leerMailConIA } from "@/lib/reservas/extraer";
@@ -32,6 +32,7 @@ import { respuestaMereceLectura } from "@/lib/reservas/respuestas";
 import type { MailEntrada, Reserva } from "@/lib/reservas/tipos";
 import { tomarBloqueoDatosDePrueba } from "./helpers/bloqueo-datos-de-prueba";
 import { credencialesSupabaseDisponibles } from "./helpers/entorno-supabase";
+import { aNumeroDeTest as n, conNumerosDeTest } from "@/lib/reservas/numeros-de-test";
 import { crearRegistroDePrueba } from "./helpers/registro-de-prueba";
 
 /**
@@ -45,8 +46,18 @@ const procesarMails = registro.conMailRecibido(procesarMailsReal);
 
 type Ficha = Record<string, unknown> & { productos: Array<Record<string, unknown>> };
 
-const ASUNTO_VARIAS = "DK1594100/maga - 3 NEW BOOKINGS - KILROY booking request";
-const ASUNTO_OVERLAND = "DK1594100/maga - Overland San Pedro de Atacama to Uyuni and La Paz - 7 Days - KILROY booking request";
+/*
+ * Copias de los mails y las respuestas grabadas con números de reserva de test
+ * (DK1594100 → DK9594100): el modo prueba (M2-06) guarda en la misma base las
+ * reservas reales de los mails de ejemplo, y este archivo no tiene que tocarlas.
+ */
+const mailDePrueba = (nombre: string) => conNumerosDeTest(mailDePruebaReal(nombre));
+const fichaGrabada = (nombre: string) => conNumerosDeTest(fichaGrabadaReal(nombre));
+const respuestaGrabada = (nombre: string) => conNumerosDeTest(respuestaGrabadaReal(nombre));
+const respuestaCon = (ficha: unknown) => conNumerosDeTest(respuestaConReal(ficha));
+
+const ASUNTO_VARIAS = n("DK1594100/maga - 3 NEW BOOKINGS - KILROY booking request");
+const ASUNTO_OVERLAND = n("DK1594100/maga - Overland San Pedro de Atacama to Uyuni and La Paz - 7 Days - KILROY booking request");
 
 (credencialesSupabaseDisponibles() ? describe : describe.skip)(
   "M2-04 — mismo intercambio contra Supabase real",
@@ -78,7 +89,16 @@ const ASUNTO_OVERLAND = "DK1594100/maga - Overland San Pedro de Atacama to Uyuni
         registro.mail(ctx.mailRecibidoId);
         return leer(mail, ctx);
       };
-      return { admin, leer: leerAnotando, deps: () => deps, llamadas: crearRegistroLlamadasSupabase(admin), dePrueba: true, ...extra };
+      // `alcance`: el mismo intercambio se busca solo entre las reservas de este archivo.
+      return {
+        admin,
+        leer: leerAnotando,
+        deps: () => deps,
+        llamadas: crearRegistroLlamadasSupabase(admin),
+        dePrueba: true,
+        alcance: () => registro.mails,
+        ...extra,
+      };
     }
 
     function entrada(base: { remitente: string; asunto?: string | null; cuerpoTexto?: string | null }, extra: Partial<MailEntrada> = {}): MailEntrada {
@@ -86,8 +106,8 @@ const ASUNTO_OVERLAND = "DK1594100/maga - Overland San Pedro de Atacama to Uyuni
         origen: "archivo",
         messageId: `<m2-04-${randomUUID()}@prueba.hitravel.local>`,
         remitente: base.remitente,
-        asunto: base.asunto ?? null,
-        cuerpoTexto: base.cuerpoTexto ?? null,
+        asunto: n(base.asunto) ?? null,
+        cuerpoTexto: n(base.cuerpoTexto) ?? null,
         adjuntos: [],
         dePrueba: true,
         ...extra,
@@ -109,7 +129,7 @@ const ASUNTO_OVERLAND = "DK1594100/maga - Overland San Pedro de Atacama to Uyuni
       const { data, error } = await admin
         .from("reserva")
         .select("*")
-        .eq("booking_id", bookingId)
+        .eq("booking_id", n(bookingId))
         .eq("de_prueba", true)
         .in("mail_recibido_id", registro.mails)
         .order("created_at");
@@ -209,7 +229,7 @@ const ASUNTO_OVERLAND = "DK1594100/maga - Overland San Pedro de Atacama to Uyuni
       const laDelOverland = reservas.find((r) => r.id === idOverland)!;
       expect(await mailsDe(laDelOverland)).toEqual([overland.mailRecibidoId, varias.mailRecibidoId]);
       expect(reservas.filter((r) => r.producto_clave_agencia === "hi_argentina_overland_7days")).toHaveLength(1);
-      expect(laDelOverland.booking_id_original).toBe("DK1594100/maga");
+      expect(laDelOverland.booking_id_original).toBe(n("DK1594100/maga"));
 
       // Las nuevas quedan enlazadas a las de la misma referencia.
       const iguazu = reservas.find((r) => r.producto_clave_agencia === "hi_argentina_od010d")!;
@@ -326,7 +346,7 @@ const ASUNTO_OVERLAND = "DK1594100/maga - Overland San Pedro de Atacama to Uyuni
       expect(despues).toHaveLength(3);
       const nueva = despues.find((x) => !antes.some((a) => a.id === x.id))!;
       expect(nueva.estado).toBe("para_revision");
-      expect(nueva.motivos_revision[0]).toBe(MI.ambigua(2, "DK1576932"));
+      expect(nueva.motivos_revision[0]).toBe(MI.ambigua(2, n("DK1576932")));
       const enlace = (await eventosDe(nueva.id)).find((e) => e.tipo === "misma_referencia")!;
       expect((enlace.detalle as { reservas: string[] }).reservas.sort()).toEqual(antes.map((a) => a.id).sort());
       // Las dos que ya estaban no cambiaron: ni datos ni historial.
@@ -390,7 +410,7 @@ const ASUNTO_OVERLAND = "DK1594100/maga - Overland San Pedro de Atacama to Uyuni
         { remitente: "system@sent-via.netsuite.com", asunto, cuerpoTexto: "" },
         { adjuntos: [{ nombre: `${asunto}.pdf`, tipo: "application/pdf", contenido: pdfSintetico() }] },
       );
-    const ASUNTO_CANCELACION = "Booking Statement 1363612 - 25160515 - vendorcredit";
+    const ASUNTO_CANCELACION = n("Booking Statement 1363612 - 25160515 - vendorcredit");
 
     it("fila 9: la cancelación de 1363612 sin la reserva cargada → 1 reserva para revisión con ese motivo", async () => {
       await procesarMail(statement(ASUNTO_CANCELACION), opciones(lector(respuestaGrabada("tourradar-cancelacion-1363612")).leer));
@@ -421,7 +441,7 @@ const ASUNTO_OVERLAND = "DK1594100/maga - Overland San Pedro de Atacama to Uyuni
       await procesarMail(mailVarias(ASUNTO_OVERLAND), opciones(lector(respuestaCon(fichaSoloOverland())).leer));
       const pedido = {
         agencia: "Kilroy",
-        bookingId: "DK1594100",
+        bookingId: n("DK1594100"),
         productoId: null,
         claveAgencia: "hi_argentina_overland_7days",
         fechaInicio: "2027-01-18",
@@ -459,7 +479,7 @@ const ASUNTO_OVERLAND = "DK1594100/maga - Overland San Pedro de Atacama to Uyuni
         {
           agencia: "Kilroy",
           mailRecibidoId: reservas[0].mail_recibido_id,
-          bookingId: "DK1594100",
+          bookingId: n("DK1594100"),
           productoId: reservas[0].producto_id,
           productoClaveAgencia: reservas[0].producto_clave_agencia,
           estado: "recibida",
@@ -472,10 +492,10 @@ const ASUNTO_OVERLAND = "DK1594100/maga - Overland San Pedro de Atacama to Uyuni
 
     // --- Respuestas con vuelos (owner, 2026-10-14) — datos inventados -----------------------------
 
-    const ASUNTO_ALTA = "DK1562336/emri - Overland San Pedro de Atacama to Uyuni and La Paz - 7 Days - KILROY booking request";
+    const ASUNTO_ALTA = n("DK1562336/emri - Overland San Pedro de Atacama to Uyuni and La Paz - 7 Days - KILROY booking request");
     const CUERPO_ALTA =
       "NEW BOOKING\nTour code: HI_ARGENTINA_OVERLAND_7DAYS-677\nStart date: 06 Mar 2027\nEnd date: 12 Mar 2027\nKILROY Reference.:DK1562336/emri\n";
-    const ASUNTO_VUELO = "Re: NEW FLIGHT: DK1562336 /emri - Overland San Pedro de Atacama";
+    const ASUNTO_VUELO = n("Re: NEW FLIGHT: DK1562336 /emri - Overland San Pedro de Atacama");
 
     async function altaQueEsperaVuelo(): Promise<Reserva> {
       const f = fichaGrabada("kilroy-od010d") as Ficha;
@@ -563,7 +583,7 @@ const ASUNTO_OVERLAND = "DK1594100/maga - Overland San Pedro de Atacama to Uyuni
       await admin
         .from("reserva")
         .update({ estado: "recibida", motivos_revision: [] })
-        .eq("booking_id", "DK1562336")
+        .eq("booking_id", n("DK1562336"))
         .eq("de_prueba", true)
         .in("mail_recibido_id", registro.mails);
       const candidatas = await cargarReservasDelAsunto(admin, ASUNTO_VUELO, "Kilroy", true);

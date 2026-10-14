@@ -22,6 +22,7 @@ import { BUCKET_ADJUNTOS, type MailEntrada } from "@/lib/reservas/tipos";
 import { parrafosDeDocumentXml } from "@/lib/importador-tours/word";
 import { tomarBloqueoDatosDePrueba } from "./helpers/bloqueo-datos-de-prueba";
 import { credencialesSupabaseDisponibles } from "./helpers/entorno-supabase";
+import { aNumeroDeTest } from "@/lib/reservas/numeros-de-test";
 import { crearRegistroDePrueba } from "./helpers/registro-de-prueba";
 
 /** Lo que crea este archivo: lo único que borra. */
@@ -85,9 +86,10 @@ function mailDelDocx(ruta: string): MailEntrada {
       .split(/[;,]/)
       .map((d) => direccionDelRemitente(d))
       .filter((d): d is string => d !== null),
-    asunto: `${PREFIJO} ${asunto.valor}`,
+    // Número de reserva de test (DK1564627 → DK9564627): no choca con el modo prueba (M2-06).
+    asunto: aNumeroDeTest(`${PREFIJO} ${asunto.valor}`),
     fechaMail: fecha,
-    cuerpoTexto: lineas.slice(asunto.i + 1).join("\n").trim(),
+    cuerpoTexto: aNumeroDeTest(lineas.slice(asunto.i + 1).join("\n").trim()),
     adjuntos: [],
     dePrueba: true,
   };
@@ -150,7 +152,7 @@ const hayInsumos = existsSync(DOCX_KILROY) && existsSync(PDF_TOURRADAR);
         },
         admin,
       );
-      expect(reserva).toMatchObject({ estado: "para_revision", booking_id: "DK1564627", de_prueba: true });
+      expect(reserva).toMatchObject({ estado: "para_revision", booking_id: aNumeroDeTest("DK1564627"), de_prueba: true });
 
       // 4. Pasa a recibida.
       const recibida = await cambiarEstado(reserva.id, "recibida", {}, admin);
@@ -195,7 +197,7 @@ const hayInsumos = existsSync(DOCX_KILROY) && existsSync(PDF_TOURRADAR);
         remitente,
         remitenteNombre: "TourRadar Finance",
         destinatarios: ["sales@hitravel.com.ar"],
-        asunto: `${PREFIJO} Booking Statement 1377583 - 25365166 - vendorbill`,
+        asunto: aNumeroDeTest(`${PREFIJO} Booking Statement 1377583 - 25365166 - vendorbill`),
         cuerpoTexto: "",
         adjuntos: [{ nombre: PDF_TOURRADAR.split(/[\\/]/).pop()!, tipo: "application/pdf", contenido: pdf }],
         agencia,
