@@ -95,6 +95,22 @@ diga cada ficha.
 - **Remitentes:** escriben desde `operations@` (programas) y `de@` (actividades).
 - Las respuestas ("RE: …") no se leen, como el resto de las agencias.
 
+**Productos y códigos (owner, 2026-10-14, tras la corrida de M2-03).** Pisa lo que diga cada
+ficha. Queda como un ajuste chico pendiente de M2-03, a hacer antes de M2-06.
+- **Kilroy:** en la mayoría de los casos, nuestro código está entre `HI_ARGENTINA_` (o
+  `HI_TRAVEL_`) y `-677`. Así lo lee M2-03.
+- **ARCH33EXP:** `HI_TRAVEL_ARCH_EXP-677` ("Patagonia Trekking Paradise Express") es nuestro
+  ARCH33EXP. Es ARCH33 con una W Express (CH11) en vez de la W estándar. No está entre los 17
+  tours cargados: mientras no se cargue, el motivo es "producto no cargado".
+- **TourRadar trae número de tour.** Ejemplos:
+  - 150146, "Patagonia Adventure Tour From Buenos Aires to Ushuaia" = **AR09**;
+  - 150104, "Buenos Aires to Rio de Janeiro 12 days" = **ARBR23**, que no está cargado.
+
+  Con esto, el paso 1 (código exacto) también sirve para TourRadar, sin depender de la IA.
+- **Productos conocidos que todavía no están cargados:** ARCH33EXP, ARBR23 y ARUY01. Una reserva
+  de esos productos va a "para revisión" con el motivo "producto no cargado", sin preguntarle a la
+  IA.
+
 **Qué mails lee la IA (owner, 2026-10-13, tras ver sales@ del 12 y 13 de octubre).** Pisa lo que
 diga cada ficha.
 - **Contexto:** en esos dos días hubo 44 mails de agencias (23 Kilroy, 21 Jysk). Unos 7 eran
@@ -154,7 +170,7 @@ diga cada ficha.
 | M2-01 | **Reservas en la base.** Tablas `reserva`, `reserva_componente`, `evento_reserva` y `mail_recibido` (migración con RLS). Agencias y remitentes conocidos en `data/agencias.csv`: Kilroy/Jysk, TourRadar y Journaway, con operations@ y de@journaway.com | ✅ terminada | — | `docs/sdd/specs/M2-01-reservas-en-la-base.md` |
 | M2-02 | **Leer un mail con IA.** Un mail (cuerpo, o el PDF adjunto si hay) pasa a datos ordenados: agencia, booking_id, producto o tours nombrados, fechas, pax, pasajeros, vuelos y pedidos especiales, con confianza por campo. Funciona con mails en alemán. Bajo el techo de gasto | ✅ terminada | M2-01 | `docs/sdd/specs/M2-02-leer-mail-con-ia.md` |
 | M2-03 | **Reconocer el producto (Kilroy y TourRadar).** Código exacto → nombre de la agencia (`codigo_externo`) → propuesta de la IA con confianza. Tour compuesto con sus componentes. Va a "para revisión" si: no hay confianza, el producto no está cargado, o falta el vuelo y el producto tiene traslado | ✅ terminada | M2-02 | `docs/sdd/specs/M2-03-reconocer-el-producto.md` |
-| M2-04 | **Mismo intercambio, no reserva nueva.** Mismo booking_id + mismo producto → se agrega al historial de la reserva existente (por ejemplo, cuando mandan los vuelos). Producto distinto → reserva nueva. Ambiguo → "para revisión". Además, la marca de "posible duplicada" | ⬜ pendiente | M2-03 | `docs/sdd/specs/M2-04-mismo-intercambio.md` |
+| M2-04 | **Mismo intercambio, no reserva nueva.** Mismo booking_id + mismo producto → se agrega al historial de la reserva existente (por ejemplo, cuando mandan los vuelos). Producto distinto → reserva nueva. Ambiguo → "para revisión". Además, la marca de "posible duplicada" | 🔵 en curso | M2-03 | `docs/sdd/specs/M2-04-mismo-intercambio.md` |
 | M2-05 | **Ver las reservas que entraron.** Lista y detalle de solo lectura: agencia, producto, fechas, pax, vuelos, estado y motivo de revisión, más el mail original. Es la base de la bandeja de M4 | ⬜ pendiente | M2-03 | `docs/sdd/specs/M2-05-ver-las-reservas.md` |
 | M2-06 | **Modo prueba con mails reales.** Procesa los mails de `Insumos/Mails` (.docx, .pdf y .eml) por el circuito completo, con las reservas marcadas "de prueba". Entrega un reporte por mail para el owner (qué entendió y qué no) y mide el % que necesita corrección | ⬜ pendiente | M2-04, M2-05 | `docs/sdd/specs/M2-06-modo-prueba.md` |
 | M2-07 | **Lectura automática de sales@.** Por IMAP en Ferozo, Inbox y Spam, **una vez por día a las 12 (hora Argentina)**. Solo los remitentes de las agencias. No marca, mueve ni borra nada, y no reprocesa. Se activa con el OK del owner sobre el modo prueba | ⬜ pendiente | M2-06 | `docs/sdd/specs/M2-07-lectura-automatica.md` |
