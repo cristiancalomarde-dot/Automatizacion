@@ -14,6 +14,7 @@ import { crearRegistroLlamadasSupabase } from "@/lib/ia/registro-llamadas-supaba
 import { borrarDatosDePrueba, guardarMailRecibido } from "@/lib/reservas/guardar";
 import { fichaDePrueba } from "@/lib/reservas/emparejar/__fixtures__/cargar";
 import { importarCodigosKilroy } from "@/lib/reservas/emparejar/codigos-kilroy";
+import { importarCodigosTourRadarCsv } from "@/lib/reservas/emparejar/codigos-tourradar-csv";
 import type { ProponerProducto } from "@/lib/reservas/emparejar/emparejar";
 import { cargarDependenciasReservas, crearReservasDelMail } from "@/lib/reservas/emparejar/reservas-del-mail";
 import type { FichaLectura } from "@/lib/reservas/esquema-ficha";
@@ -21,6 +22,7 @@ import { tomarBloqueoDatosDePrueba } from "./helpers/bloqueo-datos-de-prueba";
 import { credencialesSupabaseDisponibles } from "./helpers/entorno-supabase";
 
 const CSV = readFileSync(join(process.cwd(), "data", "codigos-kilroy.csv"), "utf-8");
+const CSV_TR = readFileSync(join(process.cwd(), "data", "codigos-tourradar.csv"), "utf-8");
 
 (credencialesSupabaseDisponibles() ? describe : describe.skip)(
   "M2-03 — reconocer el producto contra Supabase real",
@@ -224,6 +226,55 @@ const CSV = readFileSync(join(process.cwd(), "data", "codigos-kilroy.csv"), "utf
       expect(tr.reserva).toMatchObject({ producto_id: idPorCodigo.get("OD010A"), origen_emparejado: "nombre", estado: "recibida" });
       const [k] = await crear(fichaDePrueba("kilroy-od010d-dk1564627"));
       expect(k.reserva).toMatchObject({ producto_id: idPorCodigo.get("OD010D"), origen_emparejado: "codigo", estado: "recibida", motivos_revision: [] });
+    });
+
+    // --- Productos y códigos (owner, 2026-10-14) --------------------------------------------
+
+    /** Las llamadas a la IA registradas con una reserva. */
+    async function llamadasDe(reservaId: string) {
+      const { data, error } = await admin.from("ia_llamada").select("id").eq("reserva_id", reservaId);
+      if (error) throw new Error(error.message);
+      return data!;
+    }
+    const iaQueNoSeDebeLlamar = () => vi.fn<ProponerProducto>(async () => ({ resultado: { tipo: "fallo", causa: "error" }, llamada: null, costo: 0 }));
+
+    it("owner 2026-10-14: Kilroy HI_TRAVEL_ARCH_EXP-677 → para revisión con 'no cargado' y 0 llamadas a la IA", async () => {
+      const proponer = iaQueNoSeDebeLlamar();
+      const [c] = await crear(fichaDePrueba("kilroy-arch-exp-dk1586168"), proponer);
+      expect(c.reserva).toMatchObject({ estado: "para_revision", producto_id: null });
+      expect(c.reserva.motivos_revision).toEqual([
+        "El producto ARCH33EXP (Patagonia, Trekking Paradise with W-Trek EXPRESS) existe en el catálogo de HI Travel pero todavía no está cargado en el sistema.",
+      ]);
+      expect(proponer).not.toHaveBeenCalled();
+      expect(await llamadasDe(c.reserva.id)).toEqual([]);
+    });
+
+    it("owner 2026-10-14: TourRadar número de tour 150104 → ARBR23 no cargado, 0 llamadas a la IA", async () => {
+      const proponer = iaQueNoSeDebeLlamar();
+      const ficha = fichaDePrueba("tourradar-ba-rio-1377583");
+      ficha.productos[0].codigo = "150104";
+      const [c] = await crear(ficha, proponer);
+      expect(c.reserva).toMatchObject({ estado: "para_revision", producto_id: null });
+      expect(c.reserva.motivos_revision).toEqual([
+        "El producto ARBR23 (From Buenos Aires to Rio) existe en el catálogo de HI Travel pero todavía no está cargado en el sistema.",
+      ]);
+      expect(proponer).not.toHaveBeenCalled();
+      expect(await llamadasDe(c.reserva.id)).toEqual([]);
+    });
+
+    it("owner 2026-10-14: data/codigos-tourradar.csv deja 150146 → AR09 (re-ejecutable) y el TourRadar 150146 empareja AR09 por código", async () => {
+      await importarCodigosTourRadarCsv(admin, CSV_TR);
+      const segunda = await importarCodigosTourRadarCsv(admin, CSV_TR);
+      expect(segunda).toMatchObject({ creados: 0, actualizados: 0 });
+      expect(await codigosExternos()).toContainEqual(
+        expect.objectContaining({ agencia: "TourRadar", codigo: "150146", producto_id: idPorCodigo.get("AR09") }),
+      );
+      const proponer = iaQueNoSeDebeLlamar();
+      const ficha = fichaDePrueba("tourradar-patagonia-adventure-1377598");
+      ficha.productos[0].codigo = "150146";
+      const [c] = await crear(ficha, proponer);
+      expect(c.reserva).toMatchObject({ producto_id: idPorCodigo.get("AR09"), origen_emparejado: "codigo" });
+      expect(proponer).not.toHaveBeenCalled();
     });
 
     it("fila 13: la cancelación de TourRadar queda para revisión, nunca recibida", async () => {
