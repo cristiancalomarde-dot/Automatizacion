@@ -222,6 +222,34 @@ después (la salida de Puerto Natales de ARCH31 y ARCH33). Iguazú conserva sus 
      existente, match por remitente + código de producto + fechas + pax sobre reservas de los
      últimos ~60 días → flag `posible_duplicada`, **nunca** descarte automático (una persona
      confirma).
+- **Cómo quedó en M2-04 (migración 0012, `src/lib/reservas/intercambio.ts` y `procesar-mail.ts`):**
+  - El booking_id se compara **normalizado y dentro de la misma agencia** (`booking-id.ts`):
+    Kilroy/Jysk país + número (`DK1594100`, sin `/iniciales` ni `-orden`); TourRadar el TOURRADAR
+    REFERENCE ID (primer número del Booking Statement); Journaway el "ID" de 11 dígitos del asunto
+    (sin ID no hay booking_id; el Trip Number no se usa). `reserva.booking_id` es el normalizado y
+    `booking_id_original` el que vino.
+  - "Mismo producto": el mismo producto del catálogo si los dos emparejaron; si alguno no, el mismo
+    código o nombre de la agencia normalizado (`producto_clave_agencia`). Índice único parcial
+    `(agencia, booking_id, clave_producto, de_prueba)`: dos corridas a la vez no crean la misma
+    reserva (si choca, se vuelve a decidir y se suma).
+  - Cada producto del mail es un pedido. Al sumarse, el mail queda en el historial
+    (`mail_agregado`) y **solo completa lo vacío** (`datos_completados`); un dato distinto (fecha,
+    pax, vuelo) no pisa: se anota (`datos_distintos`) y la reserva pasa a `para_revision` con
+    "La agencia mandó datos distintos". Producto distinto → reserva nueva con `misma_referencia`.
+  - Marca blanda: el "remitente" es **la agencia** (no la casilla), mismo producto + misma fecha de
+    inicio + mismo pax, reservas que entraron en los últimos 60 días.
+  - **Cancelación** (TourRadar "vendorcredit" / "BOOKING CANCELLATION STATEMENT", o la IA): se suma a
+    la reserva de ese booking_id + producto, que pasa a `para_revision` ("la agencia mandó una
+    cancelación"); sin reserva, nace una en `para_revision` ("cancelación de una reserva que no está
+    en el sistema"). La app nunca cancela ni descarta.
+  - **Vuelos que llegan después** (owner, plan M2 §3): pasa sola a `recibida` solo si el único
+    motivo abierto era la falta de vuelo, el control de M2-03 ya no encuentra faltantes, los
+    vuelos vinieron con confianza alta y el mail no trajo datos distintos. Si no, queda con
+    "Llegaron vuelos en un mail nuevo: revisar". Las respuestas ("Re:", "SV:"…) solo se leen si el
+    asunto trae el número de una reserva que espera un vuelo (`respuestas.ts`, owner 2026-10-14).
+  - El estado solo se toca en `recibida` o `para_revision`; más adelante solo se suma al historial.
+  - Un mail ya guardado (Message-ID, id IMAP o huella) no se vuelve a procesar ni gasta IA. Las
+    reservas de prueba solo se comparan con las de prueba.
 - RLS: policy única — `authenticated` puede `select/insert/update`; `delete` deshabilitado salvo
   mantenimiento (los estados `cerrada`/`descartada` reemplazan el borrado).
 
