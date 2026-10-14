@@ -240,15 +240,17 @@ describe("detalle: encabezado, marcas y motivos (#4, #5, #6)", () => {
     expect(screen.queryByText("De prueba")).toBeNull();
   });
 
-  it("cada motivo en su frase, uno por renglón, y la genérica para el que no tiene", async () => {
+  it("cada motivo en su frase con su detalle concreto, uno por renglón, y la genérica para el que no tiene", async () => {
     consultas.cargarReserva.mockResolvedValue(reservaRevision);
     render(<DetalleReservaPantalla id={IDS.revision} />);
     const motivos = await screen.findByTestId("motivos-revision");
     expect(within(motivos).getAllByRole("listitem").map((li) => li.textContent)).toEqual([
-      "Faltan los datos de vuelo, y el producto incluye traslados.",
-      "No se pudo reconocer el producto con seguridad. Revisá el mail para confirmar cuál es.",
+      "Faltan los datos de vuelo, y el producto incluye traslados. Vuelo de llegada a Puerto Iguazú (IGR), para el traslado de OD019.",
+      "No se pudo reconocer el producto con seguridad. Revisá el mail para confirmar cuál es. La agencia lo pide como Iguazu. Podría ser OD010A.",
       "Esta reserva necesita que alguien la revise.",
     ]);
+    expect(within(motivos).getByText("Faltan los datos de vuelo, y el producto incluye traslados.")).toBeInTheDocument();
+    expect(within(motivos).getByText("Vuelo de llegada a Puerto Iguazú (IGR), para el traslado de OD019.")).toBeInTheDocument();
     expect(within(screen.getByTestId("encabezado-reserva")).getByText("para revisión")).toBeInTheDocument();
   });
 

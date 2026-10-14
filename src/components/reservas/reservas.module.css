@@ -47,6 +47,12 @@
   margin-top: 2px;
 }
 
+/* El detalle concreto del motivo (qué vuelo, qué producto), en su renglón. */
+.detalleMotivo {
+  display: block;
+  color: var(--color-texto);
+}
+
 .panelMail {
   display: flex;
   flex-direction: column;

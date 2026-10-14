@@ -7,6 +7,7 @@ import { TEXTOS } from "@/lib/textos";
 import { htmlATexto } from "./html-a-texto";
 
 const M = TEXTOS.reserva.motivos;
+const D = TEXTOS.reserva.detalleMotivo;
 
 /**
  * La lista cerrada de motivos que se muestran. M2-01 a M2-04 guardan el
@@ -16,6 +17,7 @@ const M = TEXTOS.reserva.motivos;
 export const CATEGORIAS_MOTIVO = [
   "lectura_fallida",
   "producto_no_cargado",
+  "producto_existe_no_cargado",
   "producto_no_seguro",
   "falta_vuelo",
   "referencia_ambigua",
@@ -45,7 +47,8 @@ export type CategoriaMotivo = (typeof CATEGORIAS_MOTIVO)[number] | "generico";
 const PATRONES: Array<[RegExp, (typeof CATEGORIAS_MOTIVO)[number]]> = [
   [/^No se pudo leer el mail/i, "lectura_fallida"],
   [/^No se pudo reconocer|^No se usó la IA|^La IA no respondió/i, "producto_no_seguro"],
-  [/^El producto .* (no está en el catálogo|todavía no está cargado)/i, "producto_no_cargado"],
+  [/^El producto .* todavía no está cargado/i, "producto_existe_no_cargado"],
+  [/^El producto .* no está en el catálogo/i, "producto_no_cargado"],
   [/^Falta el vuelo/i, "falta_vuelo"],
   [/^No se sabe a cuál de las/i, "referencia_ambigua"],
   [/^Posible duplicada/i, "posible_duplicada"],
@@ -70,10 +73,14 @@ export function categoriaDeMotivo(motivo: string): CategoriaMotivo {
   return "generico";
 }
 
-/** Lo que se muestra de un motivo: siempre una frase de la app, nunca el texto interno. */
-export function fraseDeMotivo(motivo: string): string {
-  const texto = (motivo ?? "").trim();
-  const categoria = categoriaDeMotivo(texto);
+/** Un motivo en pantalla: la frase en llano y, si el motivo guardado lo trae, el detalle concreto. */
+export interface MotivoEnPantalla {
+  frase: string;
+  detalle: string | null;
+}
+
+/** La frase de la categoría (sin detalle): siempre una frase de la app, nunca el texto interno. */
+function fraseDeCategoria(texto: string, categoria: CategoriaMotivo): string {
   switch (categoria) {
     case "elegir_variante": {
       const codigo = /^Elegir la variante de (\S+)/i.exec(texto)?.[1];
@@ -92,9 +99,80 @@ export function fraseDeMotivo(motivo: string): string {
   }
 }
 
-/** Las frases de una reserva, sin repetir (dos vuelos que faltan son un solo renglón). */
-export function frasesDeMotivos(motivos: string[]): string[] {
-  return [...new Set(motivos.map(fraseDeMotivo))];
+/** Las lecturas fallidas de `preparar-mail.ts` (MOTIVOS), dichas sin jerga. */
+const LECTURA: Array<[RegExp, string]> = [
+  [/^remitente/i, D.lectura.remitente],
+  [/presupuesto/i, D.tope],
+  [/demasiado grande/i, D.lectura.grande],
+  [/PDF/i, D.lectura.pdf],
+  [/no respondió|formato|se cortó/i, D.lectura.fallo],
+];
+
+/**
+ * El detalle concreto que trae el motivo guardado (los textos de origen
+ * están en `emparejar/motivos.ts` e `intercambio.ts`). Si no se reconoce,
+ * `null`: la frase va sola. Nunca muestra números de confianza.
+ */
+function detalleDeMotivo(texto: string, categoria: CategoriaMotivo): string | null {
+  let m: RegExpExecArray | null;
+  switch (categoria) {
+    case "falta_vuelo":
+      m = /^Falta el vuelo de (.+?) para (.+?)\.?$/i.exec(texto);
+      return m ? D.vuelo(m[1], m[2]) : null;
+    case "producto_existe_no_cargado":
+      m = /^El producto (.+?) existe en el catálogo/i.exec(texto);
+      return m ? D.esElProducto(m[1]) : null;
+    case "producto_no_cargado":
+      m = /^El producto (.+?) no está en el catálogo(?: \(no coincide con ningún producto cargado\))?$/i.exec(texto);
+      return m ? D.comoLoPide(m[1]) : null;
+    case "producto_no_seguro": {
+      if (/^No se usó la IA/i.test(texto)) return D.tope;
+      m = /^No se pudo reconocer con seguridad el producto (.+?): la IA sugiere (\S+), que tiene (\d+) noches, pero el mail pide (\d+)$/i.exec(texto);
+      if (m) return `${D.comoLoPide(m[1])} ${D.podriaSerNoches(m[2], m[3], m[4])}`;
+      m = /^No se pudo reconocer con seguridad el producto (.+?) \(la IA sugiere (\S+), con confianza [^)]*\)$/i.exec(texto);
+      if (m) return `${D.comoLoPide(m[1])} ${D.podriaSer(m[2])}`;
+      m =
+        /^No se pudo reconocer con seguridad el producto (.+?)(?: \((?:la IA respondió|la respuesta de la IA)[^)]*\))?$/i.exec(texto) ??
+        /^No se pudo reconocer el producto (.+) sin la IA$/i.exec(texto);
+      return m ? D.comoLoPide(m[1]) : null;
+    }
+    case "referencia_ambigua":
+      m = /^No se sabe a cuál de las (\d+) reservas con la referencia (\S+) corresponde/i.exec(texto);
+      return m ? D.ambigua(m[1], m[2]) : null;
+    case "lectura_fallida": {
+      const causa = /^No se pudo leer el mail:\s*(.+)$/i.exec(texto)?.[1];
+      if (!causa) return null;
+      return LECTURA.find(([patron]) => patron.test(causa))?.[1] ?? null;
+    }
+    default:
+      return null;
+  }
+}
+
+/** Lo que se muestra de un motivo: la frase de la app y el detalle concreto, si lo hay. */
+export function motivoEnPantalla(motivo: string): MotivoEnPantalla {
+  const texto = (motivo ?? "").trim();
+  const categoria = categoriaDeMotivo(texto);
+  return { frase: fraseDeCategoria(texto, categoria), detalle: detalleDeMotivo(texto, categoria) };
+}
+
+/** El motivo en un solo texto: la frase y, si hay, el detalle. */
+export function fraseDeMotivo(motivo: string): string {
+  const { frase, detalle } = motivoEnPantalla(motivo);
+  return detalle ? `${frase} ${detalle}` : frase;
+}
+
+/** Los motivos de una reserva, sin repetir renglones iguales (cada vuelo que falta tiene el suyo). */
+export function frasesDeMotivos(motivos: string[]): MotivoEnPantalla[] {
+  const vistos = new Set<string>();
+  const salida: MotivoEnPantalla[] = [];
+  for (const m of motivos.map(motivoEnPantalla)) {
+    const clave = `${m.frase}\u0000${m.detalle ?? ""}`;
+    if (vistos.has(clave)) continue;
+    vistos.add(clave);
+    salida.push(m);
+  }
+  return salida;
 }
 
 /** La que llegó más recientemente, arriba. */

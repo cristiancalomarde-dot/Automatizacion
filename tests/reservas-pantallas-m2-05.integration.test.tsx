@@ -258,6 +258,7 @@ function sinSesion(): SupabaseClient {
       cliente.actual = equipo;
       render(<DetalleReservaPantalla id={ids.revision} />);
       expect(await screen.findByText("Faltan los datos de vuelo, y el producto incluye traslados.", {}, ESPERA)).toBeInTheDocument();
+      expect(screen.getByText("Vuelo de llegada a Puerto Iguazú (IGR), para el traslado de OD019.")).toBeInTheDocument();
       expect(screen.getByText(/^Reserva de prueba\./)).toBeInTheDocument();
       expect(screen.getByRole("link", { name: "OD019" })).toHaveAttribute("href", `/catalogo/${od019.id}`);
       expect(screen.getByTestId("cuerpo-mail").textContent).toBe("Booking request de prueba (sintético).");

@@ -87,7 +87,15 @@ function Detalle({ reserva }: { reserva: DetalleReserva }) {
         <Aviso tono="aviso">
           <ul className={estilos.motivos} data-testid="motivos-revision">
             {frases.map((f) => (
-              <li key={f}>{f}</li>
+              <li key={`${f.frase}|${f.detalle ?? ""}`}>
+                <span>{f.frase}</span>
+                {f.detalle ? (
+                  <>
+                    {" "}
+                    <span className={estilos.detalleMotivo}>{f.detalle}</span>
+                  </>
+                ) : null}
+              </li>
             ))}
           </ul>
           {reserva.posibleDuplicada && reserva.duplicadaDeId ? (

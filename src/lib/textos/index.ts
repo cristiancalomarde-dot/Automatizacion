@@ -262,6 +262,8 @@ export const TEXTOS = {
     motivos: {
       lectura_fallida: "No se pudo leer el mail de la agencia. Los datos de la reserva quedaron sin completar.",
       producto_no_cargado: "El producto que pide la agencia no está en el catálogo.",
+      producto_existe_no_cargado:
+        "El producto que pide la agencia existe, pero todavía no está cargado en el catálogo.",
       producto_no_seguro: "No se pudo reconocer el producto con seguridad. Revisá el mail para confirmar cuál es.",
       falta_vuelo: "Faltan los datos de vuelo, y el producto incluye traslados.",
       referencia_ambigua:
@@ -282,6 +284,27 @@ export const TEXTOS = {
       datos_distintos: "La agencia mandó datos distintos de los que ya tenía la reserva. Revisá el mail nuevo.",
       llegaron_vuelos: "Llegaron los vuelos en un mail nuevo. Revisalos.",
       generico: "Esta reserva necesita que alguien la revise.",
+    },
+    /**
+     * El detalle concreto que acompaña a la frase (qué vuelo, qué producto,
+     * cómo lo pide la agencia), sacado del motivo guardado. Si el motivo no
+     * lo trae, la frase va sola.
+     */
+    detalleMotivo: {
+      vuelo: (cual: string, para: string) => `Vuelo de ${cual}, para ${para}.`,
+      esElProducto: (producto: string) => `Es ${producto}.`,
+      comoLoPide: (como: string) => `La agencia lo pide como ${como}.`,
+      podriaSer: (codigo: string) => `Podría ser ${codigo}.`,
+      podriaSerNoches: (codigo: string, nochesTour: string, nochesMail: string) =>
+        `Podría ser ${codigo}, pero ese tour tiene ${nochesTour} noches y el mail pide ${nochesMail}.`,
+      tope: "Se llegó al tope de gasto del mes.",
+      ambigua: (cantidad: string, numero: string) => `Hay ${cantidad} reservas con el número ${numero}.`,
+      lectura: {
+        remitente: "El remitente no es una de las agencias que se leen.",
+        grande: "El mail es demasiado grande.",
+        pdf: "El PDF de la reserva no se puede abrir.",
+        fallo: "La lectura automática no dio un resultado que se pueda usar.",
+      },
     },
   },
 } as const;
