@@ -1,5 +1,6 @@
 import { normalizarNombre } from "./emparejar/emparejar";
-import type { PasajeroIA, VueloIA } from "./esquema-ficha";
+import { MOTIVOS_EMPAREJADO as M } from "./emparejar/motivos";
+import type { PasajeroIA, TipoMail, VueloIA } from "./esquema-ficha";
 import type { EstadoReserva } from "./tipos";
 
 /**
@@ -136,6 +137,22 @@ export interface DatosEntrantes {
   esCancelacion: boolean;
   /** La lectura de M2-02 dejó los vuelos como dato dudoso. */
   vuelosDudosos: boolean;
+  /** Owner 2026-10-14: un estado de cuenta de cargo de TourRadar (con el monto, si se sabe). */
+  cargoExtra?: MontoCargo | null;
+}
+
+export interface MontoCargo {
+  importe: number | null;
+  moneda: string | null;
+}
+
+/**
+ * Owner 2026-10-14: un statement de cargo de TourRadar (no una cancelación)
+ * es un cargo extra. La ficha de M2-02 no trae el monto: queda null.
+ */
+export function cargoExtraDelMail(m: { agencia: string; tipoMail: TipoMail | null; esCancelacion: boolean }): MontoCargo | null {
+  if (m.agencia !== "TourRadar" || m.tipoMail !== "cambio_o_cargo" || m.esCancelacion) return null;
+  return { importe: null, moneda: null };
 }
 
 export type CampoCompletable = "fecha_inicio" | "fecha_fin" | "pax" | "pasajeros" | "vuelos" | "habitacion" | "pedidos_especiales";
@@ -287,6 +304,8 @@ export function armarCambios(existente: ReservaExistente, entrante: DatosEntrant
   };
   if (distintos.length) sumar(MOTIVOS_INTERCAMBIO.datosDistintos);
   if (entrante.esCancelacion) sumar(MOTIVOS_INTERCAMBIO.cancelacion);
+  // Owner 2026-10-14: un cargo implica un servicio nuevo (tour extra, upgrade a SGL, hotel mejor).
+  if (entrante.cargoExtra) sumar(M.cargoExtra(entrante.cargoExtra));
 
   // Fila 5: pasa sola a recibida solo si (a) lo único abierto era el vuelo, (b) el control
   // de M2-03 ya no encuentra faltantes y los vuelos vinieron con confianza alta, y (c) no

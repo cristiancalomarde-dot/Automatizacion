@@ -12,6 +12,7 @@ import type { ResultadoLectura } from "./extraer";
 import { agregarEvento, crearReserva, guardarMailRecibido } from "./guardar";
 import {
   armarCambios,
+  cargoExtraDelMail,
   claveProductoAgencia,
   DIAS_MARCA_BLANDA,
   decidirPedido,
@@ -211,6 +212,7 @@ async function sumarA(ctx: ContextoMail, armada: ReservaArmada, existente: Reser
       pedidosEspeciales: e.pedidosEspeciales ?? null,
       esCancelacion: ctx.esCancelacion,
       vuelosDudosos: ctx.ficha?.datos_dudosos.includes("vuelos") ?? false,
+      cargoExtra: cargoExtraDelMail({ agencia: ctx.agencia, tipoMail: ctx.ficha?.tipo_mail.valor ?? null, esCancelacion: ctx.esCancelacion }),
     },
     { recheckVuelos: await recheckDe(ctx, existente), fechaMail: ctx.fechaMail },
   );

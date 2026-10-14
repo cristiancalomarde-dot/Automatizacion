@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { detalleDePrueba, fichaDePrueba } from "./emparejar/__fixtures__/cargar";
+import { MOTIVOS_EMPAREJADO as M } from "./emparejar/motivos";
 import { motivosDeVuelos } from "./emparejar/vuelos-requeridos";
 import type { VueloIA } from "./esquema-ficha";
 import {
   armarCambios,
+  cargoExtraDelMail,
   claveProductoAgencia,
   decidirPedido,
   MOTIVOS_INTERCAMBIO as MI,
@@ -330,5 +332,48 @@ describe("fila 12: solo se toca el estado de las reservas recibidas o para revis
   });
   it("una cancelación tampoco le cambia el estado", () => {
     expect(armarCambios(reserva({ estado: "confirmada" }), entrante({ esCancelacion: true }), {}).estado).toBe("confirmada");
+  });
+});
+
+describe("cargo extra de TourRadar (owner, 2026-10-14): manda la reserva a revisión", () => {
+  const tr = (c: Partial<ReservaExistente> = {}) =>
+    reserva({ agencia: "TourRadar", booking_id: "1377598", producto_id: "p-ar09", producto_clave_agencia: "patagonia adventure tour 16 days", ...c });
+  const cargo = (importe: number | null = 102, moneda: string | null = "USD") =>
+    entrante({ fechaInicio: null, fechaFin: null, pax: null, cargoExtra: { importe, moneda } });
+
+  it("el motivo lleva el monto si el estado de cuenta lo trae", () => {
+    expect(M.cargoExtra({ importe: 102, moneda: "USD" })).toBe("TourRadar mandó un cargo extra (+102 USD): puede ser un servicio nuevo. Revisar.");
+    expect(M.cargoExtra({ importe: 45.5, moneda: "GBP" })).toBe("TourRadar mandó un cargo extra (+45.50 GBP): puede ser un servicio nuevo. Revisar.");
+    expect(M.cargoExtra({ importe: null, moneda: null })).toBe("TourRadar mandó un cargo extra: puede ser un servicio nuevo. Revisar.");
+  });
+
+  it("un cargo que se une a una reserva recibida la pasa a revisión con ese motivo", () => {
+    const c = armarCambios(tr(), cargo(), {});
+    expect(c).toMatchObject({ estado: "para_revision", motivos: [M.cargoExtra({ importe: 102, moneda: "USD" })] });
+  });
+
+  it("en para revisión suma el motivo sin perder los que tenía", () => {
+    const c = armarCambios(tr({ estado: "para_revision", motivos_revision: ["otro"] }), cargo(null, null), {});
+    expect(c.motivos).toEqual(["otro", M.cargoExtra({ importe: null, moneda: null })]);
+  });
+
+  it("fila 12: en una reserva ya pedida al proveedor no le cambia el estado", () => {
+    expect(armarCambios(tr({ estado: "pedido_a_proveedor" }), cargo(), {})).toMatchObject({ estado: "pedido_a_proveedor", motivos: [] });
+  });
+
+  it("sin cargo, el mismo mail no la manda a revisión", () => {
+    expect(armarCambios(tr(), entrante({ fechaInicio: null, fechaFin: null, pax: null }), {}).estado).toBe("recibida");
+  });
+});
+
+describe("cargoExtraDelMail: qué mail es un cargo extra de TourRadar", () => {
+  it("el statement de cargo de TourRadar 1377598 ('Other 102.00 USD') es un cargo extra", () => {
+    expect(cargoExtraDelMail({ agencia: "TourRadar", tipoMail: "cambio_o_cargo", esCancelacion: false })).toEqual({ importe: null, moneda: null });
+  });
+  it("no lo es: una cancelación, una reserva nueva u otra agencia", () => {
+    expect(cargoExtraDelMail({ agencia: "TourRadar", tipoMail: "cambio_o_cargo", esCancelacion: true })).toBeNull();
+    expect(cargoExtraDelMail({ agencia: "TourRadar", tipoMail: "reserva_nueva", esCancelacion: false })).toBeNull();
+    expect(cargoExtraDelMail({ agencia: "Kilroy", tipoMail: "cambio_o_cargo", esCancelacion: false })).toBeNull();
+    expect(cargoExtraDelMail({ agencia: "TourRadar", tipoMail: null, esCancelacion: false })).toBeNull();
   });
 });
