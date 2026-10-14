@@ -18,7 +18,8 @@
     "probar:lectura": "tsx --conditions=react-server scripts/probar-lectura-mail.ts",
     "eval:lectura": "tsx --conditions=react-server scripts/eval-lectura.ts",
     "importar:codigos-kilroy": "tsx scripts/importar-codigos-kilroy.ts",
-    "probar:emparejado": "tsx --conditions=react-server scripts/probar-emparejado.ts"
+    "probar:emparejado": "tsx --conditions=react-server scripts/probar-emparejado.ts",
+    "probar:intercambio": "tsx --conditions=react-server scripts/probar-intercambio.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.128.0",
