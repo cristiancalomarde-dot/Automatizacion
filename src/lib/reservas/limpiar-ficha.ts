@@ -243,8 +243,16 @@ export function limpiarFicha(
   const fecha_inicio = campoFecha(ficha.fecha_inicio);
   const fecha_fin = campoFecha(ficha.fecha_fin);
 
-  // Pax contra la lista de nombres (fila 27).
-  if (ficha.pax.valor !== null && pasajeros.length > 0 && ficha.pax.valor !== pasajeros.length) {
+  // Pax contra la lista de nombres (fila 27). TourRadar nombra solo al pasajero
+  // principal (el "CUSTOMER") más la cantidad (owner, 2026-10-13): 1 nombre con
+  // pax ≥ 1 está bien; más nombres que pax, no.
+  const soloElPrincipal = ctx.agencia === "TourRadar" && pasajeros.length === 1;
+  if (
+    ficha.pax.valor !== null &&
+    pasajeros.length > 0 &&
+    ficha.pax.valor !== pasajeros.length &&
+    !(soloElPrincipal && ficha.pax.valor >= 1)
+  ) {
     dudosos.add("pax");
     notas.push(`Dice ${ficha.pax.valor} pasajeros pero lista ${pasajeros.length}.`);
   }

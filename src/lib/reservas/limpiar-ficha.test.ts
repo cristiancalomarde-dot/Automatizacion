@@ -168,3 +168,23 @@ describe("limpiarFicha", () => {
     expect(f.datos_dudosos).toContain("agencia");
   });
 });
+
+describe("pax contra la lista: TourRadar nombra solo al pasajero principal (owner, 2026-10-13)", () => {
+  const pasajero = (n: number) => ({ nombre: `P${n}`, apellido: "Prueba", nacionalidad: null, fecha_nacimiento: null, confianza: 1 });
+  const conPax = (agencia: string, pax: number, nombres: number) => {
+    const x = ficha(agencia === "TourRadar" ? "tourradar-1376833" : "kilroy-od010d");
+    x.pax = { valor: pax, confianza: 1 };
+    x.pasajeros = Array.from({ length: nombres }, (_, i) => pasajero(i + 1));
+    return limpiarFicha(x, { agencia, textoVerificable: "", seMandoPdf: true, adjuntosNoLeidos: [] }).datos_dudosos;
+  };
+
+  it("TourRadar con 1 nombre y pax 2 → pax no es dudoso", () => {
+    expect(conPax("TourRadar", 2, 1)).not.toContain("pax");
+  });
+  it("Kilroy con 1 nombre y pax 2 → pax dudoso", () => {
+    expect(conPax("Kilroy", 2, 1)).toContain("pax");
+  });
+  it("TourRadar con 3 nombres y pax 2 → pax dudoso", () => {
+    expect(conPax("TourRadar", 2, 3)).toContain("pax");
+  });
+});
