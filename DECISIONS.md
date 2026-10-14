@@ -6,6 +6,12 @@ Formato mínimo por entrada: qué decisión, por qué, alternativa rechazada, co
 
 # Decisiones de diseño
 
+## 2026-10-14: Base de datos de pruebas separada antes de M2-07; no tres ambientes completos
+- **Decisión:** mantener dos ambientes (desarrollo local y producción en Vercel) y, antes de activar M2-07 (lectura automática de sales@), separar la base de datos: un segundo proyecto de Supabase (gratis) para las pruebas automáticas y el desarrollo, y la base actual queda solo para producción.
+- **Razón:** hoy las pruebas escriben en la base real y limpian lo suyo (marca `de_prueba`). Era tolerable con solo el catálogo, pero desde M2-07 entran reservas reales solas y en M3 se mandan mails a proveedores: una prueba no puede tocar eso.
+- **Alternativa rechazada:** tres ambientes completos (desarrollo, staging y producción), demasiado mantenimiento para una herramienta interna de un solo usuario. Si algún día hace falta staging, se usan las copias de prueba automáticas de Vercel por rama.
+- **Constraint:** M2-07 no se activa sin la base de pruebas separada; las claves de cada base van en variables de entorno distintas (nunca en el código).
+
 ## 2026-10-13: La IA lee solo los mails originales de reserva, y no lee Jysk
 - **Decisión:** la lectura de `sales@` manda a la IA solo los mails que no son una respuesta ni un reenvío, es decir, cuyo asunto no empieza con `Re:`, `SV:`, `AW:`, `VS:`, `Fwd:`, `FW:` o `RV:`. Los mails de Jysk (`jr.dk`) no se procesan.
 - **Razón:** en sales@, el 12 y 13 de octubre hubo 44 mails de agencias, y solo unos 7 eran reservas nuevas. El resto eran conversaciones: si la IA las leyera, se acercaría al techo de gasto y llenaría "para revisión" de ruido. El 95% de lo de Jysk son viajes a medida, fuera del catálogo.

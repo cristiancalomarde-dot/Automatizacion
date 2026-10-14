@@ -149,6 +149,9 @@ diga cada ficha.
     solo a ccalomarde@; el owner le pide a Jysk que las mande a sales@ con copia a él, y guarda
     4 o 5 ejemplos en `Insumos/Mails/BPA/`.
 - **Costo:** con esto, la IA lee del orden de 3 a 5 mails por día, muy por debajo del techo.
+- **Base de pruebas separada antes de M2-07 (2026-10-14):** las pruebas automáticas y el
+  desarrollo pasan a un segundo proyecto de Supabase; la base actual queda para producción.
+  Va como paso previo de M2-07 (ver `DECISIONS.md` 2026-10-14).
 
 **Tareas del owner (no bloquean el plan; sí la pieza que las usa):**
 - **Crear la clave de Claude** (`ANTHROPIC_API_KEY`) y cargarla. Hace falta desde M2-02.
