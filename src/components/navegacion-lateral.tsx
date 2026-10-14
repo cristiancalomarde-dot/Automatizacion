@@ -8,10 +8,11 @@ import styles from "./navegacion-lateral.module.css";
 const T = TEXTOS.navegacion;
 
 /**
- * Barra lateral fija (user-flow.md §2). "Reservas" se suma cuando exista la
- * Bandeja (M2); por ahora, las secciones de datos de M1.
+ * Barra lateral fija (user-flow.md §2). Reservas primero: es el inicio desde
+ * que entran reservas por mail (spec M2-05 #1).
  */
 const SECCIONES = [
+  { href: "/reservas", texto: T.reservas },
   { href: "/catalogo", texto: T.catalogo },
   { href: "/proveedores", texto: T.proveedores },
   { href: "/pendientes", texto: T.pendientes },

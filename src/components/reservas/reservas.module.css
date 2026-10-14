@@ -1,0 +1,111 @@
+/* Pantallas de reservas (spec M2-05). Paleta y densidad: marca.md, sin variantes. */
+
+.icono {
+  flex: none;
+  margin-right: 4px;
+}
+
+/* Reserva de prueba: la fila atenuada, además del chip escrito. */
+.filaPrueba td {
+  opacity: 0.72;
+}
+
+/* Detalle en dos columnas: datos a la izquierda, mail a la derecha (user-flow.md §5.3). */
+.columnas {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+
+@media (max-width: 1100px) {
+  .columnas {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.columna {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+/* Chip de estado grande en el encabezado del detalle. */
+.chipGrande > span {
+  height: 24px;
+  padding: 2px 10px;
+  font-size: 13px;
+}
+
+.motivos {
+  margin: 4px 0 0;
+  padding-left: 18px;
+}
+
+.motivos li + li {
+  margin-top: 2px;
+}
+
+.panelMail {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  background: var(--color-superficie);
+  border: 1px solid var(--color-borde);
+  border-radius: 6px;
+  position: sticky;
+  top: 16px;
+}
+
+.listaMails {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--color-borde);
+  border-radius: 4px;
+}
+
+.itemMail {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 12px;
+  font-size: 13px;
+}
+
+.itemMail + .itemMail {
+  border-top: 1px solid var(--color-borde);
+}
+
+.itemMailAbierto {
+  background: var(--color-primario-tenue);
+}
+
+/* El cuerpo del mail: texto tal cual llegó, seleccionable, nunca una página (#13). */
+.cuerpo {
+  margin: 0;
+  padding: 12px;
+  max-height: 70vh;
+  overflow: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-family: var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--color-texto);
+  background: var(--color-superficie-alterna);
+  border-radius: 4px;
+  user-select: text;
+}
+
+.pdf {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}

@@ -4,9 +4,9 @@ import { useMemo, useState } from "react";
 import ui from "./ui.module.css";
 
 /** Tablas ordenables por columna (marca.md §4). Orden en memoria: las listas son chicas. */
-export function useOrden<C extends string>(inicial: C) {
+export function useOrden<C extends string>(inicial: C, ascendenteInicial = true) {
   const [columna, setColumna] = useState<C>(inicial);
-  const [ascendente, setAscendente] = useState(true);
+  const [ascendente, setAscendente] = useState(ascendenteInicial);
 
   return useMemo(
     () => ({
