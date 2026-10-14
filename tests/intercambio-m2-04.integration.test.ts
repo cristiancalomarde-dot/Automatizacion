@@ -214,6 +214,35 @@ const ASUNTO_OVERLAND = "DK1594100/maga - Overland San Pedro de Atacama to Uyuni
       expect(await mailsDe(reservas[0])).toEqual([primero.mailRecibidoId, segundo.mailRecibidoId]);
     });
 
+    it("owner 2026-10-14: el cargo extra de TourRadar 1377598 manda la reserva recibida a revisión, y queda en el historial", async () => {
+      const pdf = (asunto: string) =>
+        entrada(
+          { remitente: "system@sent-via.netsuite.com", asunto, cuerpoTexto: "" },
+          { adjuntos: [{ nombre: `${asunto}.pdf`, tipo: "application/pdf", contenido: pdfSintetico() }] },
+        );
+      await procesarMail(
+        pdf("Booking Statement 1377598 - 25372219 - vendorbill"),
+        opciones(lector(respuestaGrabada("tourradar-1377598-opcionales")).leer),
+      );
+      // La reserva ya se revisó y quedó recibida (lo haría una persona en la pantalla).
+      const [antes] = await reservasDe("1377598");
+      const { error } = await admin.from("reserva").update({ estado: "recibida", motivos_revision: [] }).eq("id", antes.id);
+      if (error) throw new Error(error.message);
+
+      const cargo = await procesarMail(
+        pdf("Booking Statement 1377598 - 25388222 - vendorbill"),
+        opciones(lector(respuestaGrabada("tourradar-cargo-1377598")).leer),
+      );
+      expect(cargo.estado === "procesado" && cargo.pedidos.map((p) => p.accion)).toEqual(["sumada"]);
+      const motivo = "TourRadar mandó un cargo extra: puede ser un servicio nuevo. Revisar.";
+      const [despues] = await reservasDe("1377598");
+      expect(despues).toMatchObject({ id: antes.id, estado: "para_revision", motivos_revision: [motivo] });
+
+      const eventos = await eventosDe(antes.id);
+      expect(eventos.at(-1)).toMatchObject({ tipo: "estado_cambiado", estado_nuevo: "para_revision", detalle: { motivos: [motivo] } });
+      expect(eventos).toContainEqual(expect.objectContaining({ tipo: "mail_agregado", mail_recibido_id: cargo.mailRecibidoId }));
+    });
+
     it("fila 6: '2 NEW BOOKINGS - DK1576932/emhe' → 2 reservas (ARCH33 y el Overland) desde un solo mail", async () => {
       const r = await procesarMail(entrada(mailDePrueba("kilroy-dk1576932")), opciones(lector(respuestaGrabada("kilroy-dk1576932")).leer));
       expect(r.estado === "procesado" && r.pedidos.map((p) => p.accion)).toEqual(["nueva", "nueva"]);
