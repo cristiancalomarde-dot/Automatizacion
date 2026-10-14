@@ -1,5 +1,6 @@
 import type { Campo, DatoClave, FichaIA, FichaLectura } from "./esquema-ficha";
 import { DATOS_CLAVE } from "./esquema-ficha";
+import { normalizarBookingId } from "./booking-id";
 
 /**
  * Los controles del código sobre lo que devolvió la IA (spec M2-02 filas 14,
@@ -73,23 +74,13 @@ export function normalizarFecha(texto: string | null | undefined): string | null
 }
 
 /**
- * El número limpio: Kilroy y Jysk, país + dígitos; Journaway, el "ID" de 11
- * dígitos del asunto; el resto, tal cual sin espacios.
+ * El número limpio: Kilroy y Jysk, país + dígitos; TourRadar, el primer
+ * número del Booking Statement; Journaway, el "ID" de 11 dígitos del asunto.
+ * Es la misma normalización con la que M2-04 busca el intercambio
+ * (`booking-id.ts`).
  */
 export function numeroLimpio(original: string | null, agencia: string): string | null {
-  if (!original) return null;
-  const t = original.trim();
-  if (agencia === "Journaway") {
-    // El "ID" del asunto (owner, 2026-10-13). El Trip Number es una
-    // referencia secundaria: queda solo en el original.
-    const m = /(?:^|\bID\s*:?\s*)(\d{11})(?!\d)/i.exec(t);
-    return m ? m[1] : null;
-  }
-  if (agencia === "Kilroy" || agencia === "Jysk") {
-    const m = /^([A-Za-z]{2}\d{5,})/.exec(t);
-    if (m) return m[1].toUpperCase();
-  }
-  return t.replace(/\s+/g, "") || null;
+  return normalizarBookingId(original, agencia);
 }
 
 const sinEspacios = (s: string) => s.toLowerCase().replace(/\s+/g, "");
