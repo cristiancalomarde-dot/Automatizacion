@@ -21,6 +21,7 @@ import {
   type ReservaExistente,
 } from "./intercambio";
 import type { MailParaLeer } from "./preparar-mail";
+import { numerosDelAsunto, type ReservaParaRespuesta } from "./respuestas";
 import type { MailEntrada } from "./tipos";
 
 /**
@@ -346,4 +347,26 @@ export async function procesarMails(entradas: MailEntrada[], opciones: OpcionesP
   const resultados: ResultadoProceso[] = [];
   for (const { e } of ordenadas) resultados.push(await procesarMail(e, opciones));
   return resultados;
+}
+
+/**
+ * Para decidir si una respuesta se lee (`respuestas.ts`, owner 2026-10-14):
+ * las reservas de la agencia cuyos números aparecen en el asunto. Solo lee.
+ */
+export async function cargarReservasDelAsunto(
+  admin: Cliente,
+  asunto: string | null | undefined,
+  agencia: string,
+  dePrueba: boolean,
+): Promise<ReservaParaRespuesta[]> {
+  const numeros = numerosDelAsunto(asunto, agencia);
+  if (numeros.length === 0) return [];
+  const { data, error } = await admin
+    .from("reserva")
+    .select("id,agencia,booking_id,estado,motivos_revision,de_prueba")
+    .eq("agencia", agencia)
+    .eq("de_prueba", dePrueba)
+    .in("booking_id", numeros);
+  if (error) throw new Error(`No se pudieron buscar las reservas del asunto: ${error.message}`);
+  return (data ?? []) as ReservaParaRespuesta[];
 }

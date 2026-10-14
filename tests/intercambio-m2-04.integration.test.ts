@@ -21,7 +21,14 @@ import { cargarDependenciasReservas, type DependenciasReservas } from "@/lib/res
 import { leerMailConIA } from "@/lib/reservas/extraer";
 import { borrarDatosDePrueba, crearReserva } from "@/lib/reservas/guardar";
 import { MOTIVOS_INTERCAMBIO as MI } from "@/lib/reservas/intercambio";
-import { cargarCandidatas, procesarMail, procesarMails, type OpcionesProceso } from "@/lib/reservas/procesar-mail";
+import {
+  cargarCandidatas,
+  cargarReservasDelAsunto,
+  procesarMail,
+  procesarMails,
+  type OpcionesProceso,
+} from "@/lib/reservas/procesar-mail";
+import { respuestaMereceLectura } from "@/lib/reservas/respuestas";
 import type { MailEntrada, Reserva } from "@/lib/reservas/tipos";
 import { tomarBloqueoDatosDePrueba } from "./helpers/bloqueo-datos-de-prueba";
 import { credencialesSupabaseDisponibles } from "./helpers/entorno-supabase";
@@ -410,6 +417,108 @@ const ASUNTO_OVERLAND = "DK1594100/maga - Overland San Pedro de Atacama to Uyuni
         admin,
       );
       await expect(otra).rejects.toMatchObject({ code: "23505" });
+    });
+
+    // --- Respuestas con vuelos (owner, 2026-10-14) — datos inventados -----------------------------
+
+    const ASUNTO_ALTA = "DK1562336/emri - Overland San Pedro de Atacama to Uyuni and La Paz - 7 Days - KILROY booking request";
+    const CUERPO_ALTA =
+      "NEW BOOKING\nTour code: HI_ARGENTINA_OVERLAND_7DAYS-677\nStart date: 06 Mar 2027\nEnd date: 12 Mar 2027\nKILROY Reference.:DK1562336/emri\n";
+    const ASUNTO_VUELO = "Re: NEW FLIGHT: DK1562336 /emri - Overland San Pedro de Atacama";
+
+    async function altaQueEsperaVuelo(): Promise<Reserva> {
+      const f = fichaGrabada("kilroy-od010d") as Ficha;
+      Object.assign(f, {
+        numero_reserva: { valor: "DK1562336/emri", confianza: 1 },
+        fecha_inicio: { valor: "2027-03-06", confianza: 1 },
+        fecha_fin: { valor: "2027-03-12", confianza: 1 },
+        pasajeros: [],
+        vuelos: [],
+        pedidos_especiales: [],
+      });
+      f.productos = [
+        {
+          ...f.productos[0],
+          nombre: "Overland San Pedro de Atacama to Uyuni and La Paz - 7 Days",
+          codigo: "HI_ARGENTINA_OVERLAND_7DAYS-677",
+          fecha_inicio: "2027-03-06",
+          fecha_fin: "2027-03-12",
+          noches: 6,
+          confianza: 1,
+        },
+      ];
+      await procesarMail(
+        entrada({ remitente: "copenhagen@kilroy.dk", asunto: ASUNTO_ALTA, cuerpoTexto: CUERPO_ALTA }),
+        opciones(lector(respuestaCon(f)).leer),
+      );
+      const [r] = await reservasDe("DK1562336");
+      return r;
+    }
+
+    function respuestaConVuelo() {
+      const f = fichaGrabada("kilroy-od010d") as Ficha;
+      Object.assign(f, {
+        tipo_mail: { valor: "respuesta_intercambio", confianza: 1 },
+        numero_reserva: { valor: "DK1562336", confianza: 1 },
+        productos: [],
+        fecha_inicio: { valor: null, confianza: 0 },
+        fecha_fin: { valor: null, confianza: 0 },
+        pax: { valor: null, confianza: 0 },
+        pasajeros: [],
+        pedidos_especiales: [],
+        vuelos: [
+          {
+            numero: "LA148",
+            aerolinea: "LATAM",
+            origen: "SCL",
+            destino: "CJC",
+            fecha_salida: "2027-03-06",
+            hora_salida: "12:00",
+            fecha_llegada: "2027-03-06",
+            hora_llegada: "14:10",
+            confianza: 0.95,
+          },
+        ],
+      });
+      const mail = entrada(
+        { remitente: "copenhagen@kilroy.dk", asunto: ASUNTO_VUELO, cuerpoTexto: "Flight: LA148 SCL-CJC, 06 Mar 2027, dep 12:00, arr 14:10" },
+        { fechaMail: "2026-10-12T09:00:00Z" },
+      );
+      return { mail, ...lector(respuestaCon(f)) };
+    }
+
+    it("respuesta 'Re: NEW FLIGHT: DK1562336' con la reserva esperando el vuelo → se lee, se suma y pasa a recibida", async () => {
+      const alta = await altaQueEsperaVuelo();
+      expect(alta.estado).toBe("para_revision");
+      expect(alta.motivos_revision).toEqual(["Falta el vuelo de llegada a Calama (CJC) para el traslado de OD030"]);
+
+      const r = respuestaConVuelo();
+      const decision = respuestaMereceLectura(ASUNTO_VUELO, "Kilroy", await cargarReservasDelAsunto(admin, ASUNTO_VUELO, "Kilroy", true), {
+        dePrueba: true,
+      });
+      expect(decision).toEqual({ leer: true, motivo: "espera_vuelo", reservaIds: [alta.id] });
+
+      const p = await procesarMail(r.mail, opciones(r.leer));
+      expect(p.estado === "procesado" && p.pedidos.map((x) => x.accion)).toEqual(["sumada"]);
+      const [despues] = await reservasDe("DK1562336");
+      expect(await reservasDe("DK1562336")).toHaveLength(1);
+      expect(despues).toMatchObject({ id: alta.id, estado: "recibida", motivos_revision: [] });
+      const agregado = (await eventosDe(alta.id)).find((e) => e.tipo === "mail_agregado")!;
+      expect((agregado.detalle as { nota: string }).nota).toBe("Pasó a recibida porque llegaron los vuelos (mail del 12/10)");
+    });
+
+    it("la misma respuesta con la reserva ya recibida, o sin número conocido → no se lee (sin IA)", async () => {
+      await altaQueEsperaVuelo();
+      await admin.from("reserva").update({ estado: "recibida", motivos_revision: [] }).eq("booking_id", "DK1562336").eq("de_prueba", true);
+      const candidatas = await cargarReservasDelAsunto(admin, ASUNTO_VUELO, "Kilroy", true);
+      expect(respuestaMereceLectura(ASUNTO_VUELO, "Kilroy", candidatas, { dePrueba: true })).toMatchObject({
+        leer: false,
+        motivo: "no_espera_vuelo",
+      });
+      const otro = "Re: NEW FLIGHT: DK1999999 /emri";
+      expect(
+        respuestaMereceLectura(otro, "Kilroy", await cargarReservasDelAsunto(admin, otro, "Kilroy", true), { dePrueba: true }),
+      ).toMatchObject({ leer: false, motivo: "sin_numero_conocido" });
     });
 
     it("RLS sigue activa: sin sesión no se ve ni se escribe nada de lo que tocó M2-04", async () => {
