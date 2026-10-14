@@ -39,7 +39,19 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
   - **M2-02 ajuste (2026-10-13, `52f37cc`):** instrucciones `lectura-mail.v2`. El número de
     Journaway es el "ID" de 11 dígitos del asunto, y el Trip Number queda como referencia. Pax de
     TourRadar = cantidad, también en cancelaciones. Eval con v2: **100%**, US$ 0,14.
-  - **Siguiente:** M2-03 en construcción.
+  - **M2-03 terminada (2026-10-14):** commits `46187ef`, `3967c86`, `531c480`.
+    - Migración 0011 aplicada; `data/codigos-kilroy.csv` cargado en `codigo_externo` (9 filas).
+    - Corrida real: 9 reservas por US$ 0,19. OD010D quedó "recibida"; el resto, "para revisión"
+      por falta de vuelos o porque el producto no se reconoce.
+    - Preguntas para el owner:
+      - confirmar los códigos Kilroy de los 7 tours (`HI_ARGENTINA_<código>-677`);
+      - ¿Patagonia Trekking Paradise **Express** (`HI_TRAVEL_ARCH_EXP-677`) es un producto
+        nuestro?
+      - ¿"Patagonia Adventure" de TourRadar es AR09? La IA lo sugirió con 0,80.
+    - Para M2-06: el umbral de 0,9 y la detección de "con/sin traslados" por palabras.
+    - El cambio de la limpieza de los tests (que no borren todo lo de prueba) sigue pendiente
+      antes de M2-06.
+  - **Siguiente:** `/implementar M2-04` (o M2-05, o M2-08).
   - Respuestas del owner a las preguntas de las fichas: en §3 del plan (2026-10-12). Quedan
     abiertos: el dominio de Jysk, el listado de países de Kilroy (el owner lo ofrece; mientras
     tanto, cualquier `kilroy.*`) y si se lee `INBOX.Promociones`.
