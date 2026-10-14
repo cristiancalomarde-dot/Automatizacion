@@ -19,7 +19,7 @@ import {
 } from "@/lib/reservas/__fixtures__/cargar";
 import { cargarDependenciasReservas, type DependenciasReservas } from "@/lib/reservas/emparejar/reservas-del-mail";
 import { leerMailConIA } from "@/lib/reservas/extraer";
-import { borrarDatosDePrueba } from "@/lib/reservas/guardar";
+import { borrarDatosDePrueba, crearReserva } from "@/lib/reservas/guardar";
 import { MOTIVOS_INTERCAMBIO as MI } from "@/lib/reservas/intercambio";
 import { cargarCandidatas, procesarMail, procesarMails, type OpcionesProceso } from "@/lib/reservas/procesar-mail";
 import type { MailEntrada, Reserva } from "@/lib/reservas/tipos";
@@ -200,6 +200,215 @@ const ASUNTO_OVERLAND = "DK1594100/maga - Overland San Pedro de Atacama to Uyuni
       expect(r.estado === "procesado" && r.pedidos.map((p) => p.accion)).toEqual(["nueva", "nueva"]);
       const reservas = await reservasDe("DK1576932");
       expect(reservas.map((x) => x.producto_clave_agencia)).toEqual(["hi_argentina_w_trek_arch_33", "hi_argentina_overland_7days"]);
+    });
+
+    // --- Fila 7 -------------------------------------------------------------------------------
+
+    /** El mail "aquí van los pasaportes": sin producto, con los pasajeros y su nacionalidad. */
+    function pasaportes(numero: string, pasajeros: Array<Record<string, unknown>>) {
+      const f = fichaGrabada("kilroy-od010d") as Ficha;
+      Object.assign(f, {
+        tipo_mail: { valor: "respuesta_intercambio", confianza: 1 },
+        numero_reserva: { valor: numero, confianza: 1 },
+        productos: [],
+        fecha_inicio: { valor: null, confianza: 0 },
+        fecha_fin: { valor: null, confianza: 0 },
+        pax: { valor: null, confianza: 0 },
+        pasajeros: pasajeros.map((p) => ({ ...p, nacionalidad: "DK" })),
+        vuelos: [],
+        pedidos_especiales: [],
+      });
+      const mail = entrada({ remitente: "copenhagen@kilroy.dk", asunto: `Passports ${numero}`, cuerpoTexto: "Here are the passports." });
+      return { mail, leer: lector(respuestaCon(f)).leer };
+    }
+
+    it("fila 7: pasaportes con DK1586168 y una sola reserva con esa referencia → se suma y completa lo vacío", async () => {
+      const f = fichaGrabada("kilroy-od010d") as Ficha;
+      const pasajeros = (f.pasajeros as Array<Record<string, unknown>>).map((p) => ({ ...p, nacionalidad: null }));
+      Object.assign(f, { numero_reserva: { valor: "DK1586168/pela", confianza: 1 }, pasajeros });
+      f.productos = [{ ...f.productos[0], nombre: "Patagonia, Trekking Paradise with W-Trek EXPRESS", codigo: "HI_TRAVEL_ARCH_EXP-677" }];
+      const original = mailDePrueba("kilroy-od010d");
+      await procesarMail(
+        entrada({ ...original, asunto: "DK1586168/pela - Patagonia, Trekking Paradise EXPRESS - KILROY booking request" }),
+        opciones(lector(respuestaCon(f)).leer),
+      );
+
+      const p = pasaportes("DK1586168/pela", pasajeros);
+      const r = await procesarMail(p.mail, opciones(p.leer));
+      expect(r.estado === "procesado" && r.pedidos.map((x) => x.accion)).toEqual(["sumada"]);
+      const [reserva] = await reservasDe("DK1586168");
+      expect(await reservasDe("DK1586168")).toHaveLength(1);
+      expect((reserva.pasajeros as Array<{ nacionalidad: string | null }>).every((x) => x.nacionalidad === "DK")).toBe(true);
+      const tipos = (await eventosDe(reserva.id)).map((e) => e.tipo);
+      expect(tipos).toEqual(expect.arrayContaining(["creada", "mail_agregado", "datos_completados"]));
+    });
+
+    it("fila 7: pasaportes con DK1576932 (ARCH33 y el Overland) → para revisión con las 2 enlazadas y sin copiar nada", async () => {
+      await procesarMail(entrada(mailDePrueba("kilroy-dk1576932")), opciones(lector(respuestaGrabada("kilroy-dk1576932")).leer));
+      const antes = await reservasDe("DK1576932");
+      const eventosAntes = await Promise.all(antes.map((x) => eventosDe(x.id)));
+
+      const p = pasaportes("DK1576932/emhe", [{ nombre: "Pasajero", apellido: "Uno", fecha_nacimiento: null, confianza: 1 }]);
+      const r = await procesarMail(p.mail, opciones(p.leer));
+      expect(r.estado === "procesado" && r.pedidos.map((x) => x.accion)).toEqual(["revision_ambigua"]);
+
+      const despues = await reservasDe("DK1576932");
+      expect(despues).toHaveLength(3);
+      const nueva = despues.find((x) => !antes.some((a) => a.id === x.id))!;
+      expect(nueva.estado).toBe("para_revision");
+      expect(nueva.motivos_revision[0]).toBe(MI.ambigua(2, "DK1576932"));
+      const enlace = (await eventosDe(nueva.id)).find((e) => e.tipo === "misma_referencia")!;
+      expect((enlace.detalle as { reservas: string[] }).reservas.sort()).toEqual(antes.map((a) => a.id).sort());
+      // Las dos que ya estaban no cambiaron: ni datos ni historial.
+      for (const [i, a] of antes.entries()) {
+        const ahora = despues.find((x) => x.id === a.id)!;
+        expect(ahora.pasajeros).toEqual(a.pasajeros);
+        expect(await eventosDe(a.id)).toEqual(eventosAntes[i]);
+      }
+    });
+
+    // --- Fila 8 -------------------------------------------------------------------------------
+
+    async function journaway(ficha?: Ficha) {
+      const r = await procesarMail(
+        entrada(mailDePrueba("journaway-iguazu-arg")),
+        opciones(lector(ficha ? respuestaCon(ficha) : respuestaGrabada("journaway-iguazu-arg")).leer),
+      );
+      if (r.estado !== "procesado") throw new Error("se esperaba un mail nuevo");
+      return r.pedidos[0];
+    }
+    async function laReserva(id: string): Promise<Reserva> {
+      const { data, error } = await admin.from("reserva").select("*").eq("id", id).single();
+      if (error) throw new Error(error.message);
+      return data as Reserva;
+    }
+
+    it("fila 8: Journaway sin número — los Gallien (Brasil 13/06 y Argentina 14/06) sin marca; el reenvío, marcado y enlazado", async () => {
+      const brasil = fichaGrabada("journaway-iguazu-arg") as Ficha;
+      brasil.productos = [{ ...brasil.productos[0], nombre: "Half-day tour to the Brazilian Iguazú Falls", fecha_inicio: "2027-06-13" }];
+      (brasil.fecha_inicio as { valor: string }).valor = "2027-06-13";
+
+      const arg = await journaway();
+      const br = await journaway(brasil);
+      expect([arg.accion, br.accion]).toEqual(["nueva", "nueva"]);
+      expect((await laReserva(br.reservaId)).posible_duplicada).toBe(false);
+
+      const reenvio = await journaway();
+      expect(reenvio).toMatchObject({ accion: "posible_duplicada", enlazadas: [arg.reservaId] });
+      const marcada = await laReserva(reenvio.reservaId);
+      expect(marcada).toMatchObject({ posible_duplicada: true, duplicada_de_id: arg.reservaId, estado: "para_revision", booking_id: null });
+      expect(marcada.motivos_revision).toContain(MI.posibleDuplicada);
+      expect((await eventosDe(marcada.id)).map((e) => e.tipo)).toContain("posible_duplicada");
+      // La original sigue igual: nada se descarta ni se junta.
+      expect((await laReserva(arg.reservaId)).estado).not.toBe("descartada");
+    });
+
+    it("fila 8: si la otra entró hace 61 días, sin marca", async () => {
+      const arg = await journaway();
+      const hace61 = new Date(Date.now() - 61 * 86_400_000).toISOString();
+      const { error } = await admin.from("reserva").update({ created_at: hace61 }).eq("id", arg.reservaId);
+      expect(error).toBeNull();
+      const otra = await journaway();
+      expect(otra.accion).toBe("nueva");
+      expect((await laReserva(otra.reservaId)).posible_duplicada).toBe(false);
+    });
+
+    // --- Fila 9 -------------------------------------------------------------------------------
+
+    const statement = (asunto: string) =>
+      entrada(
+        { remitente: "system@sent-via.netsuite.com", asunto, cuerpoTexto: "" },
+        { adjuntos: [{ nombre: `${asunto}.pdf`, tipo: "application/pdf", contenido: pdfSintetico() }] },
+      );
+    const ASUNTO_CANCELACION = "Booking Statement 1363612 - 25160515 - vendorcredit";
+
+    it("fila 9: la cancelación de 1363612 sin la reserva cargada → 1 reserva para revisión con ese motivo", async () => {
+      await procesarMail(statement(ASUNTO_CANCELACION), opciones(lector(respuestaGrabada("tourradar-cancelacion-1363612")).leer));
+      const reservas = await reservasDe("1363612");
+      expect(reservas).toHaveLength(1);
+      expect(reservas[0].estado).toBe("para_revision");
+      expect(reservas[0].motivos_revision).toContain(MI.cancelacionSinReserva);
+    });
+
+    it("fila 9: con la reserva ya cargada → sigue siendo 1, ahora en revisión con el evento", async () => {
+      const alta = fichaGrabada("tourradar-cancelacion-1363612") as Ficha;
+      alta.tipo_mail = { valor: "reserva_nueva", confianza: 1 };
+      await procesarMail(statement("Booking Statement 1363612 - 25100000 - vendorbill"), opciones(lector(respuestaCon(alta)).leer));
+      const c = await procesarMail(statement(ASUNTO_CANCELACION), opciones(lector(respuestaGrabada("tourradar-cancelacion-1363612")).leer));
+      expect(c.estado === "procesado" && c.pedidos.map((p) => p.accion)).toEqual(["sumada"]);
+
+      const reservas = await reservasDe("1363612");
+      expect(reservas).toHaveLength(1);
+      expect(reservas[0].estado).toBe("para_revision");
+      expect(reservas[0].motivos_revision).toContain(MI.cancelacion);
+      const agregado = (await eventosDe(reservas[0].id)).find((e) => e.tipo === "mail_agregado")!;
+      expect(agregado).toMatchObject({ mail_recibido_id: c.mailRecibidoId, detalle: expect.objectContaining({ cancelacion: true }) });
+    });
+
+    // --- Filas 10 y 11 ----------------------------------------------------------------------------
+
+    it("fila 10: una reserva de prueba DK1594100 no es candidata para un mail real (y al revés)", async () => {
+      await procesarMail(mailVarias(ASUNTO_OVERLAND), opciones(lector(respuestaCon(fichaSoloOverland())).leer));
+      const pedido = {
+        agencia: "Kilroy",
+        bookingId: "DK1594100",
+        productoId: null,
+        claveAgencia: "hi_argentina_overland_7days",
+        fechaInicio: "2027-01-18",
+        pax: 2,
+      };
+      expect(await cargarCandidatas(admin, { ...pedido, dePrueba: false }, new Date())).toEqual([]);
+      expect(await cargarCandidatas(admin, { ...pedido, dePrueba: true }, new Date())).toHaveLength(1);
+    });
+
+    it("fila 11: 2 mails del Overland DK1594100 en la misma corrida → 1 reserva, en el orden en que llegaron", async () => {
+      const { leer } = lector(respuestaCon(fichaSoloOverland()));
+      const temprano = mailVarias(ASUNTO_OVERLAND, { fechaMail: "2026-10-09T08:38:00Z" });
+      const tarde = mailVarias(ASUNTO_OVERLAND, { fechaMail: "2026-10-09T10:00:00Z" });
+      const [a, b] = await procesarMails([tarde, temprano], opciones(leer));
+      expect(a.estado === "procesado" && a.pedidos[0].accion).toBe("nueva");
+      expect(b.estado === "procesado" && b.pedidos[0].accion).toBe("sumada");
+      const { data: mailA } = await admin.from("mail_recibido").select("fecha_mail").eq("id", a.mailRecibidoId).single();
+      expect(mailA!.fecha_mail).toBe("2026-10-09T08:38:00+00:00");
+      expect(await reservasDe("DK1594100")).toHaveLength(1);
+    });
+
+    it("fila 11: dos procesos a la vez con el mismo booking_id + producto → 1 reserva", async () => {
+      const { leer } = lector(respuestaCon(fichaSoloOverland()));
+      const resultados = await Promise.all([
+        procesarMail(mailVarias(ASUNTO_OVERLAND), opciones(leer)),
+        procesarMail(mailVarias(ASUNTO_OVERLAND), opciones(leer)),
+      ]);
+      const acciones = resultados.flatMap((r) => (r.estado === "procesado" ? r.pedidos.map((p) => p.accion) : [])).sort();
+      expect(acciones).toEqual(["nueva", "sumada"]);
+      const reservas = await reservasDe("DK1594100");
+      expect(reservas).toHaveLength(1);
+      expect(await mailsDe(reservas[0])).toHaveLength(2);
+      // La red: la base rechaza una segunda reserva del mismo booking_id + producto.
+      const otra = crearReserva(
+        {
+          agencia: "Kilroy",
+          mailRecibidoId: reservas[0].mail_recibido_id,
+          bookingId: "DK1594100",
+          productoId: reservas[0].producto_id,
+          productoClaveAgencia: reservas[0].producto_clave_agencia,
+          estado: "recibida",
+          dePrueba: true,
+        },
+        admin,
+      );
+      await expect(otra).rejects.toMatchObject({ code: "23505" });
+    });
+
+    it("RLS sigue activa: sin sesión no se ve ni se escribe nada de lo que tocó M2-04", async () => {
+      const r = await procesarMail(mailVarias(), opciones(lector(respuestaGrabada("kilroy-dk1594100")).leer));
+      const ids = r.estado === "procesado" ? r.pedidos.map((p) => p.reservaId) : [];
+      expect(ids).toHaveLength(3);
+      expect((await anonimo.from("reserva").select("id").in("id", ids)).data ?? []).toEqual([]);
+      expect((await anonimo.from("evento_reserva").select("id").in("reserva_id", ids)).data ?? []).toEqual([]);
+      expect((await anonimo.from("mail_recibido").select("id").eq("id", r.mailRecibidoId)).data ?? []).toEqual([]);
+      const insert = await anonimo.from("evento_reserva").insert({ reserva_id: ids[0], tipo: "misma_referencia" });
+      expect(insert.error).not.toBeNull();
     });
   },
 );
