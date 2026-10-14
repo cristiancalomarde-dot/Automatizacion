@@ -62,7 +62,16 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
     `Insumos/Listado Ids de TourRadar en relacion a Tours HI Travel links de wetu.xlsx` (111
     tours) y alimentaría el cargador existente de `Codigos Productos Tourradar.xlsx` (hoy tiene 5
     filas: OD010A-D y OD011).
-  - **Siguiente:** `/implementar M2-05` (pantallas) o M2-08.
+  - **Ajuste M2-03/M2-04 (2026-10-14):** commits `db69350`, `6e7702a`, `f039a05`, `bff3381`.
+    - Un cargo extra de TourRadar manda la reserva a revisión. El monto todavía no se extrae:
+      haría falta una v3 de las instrucciones.
+    - `data/productos-no-cargados.csv` (ARCH33EXP, ARBR23, ARUY01): va directo a "no cargado",
+      sin IA.
+    - `data/codigos-tourradar.csv` + `npm run importar:codigos-tourradar`: cargó 150146 → AR09.
+    - **Hallazgo:** los PDF de TourRadar NO traen el ID del tour, solo el nombre y la referencia.
+      El borrador de códigos sirve igual por el NOMBRE: hay que cargar el nombre de TourRadar como
+      `codigo_externo.nombre_externo`, que es el paso 2 del emparejado.
+  - **Siguiente:** M2-05 en curso.
   - Respuestas del owner a las preguntas de las fichas: en §3 del plan (2026-10-12). Quedan
     abiertos: el dominio de Jysk, el listado de países de Kilroy (el owner lo ofrece; mientras
     tanto, cualquier `kilroy.*`) y si se lee `INBOX.Promociones`.
