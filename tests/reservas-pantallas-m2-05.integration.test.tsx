@@ -11,17 +11,17 @@ import { randomUUID } from "node:crypto";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { render, screen, within } from "@testing-library/react";
-import {
-  agregarEvento,
-  borrarDatosDePrueba,
-  crearReserva,
-  guardarMailRecibido,
-} from "@/lib/reservas/guardar";
+import { agregarEvento, crearReserva, guardarMailRecibido as guardarMailRecibidoReal } from "@/lib/reservas/guardar";
 import { MOTIVOS_EMPAREJADO as ME } from "@/lib/reservas/emparejar/motivos";
 import { BUCKET_ADJUNTOS, type MailEntrada } from "@/lib/reservas/tipos";
 import { tomarBloqueoDatosDePrueba } from "./helpers/bloqueo-datos-de-prueba";
 import { credencialesSupabaseDisponibles } from "./helpers/entorno-supabase";
+import { crearRegistroDePrueba } from "./helpers/registro-de-prueba";
 import { crearSesionDePrueba } from "./helpers/usuario-de-prueba";
+
+/** Lo que crea este archivo: lo único que borra al final. */
+const registro = crearRegistroDePrueba();
+const guardarMailRecibido = registro.conMail(guardarMailRecibidoReal);
 
 const cliente = vi.hoisted(() => ({ actual: null as unknown }));
 vi.mock("@/lib/supabase/client", () => ({ createSupabaseBrowserClient: () => cliente.actual }));
@@ -176,7 +176,7 @@ function sinSesion(): SupabaseClient {
 
   afterAll(async () => {
     try {
-      await borrarDatosDePrueba(admin);
+      await registro.limpiar(admin);
     } finally {
       await borrarSesion?.();
       soltarBloqueo?.();

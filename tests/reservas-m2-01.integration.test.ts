@@ -7,22 +7,29 @@
 // excepción es la reserva "real" de las filas 5 y 7 (hace falta una sin la
 // marca para probar que el borrado no la toca y que su historial no se
 // edita): al final se le pone la marca con la service role y se borra igual.
+// El borrado es solo de lo que creó este archivo (registro-de-prueba.ts): las
+// reservas de prueba del modo prueba (M2-06) no se tocan.
 import { randomUUID } from "node:crypto";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import {
   agregarEvento,
-  borrarDatosDePrueba,
+  borrarDatosDePruebaDe,
   cambiarEstado,
   crearReserva,
-  guardarMailRecibido,
+  guardarMailRecibido as guardarMailRecibidoReal,
 } from "@/lib/reservas/guardar";
 import { BUCKET_ADJUNTOS, type MailEntrada } from "@/lib/reservas/tipos";
 import { tomarBloqueoDatosDePrueba } from "./helpers/bloqueo-datos-de-prueba";
 import { credencialesSupabaseDisponibles } from "./helpers/entorno-supabase";
+import { crearRegistroDePrueba } from "./helpers/registro-de-prueba";
 import { crearSesionDePrueba } from "./helpers/usuario-de-prueba";
 
 const PREFIJO = "[test M2-01]";
+
+/** Lo que crea este archivo: lo único que borra al final. */
+const registro = crearRegistroDePrueba();
+const guardarMailRecibido = registro.conMail(guardarMailRecibidoReal);
 
 /** Un PDF mínimo válido, sintético (sin datos de nadie). */
 function pdfSintetico(): Uint8Array {
@@ -88,7 +95,7 @@ function mailKilroy(extra: Partial<MailEntrada> = {}): MailEntrada {
         // La reserva "real" de las filas 5 y 7: se le pone la marca y se borra con el resto.
         if (reservasReales.length) await admin.from("reserva").update({ de_prueba: true }).in("id", reservasReales);
         if (mailsReales.length) await admin.from("mail_recibido").update({ de_prueba: true }).in("id", mailsReales);
-        await borrarDatosDePrueba(admin);
+        await registro.limpiar(admin);
         const { data: quedan } = await admin.from("mail_recibido").select("id").like("asunto", `${PREFIJO}%`);
         expect(quedan ?? []).toEqual([]);
       } finally {
@@ -421,7 +428,7 @@ function mailKilroy(extra: Partial<MailEntrada> = {}): MailEntrada {
 
     // --- Filas 5 y 7: la reserva real ------------------------------------------------------
 
-    it("filas 5 y 7: el borrado de prueba se lleva la de prueba con todo lo suyo y no toca la real; el historial de la real no se edita ni se borra", async () => {
+    it("filas 5 y 7: el borrado de prueba se lleva la de prueba con todo lo suyo y no toca la real ni otra de prueba ajena; el historial de la real no se edita ni se borra", async () => {
       const { mail: mailPrueba } = await guardarMailRecibido(
         mailKilroy({ adjuntos: [{ nombre: "reserva.pdf", tipo: "application/pdf", contenido: pdfSintetico() }] }),
         admin,
@@ -463,6 +470,21 @@ function mailKilroy(extra: Partial<MailEntrada> = {}): MailEntrada {
       reservasReales.push(real.reserva.id);
       expect(real.reserva.de_prueba).toBe(false);
 
+      // Otra de prueba que no es de este borrado (como las del modo prueba, M2-06), con su llamada a la IA.
+      const { mail: mailAjeno } = await guardarMailRecibido(mailKilroy(), admin);
+      const ajena = await crearReserva(
+        { agencia: "Kilroy", mailRecibidoId: mailAjeno.id, estado: "recibida", dePrueba: true, componentes: [{ tipo: "paquete", textoAgencia: "x" }] },
+        admin,
+      );
+      await admin.from("ia_llamada").insert({
+        tarea: "leer_mail",
+        modelo: "claude-sonnet-test",
+        version_instrucciones: "test",
+        resultado: "ok",
+        mail_recibido_id: mailAjeno.id,
+        de_prueba: true,
+      });
+
       // No debe pasar: editar o borrar el historial de la real, ni siquiera desde el servidor.
       const { data: eventoReal } = await admin
         .from("evento_reserva")
@@ -483,8 +505,9 @@ function mailKilroy(extra: Partial<MailEntrada> = {}): MailEntrada {
       expect(sigue).toEqual(eventoReal);
 
       const rutaPdf = mailPrueba.adjuntos[0].ruta!;
-      const { archivosBorrados } = await borrarDatosDePrueba(admin);
-      expect(archivosBorrados).toBeGreaterThanOrEqual(1);
+      // El mail real en la lista no cambia nada: solo se borra lo que tiene la marca de prueba.
+      const { archivosBorrados } = await borrarDatosDePruebaDe({ mails: [mailPrueba.id, mailReal.id] }, admin);
+      expect(archivosBorrados).toBe(1);
 
       // La de prueba se fue entera: reserva, componentes, historial, llamadas a la IA, mail y PDF.
       const contar = async (tabla: string, columna: string, valor: string) =>
@@ -502,6 +525,39 @@ function mailKilroy(extra: Partial<MailEntrada> = {}): MailEntrada {
       expect(await contar("reserva_componente", "reserva_id", real.reserva.id)).toBe(1);
       expect(await contar("evento_reserva", "reserva_id", real.reserva.id)).toBe(1);
       expect(await contar("mail_recibido", "id", mailReal.id)).toBe(1);
+
+      // La de prueba ajena sigue entera, con su llamada a la IA.
+      expect(await contar("reserva", "id", ajena.reserva.id)).toBe(1);
+      expect(await contar("reserva_componente", "reserva_id", ajena.reserva.id)).toBe(1);
+      expect(await contar("evento_reserva", "reserva_id", ajena.reserva.id)).toBe(1);
+      expect(await contar("ia_llamada", "mail_recibido_id", mailAjeno.id)).toBe(1);
+      expect(await contar("mail_recibido", "id", mailAjeno.id)).toBe(1);
+    });
+
+    it("el borrado acotado se lleva solo las llamadas a la IA sueltas que se le pasan, y solo si son de prueba", async () => {
+      const llamada = (deP: boolean) => ({
+        tarea: "proponer_producto",
+        modelo: "claude-sonnet-test",
+        version_instrucciones: "test",
+        resultado: "ok",
+        de_prueba: deP,
+      });
+      const { data: propias } = await admin.from("ia_llamada").insert([llamada(true), llamada(false)]).select("id");
+      const { data: ajena } = await admin.from("ia_llamada").insert(llamada(true)).select("id").single();
+      const [propia, real] = propias!.map((f) => f.id as string);
+      const quedan = async (id: string) => (await admin.from("ia_llamada").select("id").eq("id", id)).data ?? [];
+      try {
+        await borrarDatosDePruebaDe({ mails: [], llamadas: [propia, real] }, admin);
+        expect(await quedan(propia)).toHaveLength(0);
+        expect(await quedan(real)).toHaveLength(1);
+        expect(await quedan(ajena!.id)).toHaveLength(1);
+      } finally {
+        // La "real" no se borra nunca por esta vía: se le pone la marca y se borra con la ajena.
+        await admin.from("ia_llamada").update({ de_prueba: true }).eq("id", real);
+        await borrarDatosDePruebaDe({ mails: [], llamadas: [propia, real, ajena!.id] }, admin);
+      }
+      expect(await quedan(real)).toHaveLength(0);
+      expect(await quedan(ajena!.id)).toHaveLength(0);
     });
 
     // --- Fila 10: solo el equipo ------------------------------------------------------------
@@ -560,6 +616,8 @@ function mailKilroy(extra: Partial<MailEntrada> = {}): MailEntrada {
       // Ni el equipo ni nadie de afuera llama al borrado de prueba.
       expect((await equipo.rpc("borrar_datos_de_prueba")).error).not.toBeNull();
       expect((await anonimo.rpc("borrar_datos_de_prueba")).error).not.toBeNull();
+      expect((await equipo.rpc("borrar_datos_de_prueba_de", { p_mails: [mail.id] })).error).not.toBeNull();
+      expect((await anonimo.rpc("borrar_datos_de_prueba_de", { p_mails: [mail.id] })).error).not.toBeNull();
     });
 
     // --- Fila 11: ia_llamada ----------------------------------------------------------------

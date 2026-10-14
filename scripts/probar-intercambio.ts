@@ -30,7 +30,7 @@ import { mesActual } from "@/lib/ia/techo-gasto";
 import { crearProponedorIA } from "@/lib/reservas/emparejar/propuesta-ia";
 import { cargarDependenciasReservas } from "@/lib/reservas/emparejar/reservas-del-mail";
 import { leerMailConIA } from "@/lib/reservas/extraer";
-import { borrarDatosDePrueba } from "@/lib/reservas/guardar";
+import { borrarDatosDePruebaDe } from "@/lib/reservas/guardar";
 import { procesarMail, type ResultadoProceso } from "@/lib/reservas/procesar-mail";
 import type { MailEntrada } from "@/lib/reservas/tipos";
 
@@ -151,12 +151,15 @@ async function main() {
   for (const p of (await admin.from("producto").select("id,codigo")).data ?? []) codigoDe.set(p.id, p.codigo);
 
   let gasto = 0;
+  /** Los mails de esta corrida: lo único que se borra al final (no las reservas del modo prueba). */
+  const mailsCreados = new Set<string>();
   let llamadasIA = 0;
   const opciones = {
     admin,
     dePrueba: true,
     llamadas,
     leer: async (mail: Parameters<typeof leerMailConIA>[0], ctx: { mailRecibidoId: string }) => {
+      mailsCreados.add(ctx.mailRecibidoId);
       llamadasIA += 1;
       return leerMailConIA(mail, { cliente, registro, mes, llamadas, mailRecibidoId: ctx.mailRecibidoId, dePrueba: true });
     },
@@ -173,6 +176,7 @@ async function main() {
         if (gasto > TOPE_CORRIDA_USD) throw new Error(`Se frenó la corrida: el gasto pasó US$ ${TOPE_CORRIDA_USD}.`);
         const r: ResultadoProceso = await procesarMail(entradaDe(caso, `<probar-intercambio-${corrida}-${i}@hitravel.local>`), opciones);
         gasto += r.costo;
+        if (r.estado !== "ya_procesado") mailsCreados.add(r.mailRecibidoId);
         const detalle =
           r.estado === "ya_procesado"
             ? "ya procesado (sin IA)"
@@ -217,8 +221,8 @@ async function main() {
     if (chequeos.some(([, ok]) => !ok)) process.exitCode = 1;
   } finally {
     if (!process.argv.includes("--conservar")) {
-      await borrarDatosDePrueba(admin);
-      console.log("Datos de prueba borrados.");
+      await borrarDatosDePruebaDe({ mails: [...mailsCreados] }, admin);
+      console.log("Datos de prueba de esta corrida borrados.");
     }
   }
 }

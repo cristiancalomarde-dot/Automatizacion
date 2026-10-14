@@ -3,12 +3,13 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 /**
- * `borrar_datos_de_prueba()` (migración 0010) borra TODO lo que tiene la marca
- * "de prueba" en la base compartida. Vitest corre los archivos de test en
- * paralelo: si dos archivos que crean reservas de prueba se pisan, la limpieza
- * de uno le borra los datos al otro a mitad de camino. Este candado (un
- * archivo creado en exclusiva en el tmp de la máquina) hace que esos archivos
- * corran de a uno. Un candado de más de 10 minutos se da por abandonado.
+ * Los archivos de test que crean reservas de prueba comparten la base: cada
+ * uno borra solo lo suyo (registro-de-prueba.ts, migración 0013), pero el
+ * mismo intercambio (M2-04) busca entre TODAS las reservas de prueba de la
+ * agencia, así que dos archivos que procesan los mismos mails a la vez se
+ * cruzarían. Este candado (un archivo creado en exclusiva en el tmp de la
+ * máquina) hace que esos archivos corran de a uno. Un candado de más de 10
+ * minutos se da por abandonado.
  */
 const RUTA = join(tmpdir(), "hi-travel-datos-de-prueba.lock");
 const ABANDONADO_MS = 10 * 60 * 1000;

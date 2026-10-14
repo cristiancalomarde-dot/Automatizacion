@@ -265,13 +265,37 @@ export async function agregarEvento(
 /**
  * Borra todo lo que tiene la marca "de prueba" (reservas, componentes,
  * historial, llamadas a la IA y mails) y sus PDF en Storage. Las reservas
- * reales no se tocan: la base lo impide.
+ * reales no se tocan: la base lo impide. Es el `--borrar` del modo prueba
+ * (M2-06): los tests NO la usan, usan `borrarDatosDePruebaDe`.
  */
 export async function borrarDatosDePrueba(
   cliente: Cliente = clientePorDefecto(),
 ): Promise<{ archivosBorrados: number }> {
   const { data, error } = await cliente.rpc("borrar_datos_de_prueba");
   if (error) throw new Error(`No se pudieron borrar los datos de prueba: ${error.message}`);
+  return borrarPdfsDePrueba(cliente, data);
+}
+
+/**
+ * Borra solo lo "de prueba" que cuelga de esos mails (sus reservas, partes,
+ * historial y llamadas a la IA), esas llamadas a la IA y sus PDF (migración
+ * 0013). Lo que no tiene la marca de prueba no se toca. Para los tests: no
+ * borra las reservas de prueba del modo prueba ni las de otro test.
+ */
+export async function borrarDatosDePruebaDe(
+  alcance: { mails: readonly string[]; llamadas?: readonly string[] },
+  cliente: Cliente = clientePorDefecto(),
+): Promise<{ archivosBorrados: number }> {
+  if (alcance.mails.length === 0 && !alcance.llamadas?.length) return { archivosBorrados: 0 };
+  const { data, error } = await cliente.rpc("borrar_datos_de_prueba_de", {
+    p_mails: [...alcance.mails],
+    p_llamadas: [...(alcance.llamadas ?? [])],
+  });
+  if (error) throw new Error(`No se pudieron borrar los datos de prueba: ${error.message}`);
+  return borrarPdfsDePrueba(cliente, data);
+}
+
+async function borrarPdfsDePrueba(cliente: Cliente, data: unknown): Promise<{ archivosBorrados: number }> {
   const rutas = ((data as Array<string | { ruta: string }> | null) ?? []).map((r) =>
     typeof r === "string" ? r : r.ruta,
   );

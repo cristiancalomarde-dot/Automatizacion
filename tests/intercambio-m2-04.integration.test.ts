@@ -19,19 +19,29 @@ import {
 } from "@/lib/reservas/__fixtures__/cargar";
 import { cargarDependenciasReservas, type DependenciasReservas } from "@/lib/reservas/emparejar/reservas-del-mail";
 import { leerMailConIA } from "@/lib/reservas/extraer";
-import { borrarDatosDePrueba, crearReserva } from "@/lib/reservas/guardar";
+import { crearReserva } from "@/lib/reservas/guardar";
 import { MOTIVOS_INTERCAMBIO as MI } from "@/lib/reservas/intercambio";
 import {
   cargarCandidatas,
   cargarReservasDelAsunto,
-  procesarMail,
-  procesarMails,
+  procesarMail as procesarMailReal,
+  procesarMails as procesarMailsReal,
   type OpcionesProceso,
 } from "@/lib/reservas/procesar-mail";
 import { respuestaMereceLectura } from "@/lib/reservas/respuestas";
 import type { MailEntrada, Reserva } from "@/lib/reservas/tipos";
 import { tomarBloqueoDatosDePrueba } from "./helpers/bloqueo-datos-de-prueba";
 import { credencialesSupabaseDisponibles } from "./helpers/entorno-supabase";
+import { crearRegistroDePrueba } from "./helpers/registro-de-prueba";
+
+/**
+ * Lo que crea este archivo: lo único que borra (antes de cada test y al
+ * final). Los mails se anotan al procesarlos y, por si el proceso se corta a
+ * la mitad, también cuando se leen.
+ */
+const registro = crearRegistroDePrueba();
+const procesarMail = registro.conMailRecibido(procesarMailReal);
+const procesarMails = registro.conMailRecibido(procesarMailsReal);
 
 type Ficha = Record<string, unknown> & { productos: Array<Record<string, unknown>> };
 
@@ -64,7 +74,11 @@ const ASUNTO_OVERLAND = "DK1594100/maga - Overland San Pedro de Atacama to Uyuni
     }
 
     function opciones(leer: OpcionesProceso["leer"], extra: Partial<OpcionesProceso> = {}): OpcionesProceso {
-      return { admin, leer, deps: () => deps, llamadas: crearRegistroLlamadasSupabase(admin), dePrueba: true, ...extra };
+      const leerAnotando: OpcionesProceso["leer"] = (mail, ctx) => {
+        registro.mail(ctx.mailRecibidoId);
+        return leer(mail, ctx);
+      };
+      return { admin, leer: leerAnotando, deps: () => deps, llamadas: crearRegistroLlamadasSupabase(admin), dePrueba: true, ...extra };
     }
 
     function entrada(base: { remitente: string; asunto?: string | null; cuerpoTexto?: string | null }, extra: Partial<MailEntrada> = {}): MailEntrada {
@@ -91,7 +105,14 @@ const ASUNTO_OVERLAND = "DK1594100/maga - Overland San Pedro de Atacama to Uyuni
       entrada({ ...mailDePrueba("kilroy-dk1594100-respuesta"), asunto }, extra);
 
     async function reservasDe(bookingId: string): Promise<Reserva[]> {
-      const { data, error } = await admin.from("reserva").select("*").eq("booking_id", bookingId).eq("de_prueba", true).order("created_at");
+      // Solo las de este archivo: puede haber otras de prueba (las del modo prueba, M2-06).
+      const { data, error } = await admin
+        .from("reserva")
+        .select("*")
+        .eq("booking_id", bookingId)
+        .eq("de_prueba", true)
+        .in("mail_recibido_id", registro.mails)
+        .order("created_at");
       if (error) throw new Error(error.message);
       return data as Reserva[];
     }
@@ -119,13 +140,14 @@ const ASUNTO_OVERLAND = "DK1594100/maga - Overland San Pedro de Atacama to Uyuni
     }, 360_000);
 
     beforeEach(async () => {
-      await borrarDatosDePrueba(admin);
+      await registro.limpiar(admin);
     }, 120_000);
 
     afterAll(async () => {
       try {
-        await borrarDatosDePrueba(admin);
-        const { data } = await admin.from("reserva").select("id").eq("de_prueba", true);
+        const mails = registro.mails;
+        await registro.limpiar(admin);
+        const { data } = await admin.from("reserva").select("id").in("mail_recibido_id", mails);
         expect(data ?? []).toEqual([]);
       } finally {
         soltarBloqueo?.();
@@ -146,7 +168,7 @@ const ASUNTO_OVERLAND = "DK1594100/maga - Overland San Pedro de Atacama to Uyuni
       expect(sumar).toHaveBeenCalledTimes(1);
       expect(await reservasDe("DK1594100")).toHaveLength(1);
       expect(await eventosDe(overland.id)).toEqual(eventosAntes);
-      const { data: mails } = await admin.from("mail_recibido").select("id,procesado_en").eq("de_prueba", true);
+      const { data: mails } = await admin.from("mail_recibido").select("id,procesado_en").eq("de_prueba", true).in("id", registro.mails);
       expect(mails).toHaveLength(1);
       expect(mails![0].procesado_en).toBeTruthy();
       const { data: llamadas } = await admin.from("ia_llamada").select("id").eq("mail_recibido_id", primera.mailRecibidoId);
@@ -538,7 +560,12 @@ const ASUNTO_OVERLAND = "DK1594100/maga - Overland San Pedro de Atacama to Uyuni
 
     it("la misma respuesta con la reserva ya recibida, o sin número conocido → no se lee (sin IA)", async () => {
       await altaQueEsperaVuelo();
-      await admin.from("reserva").update({ estado: "recibida", motivos_revision: [] }).eq("booking_id", "DK1562336").eq("de_prueba", true);
+      await admin
+        .from("reserva")
+        .update({ estado: "recibida", motivos_revision: [] })
+        .eq("booking_id", "DK1562336")
+        .eq("de_prueba", true)
+        .in("mail_recibido_id", registro.mails);
       const candidatas = await cargarReservasDelAsunto(admin, ASUNTO_VUELO, "Kilroy", true);
       expect(respuestaMereceLectura(ASUNTO_VUELO, "Kilroy", candidatas, { dePrueba: true })).toMatchObject({
         leer: false,

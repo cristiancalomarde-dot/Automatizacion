@@ -16,7 +16,7 @@ import { crearRegistroLlamadasSupabase } from "@/lib/ia/registro-llamadas-supaba
 import { crearRegistroUsoIASupabase } from "@/lib/ia/registro-uso-ia-supabase";
 import { leerAgencias } from "@/lib/reservas/agencias";
 import { leerMailConIA } from "@/lib/reservas/extraer";
-import { borrarDatosDePrueba, guardarMailRecibido } from "@/lib/reservas/guardar";
+import { borrarDatosDePruebaDe, guardarMailRecibido } from "@/lib/reservas/guardar";
 import { clienteFalso, mailDePrueba, respuestaGrabada } from "@/lib/reservas/__fixtures__/cargar";
 import { tomarBloqueoDatosDePrueba } from "./helpers/bloqueo-datos-de-prueba";
 import { credencialesSupabaseDisponibles } from "./helpers/entorno-supabase";
@@ -57,7 +57,8 @@ const AGENCIAS = leerAgencias(readFileSync(join(process.cwd(), "data", "agencias
     afterAll(async () => {
       try {
         await admin.from("uso_ia").delete().in("mes", [MES_OK, MES_TECHO]);
-        await borrarDatosDePrueba(admin);
+        // Solo lo de este archivo: el mail y sus llamadas a la IA.
+        await borrarDatosDePruebaDe({ mails: [mailId] }, admin);
         const { data: quedan } = await admin.from("ia_llamada").select("id").eq("mail_recibido_id", mailId);
         expect(quedan ?? []).toEqual([]);
       } finally {

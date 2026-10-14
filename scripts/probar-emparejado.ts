@@ -26,7 +26,7 @@ import { agenciaDelRemitente } from "@/lib/reservas/agencias";
 import { crearProponedorIA } from "@/lib/reservas/emparejar/propuesta-ia";
 import { cargarDependenciasReservas, crearReservasDelMail } from "@/lib/reservas/emparejar/reservas-del-mail";
 import { leerMailConIA } from "@/lib/reservas/extraer";
-import { borrarDatosDePrueba, guardarMailRecibido } from "@/lib/reservas/guardar";
+import { borrarDatosDePruebaDe, guardarMailRecibido } from "@/lib/reservas/guardar";
 import { mailDeArchivo } from "./mail-de-archivo";
 
 const TOPE_CORRIDA_USD = 1;
@@ -122,6 +122,8 @@ async function main() {
   for (const p of (await admin.from("producto").select("id,codigo")).data ?? []) codigoDe.set(p.id, p.codigo);
 
   let gasto = 0;
+  /** Los mails de esta corrida: lo único que se borra al final (no las reservas del modo prueba). */
+  const mailsCreados: string[] = [];
   try {
     for (const caso of CASOS) {
       if (gasto > TOPE_CORRIDA_USD) {
@@ -134,7 +136,7 @@ async function main() {
         ? { remitente: caso.remitente, asunto: caso.asunto, cuerpoTexto: datos.cuerpo!, adjuntos: [] }
         : mailDeArchivo(ruta, ruta.endsWith(".pdf") ? { ...datos, cuerpo: "" } : datos);
       const agencia = agenciaDelRemitente(mail.remitente);
-      const { mail: guardado } = await guardarMailRecibido(
+      const { mail: guardado, nuevo } = await guardarMailRecibido(
         {
           origen: "archivo",
           archivoOrigen: caso.archivo.split("/").pop(),
@@ -148,6 +150,7 @@ async function main() {
         },
         admin,
       );
+      if (nuevo) mailsCreados.push(guardado.id);
       const lectura = await leerMailConIA(mail, { cliente, registro, mes, llamadas, mailRecibidoId: guardado.id, dePrueba: true });
       const deps = await cargarDependenciasReservas(
         admin,
@@ -176,8 +179,8 @@ async function main() {
     console.log(`\nGasto total de la corrida: US$ ${gasto.toFixed(4)}`);
   } finally {
     if (!process.argv.includes("--conservar")) {
-      await borrarDatosDePrueba(admin);
-      console.log("Datos de prueba borrados.");
+      await borrarDatosDePruebaDe({ mails: mailsCreados }, admin);
+      console.log("Datos de prueba de esta corrida borrados.");
     }
   }
 }

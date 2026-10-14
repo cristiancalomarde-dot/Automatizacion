@@ -6,7 +6,7 @@
 // por el remitente, se guarda el mail, se crea una reserva de prueba
 // `para_revision` con un motivo, se pasa a `recibida`, se lee el historial
 // (2 entradas), se vuelve a guardar el mismo mail (no duplica) y se borra
-// todo lo de prueba.
+// lo de prueba que creó el recorrido (solo eso: registro-de-prueba.ts).
 //
 // Privacidad: ningún assert compara el cuerpo como texto (un fallo
 // imprimiría datos de pasajeros); se comparan igualdad y tamaños.
@@ -17,11 +17,16 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import * as XLSX from "xlsx";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { agenciaDelRemitente, direccionDelRemitente } from "@/lib/reservas/agencias";
-import { borrarDatosDePrueba, cambiarEstado, crearReserva, guardarMailRecibido } from "@/lib/reservas/guardar";
+import { cambiarEstado, crearReserva, guardarMailRecibido as guardarMailRecibidoReal } from "@/lib/reservas/guardar";
 import { BUCKET_ADJUNTOS, type MailEntrada } from "@/lib/reservas/tipos";
 import { parrafosDeDocumentXml } from "@/lib/importador-tours/word";
 import { tomarBloqueoDatosDePrueba } from "./helpers/bloqueo-datos-de-prueba";
 import { credencialesSupabaseDisponibles } from "./helpers/entorno-supabase";
+import { crearRegistroDePrueba } from "./helpers/registro-de-prueba";
+
+/** Lo que crea este archivo: lo único que borra. */
+const registro = crearRegistroDePrueba();
+const guardarMailRecibido = registro.conMail(guardarMailRecibidoReal);
 
 const PREFIJO = "[test M2-01]";
 const MAILS = resolve(__dirname, "..", "Insumos", "Mails");
@@ -108,7 +113,7 @@ const hayInsumos = existsSync(DOCX_KILROY) && existsSync(PDF_TOURRADAR);
     afterAll(async () => {
       try {
         // Red de seguridad si el recorrido se cortó antes de su propio borrado.
-        await borrarDatosDePrueba(admin);
+        await registro.limpiar(admin);
       } finally {
         soltarBloqueo?.();
       }
@@ -171,8 +176,8 @@ const hayInsumos = existsSync(DOCX_KILROY) && existsSync(PDF_TOURRADAR);
         .eq("huella", mail.huella);
       expect(count).toBe(1);
 
-      // 7. Se borra todo lo de prueba.
-      await borrarDatosDePrueba(admin);
+      // 7. Se borra lo de prueba del recorrido.
+      await registro.limpiar(admin);
       expect((await admin.from("reserva").select("id").eq("id", reserva.id)).data).toEqual([]);
       expect((await admin.from("evento_reserva").select("id").eq("reserva_id", reserva.id)).data).toEqual([]);
       expect((await admin.from("mail_recibido").select("id").eq("id", mail.id)).data).toEqual([]);
@@ -209,7 +214,7 @@ const hayInsumos = existsSync(DOCX_KILROY) && existsSync(PDF_TOURRADAR);
       // El mismo mail otra vez: no duplica ni vuelve a subir el PDF.
       expect((await guardarMailRecibido(entrada, admin)).nuevo).toBe(false);
 
-      const { archivosBorrados } = await borrarDatosDePrueba(admin);
+      const { archivosBorrados } = await registro.limpiar(admin);
       expect(archivosBorrados).toBe(1);
       expect((await admin.storage.from(BUCKET_ADJUNTOS).download(adjunto.ruta!)).data).toBeNull();
       expect((await admin.from("mail_recibido").select("id").eq("id", mail.id)).data).toEqual([]);

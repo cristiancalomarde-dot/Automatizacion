@@ -199,7 +199,12 @@ después (la salida de Puerto Natales de ARCH31 y ARCH33). Iguazú conserva sus 
   no). `public.borrar_datos_de_prueba()` (solo service role) borra todo lo marcado — llamadas a la
   IA, componentes, historial, reservas y mails — y devuelve las rutas de sus PDF, que borra el
   servidor (`borrarDatosDePrueba` en `src/lib/reservas/guardar.ts`). Es la única forma de borrar
-  historial, y solo de reservas de prueba.
+  historial, y solo de reservas de prueba. Es el `--borrar` del modo prueba (M2-06).
+  - **Los tests borran solo lo suyo** (migración 0013): `public.borrar_datos_de_prueba_de(mails,
+    llamadas)` borra lo marcado de prueba que cuelga de esos mails (reservas, componentes, historial,
+    llamadas) y esas llamadas sueltas (`borrarDatosDePruebaDe`; en los tests,
+    `tests/helpers/registro-de-prueba.ts`). Así no tocan las reservas de prueba que revisa el owner.
+    `tests/limpieza-acotada.test.ts` falla si un test o un script vuelve a borrar todo.
 - `proveedor.nombre_normalizado` para el emparejado (el README de los Excel pide "escribir el
   nombre del proveedor siempre igual"; se normaliza al importar).
 - Emparejado de producto: primero por `codigo_externo` exacto → `producto`. Si no hay código o no

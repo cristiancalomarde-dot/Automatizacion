@@ -11,7 +11,7 @@ import { randomUUID } from "node:crypto";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { crearRegistroLlamadasSupabase } from "@/lib/ia/registro-llamadas-supabase";
-import { borrarDatosDePrueba, guardarMailRecibido } from "@/lib/reservas/guardar";
+import { borrarDatosDePruebaDe, guardarMailRecibido } from "@/lib/reservas/guardar";
 import { fichaDePrueba } from "@/lib/reservas/emparejar/__fixtures__/cargar";
 import { importarCodigosKilroy } from "@/lib/reservas/emparejar/codigos-kilroy";
 import { importarCodigosTourRadarCsv } from "@/lib/reservas/emparejar/codigos-tourradar-csv";
@@ -95,7 +95,8 @@ const CSV_TR = readFileSync(join(process.cwd(), "data", "codigos-tourradar.csv")
 
     afterAll(async () => {
       try {
-        await borrarDatosDePrueba(admin);
+        // Solo lo de este archivo: el mail, sus reservas y sus llamadas a la IA.
+        await borrarDatosDePruebaDe({ mails: [mailId] }, admin);
         const { data: quedan } = await admin.from("reserva").select("id").eq("mail_recibido_id", mailId);
         expect(quedan ?? []).toEqual([]);
       } finally {
