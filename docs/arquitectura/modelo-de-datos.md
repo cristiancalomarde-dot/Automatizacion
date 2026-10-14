@@ -205,6 +205,21 @@ después (la salida de Puerto Natales de ARCH31 y ARCH33). Iguazú conserva sus 
     llamadas) y esas llamadas sueltas (`borrarDatosDePruebaDe`; en los tests,
     `tests/helpers/registro-de-prueba.ts`). Así no tocan las reservas de prueba que revisa el owner.
     `tests/limpieza-acotada.test.ts` falla si un test o un script vuelve a borrar todo.
+  - **Modo prueba (M2-06, migración 0014):** `reserva_componente` y `evento_reserva` también llevan
+    `de_prueba`; la copia la base desde su reserva al insertar (trigger), así nunca disiente. Los
+    archivos de `Insumos/` entran con Message-ID = huella del contenido
+    (`<archivo-<sha256>@modo-prueba.hitravel.local>`), nunca el Message-ID real: la lectura real de
+    M2-07 no los da por procesados. Los tests usan números de reserva propios (DK1594100 →
+    DK9594100, `src/lib/reservas/numeros-de-test.ts`) y `procesarMail({ alcance })` acota el mismo
+    intercambio a sus mails.
+  - **`revision_prueba`** (0014): la marca del owner sobre una reserva de prueba — `resultado`
+    (`bien | mal`), `que_mal` (lista: `producto | fechas | pasajeros | vuelos | estado_motivo |
+    otro`; "mal" lleva al menos una, "bien" ninguna), `nota`, `autor_id`, fechas. Una por reserva
+    (se puede cambiar). Un trigger rechaza marcar una reserva real y pone el autor (`auth.uid()`,
+    nadie firma por otro). RLS del equipo (select/insert/update, sin delete). La guarda la server
+    action `src/app/(app)/reservas/[id]/acciones.ts` con la sesión (`revision-prueba.ts`); es la
+    única escritura de las pantallas de reservas. Los dos borrados de prueba borran también las
+    revisiones.
 - `proveedor.nombre_normalizado` para el emparejado (el README de los Excel pide "escribir el
   nombre del proveedor siempre igual"; se normaliza al importar).
 - Emparejado de producto: primero por `codigo_externo` exacto → `producto`. Si no hay código o no
