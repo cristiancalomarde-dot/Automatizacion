@@ -18,7 +18,15 @@ export type EstadoReserva = (typeof ESTADOS_RESERVA)[number];
 /** Los únicos estados con los que puede nacer una reserva. */
 export type EstadoInicialReserva = Extract<EstadoReserva, "recibida" | "para_revision">;
 
-export type TipoEventoReserva = "creada" | "estado_cambiado" | "mail_agregado" | "posible_duplicada";
+export type TipoEventoReserva =
+  | "creada"
+  | "estado_cambiado"
+  | "mail_agregado"
+  | "posible_duplicada"
+  // M2-04 (migración 0012)
+  | "datos_completados"
+  | "datos_distintos"
+  | "misma_referencia";
 
 export type ResultadoIaLlamada = "ok" | "cortada" | "invalida" | "error" | "sin_presupuesto";
 
@@ -122,8 +130,16 @@ export interface ComponenteEntrada {
 export interface ReservaEntrada {
   agencia: string;
   mailRecibidoId: string;
+  /** Normalizado (`booking-id.ts`): el que se compara. */
   bookingId?: string | null;
+  /** M2-04: tal como lo mandó la agencia, para mostrarlo. */
+  bookingIdOriginal?: string | null;
   productoId?: string | null;
+  /** M2-04: código o nombre de la agencia normalizado ("mismo producto" sin catálogo). */
+  productoClaveAgencia?: string | null;
+  /** M2-04 fila 8: la marca blanda y la reserva con la que se parece. */
+  posibleDuplicada?: boolean;
+  duplicadaDeId?: string | null;
   productoTextoAgencia?: string | null;
   fechaInicio?: string | null;
   fechaFin?: string | null;
@@ -167,7 +183,11 @@ export interface Reserva {
   agencia: string;
   mail_recibido_id: string;
   booking_id: string | null;
+  booking_id_original: string | null;
   producto_id: string | null;
+  producto_clave_agencia: string | null;
+  /** Calculada: el producto del catálogo o, si no emparejó, `producto_clave_agencia`. */
+  clave_producto: string | null;
   producto_texto_agencia: string | null;
   fecha_inicio: string | null;
   fecha_fin: string | null;

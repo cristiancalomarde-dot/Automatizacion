@@ -14,6 +14,7 @@ import {
   type Reserva,
   type ReservaComponente,
   type ReservaEntrada,
+  type TipoEventoReserva,
 } from "./tipos";
 
 /**
@@ -146,7 +147,11 @@ export async function crearReserva(
       agencia: entrada.agencia,
       mail_recibido_id: entrada.mailRecibidoId,
       booking_id: entrada.bookingId ?? null,
+      booking_id_original: entrada.bookingIdOriginal ?? null,
       producto_id: entrada.productoId ?? null,
+      producto_clave_agencia: entrada.productoClaveAgencia ?? null,
+      posible_duplicada: entrada.posibleDuplicada ?? false,
+      duplicada_de_id: entrada.duplicadaDeId ?? null,
       producto_texto_agencia: entrada.productoTextoAgencia ?? null,
       fecha_inicio: entrada.fechaInicio ?? null,
       fecha_fin: entrada.fechaFin ?? null,
@@ -165,7 +170,8 @@ export async function crearReserva(
     })
     .select("*")
     .single();
-  if (error) throw new Error(`No se pudo crear la reserva: ${error.message}`);
+  // `code` viaja en el error: 23505 = ya existe la reserva de ese booking_id + producto (M2-04 fila 11).
+  if (error) throw Object.assign(new Error(`No se pudo crear la reserva: ${error.message}`), { code: error.code });
   const reserva = data as Reserva;
 
   const filas = (entrada.componentes ?? []).map((c, i) => ({
@@ -224,7 +230,11 @@ export async function cambiarEstado(
 /** Agrega al historial un hecho que no es un cambio de estado (mail nuevo del intercambio, posible duplicada). */
 export async function agregarEvento(
   reservaId: string,
-  evento: { tipo: "mail_agregado" | "posible_duplicada"; mailRecibidoId?: string | null; detalle?: Record<string, unknown> },
+  evento: {
+    tipo: Exclude<TipoEventoReserva, "creada" | "estado_cambiado">;
+    mailRecibidoId?: string | null;
+    detalle?: Record<string, unknown>;
+  },
   cliente: Cliente = clientePorDefecto(),
 ): Promise<EventoReserva> {
   const { data, error } = await cliente
