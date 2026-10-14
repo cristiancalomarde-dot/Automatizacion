@@ -82,6 +82,19 @@ ficha.
     - Journaway: todo el dominio `journaway.com`, no solo operations@ y de@.
   - `INBOX.Promociones` no se lee: el owner confirma que en Ferozo nunca entra nada ahí.
 
+**Número de reserva de Journaway (owner, 2026-10-13, con capturas de Outlook).** Pisa lo que
+diga cada ficha.
+- **Dónde está:** siempre en el **asunto**, nunca en el cuerpo. Formatos:
+  - "Program Booking / Client <Apellido> / ID 65643802533"
+  - "de-DE Activity Booking / Client <Apellido> / ID 65676257628"
+  - "de-DE Transfer + Activity Booking / Client …"
+- **Qué es:** el `ID` (11 dígitos) es único por pasajero o cliente, y es el booking_id de
+  Journaway.
+- **Trip Number:** los "Program Booking" traen además, en el cuerpo, "Trip Number: 62992" y un
+  "Trip Link". Es una referencia secundaria.
+- **Remitentes:** escriben desde `operations@` (programas) y `de@` (actividades).
+- Las respuestas ("RE: …") no se leen, como el resto de las agencias.
+
 **Qué mails lee la IA (owner, 2026-10-13, tras ver sales@ del 12 y 13 de octubre).** Pisa lo que
 diga cada ficha.
 - **Contexto:** en esos dos días hubo 44 mails de agencias (23 Kilroy, 21 Jysk). Unos 7 eran
@@ -140,7 +153,7 @@ diga cada ficha.
 |---|---|---|---|---|
 | M2-01 | **Reservas en la base.** Tablas `reserva`, `reserva_componente`, `evento_reserva` y `mail_recibido` (migración con RLS). Agencias y remitentes conocidos en `data/agencias.csv`: Kilroy/Jysk, TourRadar y Journaway, con operations@ y de@journaway.com | ✅ terminada | — | `docs/sdd/specs/M2-01-reservas-en-la-base.md` |
 | M2-02 | **Leer un mail con IA.** Un mail (cuerpo, o el PDF adjunto si hay) pasa a datos ordenados: agencia, booking_id, producto o tours nombrados, fechas, pax, pasajeros, vuelos y pedidos especiales, con confianza por campo. Funciona con mails en alemán. Bajo el techo de gasto | ✅ terminada | M2-01 | `docs/sdd/specs/M2-02-leer-mail-con-ia.md` |
-| M2-03 | **Reconocer el producto (Kilroy y TourRadar).** Código exacto → nombre de la agencia (`codigo_externo`) → propuesta de la IA con confianza. Tour compuesto con sus componentes. Va a "para revisión" si: no hay confianza, el producto no está cargado, o falta el vuelo y el producto tiene traslado | ⬜ pendiente | M2-02 | `docs/sdd/specs/M2-03-reconocer-el-producto.md` |
+| M2-03 | **Reconocer el producto (Kilroy y TourRadar).** Código exacto → nombre de la agencia (`codigo_externo`) → propuesta de la IA con confianza. Tour compuesto con sus componentes. Va a "para revisión" si: no hay confianza, el producto no está cargado, o falta el vuelo y el producto tiene traslado | 🔵 en curso | M2-02 | `docs/sdd/specs/M2-03-reconocer-el-producto.md` |
 | M2-04 | **Mismo intercambio, no reserva nueva.** Mismo booking_id + mismo producto → se agrega al historial de la reserva existente (por ejemplo, cuando mandan los vuelos). Producto distinto → reserva nueva. Ambiguo → "para revisión". Además, la marca de "posible duplicada" | ⬜ pendiente | M2-03 | `docs/sdd/specs/M2-04-mismo-intercambio.md` |
 | M2-05 | **Ver las reservas que entraron.** Lista y detalle de solo lectura: agencia, producto, fechas, pax, vuelos, estado y motivo de revisión, más el mail original. Es la base de la bandeja de M4 | ⬜ pendiente | M2-03 | `docs/sdd/specs/M2-05-ver-las-reservas.md` |
 | M2-06 | **Modo prueba con mails reales.** Procesa los mails de `Insumos/Mails` (.docx, .pdf y .eml) por el circuito completo, con las reservas marcadas "de prueba". Entrega un reporte por mail para el owner (qué entendió y qué no) y mide el % que necesita corrección | ⬜ pendiente | M2-04, M2-05 | `docs/sdd/specs/M2-06-modo-prueba.md` |

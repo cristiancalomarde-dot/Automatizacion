@@ -36,7 +36,10 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
     - Precios oficiales (2026-10-13): Sonnet 5.5 a US$ 2 / 10; Opus 5.5 a US$ 4 / 20.
     - Hay 44 mails reales de sales@ del 12 y 13 de octubre en `Insumos/Mails-reales-2026-10/`
       (clon), para M2-06. Se leyeron por IMAP en modo solo lectura.
-  - **Siguiente:** `/implementar M2-03` (o M2-08).
+  - **M2-02 ajuste (2026-10-13, `52f37cc`):** instrucciones `lectura-mail.v2`. El número de
+    Journaway es el "ID" de 11 dígitos del asunto, y el Trip Number queda como referencia. Pax de
+    TourRadar = cantidad, también en cancelaciones. Eval con v2: **100%**, US$ 0,14.
+  - **Siguiente:** M2-03 en construcción.
   - Respuestas del owner a las preguntas de las fichas: en §3 del plan (2026-10-12). Quedan
     abiertos: el dominio de Jysk, el listado de países de Kilroy (el owner lo ofrece; mientras
     tanto, cualquier `kilroy.*`) y si se lee `INBOX.Promociones`.
