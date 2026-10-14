@@ -122,7 +122,14 @@ diga cada ficha.
   - Afecta a M2-04 y a M2-07.
   - Los mails nuevos sobre una reserva existente (por ejemplo, "NEW FLIGHT: DK1562336 …", sin
     `Re:`) sí se leen, y M2-04 los une a la reserva.
-  - Un vuelo que llega solo como respuesta no actualiza la reserva sola: lo carga una persona.
+  - ~~Un vuelo que llega solo como respuesta no actualiza la reserva sola~~ — **cambiado (owner,
+    2026-10-14):** en los mails reales, los vuelos llegan como respuesta ("Re: NEW FLIGHT:
+    DK1562336…"). Una respuesta **sí** se lee con IA cuando se cumplen las dos condiciones:
+    1. el asunto trae el número de una reserva que ya existe (el cruce lo hace el código, sin IA);
+    2. esa reserva está "para revisión" esperando un vuelo.
+
+    Si la IA encuentra el vuelo que faltaba, la reserva pasa a "recibida" (M2-04). Las demás
+    respuestas se descartan sin gastar. El filtro lo arma M2-07; la regla de unir la arma M2-04.
 - **Jysk no se lee:** el 95% son viajes a medida, y sus 3 o 4 tours propios no están en el
   catálogo de HI Travel. `jr.dk` queda en `data/agencias.csv` para reconocer al remitente, pero
   M2-07 no procesa sus mails. Si algún día Jysk reserva un paquete del catálogo, se carga a mano.
