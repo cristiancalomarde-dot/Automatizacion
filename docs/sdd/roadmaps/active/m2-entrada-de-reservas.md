@@ -107,6 +107,13 @@ ficha. Queda como un ajuste chico pendiente de M2-03, a hacer antes de M2-06.
   - 150104, "Buenos Aires to Rio de Janeiro 12 days" = **ARBR23**, que no está cargado.
 
   Con esto, el paso 1 (código exacto) también sirve para TourRadar, sin depender de la IA.
+- **Cargo extra de TourRadar (owner, 2026-10-14):** un statement de cargo que se une a una reserva
+  **la manda a "para revisión"**, con el monto en el motivo. Corrige lo que hizo M2-04: un cargo
+  implica un servicio nuevo (un tour extra, un upgrade a SGL, un hotel mejor) que cambia la
+  reserva.
+- **Códigos de TourRadar:** borrador `Insumos/Borrador codigos TourRadar.xlsx` (106 IDs con el
+  código propuesto, a validar por el owner). Lo validado se pasa a `Codigos Productos
+  Tourradar.xlsx`, que el importador existente ya carga a `codigo_externo`.
 - **Productos conocidos que todavía no están cargados:** ARCH33EXP, ARBR23 y ARUY01. Una reserva
   de esos productos va a "para revisión" con el motivo "producto no cargado", sin preguntarle a la
   IA.
