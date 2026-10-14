@@ -448,7 +448,8 @@ const ASUNTO_OVERLAND = n("DK1594100/maga - Overland San Pedro de Atacama to Uyu
         pax: 2,
       };
       expect(await cargarCandidatas(admin, { ...pedido, dePrueba: false }, new Date())).toEqual([]);
-      expect(await cargarCandidatas(admin, { ...pedido, dePrueba: true }, new Date())).toHaveLength(1);
+      // Acotada a este archivo: la marca blanda (misma fecha y pax) también vería las reservas del modo prueba (M2-06).
+      expect(await cargarCandidatas(admin, { ...pedido, dePrueba: true }, new Date(), registro.mails)).toHaveLength(1);
     });
 
     it("fila 11: 2 mails del Overland DK1594100 en la misma corrida → 1 reserva, en el orden en que llegaron", async () => {
