@@ -145,7 +145,9 @@ diga cada ficha.
     mayo/junio). Es un CHB31 con variantes: sin geysers del Tatio, sin bus Uyuni–La Paz, y de San
     Pedro a Uyuni en privado con hostels (no en regular). Para automatizarlo hace falta: cargarlo
     como producto propio (variante de CHB31), ver con mails reales cómo lo identifica Jysk (¿dice
-    "BPA" en el asunto?) y leer solo esos mails de Jysk. No entra en M2.
+    "BPA" en el asunto?) y leer solo esos mails de Jysk. No entra en M2. Hoy esas reservas llegan
+    solo a ccalomarde@; el owner le pide a Jysk que las mande a sales@ con copia a él, y guarda
+    4 o 5 ejemplos en `Insumos/Mails/BPA/`.
 - **Costo:** con esto, la IA lee del orden de 3 a 5 mails por día, muy por debajo del techo.
 
 **Tareas del owner (no bloquean el plan; sí la pieza que las usa):**
