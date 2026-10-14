@@ -49,7 +49,6 @@ describe("numeroLimpio — número de reserva", () => {
   });
   it("TourRadar y Journaway: el número tal cual, sin espacios", () => {
     expect(numeroLimpio(" 1376833 ", "TourRadar")).toBe("1376833");
-    expect(numeroLimpio("62992", "Journaway")).toBe("62992");
     expect(numeroLimpio(null, "Journaway")).toBeNull();
   });
 });
@@ -186,5 +185,53 @@ describe("pax contra la lista: TourRadar nombra solo al pasajero principal (owne
   });
   it("TourRadar con 3 nombres y pax 2 → pax dudoso", () => {
     expect(conPax("TourRadar", 2, 3)).toContain("pax");
+  });
+});
+
+describe("número de reserva de Journaway: el ID del asunto (owner, 2026-10-13)", () => {
+  const ASUNTO = "de-DE Activity Booking / Client Inventado / ID 65699999999";
+  const CUERPO = "Dear Team,\nplease book as follows\nTour: Tour inventado\nDate: 14.06.2027\nPax: 2";
+  const fichaJournaway = (numero: string) => {
+    const x = ficha("journaway-iguazu-arg");
+    x.numero_reserva = { valor: numero, confianza: 1 };
+    x.productos = [];
+    x.pasajeros = [];
+    x.fecha_inicio = { valor: null, confianza: 0 };
+    return x;
+  };
+  const ctx = (asunto: string) => ({
+    agencia: "Journaway",
+    textoVerificable: `${asunto}\n${CUERPO}`,
+    seMandoPdf: false,
+    adjuntosNoLeidos: [],
+  });
+
+  it("número limpio = el ID de 11 dígitos; el Trip Number queda solo en el original", () => {
+    expect(numeroLimpio("ID 65643802533 · Trip 62992", "Journaway")).toBe("65643802533");
+    expect(numeroLimpio("ID 65676257628", "Journaway")).toBe("65676257628");
+    expect(numeroLimpio("65676257628", "Journaway")).toBe("65676257628");
+    expect(numeroLimpio("Trip 62992", "Journaway")).toBeNull();
+  });
+
+  it("un número que está solo en el asunto no se descarta", () => {
+    const f = limpiarFicha(fichaJournaway("ID 65699999999"), ctx(ASUNTO));
+    expect(f.numero_reserva).toEqual({ valor: "ID 65699999999", limpio: "65699999999", confianza: 1 });
+    expect(f.datos_dudosos).not.toContain("numero_reserva");
+  });
+
+  it("con el Trip Number del cuerpo como referencia, también vale", () => {
+    const f = limpiarFicha(fichaJournaway("ID 65699999999 · Trip 62992"), {
+      ...ctx(ASUNTO),
+      textoVerificable: `${ASUNTO}\n${CUERPO}\nTrip Number: 62992`,
+    });
+    expect(f.numero_reserva.limpio).toBe("65699999999");
+  });
+
+  it("un número que no está ni en el asunto ni en el cuerpo se descarta", () => {
+    const f = limpiarFicha(fichaJournaway("ID 65611111111"), ctx(ASUNTO));
+    expect(f.numero_reserva).toEqual({ valor: null, limpio: null, confianza: 0 });
+    expect(f.datos_dudosos).toContain("numero_reserva");
+    const g = limpiarFicha(fichaJournaway("ID 65699999999 · Trip 99999"), ctx(ASUNTO));
+    expect(g.numero_reserva.valor).toBeNull();
   });
 });

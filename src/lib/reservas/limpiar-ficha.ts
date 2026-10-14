@@ -72,10 +72,19 @@ export function normalizarFecha(texto: string | null | undefined): string | null
   return null;
 }
 
-/** El número limpio: Kilroy y Jysk, país + dígitos; el resto, tal cual sin espacios. */
+/**
+ * El número limpio: Kilroy y Jysk, país + dígitos; Journaway, el "ID" de 11
+ * dígitos del asunto; el resto, tal cual sin espacios.
+ */
 export function numeroLimpio(original: string | null, agencia: string): string | null {
   if (!original) return null;
   const t = original.trim();
+  if (agencia === "Journaway") {
+    // El "ID" del asunto (owner, 2026-10-13). El Trip Number es una
+    // referencia secundaria: queda solo en el original.
+    const m = /(?:^|\bID\s*:?\s*)(\d{11})(?!\d)/i.exec(t);
+    return m ? m[1] : null;
+  }
   if (agencia === "Kilroy" || agencia === "Jysk") {
     const m = /^([A-Za-z]{2}\d{5,})/.exec(t);
     if (m) return m[1].toUpperCase();
@@ -182,7 +191,12 @@ export function limpiarFicha(
     limpio: numeroLimpio(ficha.numero_reserva.valor, ctx.agencia),
     confianza: ficha.numero_reserva.confianza,
   };
-  if (numero.valor !== null && !codigoApareceEnTexto(numero.valor, texto) && !ctx.seMandoPdf) {
+  // Cuenta como escrito si cada código del número (cada parte con dígitos:
+  // "DK1564627" de "DK1564627/cafj"; "65643802533" y "62992" de
+  // "ID … · Trip …") aparece en el asunto o en el cuerpo.
+  const codigos = numero.valor?.match(/[A-Za-z0-9]*\d[A-Za-z0-9]*/g) ?? [];
+  const escrito = codigos.length > 0 && codigos.every((c) => codigoApareceEnTexto(c, texto));
+  if (numero.valor !== null && !escrito && !ctx.seMandoPdf) {
     notas.push(`El número de reserva ${numero.valor} no aparece en el mail: se descartó.`);
     numero = { valor: null, limpio: null, confianza: 0 };
     dudosos.add("numero_reserva");

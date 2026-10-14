@@ -80,8 +80,8 @@ describe("qué se le manda a la IA (filas 2, 3, 4 y 26)", () => {
   it("los parámetros: modelo de modelos.ts, instrucciones del archivo v1, effort medio, thinking adaptativo, 4000 tokens", async () => {
     const { create } = await leer(mailDePrueba("kilroy-od010d"), respuestaGrabada("kilroy-od010d"));
     const p = parametros(create);
-    const instrucciones = readFileSync(join(process.cwd(), "src", "lib", "reservas", "instrucciones", "lectura-mail.v1.md"), "utf-8");
-    expect(VERSION_INSTRUCCIONES).toBe("lectura-mail.v1");
+    const instrucciones = readFileSync(join(process.cwd(), "src", "lib", "reservas", "instrucciones", `${VERSION_INSTRUCCIONES}.md`), "utf-8");
+    expect(VERSION_INSTRUCCIONES).toBe("lectura-mail.v2");
     expect(p.model).toBe(MODELOS.lectura_mail.modelo);
     expect(p.system).toBe(instrucciones);
     expect(p.max_tokens).toBe(4000);
@@ -125,7 +125,7 @@ describe("qué devuelve, con los casos reales (filas 5-13)", () => {
     expect(r.estado).toBe("leido");
     if (r.estado !== "leido") return;
     const f = r.ficha;
-    expect(f.version_instrucciones).toBe("lectura-mail.v1");
+    expect(f.version_instrucciones).toBe("lectura-mail.v2");
     expect(f.modelo).toBe(MODELOS.lectura_mail.modelo);
     expect(f.tipo_mail.valor).toBe("reserva_nueva");
     expect(f.agencia.valor).toBe("Kilroy");
@@ -236,10 +236,10 @@ describe("qué devuelve, con los casos reales (filas 5-13)", () => {
     expect(f.datos_dudosos).toEqual([]);
   });
 
-  it("Journaway All San Pedro: número 62992, vuelos y 'todos los hoteles los reserva la agencia'", async () => {
+  it("Journaway Program Booking: número = el ID del asunto (Trip Number como referencia), vuelos y 'todos los hoteles los reserva la agencia'", async () => {
     const { r } = await leer(mailDePrueba("journaway-all-san-pedro"), respuestaGrabada("journaway-all-san-pedro"));
     if (r.estado !== "leido") throw new Error(r.motivo);
-    expect(r.ficha.numero_reserva.limpio).toBe("62992");
+    expect(r.ficha.numero_reserva).toMatchObject({ valor: "ID 65600000001 · Trip 62992", limpio: "65600000001" });
     expect(r.ficha.todos_hoteles_agencia.valor).toBe(true);
     expect(r.ficha.vuelos.map((v) => [v.numero, v.origen, v.destino, v.fecha_salida, v.hora_salida, v.hora_llegada])).toEqual([
       ["LA156", "SCL", "CJC", "2027-03-16", "15:33", "17:41"],
@@ -356,7 +356,7 @@ describe("registro de cada llamada (fila 29)", () => {
     expect(filas[0]).toEqual({
       tarea: "lectura_mail",
       modelo: MODELOS.lectura_mail.modelo,
-      versionInstrucciones: "lectura-mail.v1",
+      versionInstrucciones: "lectura-mail.v2",
       tokensIn: 3000,
       tokensOut: 500,
       costoUsd: expect.closeTo(0.011, 6),

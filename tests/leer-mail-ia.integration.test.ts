@@ -86,7 +86,7 @@ const AGENCIAS = leerAgencias(readFileSync(join(process.cwd(), "data", "agencias
       expect(data![0]).toMatchObject({
         tarea: "lectura_mail",
         modelo: MODELOS.lectura_mail.modelo,
-        version_instrucciones: "lectura-mail.v1",
+        version_instrucciones: "lectura-mail.v2",
         tokens_in: 3000,
         tokens_out: 500,
         resultado: "ok",

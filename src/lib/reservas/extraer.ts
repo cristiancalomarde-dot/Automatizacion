@@ -26,12 +26,13 @@ export type { MailParaLeer } from "./preparar-mail";
  * la llamada no lleva el contenido del mail.
  */
 
-export const VERSION_INSTRUCCIONES = "lectura-mail.v1";
+/** v2 (2026-10-13): número de Journaway en el asunto y pax de TourRadar. v1 queda como historia. */
+export const VERSION_INSTRUCCIONES = "lectura-mail.v2";
 export type ClienteMensajesIA = Pick<Anthropic, "messages">;
 
 let instruccionesCache: string | null = null;
 
-/** El texto de `instrucciones/lectura-mail.v1.md` (las reglas del `system`). */
+/** El texto de `instrucciones/<VERSION_INSTRUCCIONES>.md` (las reglas del `system`). */
 export function instruccionesLectura(): string {
   if (!instruccionesCache) {
     instruccionesCache = readFileSync(
