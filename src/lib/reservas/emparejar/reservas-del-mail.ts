@@ -1,13 +1,14 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { FilaLlamadaIA, RegistroLlamadasIA } from "@/lib/ia/registro-llamadas";
+import { cargarProducto } from "@/lib/catalogo/consultas";
 import type { DetalleProducto } from "@/lib/catalogo/tipos";
 import type { FichaLectura, ProductoIA } from "../esquema-ficha";
 import type { ResultadoLectura } from "../extraer";
 import { crearReserva } from "../guardar";
 import type { ComponenteEntrada, Reserva, ReservaComponente, ReservaEntrada } from "../tipos";
 import type { LectorDeAgencia } from "./agencias";
-import type { CatalogoParaEmparejar } from "./catalogo";
-import { componentesDeLaReserva, saleDePuertoNatales } from "./componentes";
+import { cargarCatalogoParaEmparejar, type CatalogoParaEmparejar } from "./catalogo";
+import { componentesDeLaReserva, PROVEEDOR_TRANSFER_PNT, saleDePuertoNatales } from "./componentes";
 import { emparejarProducto, type ProponerProducto, type ResultadoEmparejado } from "./emparejar";
 import { MOTIVOS_EMPAREJADO as M } from "./motivos";
 import { motivosDeVuelos } from "./vuelos-requeridos";
@@ -186,4 +187,27 @@ export async function crearReservasDelMail(
     for (const l of pendientes) await opciones.llamadas?.registrar({ ...l, reservaId: null });
   }
   return creadas;
+}
+
+/**
+ * Las dependencias reales: el catálogo de la base, el detalle de cada
+ * producto con la misma lectura que la pantalla (`cargarProducto`) y el
+ * proveedor del transfer al aeropuerto PNT (Patagonia Planet, DECISIONS
+ * 2026-10-06). Solo lectura.
+ */
+export async function cargarDependenciasReservas(
+  admin: SupabaseClient,
+  proponer?: ProponerProducto,
+): Promise<DependenciasReservas> {
+  const [catalogo, proveedor] = await Promise.all([
+    cargarCatalogoParaEmparejar(admin),
+    admin.from("proveedor").select("id,nombre").ilike("nombre", PROVEEDOR_TRANSFER_PNT).limit(1).maybeSingle(),
+  ]);
+  if (proveedor.error) throw new Error(`No se pudo leer el proveedor del transfer a PNT: ${proveedor.error.message}`);
+  return {
+    catalogo,
+    detalle: (id) => cargarProducto(admin, id),
+    proponer,
+    proveedorTransferPNT: (proveedor.data as { id: string; nombre: string } | null) ?? null,
+  };
 }

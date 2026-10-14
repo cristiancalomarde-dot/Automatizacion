@@ -22,6 +22,8 @@ import type { ComponenteEntrada } from "../tipos";
  * no escribe nada.
  */
 
+/** Quien hace el transfer al aeropuerto de Puerto Natales (DECISIONS 2026-10-06). */
+export const PROVEEDOR_TRANSFER_PNT = "Patagonia Planet";
 export const TRANSFER_PNT = "Transfer al aeropuerto de Puerto Natales (PNT)";
 /** El bus del final de ARCH31/ARCH33 lleva la alternativa en su descripción (M1-05). */
 const BUS_CON_ALTERNATIVA_PNT = /aeropuerto de Puerto Natales/i;
