@@ -179,6 +179,19 @@ del mail** (ese ya está en `mail_recibido`). `uso_ia` sigue sumando el gasto de
     etiqueta, se neutraliza.
 - Umbral para auto-aceptar la propuesta de producto: 0,9. Se ajusta con los datos del modo prueba
   (PRD riesgo #1: si más del 20% necesita corrección manual, se frena).
+- **Propuesta de producto, cómo quedó construida (M2-03):** `src/lib/reservas/emparejar/propuesta-ia.ts`.
+  - Umbral: `UMBRAL_CONFIANZA_PRODUCTO = 0.9` en `emparejar.ts`. En un tour, además, sus noches tienen
+    que coincidir con las fechas del mail (si el mail trae inicio y fin).
+  - Solo se llama si el mail **no trae código** y el nombre de la agencia no matcheó. Un código que no
+    está cargado no gasta IA: "no está en el catálogo".
+  - La lista cerrada: todos los productos cargados (código, nombre, tipo, noches del tour, ciudades),
+    en el mensaje del usuario; lo que pidió la agencia va dentro de `<pedido>` (neutralizado).
+  - El enum de `codigo` es la lista más "ninguno"; el código igual se valida contra la lista. Peor caso
+    antes de llamar: caracteres / 3 + 1000 de salida, con el tope por mail de US$ 0,10.
+  - Cada propuesta deja su fila en `ia_llamada` con la reserva (`reserva_id`), que se registra
+    después de crearla.
+  - Motivos: techo → "No se usó la IA: se llegó al techo de gasto del mes"; error → "La IA no
+    respondió"; respuesta inválida, cortada o fuera de lista → "No se pudo reconocer con seguridad…".
 
 ## Abierto
 

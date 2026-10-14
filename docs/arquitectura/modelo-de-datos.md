@@ -225,6 +225,35 @@ después (la salida de Puerto Natales de ARCH31 y ARCH33). Iguazú conserva sus 
 - RLS: policy única — `authenticated` puede `select/insert/update`; `delete` deshabilitado salvo
   mantenimiento (los estados `cerrada`/`descartada` reemplazan el borrado).
 
+### Emparejado de producto (M2-03, migración 0011)
+
+- **Tres pasos, en orden** (`src/lib/reservas/emparejar/emparejar.ts`): 1) código exacto en
+  `codigo_externo` de esa agencia, leído con el lector de la agencia (`emparejar/agencias.ts`:
+  Kilroy saca `HI_ARGENTINA_`/`HI_TRAVEL_` y `-677` y prueba también el código completo; TourRadar
+  no usa código); 2) sin código, el `nombre_externo` de esa agencia, igual tras ignorar mayúsculas,
+  espacios dobles y acentos; 3) sin código, la propuesta de la IA (ver `integraciones-ia.md`). Un
+  código que no está cargado = "no está en el catálogo", sin IA. Nunca escribe en el catálogo.
+- Los códigos Kilroy que no siguen la regla (y los de los tours, que el importador de M1-05 no cargó
+  para Kilroy) viven en `data/codigos-kilroy.csv` y se cargan con `npm run importar:codigos-kilroy`
+  (todo o nada).
+- `reserva.origen_emparejado` (`codigo | nombre | ia`, solo con producto), `confianza_emparejado` y
+  `sugerencia_producto_id` (lo que propuso la IA y no se aceptó; nunca es el producto).
+- Una reserva por producto del mail, con el mismo `booking_id`. Solo "reserva nueva" se empareja del
+  todo; cancelaciones, cambios y respuestas quedan "para revisión".
+- `reserva_componente`: `tipo` pasa a texto (`paquete | tramo_bus | servicio`). Los paquetes del tour
+  (un tour anidado se abre) con fecha = inicio + día − 1; los tramos de bus público y los buses del
+  tour con `reserva_manual` (Kupos, Plataforma10) son `es_tarea`, sin proveedor; el bus que reserva
+  un proveedor (Imperio Inca) es `servicio` con `proveedor_id` y `producto_servicio_id`. Final de
+  ARCH31/ARCH33: si hay un vuelo desde PNT o el mail dice que vuelan desde Puerto Natales, el bus a
+  Punta Arenas se cambia por el `servicio` "Transfer al aeropuerto de Puerto Natales (PNT)" con
+  Patagonia Planet.
+- **Vuelos que pide la reserva** (`emparejar/vuelos-requeridos.ts`): los traslados que se van a
+  pedir, con la regla de M1-08 (`pasosDelTour` y `ladosDeUnTraslado` en `src/lib/catalogo/reglas.ts`,
+  la misma lectura que la pantalla). Una llegada pide un vuelo con número y hora de llegada a ese
+  aeropuerto; una salida, uno con número y hora de salida. A pedido u opcional: solo si el mail pide
+  un traslado. `segun_reserva` (OD019 solo): "Elegir la variante" si el mail no dice con o sin
+  traslados.
+
 ## Abierto
 
 - ¿Un producto puede tener servicios en más de un destino? El README de los Excel dice que sí
