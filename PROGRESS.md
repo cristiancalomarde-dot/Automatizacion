@@ -71,7 +71,16 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
     - **Hallazgo:** los PDF de TourRadar NO traen el ID del tour, solo el nombre y la referencia.
       El borrador de códigos sirve igual por el NOMBRE: hay que cargar el nombre de TourRadar como
       `codigo_externo.nombre_externo`, que es el paso 2 del emparejado.
-  - **Siguiente:** M2-05 en curso.
+  - **M2-05 terminada (2026-10-14):** commits `92d3370`…`1a4b001`.
+    - `/` redirige a `/reservas` (lista); detalle en `/reservas/[id]` con el mail original y el PDF.
+      Hay 0 reservas en la base.
+    - Pendiente chico: las frases de motivos de `textos.reserva.motivos` reemplazan el detalle.
+      "Falta el vuelo de llegada a Calama (CJC) para OD030" pasa a ser el genérico "Faltan los
+      datos de vuelo…", y "existe pero no cargado" pasa a ser "no está en el catálogo". Hay que
+      mostrar el detalle. Las 12 frases nuevas esperan el OK del owner.
+    - El owner no puede entrar por localhost (el login redirige a Vercel). Para que lo vea:
+      publicar en Vercel con su OK, después de M2-06, cuando haya datos.
+  - **Siguiente:** M2-06 (modo prueba). Antes: que los tests limpien solo sus datos de prueba.
   - Respuestas del owner a las preguntas de las fichas: en §3 del plan (2026-10-12). Quedan
     abiertos: el dominio de Jysk, el listado de países de Kilroy (el owner lo ofrece; mientras
     tanto, cualquier `kilroy.*`) y si se lee `INBOX.Promociones`.
