@@ -1,0 +1,484 @@
+[
+  {
+    "archivo": "Booking Statement 1363612 - 25160515 - vendorcredit.pdf",
+    "estado": "procesado",
+    "reservas": 1,
+    "reporte": "Booking Statement 1363612 - 25160515 - vendorcredit.md"
+  },
+  {
+    "archivo": "Booking Statement 1376833 - 25351215 - vendorbill.pdf",
+    "estado": "procesado",
+    "reservas": 1,
+    "reporte": "Booking Statement 1376833 - 25351215 - vendorbill.md"
+  },
+  {
+    "archivo": "Booking Statement 1377583 - 25365166 - vendorbill.pdf",
+    "estado": "procesado",
+    "reservas": 1,
+    "reporte": "Booking Statement 1377583 - 25365166 - vendorbill.md"
+  },
+  {
+    "archivo": "Booking Statement 1377598 - 25372219 - vendorbill.pdf",
+    "estado": "procesado",
+    "reservas": 1,
+    "reporte": "Booking Statement 1377598 - 25372219 - vendorbill.md"
+  },
+  {
+    "archivo": "Booking Statement 1377598 - 25388222 - vendorbill.pdf",
+    "estado": "procesado",
+    "reservas": 0,
+    "reporte": "Booking Statement 1377598 - 25388222 - vendorbill.md"
+  },
+  {
+    "archivo": "Booking Statement 1383503 - 25500905 - vendorbill.pdf",
+    "estado": "procesado",
+    "reservas": 1,
+    "reporte": "Booking Statement 1383503 - 25500905 - vendorbill.md"
+  },
+  {
+    "archivo": "Jysk-INBOX-15931.eml",
+    "estado": "salteado",
+    "motivo": "Jysk no se lee: sus reservas son viajes a medida (decisión del owner)",
+    "reservas": 0,
+    "reporte": "Jysk-INBOX-15931.md"
+  },
+  {
+    "archivo": "Jysk-INBOX-15932.eml",
+    "estado": "salteado",
+    "motivo": "Jysk no se lee: sus reservas son viajes a medida (decisión del owner)",
+    "reservas": 0,
+    "reporte": "Jysk-INBOX-15932.md"
+  },
+  {
+    "archivo": "Jysk-INBOX-15934.eml",
+    "estado": "salteado",
+    "motivo": "Jysk no se lee: sus reservas son viajes a medida (decisión del owner)",
+    "reservas": 0,
+    "reporte": "Jysk-INBOX-15934.md"
+  },
+  {
+    "archivo": "Jysk-INBOX-15935.eml",
+    "estado": "salteado",
+    "motivo": "Jysk no se lee: sus reservas son viajes a medida (decisión del owner)",
+    "reservas": 0,
+    "reporte": "Jysk-INBOX-15935.md"
+  },
+  {
+    "archivo": "Jysk-INBOX-15938.eml",
+    "estado": "salteado",
+    "motivo": "Jysk no se lee: sus reservas son viajes a medida (decisión del owner)",
+    "reservas": 0,
+    "reporte": "Jysk-INBOX-15938.md"
+  },
+  {
+    "archivo": "Jysk-INBOX-15940.eml",
+    "estado": "salteado",
+    "motivo": "Jysk no se lee: sus reservas son viajes a medida (decisión del owner)",
+    "reservas": 0,
+    "reporte": "Jysk-INBOX-15940.md"
+  },
+  {
+    "archivo": "Jysk-INBOX-15941.eml",
+    "estado": "salteado",
+    "motivo": "Jysk no se lee: sus reservas son viajes a medida (decisión del owner)",
+    "reservas": 0,
+    "reporte": "Jysk-INBOX-15941.md"
+  },
+  {
+    "archivo": "Jysk-INBOX-15942.eml",
+    "estado": "salteado",
+    "motivo": "Jysk no se lee: sus reservas son viajes a medida (decisión del owner)",
+    "reservas": 0,
+    "reporte": "Jysk-INBOX-15942.md"
+  },
+  {
+    "archivo": "Jysk-INBOX-15945.eml",
+    "estado": "salteado",
+    "motivo": "Jysk no se lee: sus reservas son viajes a medida (decisión del owner)",
+    "reservas": 0,
+    "reporte": "Jysk-INBOX-15945.md"
+  },
+  {
+    "archivo": "Jysk-INBOX-15953.eml",
+    "estado": "salteado",
+    "motivo": "Jysk no se lee: sus reservas son viajes a medida (decisión del owner)",
+    "reservas": 0,
+    "reporte": "Jysk-INBOX-15953.md"
+  },
+  {
+    "archivo": "Jysk-INBOX-15960.eml",
+    "estado": "salteado",
+    "motivo": "Jysk no se lee: sus reservas son viajes a medida (decisión del owner)",
+    "reservas": 0,
+    "reporte": "Jysk-INBOX-15960.md"
+  },
+  {
+    "archivo": "Jysk-INBOX-15961.eml",
+    "estado": "salteado",
+    "motivo": "Jysk no se lee: sus reservas son viajes a medida (decisión del owner)",
+    "reservas": 0,
+    "reporte": "Jysk-INBOX-15961.md"
+  },
+  {
+    "archivo": "Jysk-INBOX-15967.eml",
+    "estado": "salteado",
+    "motivo": "Jysk no se lee: sus reservas son viajes a medida (decisión del owner)",
+    "reservas": 0,
+    "reporte": "Jysk-INBOX-15967.md"
+  },
+  {
+    "archivo": "Jysk-INBOX-15977.eml",
+    "estado": "salteado",
+    "motivo": "Jysk no se lee: sus reservas son viajes a medida (decisión del owner)",
+    "reservas": 0,
+    "reporte": "Jysk-INBOX-15977.md"
+  },
+  {
+    "archivo": "Jysk-INBOX-15979.eml",
+    "estado": "salteado",
+    "motivo": "Jysk no se lee: sus reservas son viajes a medida (decisión del owner)",
+    "reservas": 0,
+    "reporte": "Jysk-INBOX-15979.md"
+  },
+  {
+    "archivo": "Jysk-INBOX-15980.eml",
+    "estado": "salteado",
+    "motivo": "Jysk no se lee: sus reservas son viajes a medida (decisión del owner)",
+    "reservas": 0,
+    "reporte": "Jysk-INBOX-15980.md"
+  },
+  {
+    "archivo": "Jysk-INBOX-15981.eml",
+    "estado": "salteado",
+    "motivo": "Jysk no se lee: sus reservas son viajes a medida (decisión del owner)",
+    "reservas": 0,
+    "reporte": "Jysk-INBOX-15981.md"
+  },
+  {
+    "archivo": "Jysk-INBOX-15984.eml",
+    "estado": "salteado",
+    "motivo": "Jysk no se lee: sus reservas son viajes a medida (decisión del owner)",
+    "reservas": 0,
+    "reporte": "Jysk-INBOX-15984.md"
+  },
+  {
+    "archivo": "Jysk-INBOX-15987.eml",
+    "estado": "salteado",
+    "motivo": "Jysk no se lee: sus reservas son viajes a medida (decisión del owner)",
+    "reservas": 0,
+    "reporte": "Jysk-INBOX-15987.md"
+  },
+  {
+    "archivo": "Jysk-INBOX-15998.eml",
+    "estado": "salteado",
+    "motivo": "Jysk no se lee: sus reservas son viajes a medida (decisión del owner)",
+    "reservas": 0,
+    "reporte": "Jysk-INBOX-15998.md"
+  },
+  {
+    "archivo": "Jysk-INBOX-16001.eml",
+    "estado": "salteado",
+    "motivo": "Jysk no se lee: sus reservas son viajes a medida (decisión del owner)",
+    "reservas": 0,
+    "reporte": "Jysk-INBOX-16001.md"
+  },
+  {
+    "archivo": "Kilroy-INBOX-15930.eml",
+    "estado": "salteado",
+    "motivo": "Es una respuesta o un reenvío, y su número no es de una reserva cargada",
+    "reservas": 0,
+    "reporte": "Kilroy-INBOX-15930.md"
+  },
+  {
+    "archivo": "Kilroy-INBOX-15933.eml",
+    "estado": "procesado",
+    "reservas": 1,
+    "reporte": "Kilroy-INBOX-15933.md"
+  },
+  {
+    "archivo": "Kilroy-INBOX-15937.eml",
+    "estado": "salteado",
+    "motivo": "Es una respuesta o un reenvío, y su número no es de una reserva cargada",
+    "reservas": 0,
+    "reporte": "Kilroy-INBOX-15937.md"
+  },
+  {
+    "archivo": "Kilroy-INBOX-15944.eml",
+    "estado": "salteado",
+    "motivo": "Es una respuesta o un reenvío, y su número no es de una reserva cargada",
+    "reservas": 0,
+    "reporte": "Kilroy-INBOX-15944.md"
+  },
+  {
+    "archivo": "Kilroy-INBOX-15949.eml",
+    "estado": "salteado",
+    "motivo": "Es una respuesta o un reenvío, y su número no es de una reserva cargada",
+    "reservas": 0,
+    "reporte": "Kilroy-INBOX-15949.md"
+  },
+  {
+    "archivo": "Kilroy-INBOX-15951.eml",
+    "estado": "salteado",
+    "motivo": "Es una respuesta o un reenvío, y su número no es de una reserva cargada",
+    "reservas": 0,
+    "reporte": "Kilroy-INBOX-15951.md"
+  },
+  {
+    "archivo": "Kilroy-INBOX-15954.eml",
+    "estado": "salteado",
+    "motivo": "Es una respuesta o un reenvío, y su número no es de una reserva cargada",
+    "reservas": 0,
+    "reporte": "Kilroy-INBOX-15954.md"
+  },
+  {
+    "archivo": "Kilroy-INBOX-15955.eml",
+    "estado": "salteado",
+    "motivo": "Es una respuesta o un reenvío, y su número no es de una reserva cargada",
+    "reservas": 0,
+    "reporte": "Kilroy-INBOX-15955.md"
+  },
+  {
+    "archivo": "Kilroy-INBOX-15957.eml",
+    "estado": "salteado",
+    "motivo": "Es una respuesta o un reenvío, y su número no es de una reserva cargada",
+    "reservas": 0,
+    "reporte": "Kilroy-INBOX-15957.md"
+  },
+  {
+    "archivo": "Kilroy-INBOX-15958.eml",
+    "estado": "procesado",
+    "reservas": 1,
+    "reporte": "Kilroy-INBOX-15958.md"
+  },
+  {
+    "archivo": "Kilroy-INBOX-15959.eml",
+    "estado": "salteado",
+    "motivo": "Es una respuesta o un reenvío, y su número no es de una reserva cargada",
+    "reservas": 0,
+    "reporte": "Kilroy-INBOX-15959.md"
+  },
+  {
+    "archivo": "Kilroy-INBOX-15962.eml",
+    "estado": "procesado",
+    "reservas": 1,
+    "reporte": "Kilroy-INBOX-15962.md"
+  },
+  {
+    "archivo": "Kilroy-INBOX-15963.eml",
+    "estado": "procesado",
+    "reservas": 1,
+    "reporte": "Kilroy-INBOX-15963.md"
+  },
+  {
+    "archivo": "Kilroy-INBOX-15965.eml",
+    "estado": "procesado",
+    "reservas": 1,
+    "reporte": "Kilroy-INBOX-15965.md"
+  },
+  {
+    "archivo": "Kilroy-INBOX-15966.eml",
+    "estado": "procesado",
+    "reservas": 1,
+    "reporte": "Kilroy-INBOX-15966.md"
+  },
+  {
+    "archivo": "Kilroy-INBOX-15969.eml",
+    "estado": "salteado",
+    "motivo": "Es una respuesta o un reenvío, y su número no es de una reserva cargada",
+    "reservas": 0,
+    "reporte": "Kilroy-INBOX-15969.md"
+  },
+  {
+    "archivo": "Kilroy-INBOX-15991.eml",
+    "estado": "salteado",
+    "motivo": "Es una respuesta o un reenvío, y su número no es de una reserva cargada",
+    "reservas": 0,
+    "reporte": "Kilroy-INBOX-15991.md"
+  },
+  {
+    "archivo": "Kilroy-INBOX-15994.eml",
+    "estado": "salteado",
+    "motivo": "Es una respuesta o un reenvío, y su número no es de una reserva cargada",
+    "reservas": 0,
+    "reporte": "Kilroy-INBOX-15994.md"
+  },
+  {
+    "archivo": "Kilroy-INBOX-15997.eml",
+    "estado": "salteado",
+    "motivo": "Es una respuesta o un reenvío, y su número no es de una reserva cargada",
+    "reservas": 0,
+    "reporte": "Kilroy-INBOX-15997.md"
+  },
+  {
+    "archivo": "Kilroy-INBOX-16002.eml",
+    "estado": "salteado",
+    "motivo": "Es una respuesta o un reenvío, y su número no es de una reserva cargada",
+    "reservas": 0,
+    "reporte": "Kilroy-INBOX-16002.md"
+  },
+  {
+    "archivo": "Kilroy-INBOX-16008.eml",
+    "estado": "salteado",
+    "motivo": "Es una respuesta o un reenvío, y su número no es de una reserva cargada",
+    "reservas": 0,
+    "reporte": "Kilroy-INBOX-16008.md"
+  },
+  {
+    "archivo": "Kilroy-INBOX-16012.eml",
+    "estado": "salteado",
+    "motivo": "Es una respuesta o un reenvío, y su número no es de una reserva cargada",
+    "reservas": 0,
+    "reporte": "Kilroy-INBOX-16012.md"
+  },
+  {
+    "archivo": "Kilroy-INBOX-16015.eml",
+    "estado": "salteado",
+    "motivo": "Es una respuesta o un reenvío, y su número no es de una reserva cargada",
+    "reservas": 0,
+    "reporte": "Kilroy-INBOX-16015.md"
+  },
+  {
+    "archivo": "Pedido Proveedor - Beer Hostel OD010A.docx",
+    "estado": "salteado",
+    "motivo": "No es un mail de agencia",
+    "reservas": 0,
+    "reporte": "Pedido Proveedor - Beer Hostel OD010A.md"
+  },
+  {
+    "archivo": "Pedido Proveedor - Chalten Travel OD016.docx",
+    "estado": "salteado",
+    "motivo": "No es un mail de agencia",
+    "reservas": 0,
+    "reporte": "Pedido Proveedor - Chalten Travel OD016.md"
+  },
+  {
+    "archivo": "Pedido Proveedor - Cuenca del Plata OD010A.docx",
+    "estado": "salteado",
+    "motivo": "No es un mail de agencia",
+    "reservas": 0,
+    "reporte": "Pedido Proveedor - Cuenca del Plata OD010A.md"
+  },
+  {
+    "archivo": "Pedido Proveedor - Cuenca del Plata OD010B.docx",
+    "estado": "salteado",
+    "motivo": "No es un mail de agencia",
+    "reservas": 0,
+    "reporte": "Pedido Proveedor - Cuenca del Plata OD010B.md"
+  },
+  {
+    "archivo": "Pedido Proveedor - Grupo Summa OD018.docx",
+    "estado": "salteado",
+    "motivo": "No es un mail de agencia",
+    "reservas": 0,
+    "reporte": "Pedido Proveedor - Grupo Summa OD018.md"
+  },
+  {
+    "archivo": "Pedido Proveedor - La Bicicleta Naranja OD018.docx",
+    "estado": "salteado",
+    "motivo": "No es un mail de agencia",
+    "reservas": 0,
+    "reporte": "Pedido Proveedor - La Bicicleta Naranja OD018.md"
+  },
+  {
+    "archivo": "Pedido Proveedor - Milhouse Hostel OD018.docx",
+    "estado": "salteado",
+    "motivo": "No es un mail de agencia",
+    "reservas": 0,
+    "reporte": "Pedido Proveedor - Milhouse Hostel OD018.md"
+  },
+  {
+    "archivo": "Pedido Proveedor - Rancho Grande y Chalten Travel OD033.docx",
+    "estado": "salteado",
+    "motivo": "No es un mail de agencia",
+    "reservas": 0,
+    "reporte": "Pedido Proveedor - Rancho Grande y Chalten Travel OD033.md"
+  },
+  {
+    "archivo": "Reserva de Cliente Journaway - All San Pedro 4 days mas San Pedro Extension.docx",
+    "estado": "salteado",
+    "motivo": "Journaway entra con M2-09",
+    "reservas": 0,
+    "reporte": "Reserva de Cliente Journaway - All San Pedro 4 days mas San Pedro Extension.md"
+  },
+  {
+    "archivo": "Reserva de Cliente Journaway - Iguazu Fall Argentina Side.docx",
+    "estado": "salteado",
+    "motivo": "Journaway entra con M2-09",
+    "reservas": 0,
+    "reporte": "Reserva de Cliente Journaway - Iguazu Fall Argentina Side.md"
+  },
+  {
+    "archivo": "Reserva de Cliente Journaway - Iguazu Falls Brazilian Side.docx",
+    "estado": "salteado",
+    "motivo": "Journaway entra con M2-09",
+    "reservas": 0,
+    "reporte": "Reserva de Cliente Journaway - Iguazu Falls Brazilian Side.md"
+  },
+  {
+    "archivo": "Reserva de Cliente Journaway - San Pedro de Atacama and Uyuni Salt Flats in Tayka Hotels 7N8D SPAP05.docx",
+    "estado": "salteado",
+    "motivo": "Journaway entra con M2-09",
+    "reservas": 0,
+    "reporte": "Reserva de Cliente Journaway - San Pedro de Atacama and Uyuni Salt Flats in Tayka Hotels 7N8D SPAP05.md"
+  },
+  {
+    "archivo": "Reserva de Cliente Kilroy - Overland uyuni a san pedro saliendo de la paz (reverse).docx",
+    "estado": "procesado",
+    "reservas": 1,
+    "reporte": "Reserva de Cliente Kilroy - Overland uyuni a san pedro saliendo de la paz (reverse).md"
+  },
+  {
+    "archivo": "Reserva de Cliente Kilroy Aarhus - Rio Starter Package OD032.docx",
+    "estado": "procesado",
+    "reservas": 1,
+    "reporte": "Reserva de Cliente Kilroy Aarhus - Rio Starter Package OD032.md"
+  },
+  {
+    "archivo": "Reserva de Cliente Kilroy Aarhus -Iguazu Falls Combined OD010D.docx",
+    "estado": "procesado",
+    "reservas": 1,
+    "reporte": "Reserva de Cliente Kilroy Aarhus -Iguazu Falls Combined OD010D.md"
+  },
+  {
+    "archivo": "Reserva de Cliente Kilroy Copenagiue varias.docx",
+    "estado": "procesado",
+    "reservas": 3,
+    "reporte": "Reserva de Cliente Kilroy Copenagiue varias.md"
+  },
+  {
+    "archivo": "Reserva de Cliente Kilroy Copenahue - Patagonia Trekking Paradise.docx",
+    "estado": "procesado",
+    "reservas": 1,
+    "reporte": "Reserva de Cliente Kilroy Copenahue - Patagonia Trekking Paradise.md"
+  },
+  {
+    "archivo": "Reserva de Cliente Kilroy Copenhague - Overland San Pedro de Atacama to Uyuni end in La Paz CHB31.docx",
+    "estado": "procesado",
+    "reservas": 1,
+    "reporte": "Reserva de Cliente Kilroy Copenhague - Overland San Pedro de Atacama to Uyuni end in La Paz CHB31.md"
+  },
+  {
+    "archivo": "Reserva de Cliente Kilroy Copenhague Overland San Pedro to Uyuni.docx",
+    "estado": "procesado",
+    "reservas": 1,
+    "reporte": "Reserva de Cliente Kilroy Copenhague Overland San Pedro to Uyuni.md"
+  },
+  {
+    "archivo": "Reserva de Cliente Kilroy Copenhaguen - Patagonia Trekking Paradise ARCH33.docx",
+    "estado": "procesado",
+    "reservas": 2,
+    "reporte": "Reserva de Cliente Kilroy Copenhaguen - Patagonia Trekking Paradise ARCH33.md"
+  },
+  {
+    "archivo": "Reserva de Cliente Kilroy Olso - Patagonia HIghlights ARCH31.docx",
+    "estado": "procesado",
+    "reservas": 1,
+    "reporte": "Reserva de Cliente Kilroy Olso - Patagonia HIghlights ARCH31.md"
+  },
+  {
+    "archivo": "Reserva de Cliente Kilroy UK - 5 Countries 5C01.docx",
+    "estado": "procesado",
+    "reservas": 1,
+    "reporte": "Reserva de Cliente Kilroy UK - 5 Countries 5C01.md"
+  }
+]
