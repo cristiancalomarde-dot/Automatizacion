@@ -72,7 +72,7 @@ function Detalle({ reserva }: { reserva: DetalleReserva }) {
             <MarcasReserva posibleDuplicada={reserva.posibleDuplicada} dePrueba={reserva.dePrueba} />
           </span>
           <h1 className={ui.titulo} title={T.numero}>
-            <span className={ui.mono}>{reserva.numero ?? SIN_DATO}</span>
+            <span className={estilos.numeroTitulo}>{reserva.numero ?? SIN_DATO}</span>
           </h1>
         </div>
         <dl className={ui.datos}>

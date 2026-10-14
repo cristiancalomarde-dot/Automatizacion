@@ -109,3 +109,9 @@
   gap: 8px;
   flex-wrap: wrap;
 }
+
+/* El número de la agencia como título del detalle: monoespaciado, al tamaño del título. */
+.numeroTitulo {
+  font-family: var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
+  font-size: 20px;
+}
