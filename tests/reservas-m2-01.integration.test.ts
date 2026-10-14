@@ -35,7 +35,8 @@ function mailKilroy(extra: Partial<MailEntrada> = {}): MailEntrada {
     origen: "imap",
     carpeta: "inbox",
     imapUidvalidity: 1700000000,
-    imapUid: 4242,
+    // Cada mail con su propio UID: el id IMAP es único desde M2-04 (migración 0012).
+    imapUid: Math.floor(Math.random() * 1_000_000_000),
     messageId: `<${randomUUID()}@test.kilroy.dk>`,
     remitente: "aarhus@kilroy.dk",
     remitenteNombre: "KILROY Aarhus",
@@ -109,7 +110,7 @@ function mailKilroy(extra: Partial<MailEntrada> = {}): MailEntrada {
         origen: "imap",
         carpeta: "inbox",
         imap_uidvalidity: 1700000000,
-        imap_uid: 4242,
+        imap_uid: entrada.imapUid,
         message_id: entrada.messageId,
         huella: entrada.messageId!.slice(1, -1).toLowerCase(),
         remitente: "aarhus@kilroy.dk",

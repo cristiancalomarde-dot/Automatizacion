@@ -126,6 +126,17 @@ export async function guardarMailRecibido(
     if (error.code === "23505") {
       const ganador = await buscarMailPorHuella(cliente, huella);
       if (ganador) return { mail: ganador, nuevo: false };
+      // M2-04 fila 1: el mismo mensaje IMAP (carpeta + UIDVALIDITY + UID) ya estaba.
+      if (entrada.origen === "imap" && entrada.imapUid != null) {
+        const { data: mismo } = await cliente
+          .from("mail_recibido")
+          .select("*")
+          .eq("carpeta", entrada.carpeta ?? "")
+          .eq("imap_uidvalidity", entrada.imapUidvalidity ?? 0)
+          .eq("imap_uid", entrada.imapUid)
+          .maybeSingle();
+        if (mismo) return { mail: mismo as MailRecibido, nuevo: false };
+      }
     }
     throw new Error(`No se pudo guardar el mail: ${error.message}`);
   }

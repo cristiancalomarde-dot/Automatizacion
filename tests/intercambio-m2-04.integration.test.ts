@@ -157,6 +157,18 @@ const ASUNTO_OVERLAND = "DK1594100/maga - Overland San Pedro de Atacama to Uyuni
       expect(await reservasDe("DK1594100")).toHaveLength(1);
     });
 
+    it("fila 1: sin Message-ID, el mismo id IMAP (carpeta + UIDVALIDITY + UID) cuenta como el mismo mail", async () => {
+      const { leer, create } = lector(respuestaCon(fichaSoloOverland()));
+      const uid = Math.floor(Math.random() * 1_000_000_000);
+      const imap = { origen: "imap" as const, carpeta: "inbox" as const, imapUidvalidity: 7, imapUid: uid, messageId: null };
+      const primero = mailVarias(ASUNTO_OVERLAND, imap);
+      const otraVez = { ...primero, cuerpoTexto: `${primero.cuerpoTexto}\n` + "(releído)" };
+      const [a, b] = await procesarMails([primero, otraVez], opciones(leer));
+      expect([a.estado, b.estado]).toEqual(["procesado", "ya_procesado"]);
+      expect(b.mailRecibidoId).toBe(a.mailRecibidoId);
+      expect(create).toHaveBeenCalledTimes(1);
+    });
+
     it("filas 3 y 6: Overland del 9-oct y después 'varias' → el Overland sigue siendo 1 con 2 mails, y nacen Iguazú y El Calafate", async () => {
       const overland = await procesarMail(mailVarias(ASUNTO_OVERLAND), opciones(lector(respuestaCon(fichaSoloOverland())).leer));
       const varias = await procesarMail(mailVarias(), opciones(lector(respuestaGrabada("kilroy-dk1594100")).leer));
