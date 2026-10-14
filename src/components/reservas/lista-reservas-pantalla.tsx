@@ -1,15 +1,17 @@
 "use client";
 
 import { useMemo } from "react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useConsulta } from "@/lib/catalogo/use-consulta";
 import { formatearFechaHora, formatearRango } from "@/lib/formato";
-import { cargarReservas } from "@/lib/reservas/consultas";
+import { cargarReservas, cargarRevisiones } from "@/lib/reservas/consultas";
+import { medirRevision, textoMedicion } from "@/lib/reservas/medicion-prueba";
 import { contarReservas, ordenarPorLlegada } from "@/lib/reservas/reglas";
 import type { FilaReserva } from "@/lib/reservas/tipos";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { TEXTOS } from "@/lib/textos";
-import { EsqueletoTabla, EstadoError, EstadoVacio } from "@/components/ui/estados";
+import { Aviso, EsqueletoTabla, EstadoError, EstadoVacio } from "@/components/ui/estados";
 import { EncabezadoOrdenable, useOrden } from "@/components/ui/orden";
 import ui from "@/components/ui/ui.module.css";
 import { ChipEstado, MarcasReserva } from "./marcas";
@@ -30,10 +32,18 @@ const VALOR: Record<Columna, (f: FilaReserva) => string | number> = {
   llego: (f) => Date.parse(f.llego) || 0,
 };
 
-/** Reservas: la pantalla de inicio (spec M2-05 #1 a #4, #16). Solo para mirar. */
+/**
+ * Reservas: la pantalla de inicio (spec M2-05 #1 a #4, #16). Solo para mirar.
+ * Las de prueba (M2-06) se ven con "Ver las de prueba" (`?prueba=1`), con la
+ * medición de la revisión del owner arriba.
+ */
 export function ListaReservasPantalla() {
+  const verPrueba = useSearchParams()?.get("prueba") === "1";
   const { estado, reintentar } = useConsulta(() => cargarReservas(createSupabaseBrowserClient()));
   const conteo = estado.tipo === "listo" ? contarReservas(estado.datos) : null;
+  const visibles = estado.tipo === "listo" ? estado.datos.filter((f) => verPrueba || !f.dePrueba) : [];
+  const dePrueba = conteo?.dePrueba ?? 0;
+  const soloPrueba = conteo !== null && conteo.total > 0 && conteo.total === dePrueba;
 
   return (
     <div className={ui.pagina}>
@@ -45,7 +55,45 @@ export function ListaReservasPantalla() {
       {estado.tipo === "cargando" ? <EsqueletoTabla etiqueta={T.cargando} columnas={7} /> : null}
       {estado.tipo === "error" ? <EstadoError mensaje={T.error} onReintentar={reintentar} /> : null}
       {estado.tipo === "listo" && estado.datos.length === 0 ? <EstadoVacio mensaje={T.vacio} /> : null}
-      {estado.tipo === "listo" && estado.datos.length > 0 ? <TablaReservas filas={estado.datos} /> : null}
+      {estado.tipo === "listo" && soloPrueba && !verPrueba ? (
+        <div className={estilos.barraPrueba}>
+          <p className={ui.migas}>{T.soloPrueba(dePrueba)}</p>
+          <Link href="/reservas?prueba=1" className={ui.enlace}>
+            {T.verlasPrueba}
+          </Link>
+        </div>
+      ) : null}
+      {estado.tipo === "listo" && dePrueba > 0 && !soloPrueba && !verPrueba ? (
+        <div className={estilos.barraPrueba}>
+          <Link href="/reservas?prueba=1" className={ui.enlace}>
+            {T.verPrueba(dePrueba)}
+          </Link>
+        </div>
+      ) : null}
+      {estado.tipo === "listo" && verPrueba && dePrueba > 0 ? (
+        <MedicionPrueba idsPrueba={estado.datos.filter((f) => f.dePrueba).map((f) => f.id)} />
+      ) : null}
+      {visibles.length > 0 ? <TablaReservas filas={visibles} /> : null}
+    </div>
+  );
+}
+
+/** "Revisadas 17 de 17 · 2 mal (12%) · se puede seguir" (spec M2-06 fila 14), con el enlace para ocultarlas. */
+function MedicionPrueba({ idsPrueba }: { idsPrueba: string[] }) {
+  const { estado } = useConsulta(() => cargarRevisiones(createSupabaseBrowserClient()));
+  const texto =
+    estado.tipo === "listo" ? textoMedicion(medirRevision(idsPrueba.map((id) => estado.datos.get(id) ?? null))) : null;
+  return (
+    <div className={estilos.barraPrueba}>
+      {texto ? (
+        <span className={estilos.medicion} data-testid="medicion-prueba">
+          {texto}
+        </span>
+      ) : null}
+      {estado.tipo === "error" ? <Aviso tono="error">{T.errorMarcas}</Aviso> : null}
+      <Link href="/reservas" className={ui.enlace}>
+        {T.ocultarPrueba}
+      </Link>
     </div>
   );
 }

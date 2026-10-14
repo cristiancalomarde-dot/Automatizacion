@@ -16,6 +16,7 @@ import {
   type FilaReserva,
   type MailDeReserva,
   type ParteDeReserva,
+  type RevisionDePrueba,
   type ProductoDeReserva,
   type TipoComponenteReserva,
   type VueloDeReserva,
@@ -170,4 +171,32 @@ export async function urlDelPdf(cliente: SupabaseClient, ruta: string): Promise<
     .createSignedUrl(ruta, VIGENCIA_ENLACE_PDF_SEGUNDOS);
   if (error || !data?.signedUrl) throw new Error(error?.message ?? "No se pudo firmar el enlace del PDF.");
   return data.signedUrl;
+}
+
+// --- Modo prueba (spec M2-06) ----------------------------------------------------------
+
+const CAMPOS_REVISION = "reserva_id,resultado,que_mal,nota,updated_at,autor:autor_id(nombre,email)";
+
+/** Una fila de `revision_prueba` como la ve la pantalla. */
+export function aRevision(v: any): RevisionDePrueba {
+  return {
+    reservaId: v.reserva_id,
+    resultado: v.resultado === "mal" ? "mal" : "bien",
+    queMal: Array.isArray(v.que_mal) ? v.que_mal : [],
+    nota: texto(v.nota),
+    autor: texto(v.autor?.nombre) ?? texto(v.autor?.email),
+    fecha: v.updated_at,
+  };
+}
+
+/** Las marcas del owner de todas las reservas de prueba, por reserva (para la medición, fila 14). */
+export async function cargarRevisiones(cliente: SupabaseClient): Promise<Map<string, RevisionDePrueba>> {
+  const filas = verificar(await cliente.from("revision_prueba").select(CAMPOS_REVISION)) as any[];
+  return new Map(filas.map((v) => [v.reserva_id as string, aRevision(v)]));
+}
+
+/** La marca del owner de una reserva de prueba; null si todavía no la marcó nadie. */
+export async function cargarRevision(cliente: SupabaseClient, reservaId: string): Promise<RevisionDePrueba | null> {
+  const v = verificar(await cliente.from("revision_prueba").select(CAMPOS_REVISION).eq("reserva_id", reservaId).maybeSingle());
+  return v ? aRevision(v) : null;
 }

@@ -304,3 +304,16 @@ export interface DetalleReserva extends FilaReserva {
   /** Por orden de llegada: el primero es el que creó la reserva. */
   mails: MailDeReserva[];
 }
+
+/** La marca del owner sobre una reserva de prueba (spec M2-06 fila 13, tabla `revision_prueba`). */
+export interface RevisionDePrueba {
+  reservaId: string;
+  resultado: "bien" | "mal";
+  /** Qué estaba mal (`QUE_MAL` de medicion-prueba.ts); vacío si está bien. */
+  queMal: string[];
+  nota: string | null;
+  /** Nombre (o mail) de quien la marcó. */
+  autor: string | null;
+  /** Cuándo se marcó por última vez. ISO. */
+  fecha: string;
+}

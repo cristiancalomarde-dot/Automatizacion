@@ -25,7 +25,12 @@ const guardarMailRecibido = registro.conMail(guardarMailRecibidoReal);
 
 const cliente = vi.hoisted(() => ({ actual: null as unknown }));
 vi.mock("@/lib/supabase/client", () => ({ createSupabaseBrowserClient: () => cliente.actual }));
-vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn() }), usePathname: () => "/reservas" }));
+// Con `?prueba=1` (M2-06): la lista muestra las de prueba.
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: vi.fn() }),
+  usePathname: () => "/reservas",
+  useSearchParams: () => new URLSearchParams("prueba=1"),
+}));
 
 import { cargarReserva, cargarReservas, urlDelPdf } from "@/lib/reservas/consultas";
 import { ListaReservasPantalla } from "@/components/reservas/lista-reservas-pantalla";

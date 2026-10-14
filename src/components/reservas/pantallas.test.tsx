@@ -10,12 +10,20 @@ const consultas = vi.hoisted(() => ({
   cargarReservas: vi.fn(),
   cargarReserva: vi.fn(),
   urlDelPdf: vi.fn(),
+  cargarRevisiones: vi.fn(async () => new Map()),
+  cargarRevision: vi.fn(async () => null),
 }));
 const push = vi.hoisted(() => vi.fn());
+vi.mock("@/app/(app)/reservas/[id]/acciones", () => ({ marcarReservaDePrueba: vi.fn() }));
 
 vi.mock("@/lib/reservas/consultas", () => consultas);
 vi.mock("@/lib/supabase/client", () => ({ createSupabaseBrowserClient: () => ({}) }));
-vi.mock("next/navigation", () => ({ useRouter: () => ({ push }), usePathname: () => "/reservas" }));
+// La lista muestra las de prueba con `?prueba=1` (M2-06): estos tests de M2-05 las ven todas.
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push }),
+  usePathname: () => "/reservas",
+  useSearchParams: () => new URLSearchParams("prueba=1"),
+}));
 
 import {
   IDS,

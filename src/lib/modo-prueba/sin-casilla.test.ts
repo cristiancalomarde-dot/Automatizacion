@@ -25,7 +25,7 @@ describe("el modo prueba no toca la casilla", () => {
     const env = Object.fromEntries(Object.entries(process.env).filter(([k]) => !k.startsWith("SALES_IMAP")));
     const r = spawnSync("npx", ["tsx", "--conditions=react-server", "scripts/probar-mails.ts", "no-existe-esta-carpeta"], {
       cwd: RAIZ,
-      env: { ...env, NEXT_PUBLIC_SUPABASE_URL: "http://127.0.0.1:9", SUPABASE_SERVICE_ROLE_KEY: "x", ANTHROPIC_API_KEY: "x" },
+      env: { ...env, NEXT_PUBLIC_SUPABASE_URL: "http://127.0.0.1:9", SUPABASE_SERVICE_ROLE_KEY: "x", ANTHROPIC_API_KEY: "x" } as unknown as NodeJS.ProcessEnv,
       encoding: "utf-8",
       shell: true,
       timeout: 120_000,

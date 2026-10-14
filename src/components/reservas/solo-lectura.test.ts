@@ -9,6 +9,10 @@ import { describe, expect, it } from "vitest";
 // `src/lib/reservas/` también tiene el guardado de M2-01 a M2-04 (que corre
 // en el servidor, no en estas pantallas): se revisa lo que usan las
 // pantallas, `consultas.ts` y `reglas.ts`, más la carpeta de componentes.
+//
+// M2-06 fila 13: la única escritura es la marca del owner sobre una reserva
+// de prueba, por la server action `app/(app)/reservas/[id]/acciones.ts` (con
+// la sesión y RLS); los componentes solo la llaman.
 
 const RAIZ = join(__dirname, "..", "..");
 const COMPONENTES = join(RAIZ, "components", "reservas");

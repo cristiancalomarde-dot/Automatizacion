@@ -121,3 +121,59 @@
   font-family: var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
   font-size: 20px;
 }
+
+/* Modo prueba (spec M2-06): el enlace para ver las de prueba, la medición y la marca del owner. */
+.barraPrueba {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.medicion {
+  font-weight: 600;
+}
+
+.botonesRevision {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.formRevision {
+  margin: 8px 0 0;
+  padding: 12px;
+  border: 1px solid var(--color-borde);
+  border-radius: 6px;
+}
+
+.opcionesRevision {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin: 6px 0 10px;
+}
+
+.opcionRevision {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+}
+
+.notaRevision {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.notaRevision textarea {
+  width: 100%;
+  font: inherit;
+  padding: 6px 8px;
+  border: 1px solid var(--color-borde-control);
+  border-radius: 4px;
+  resize: vertical;
+}

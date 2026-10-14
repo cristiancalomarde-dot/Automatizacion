@@ -12,6 +12,7 @@ import { Aviso, Chip, EsqueletoDetalle, EstadoError, EstadoVacio } from "@/compo
 import ui from "@/components/ui/ui.module.css";
 import { ChipEstado, MarcasReserva } from "./marcas";
 import { MailOriginal } from "./mail-original";
+import { RevisionPrueba } from "./revision-prueba";
 import estilos from "./reservas.module.css";
 
 const T = TEXTOS.reserva;
@@ -107,6 +108,8 @@ function Detalle({ reserva }: { reserva: DetalleReserva }) {
           ) : null}
         </Aviso>
       ) : null}
+
+      {reserva.dePrueba ? <RevisionPrueba reservaId={reserva.id} /> : null}
 
       <div className={estilos.columnas}>
         <div className={estilos.columna}>

@@ -200,6 +200,13 @@ export const TEXTOS = {
     sinProducto: "Sin producto reconocido",
     dePrueba: "De prueba",
     posibleDuplicada: "posible duplicada",
+    /** Modo prueba (spec M2-06 §4). */
+    verPrueba: (n: number) => `Ver las de prueba (${n})`,
+    soloPrueba: (n: number) =>
+      `Todavía no entraron reservas reales. Hay ${n === 1 ? "1 de prueba" : `${n} de prueba`}.`,
+    verlasPrueba: "Ver las de prueba",
+    ocultarPrueba: "Ocultar las de prueba",
+    errorMarcas: "No pudimos cargar las marcas de revisión de las reservas de prueba.",
     /** Nombres fijos de user-flow.md §3. */
     estados: {
       recibida: "recibida",
@@ -218,6 +225,33 @@ export const TEXTOS = {
     noExiste: "Esta reserva no existe.",
     volver: "Volver a las reservas",
     avisoPrueba: "Reserva de prueba. Se cargó para revisar cómo se leen los mails. No es una reserva real.",
+    /** La marca del owner sobre una reserva de prueba (spec M2-06 fila 13). */
+    revision: {
+      titulo: "¿Quedó bien?",
+      ayuda: "Comparala con el mail original. Si quedó para revisión con el motivo correcto, está bien.",
+      bien: "Está bien",
+      corregir: "Hay que corregir",
+      queMal: "Qué está mal",
+      opciones: {
+        producto: "Producto",
+        fechas: "Fechas",
+        pasajeros: "Pasajeros",
+        vuelos: "Vuelos",
+        estado_motivo: "Estado o motivo",
+        otro: "Otro",
+      },
+      nota: "Nota (opcional)",
+      guardar: "Guardar",
+      cancelar: "Cancelar",
+      guardando: "Guardando…",
+      faltaQue: "Marcá al menos una cosa que esté mal.",
+      error: "No se pudo guardar la marca. La anterior queda como estaba.",
+      errorCarga: "No pudimos cargar la marca de esta reserva.",
+      sinMarca: "Todavía no la marcó nadie.",
+      marcadaBien: (quien: string, cuando: string) => `Marcada como bien por ${quien} el ${cuando}.`,
+      marcadaMal: (quien: string, cuando: string, que: string) => `Marcada para corregir (${que}) por ${quien} el ${cuando}.`,
+      cambiar: "Cambiar la marca",
+    },
     agencia: "Agencia",
     numero: "Número de la agencia",
     llego: "Llegó",
