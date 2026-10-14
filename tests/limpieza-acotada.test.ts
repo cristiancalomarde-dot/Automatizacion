@@ -18,7 +18,18 @@ function archivos(dir: string): string[] {
 }
 
 /** Llamar al borrado de TODO: la función del servidor o el rpc directo con la service role. */
-const BORRA_TODO = [/\bborrarDatosDePrueba\s*\(/, /\badmin\.rpc\(\s*["']borrar_datos_de_prueba["']/];
+const BORRA_TODO = [
+  /\bborrarDatosDePrueba\s*\(/,
+  /\bborrarTodoLoDePrueba\s*\(/,
+  /\badmin\.rpc\(\s*["']borrar_datos_de_prueba["']/,
+];
+
+/**
+ * Las únicas excepciones (M2-06): el `--borrar` explícito del modo prueba, y
+ * el test de ese `--borrar` (fila 8), que solo corre si no hay otros datos de
+ * prueba cargados (si los hay, se saltea).
+ */
+const PERMITIDOS = new Set(["scripts/probar-mails.ts", "tests/modo-prueba-m2-06.integration.test.ts"]);
 
 /** El código sin las líneas de comentario (los comentarios pueden nombrar la función). */
 function codigo(ruta: string): string {
@@ -38,7 +49,9 @@ describe("la limpieza de los tests es acotada", () => {
   });
 
   it("ningún test ni script llama al borrado de todo lo de prueba", () => {
-    const culpables = revisados.filter((r) => BORRA_TODO.some((p) => p.test(codigo(r))));
+    const culpables = revisados
+      .filter((r) => !PERMITIDOS.has(relative(RAIZ, r).split("\\").join("/")))
+      .filter((r) => BORRA_TODO.some((p) => p.test(codigo(r))));
     expect(culpables.map((r) => relative(RAIZ, r))).toEqual([]);
   });
 });
