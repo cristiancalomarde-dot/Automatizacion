@@ -149,6 +149,12 @@ diga cada ficha.
     solo a ccalomarde@; el owner le pide a Jysk que las mande a sales@ con copia a él, y guarda
     4 o 5 ejemplos en `Insumos/Mails/BPA/`.
 - **Costo:** con esto, la IA lee del orden de 3 a 5 mails por día, muy por debajo del techo.
+- **Iguazú sin dato de llegada (owner, 2026-10-14):** Kilroy suele reservar Iguazú (OD010A–D)
+  sin vuelo de llegada; a veces llegan en bus. La reserva no va a revisión por eso: sigue como
+  "recibida" (el alojamiento es crítico) con un aviso visible "sin dato de llegada", que se le
+  pasa a Cuenca del Plata cuando llegue. Códigos confirmados el mismo día:
+  `HI_ARGENTINA_IGUAZU_BR_4DAYS-677` = OD010B, `HI_ARGENTINA_SAN_PEDRO_ATACAMA_4DAYS-677` = OD030,
+  y "Patagonia Adventure Tour 16 Days" de TourRadar = AR09.
 - **Base de pruebas separada antes de M2-07 (2026-10-14):** las pruebas automáticas y el
   desarrollo pasan a un segundo proyecto de Supabase; la base actual queda para producción.
   Va como paso previo de M2-07 (ver `DECISIONS.md` 2026-10-14).
