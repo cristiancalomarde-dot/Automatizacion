@@ -10,10 +10,16 @@
  */
 
 export interface LectorDeAgencia {
-  /** false = la agencia no manda código (TourRadar): se empareja por nombre o con la IA. */
+  /** false = la agencia no manda código: se empareja por nombre o con la IA. */
   usaCodigo: boolean;
   /** Los códigos a buscar, en orden, para lo que trajo el mail. */
   codigosCandidatos(codigoDelMail: string): string[];
+  /**
+   * true = un código que no está cargado no frena: se sigue con el nombre y la
+   * IA. TourRadar (owner 2026-10-14): el número de tour sirve en el paso 1,
+   * pero la lista de números está a medio validar (borrador de 106 IDs).
+   */
+  siguePorNombreSinCodigo?: boolean;
 }
 
 /** El código tal cual (sin espacios a los costados). La regla por defecto de una agencia nueva. */
@@ -44,7 +50,12 @@ export const ENVOLTORIO_KILROY = /^HI_(?:ARGENTINA|TRAVEL)_(.+)-677$/;
 
 export const LECTORES_POR_AGENCIA: Readonly<Record<string, LectorDeAgencia>> = {
   Kilroy: lectorPorEnvoltorio(ENVOLTORIO_KILROY),
-  TourRadar: { usaCodigo: false, codigosCandidatos: () => [] },
+  /** TourRadar: el número de tour (`150146`), solo dígitos; cualquier otra cosa no es un código. */
+  TourRadar: {
+    usaCodigo: true,
+    codigosCandidatos: (c) => (/^\d+$/.test(c.trim()) ? [c.trim()] : []),
+    siguePorNombreSinCodigo: true,
+  },
 };
 
 export function lectorDe(agencia: string, lectores: Readonly<Record<string, LectorDeAgencia>> = LECTORES_POR_AGENCIA): LectorDeAgencia {

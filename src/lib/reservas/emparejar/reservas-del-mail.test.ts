@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { catalogoDePrueba, detallePorId, fichaDePrueba, idDe, proveedorPatagoniaPlanet } from "./__fixtures__/cargar";
+import { catalogoDePrueba, detallePorId, fichaDePrueba, idDe, noCargadosDePrueba, proveedorPatagoniaPlanet } from "./__fixtures__/cargar";
 import type { ProponerProducto } from "./emparejar";
 import { armarReservas, type DependenciasReservas } from "./reservas-del-mail";
 
@@ -90,6 +90,18 @@ describe("M2-03 fila 14 — estado final", () => {
     ]);
     expect(r.entrada.productoTextoAgencia).toContain("HI_TRAVEL_ARCH_EXP-677");
     expect(proponer).not.toHaveBeenCalled();
+    expect(r.costo).toBe(0);
+  });
+
+  it("owner 2026-10-14: ARCH33EXP (conocido, no cargado) → para revisión con el motivo 'no cargado' y 0 llamadas a la IA", async () => {
+    const proponer = iaQueDice("ARCH33", 0.99);
+    const [r] = await armarReservas(fichaDePrueba("kilroy-arch-exp-dk1586168"), { ...deps(proponer), noCargados: noCargadosDePrueba() });
+    expect(r.entrada.estado).toBe("para_revision");
+    expect(r.entrada.motivosRevision).toEqual([
+      "El producto ARCH33EXP (Patagonia, Trekking Paradise with W-Trek EXPRESS) existe en el catálogo de HI Travel pero todavía no está cargado en el sistema.",
+    ]);
+    expect(proponer).not.toHaveBeenCalled();
+    expect(r.llamadas).toEqual([]);
     expect(r.costo).toBe(0);
   });
 });

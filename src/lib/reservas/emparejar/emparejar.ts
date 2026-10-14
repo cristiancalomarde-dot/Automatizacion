@@ -3,6 +3,7 @@ import type { OrigenEmparejado } from "../tipos";
 import { lectorDe, LECTORES_POR_AGENCIA, type LectorDeAgencia } from "./agencias";
 import type { CatalogoParaEmparejar, ProductoDeLista } from "./catalogo";
 import { MOTIVOS_EMPAREJADO as M } from "./motivos";
+import { buscarNoCargado, type ProductoNoCargado } from "./productos-no-cargados";
 
 /**
  * Reconocer el producto de lo que pidió una agencia (spec M2-03 filas 1-7 y
@@ -16,6 +17,11 @@ import { MOTIVOS_EMPAREJADO as M } from "./motivos";
  * 3. **Propuesta de la IA** (solo sin código): elige de la lista cerrada del
  *    catálogo, o "ninguno". Se acepta con confianza ≥ 0,9 y, en un tour, si
  *    sus noches coinciden con las fechas del mail.
+ *
+ * Un producto conocido que todavía no está cargado (`data/productos-no-cargados.csv`,
+ * owner 2026-10-14) se reconoce en el paso 1 o 2 y queda para revisión sin IA.
+ * TourRadar manda el número de tour: un número que no está cargado sigue por
+ * el nombre y la IA (`siguePorNombreSinCodigo`).
  *
  * Los pasos 1 y 2 son gratis y van primero (#3). Esta función no escribe en
  * ningún lado (fila 16): lo que aprende la IA no se guarda como código.
@@ -50,6 +56,8 @@ export interface ContextoEmparejado {
   /** Sin esto no hay paso 3 (la reserva queda para revisión). */
   proponer?: ProponerProducto;
   lectores?: Readonly<Record<string, LectorDeAgencia>>;
+  /** Productos conocidos que todavía no están cargados (`data/productos-no-cargados.csv`). */
+  noCargados?: readonly ProductoNoCargado[];
 }
 
 export interface ResultadoEmparejado {
@@ -95,8 +103,7 @@ const sinReconocer = (motivo: string, extra: Partial<ResultadoEmparejado> = {}):
 });
 
 /** Paso 1: códigos que el lector de la agencia saca del mail, contra las filas de esa agencia. */
-function porCodigo(ctx: ContextoEmparejado, codigo: string): ProductoDeLista | null {
-  const candidatos = lectorDe(ctx.agencia, ctx.lectores ?? LECTORES_POR_AGENCIA).codigosCandidatos(codigo);
+function porCodigo(ctx: ContextoEmparejado, candidatos: string[]): ProductoDeLista | null {
   for (const candidato of candidatos) {
     const fila = ctx.catalogo.codigos.find((c) => c.agencia === ctx.agencia && c.codigo === candidato);
     const producto = fila && ctx.catalogo.productos.find((p) => p.id === fila.productoId);
@@ -124,16 +131,23 @@ export async function emparejarProducto(pedido: PedidoDeProducto, ctx: ContextoE
   const codigo = lector.usaCodigo ? (pedido.codigo?.trim() ?? "") : "";
   const nombre = pedido.nombre.trim() || codigo;
 
+  const noCargado = (p: ProductoNoCargado) => sinReconocer(M.productoNoCargado(p.codigo, p.nombre));
+
   // Paso 1 — código exacto. Un código que no está es un producto no cargado: sin IA (fila 5).
   if (codigo) {
-    const producto = porCodigo(ctx, codigo);
+    const candidatos = lector.codigosCandidatos(codigo);
+    const producto = porCodigo(ctx, candidatos);
     if (producto) return { ...sinReconocer(""), producto, origen: "codigo", confianza: 1, motivo: null };
-    return sinReconocer(M.codigoNoCargado(codigo, pedido.nombre.trim() || null));
+    const conocido = buscarNoCargado(ctx.noCargados ?? [], ctx.agencia, { codigos: [...candidatos, codigo], nombre: null });
+    if (conocido) return noCargado(conocido);
+    if (!lector.siguePorNombreSinCodigo) return sinReconocer(M.codigoNoCargado(codigo, pedido.nombre.trim() || null));
   }
 
   // Paso 2 — sin código: el nombre que usa la agencia.
   const producto = porNombre(ctx, nombre);
   if (producto) return { ...sinReconocer(""), producto, origen: "nombre", confianza: 1, motivo: null };
+  const conocido = buscarNoCargado(ctx.noCargados ?? [], ctx.agencia, { codigos: [], nombre });
+  if (conocido) return noCargado(conocido);
 
   // Paso 3 — la IA, con la lista cerrada.
   if (!ctx.proponer) return sinReconocer(M.iaNoDisponible(nombre));

@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { FilaLlamadaIA, RegistroLlamadasIA } from "@/lib/ia/registro-llamadas";
 import { cargarProducto } from "@/lib/catalogo/consultas";
@@ -11,6 +13,7 @@ import { cargarCatalogoParaEmparejar, type CatalogoParaEmparejar } from "./catal
 import { componentesDeLaReserva, PROVEEDOR_TRANSFER_PNT, saleDePuertoNatales } from "./componentes";
 import { emparejarProducto, type ProponerProducto, type ResultadoEmparejado } from "./emparejar";
 import { MOTIVOS_EMPAREJADO as M } from "./motivos";
+import { ARCHIVO_PRODUCTOS_NO_CARGADOS, leerProductosNoCargados, type ProductoNoCargado } from "./productos-no-cargados";
 import { motivosDeVuelos } from "./vuelos-requeridos";
 
 /**
@@ -33,6 +36,8 @@ export interface DependenciasReservas {
   proponer?: ProponerProducto;
   proveedorTransferPNT: { id: string; nombre: string } | null;
   lectores?: Readonly<Record<string, LectorDeAgencia>>;
+  /** Productos conocidos que todavía no están cargados (owner 2026-10-14). */
+  noCargados?: readonly ProductoNoCargado[];
 }
 
 export type EntradaArmada = Omit<ReservaEntrada, "mailRecibidoId" | "dePrueba" | "motivosRevision"> & {
@@ -114,6 +119,7 @@ export async function armarReservas(
       catalogo: deps.catalogo,
       proponer: tipo === "reserva_nueva" ? deps.proponer : undefined,
       lectores: deps.lectores,
+      noCargados: deps.noCargados,
     });
 
     const motivos: string[] = [];
@@ -193,7 +199,8 @@ export async function crearReservasDelMail(
  * Las dependencias reales: el catálogo de la base, el detalle de cada
  * producto con la misma lectura que la pantalla (`cargarProducto`) y el
  * proveedor del transfer al aeropuerto PNT (Patagonia Planet, DECISIONS
- * 2026-10-06). Solo lectura.
+ * 2026-10-06), y los productos conocidos que todavía no están cargados
+ * (`data/productos-no-cargados.csv`). Solo lectura.
  */
 export async function cargarDependenciasReservas(
   admin: SupabaseClient,
@@ -209,5 +216,6 @@ export async function cargarDependenciasReservas(
     detalle: (id) => cargarProducto(admin, id),
     proponer,
     proveedorTransferPNT: (proveedor.data as { id: string; nombre: string } | null) ?? null,
+    noCargados: leerProductosNoCargados(readFileSync(join(process.cwd(), "data", ARCHIVO_PRODUCTOS_NO_CARGADOS), "utf-8")),
   };
 }

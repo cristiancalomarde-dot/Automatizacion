@@ -5,6 +5,8 @@ import type { DetalleProducto } from "@/lib/catalogo/tipos";
 import type { DatoClave, FichaLectura, TipoMail, VueloIA } from "../../esquema-ficha";
 import { armarCatalogo, type CatalogoParaEmparejar, type FilasCatalogo } from "../catalogo";
 import { leerCodigosKilroy } from "../codigos-kilroy";
+import { leerCodigosTourRadarCsv } from "../codigos-tourradar-csv";
+import { leerProductosNoCargados, type ProductoNoCargado } from "../productos-no-cargados";
 
 /**
  * Ayudas de los tests de M2-03: la foto del catálogo real (sin contactos de
@@ -38,10 +40,30 @@ export function filasCodigosKilroy(): FilasCatalogo["codigos"] {
   }));
 }
 
-/** El catálogo real; con `codigosKilroy: false`, sin las filas de `data/codigos-kilroy.csv`. */
+/** Las filas de `data/codigos-tourradar.csv` como filas de `codigo_externo` (owner 2026-10-14: 150146 → AR09). */
+export function filasCodigosTourRadarCsv(): FilasCatalogo["codigos"] {
+  const idPorCodigo = new Map(fotoCatalogo().productos.map((p) => [p.codigo, p.id]));
+  const csv = readFileSync(join(process.cwd(), "data", "codigos-tourradar.csv"), "utf-8");
+  return leerCodigosTourRadarCsv(csv).map((c) => ({
+    producto_id: idPorCodigo.get(c.nuestroCodigo)!,
+    agencia: "TourRadar",
+    codigo: c.codigo,
+    nombre_externo: c.nombre,
+  }));
+}
+
+/** `data/productos-no-cargados.csv` (owner 2026-10-14). */
+export function noCargadosDePrueba(): ProductoNoCargado[] {
+  return leerProductosNoCargados(readFileSync(join(process.cwd(), "data", "productos-no-cargados.csv"), "utf-8"));
+}
+
+/**
+ * El catálogo real con lo que dejan las cargas de `data/codigos-tourradar.csv`
+ * y, salvo `codigosKilroy: false`, `data/codigos-kilroy.csv`.
+ */
 export function catalogoDePrueba(opciones: { codigosKilroy?: boolean } = {}): CatalogoParaEmparejar {
   const f = fotoCatalogo();
-  const extra = opciones.codigosKilroy === false ? [] : filasCodigosKilroy();
+  const extra = [...(opciones.codigosKilroy === false ? [] : filasCodigosKilroy()), ...filasCodigosTourRadarCsv()];
   const yaEstan = new Set(f.codigos.map((c) => `${c.agencia}|${c.codigo}`));
   return armarCatalogo({ ...f, codigos: [...f.codigos, ...extra.filter((c) => !yaEstan.has(`${c.agencia}|${c.codigo}`))] });
 }

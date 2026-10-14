@@ -60,4 +60,14 @@ export const MOTIVOS_EMPAREJADO = {
     } para ${para}`,
   /** Fila 12. */
   elegirVariante: (codigo: string) => `Elegir la variante de ${codigo} (con o sin traslados)`,
+  /** Owner 2026-10-14: producto conocido que todavía no está cargado (`data/productos-no-cargados.csv`). */
+  productoNoCargado: (codigo: string, nombre: string) =>
+    `El producto ${codigo} (${nombre}) existe en el catálogo de HI Travel pero todavía no está cargado en el sistema.`,
+  /** Owner 2026-10-14: un estado de cuenta de cargo de TourRadar que se une a una reserva. */
+  cargoExtra: (monto: { importe: number | null; moneda: string | null }) => {
+    const importe =
+      monto.importe === null ? null : Number.isInteger(monto.importe) ? String(monto.importe) : monto.importe.toFixed(2);
+    const texto = importe ? ` (+${importe}${monto.moneda ? ` ${monto.moneda}` : ""})` : "";
+    return `TourRadar mandó un cargo extra${texto}: puede ser un servicio nuevo. Revisar.`;
+  },
 } as const;

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { catalogoDePrueba, idDe } from "./__fixtures__/cargar";
+import { catalogoDePrueba, idDe, noCargadosDePrueba } from "./__fixtures__/cargar";
 import { lectorPorEnvoltorio, LECTORES_POR_AGENCIA, type LectorDeAgencia } from "./agencias";
 import { armarCatalogo } from "./catalogo";
 import { emparejarProducto, UMBRAL_CONFIANZA_PRODUCTO, type ProponerProducto } from "./emparejar";
@@ -318,6 +318,88 @@ describe("M2-03 fila 15 — sumar una agencia no cambia el núcleo", () => {
     const kilroy = lectorPorEnvoltorio(/^HI_(?:ARGENTINA|TRAVEL)_(.+)-677$/);
     expect(kilroy.codigosCandidatos("HI_ARGENTINA_OD010D-677")).toEqual(["OD010D", "HI_ARGENTINA_OD010D-677"]);
     expect(kilroy.codigosCandidatos("OD010D")).toEqual(["OD010D"]);
-    expect(LECTORES_POR_AGENCIA.TourRadar.usaCodigo).toBe(false);
+    // Owner 2026-10-14: TourRadar trae número de tour; el paso 1 también le sirve.
+    expect(LECTORES_POR_AGENCIA.TourRadar.usaCodigo).toBe(true);
+    expect(LECTORES_POR_AGENCIA.TourRadar.codigosCandidatos(" 150146 ")).toEqual(["150146"]);
+  });
+});
+
+describe("Productos y códigos (owner, 2026-10-14) — productos conocidos que no están cargados", () => {
+  const catalogo = catalogoDePrueba();
+  const noCargados = noCargadosDePrueba();
+  const textoNoCargado = (codigo: string, nombre: string) =>
+    `El producto ${codigo} (${nombre}) existe en el catálogo de HI Travel pero todavía no está cargado en el sistema.`;
+
+  it("Kilroy HI_TRAVEL_ARCH_EXP-677 → ARCH33EXP no cargado, sin IA", async () => {
+    const proponer = iaQueDice("ARCH33", 0.99);
+    const r = await emparejarProducto(pedido("Patagonia, Trekking Paradise with W-Trek EXPRESS", "HI_TRAVEL_ARCH_EXP-677"), {
+      agencia: "Kilroy",
+      catalogo,
+      proponer,
+      noCargados,
+    });
+    expect(r.producto).toBeNull();
+    expect(r.motivo).toBe(textoNoCargado("ARCH33EXP", "Patagonia, Trekking Paradise with W-Trek EXPRESS"));
+    expect(r.costo).toBe(0);
+    expect(proponer).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ["150104", "ARBR23", "From Buenos Aires to Rio"],
+    ["317766", "ARUY01", "Argentina and Uruguay, heart of the River Plate"],
+    ["275366", "ARCH33EXP", "Patagonia, Trekking Paradise with W-Trek EXPRESS"],
+  ])("TourRadar número de tour %s → %s no cargado, sin IA", async (codigo, esperado, nombre) => {
+    const proponer = iaQueDice("BRARCH26", 0.99);
+    const r = await emparejarProducto(pedido("x", codigo), { agencia: "TourRadar", catalogo, proponer, noCargados });
+    expect(r.producto).toBeNull();
+    expect(r.motivo).toBe(textoNoCargado(esperado, nombre));
+    expect(proponer).not.toHaveBeenCalled();
+  });
+
+  it("TourRadar sin número, con el nombre del PDF 1377583 → ARBR23 no cargado, sin IA", async () => {
+    const proponer = iaQueDice(null, 0.95);
+    const r = await emparejarProducto(pedido("Buenos Aires to Rio de Janeiro 12 Days", null, "2026-11-10"), {
+      agencia: "TourRadar",
+      catalogo,
+      proponer,
+      noCargados,
+    });
+    expect(r.motivo).toBe(textoNoCargado("ARBR23", "From Buenos Aires to Rio"));
+    expect(proponer).not.toHaveBeenCalled();
+  });
+
+  it("TourRadar 150146 → AR09 por código (data/codigos-tourradar.csv), sin IA", async () => {
+    const proponer = iaQueDice("BRARCH26", 0.99);
+    const r = await emparejarProducto(pedido("Patagonia Adventure Tour 16 Days", "150146"), { agencia: "TourRadar", catalogo, proponer, noCargados });
+    expect(r.producto?.codigo).toBe("AR09");
+    expect(r.origen).toBe("codigo");
+    expect(proponer).not.toHaveBeenCalled();
+  });
+
+  it("TourRadar con un número de tour que no está cargado sigue por el nombre (la lista de TourRadar está a medio cargar)", async () => {
+    const proponer = iaQueDice("OD010B", 0.99);
+    const r = await emparejarProducto(pedido("Iguazu Falls on a Shoestring (3N)", "999999"), { agencia: "TourRadar", catalogo, proponer, noCargados });
+    expect(r.producto?.codigo).toBe("OD010A");
+    expect(r.origen).toBe("nombre");
+    expect(proponer).not.toHaveBeenCalled();
+  });
+
+  it("TourRadar con número y nombre desconocidos sigue a la IA", async () => {
+    const proponer = iaQueDice(null, 0.95);
+    const r = await emparejarProducto(pedido("Some Other Tour", "999999"), { agencia: "TourRadar", catalogo, proponer, noCargados });
+    expect(proponer).toHaveBeenCalledOnce();
+    expect(r.motivo).toContain("no está en el catálogo");
+  });
+
+  it("Kilroy con un código desconocido que no está en la lista sigue igual: no está en el catálogo, sin IA", async () => {
+    const proponer = iaQueDice("OD013", 0.99);
+    const r = await emparejarProducto(pedido("El Calafate & El Chalten full day - 4 nights", "HI_ARGENTINA_OD014-677"), {
+      agencia: "Kilroy",
+      catalogo,
+      proponer,
+      noCargados,
+    });
+    expect(r.motivo).toBe("El producto HI_ARGENTINA_OD014-677 (El Calafate & El Chalten full day - 4 nights) no está en el catálogo");
+    expect(proponer).not.toHaveBeenCalled();
   });
 });
