@@ -34,7 +34,7 @@ import { mesActual } from "@/lib/ia/techo-gasto";
 import { borrarTodoLoDePrueba } from "@/lib/modo-prueba/borrar";
 import { correrModoPrueba, type ResultadoArchivo } from "@/lib/modo-prueba/corrida";
 import { listarArchivos } from "@/lib/modo-prueba/leer-archivo";
-import { armarReporteMail, nombreDelReporte } from "@/lib/modo-prueba/reporte";
+import { armarReporteMail, nombreDelReporte, nombreVisible } from "@/lib/modo-prueba/reporte";
 import { armarResumen, type ArchivoDelResumen, type EvalDeModelo, type ReservaDelResumen } from "@/lib/modo-prueba/resumen";
 import { TOPE_CORRIDA_USD } from "@/lib/modo-prueba/tope-corrida";
 import { crearProponedorIA } from "@/lib/reservas/emparejar/propuesta-ia";
@@ -83,11 +83,11 @@ function leerIndice(): ArchivoDelResumen[] {
 function guardarIndice(resultados: ResultadoArchivo[]) {
   const porArchivo = new Map(leerIndice().map((a) => [a.archivo, a]));
   for (const r of resultados) {
-    const anterior = porArchivo.get(r.archivo);
+    const anterior = porArchivo.get(nombreVisible(r.archivo));
     // Uno ya procesado conserva lo que dijo la corrida en que se leyó.
     if (r.estado === "ya_procesado" && anterior) continue;
-    porArchivo.set(r.archivo, {
-      archivo: r.archivo,
+    porArchivo.set(nombreVisible(r.archivo), {
+      archivo: nombreVisible(r.archivo),
       estado: r.estado === "ya_procesado" ? "procesado" : r.estado,
       ...(r.motivo ? { motivo: r.motivo } : {}),
       reservas: r.reservas.filter((x) => x.accion !== "sumada").length,
@@ -126,7 +126,7 @@ async function escribirResumen(admin: SupabaseClient) {
     const v = marcaDe.get(r.id);
     const archivo = r.mail?.archivo_origen ?? null;
     return {
-      archivo,
+      archivo: archivo ? nombreVisible(archivo) : null,
       reporte: archivo ? nombreDelReporte(archivo) : null,
       bookingId: r.booking_id_original ?? r.booking_id,
       agencia: r.agencia,
@@ -201,8 +201,9 @@ async function correr(admin: SupabaseClient, opciones: ReturnType<typeof argumen
     alTerminar: (r) => {
       console.log(lineaDe(r));
       const destino = join(DIR_REPORTES, nombreDelReporte(r.archivo));
-      // Uno ya procesado no se vuelve a leer: su reporte (con lo que entendió la IA) se conserva.
-      if (r.estado !== "ya_procesado" || !existsSync(destino)) writeFileSync(destino, armarReporteMail(r));
+      // Uno ya procesado se rearma con lo guardado (su ficha está en la reserva). Si no creó ninguna
+      // reserva (se sumó a otra), su ficha no quedó guardada: se conserva el reporte que hay.
+      if (r.estado !== "ya_procesado" || r.lectura || !existsSync(destino)) writeFileSync(destino, armarReporteMail(r));
     },
   });
   guardarIndice(resultado.archivos);

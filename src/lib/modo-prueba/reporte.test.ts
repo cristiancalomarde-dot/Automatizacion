@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { FichaLectura } from "@/lib/reservas/esquema-ficha";
-import { armarReporteMail, nombreDelReporte, sinDatosPersonales, type ResultadoParaReporte } from "./reporte";
+import { armarReporteMail, nombreDelReporte, nombreVisible, sinDatosPersonales, type ResultadoParaReporte } from "./reporte";
 
 // Spec M2-06 filas 11 y 12: un reporte por mail, en llano, sin datos personales
 // (de los pasajeros, solo la cantidad y el apellido). Datos inventados.
@@ -172,5 +172,21 @@ describe("sinDatosPersonales y nombreDelReporte", () => {
     );
     expect(nombreDelReporte("Reserva de Cliente Kilroy Copenagiue varias.docx")).toBe("Reserva de Cliente Kilroy Copenagiue varias.md");
     expect(nombreDelReporte("Kilroy-INBOX-15933.eml")).toBe("Kilroy-INBOX-15933.md");
+  });
+});
+
+describe("nombreVisible", () => {
+  it("el título del reporte de un PDF no lleva las notas del owner (pueden traer el nombre del pasajero)", () => {
+    const md = armarReporteMail({
+      archivo: "1# Booking Statement 0000042 - 00000042 - vendorbill Ejemplo Reserva de TR Juan Perez Original.pdf",
+      estado: "salteado",
+      agencia: "TourRadar",
+      motivo: "x",
+      costo: 0,
+      reservas: [],
+    });
+    expect(md.split("\n")[0]).toBe("# Booking Statement 0000042 - 00000042 - vendorbill.pdf");
+    expect(md).not.toContain("Juan");
+    expect(nombreVisible("Reserva de Cliente Kilroy UK - 5 Countries 5C01.docx")).toBe("Reserva de Cliente Kilroy UK - 5 Countries 5C01.docx");
   });
 });

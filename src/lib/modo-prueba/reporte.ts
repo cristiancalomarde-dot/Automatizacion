@@ -72,10 +72,19 @@ export function sinDatosPersonales(texto: string): string {
 
 /** El nombre del archivo del reporte. Un PDF de TourRadar usa su "Booking Statement N - M - tipo" (el resto del nombre son notas del owner). */
 export function nombreDelReporte(archivo: string): string {
-  const sinExt = basename(archivo, extname(archivo));
+  return `${basename(nombreVisible(archivo), extname(archivo))}.md`;
+}
+
+/**
+ * El nombre del archivo para mostrar (título del reporte, resumen): el de un
+ * PDF de TourRadar sin las notas del owner, que pueden traer el nombre del pasajero.
+ */
+export function nombreVisible(archivo: string): string {
+  const ext = extname(archivo);
+  const sinExt = basename(archivo, ext);
   const statement = /booking statement\s+\d+\s*-\s*\d+\s*-\s*[a-z]+/i.exec(sinExt);
   const base = (statement ? statement[0] : sinExt).replace(/[\\/:*?"<>|#]/g, "").replace(/\s+/g, " ").trim();
-  return `${base}.md`;
+  return `${base}${ext}`;
 }
 
 // --- formato ---------------------------------------------------------------------------
@@ -179,7 +188,7 @@ function seccionReserva(r: ReservaParaReporte, i: number, total: number): string
 }
 
 export function armarReporteMail(r: ResultadoParaReporte): string {
-  const l: string[] = [`# ${r.archivo}`, ""];
+  const l: string[] = [`# ${nombreVisible(r.archivo)}`, ""];
   l.push(`- **Agencia:** ${r.agencia ?? "ninguna (no es un mail de agencia)"}`);
   l.push(`- **Gasto de IA de este mail:** ${usd(r.costo)}`);
   l.push("");
@@ -193,9 +202,7 @@ export function armarReporteMail(r: ResultadoParaReporte): string {
     l.push(`**${r.motivo ?? "No procesado."}**`, "", "No se guardó ninguna reserva de este mail: no se inventa nada.");
     return `${l.join("\n")}\n`;
   }
-  if (r.estado === "ya_procesado") {
-    l.push("Este archivo ya se había procesado en una corrida anterior: no se volvió a leer ni gastó IA.");
-  }
+  // Un archivo ya procesado (otra corrida) se describe igual: su ficha y su gasto quedaron guardados.
 
   if (r.lectura?.estado === "leido") l.push(...queEntendio(r.lectura.ficha), "");
   else if (r.lectura?.estado === "para_revision") l.push("## Qué entendió la IA", "", `No se pudo leer: ${r.lectura.motivo}`, "");

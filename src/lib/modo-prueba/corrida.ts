@@ -129,6 +129,25 @@ export async function reservasDelMail(
     }));
 }
 
+/** La ficha de la IA de un mail ya procesado, guardada en la primera reserva que creó (`datos_extraidos`). */
+async function lecturaGuardada(admin: SupabaseClient, mailId: string): Promise<ResultadoLectura | undefined> {
+  const { data } = await admin
+    .from("reserva")
+    .select("datos_extraidos")
+    .eq("mail_recibido_id", mailId)
+    .not("datos_extraidos", "is", null)
+    .order("created_at")
+    .limit(1);
+  const ficha = data?.[0]?.datos_extraidos;
+  return ficha ? { estado: "leido", ficha, costo: 0 } : undefined;
+}
+
+/** Lo que gastó la IA con un mail ya procesado (sus llamadas en ia_llamada). */
+async function costoGuardado(admin: SupabaseClient, mailId: string): Promise<number> {
+  const { data } = await admin.from("ia_llamada").select("costo_usd").eq("mail_recibido_id", mailId);
+  return (data ?? []).reduce((s, l) => s + Number(l.costo_usd), 0);
+}
+
 export async function correrModoPrueba(rutas: readonly string[], o: OpcionesCorrida): Promise<ResultadoCorrida> {
   const topeUsd = o.tope ?? TOPE_CORRIDA_USD;
   const tope = crearTopeDeCorrida(o.registroUso, { tope: topeUsd, techo: o.techo });
@@ -195,6 +214,12 @@ export async function correrModoPrueba(rutas: readonly string[], o: OpcionesCorr
         },
       );
       lecturasIA += lecturasArchivo;
+      // Uno ya procesado no se vuelve a leer: lo que entendió la IA está guardado en su reserva.
+      let costo = r.costo;
+      if (r.estado === "ya_procesado") {
+        lectura = await lecturaGuardada(o.admin, r.mailRecibidoId);
+        costo = await costoGuardado(o.admin, r.mailRecibidoId);
+      }
       terminar({
         ...base,
         mailRecibidoId: r.mailRecibidoId,
@@ -203,7 +228,7 @@ export async function correrModoPrueba(rutas: readonly string[], o: OpcionesCorr
         agencia: decision.agencia,
         lectura: lectura?.estado === "leido" ? { estado: "leido", ficha: lectura.ficha } : lectura,
         reservas: await reservasDelMail(o.admin, r.mailRecibidoId, r.estado === "procesado" ? r.pedidos : undefined),
-        costo: r.costo,
+        costo,
       });
     } catch (e) {
       if (!(e instanceof TopeAlcanzado)) {
