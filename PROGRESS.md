@@ -51,7 +51,18 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
     - Para M2-06: el umbral de 0,9 y la detección de "con/sin traslados" por palabras.
     - El cambio de la limpieza de los tests (que no borren todo lo de prueba) sigue pendiente
       antes de M2-06.
-  - **Siguiente:** `/implementar M2-04` (o M2-05, o M2-08).
+  - **M2-04 terminada (2026-10-14):** commits `64f1709`…`7f74b05`, migración 0012 aplicada.
+    - Hecho: `procesar-mail.ts` (el circuito de un mail), `intercambio.ts`, `booking-id.ts` y
+      `respuestas.ts` (qué respuestas se leen, decisión del owner).
+    - Corrida real: US$ 0,19; la segunda pasada no gastó nada y no duplicó.
+    - Para confirmar con el owner: un statement de cargo de TourRadar que se une a una reserva
+      queda solo en el historial y no la manda a revisión.
+    - Sin transacción por mail: si algo falla a la mitad, queda en `error_proceso`.
+  - **Pendiente ofrecido al owner:** un borrador TourRadar ID → nuestro código. Partiría de
+    `Insumos/Listado Ids de TourRadar en relacion a Tours HI Travel links de wetu.xlsx` (111
+    tours) y alimentaría el cargador existente de `Codigos Productos Tourradar.xlsx` (hoy tiene 5
+    filas: OD010A-D y OD011).
+  - **Siguiente:** `/implementar M2-05` (pantallas) o M2-08.
   - Respuestas del owner a las preguntas de las fichas: en §3 del plan (2026-10-12). Quedan
     abiertos: el dominio de Jysk, el listado de países de Kilroy (el owner lo ofrece; mientras
     tanto, cualquier `kilroy.*`) y si se lee `INBOX.Promociones`.
