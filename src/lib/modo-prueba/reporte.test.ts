@@ -42,7 +42,7 @@ function ficha(): FichaLectura {
     datos_dudosos: [],
     notas: [],
     version_instrucciones: "lectura-mail.v2",
-    modelo: "claude-sonnet-5-5",
+    modelo: "modelo-de-prueba",
   };
 }
 

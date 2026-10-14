@@ -18,11 +18,11 @@ function datos(c: Partial<DatosResumen> = {}): DatosResumen {
       { archivo: "p.docx", estado: "salteado", motivo: "No es un mail de agencia", reservas: 0, reporte: "p.md" },
     ],
     gasto: { total: 0.4321, lecturas: 15, propuestas: 3 },
-    modelos: ["claude-sonnet-5-5"],
+    modelos: ["modelo-a"],
     versiones: ["lectura-mail.v2"],
     evals: [
-      { modelo: "claude-sonnet-5-5", version: "lectura-mail.v2", total: 100, gasto: 0.14, porCampo: { tipo: 100, numero: 100, pax: 100 }, cuando: "2026-10-14T01:06" },
-      { modelo: "claude-opus-5-5", version: "lectura-mail.v2", total: 97.6, gasto: 0.31, porCampo: { tipo: 100, numero: 100, pax: 83.3 }, cuando: "2026-10-14T20:00" },
+      { modelo: "modelo-a", version: "lectura-mail.v2", total: 100, gasto: 0.14, porCampo: { tipo: 100, numero: 100, pax: 100 }, cuando: "2026-10-14T01:06" },
+      { modelo: "modelo-b", version: "lectura-mail.v2", total: 97.6, gasto: 0.31, porCampo: { tipo: 100, numero: 100, pax: 83.3 }, cuando: "2026-10-14T20:00" },
     ],
     ...c,
   };
@@ -38,13 +38,13 @@ describe("armarResumen", () => {
   it("el gasto, el modelo y la versión de las instrucciones", () => {
     const md = armarResumen(datos());
     expect(md).toContain("US$ 0,4321");
-    expect(md).toContain("claude-sonnet-5-5");
+    expect(md).toContain("modelo-a");
     expect(md).toContain("lectura-mail.v2");
   });
 
   it("la comparación de modelos por campo, con su costo", () => {
     const md = armarResumen(datos());
-    expect(md).toMatch(/\| Campo \| claude-sonnet-5-5 \| claude-opus-5-5 \|/);
+    expect(md).toMatch(/\| Campo \| modelo-a \| modelo-b \|/);
     expect(md).toMatch(/\| pax \| 100% \| 83,3% \|/);
     expect(md).toMatch(/\| Costo de la corrida \| US\$ 0,1400 \| US\$ 0,3100 \|/);
   });
