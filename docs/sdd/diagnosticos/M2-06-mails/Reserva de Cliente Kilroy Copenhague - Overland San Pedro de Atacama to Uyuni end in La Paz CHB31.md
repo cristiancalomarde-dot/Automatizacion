@@ -1,7 +1,7 @@
 # Reserva de Cliente Kilroy Copenhague - Overland San Pedro de Atacama to Uyuni end in La Paz CHB31.docx
 
 - **Agencia:** Kilroy
-- **Gasto de IA de este mail:** US$ 0,0173
+- **Gasto de IA de este mail:** US$ 0,0170
 
 ## Qué entendió la IA
 

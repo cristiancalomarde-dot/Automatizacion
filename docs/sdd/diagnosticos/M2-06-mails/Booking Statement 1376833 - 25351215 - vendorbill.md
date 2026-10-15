@@ -1,7 +1,7 @@
 # Booking Statement 1376833 - 25351215 - vendorbill.pdf
 
 - **Agencia:** TourRadar
-- **Gasto de IA de este mail:** US$ 0,0319
+- **Gasto de IA de este mail:** US$ 0,0317
 
 ## Qué entendió la IA
 
@@ -19,7 +19,7 @@
 ### La reserva
 
 - **Lo que pidió la agencia:** Overland San Pedro de Atacama to Uyuni end in La Paz (7 Days)
-- **Producto:** **CHB31** Overland San Pedro de Atacama to Uyuni, end in La Paz, por propuesta de la IA, con confianza 0,93.
+- **Producto:** **CHB31** Overland San Pedro de Atacama to Uyuni, end in La Paz, por propuesta de la IA, con confianza 0,90.
 - **Partes del tour:** 3
 - **Fechas:** desde el 11/10/2026 · **Pax:** 2
 - **Estado:** Para revisión

@@ -1,7 +1,7 @@
 # Reserva de Cliente Kilroy Copenagiue varias.docx
 
 - **Agencia:** Kilroy
-- **Gasto de IA de este mail:** US$ 0,0216
+- **Gasto de IA de este mail:** US$ 0,0215
 
 ## Qué entendió la IA
 
@@ -14,8 +14,7 @@
 - **Fechas:** 06/01/2027 al 24/01/2027
 - **Pasajeros:** 2 pasajeros (apellidos: Josiasen, Høj)
 - **Vuelos:** Sin vuelos en el mail
-- **Pedidos especiales:**
-  - Kilroy solicita a HI Travel: información de pasaporte, información de vuelos y contacto de WhatsApp de los pasajeros
+- **Pedidos especiales:** ninguno
 - **Dudoso:** pax (la IA no estaba segura o un control del código falló)
 
 ## Qué quedó en el sistema

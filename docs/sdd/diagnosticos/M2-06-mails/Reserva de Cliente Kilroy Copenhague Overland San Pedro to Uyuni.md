@@ -1,7 +1,7 @@
 # Reserva de Cliente Kilroy Copenhague Overland San Pedro to Uyuni.docx
 
 - **Agencia:** Kilroy
-- **Gasto de IA de este mail:** US$ 0,0174
+- **Gasto de IA de este mail:** US$ 0,0170
 
 ## Qué entendió la IA
 

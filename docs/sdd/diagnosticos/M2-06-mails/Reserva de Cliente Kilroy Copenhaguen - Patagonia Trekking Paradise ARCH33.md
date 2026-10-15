@@ -1,7 +1,7 @@
 # Reserva de Cliente Kilroy Copenhaguen - Patagonia Trekking Paradise ARCH33.docx
 
 - **Agencia:** Kilroy
-- **Gasto de IA de este mail:** US$ 0,0209
+- **Gasto de IA de este mail:** US$ 0,0211
 
 ## Qué entendió la IA
 

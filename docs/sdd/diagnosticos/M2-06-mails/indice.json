@@ -2,7 +2,7 @@
   {
     "archivo": "Booking Statement 1363612 - 25160515 - vendorcredit.pdf",
     "estado": "procesado",
-    "reservas": 1,
+    "reservas": 2,
     "reporte": "Booking Statement 1363612 - 25160515 - vendorcredit.md"
   },
   {
@@ -271,14 +271,16 @@
   },
   {
     "archivo": "Kilroy-INBOX-15965.eml",
-    "estado": "procesado",
-    "reservas": 1,
+    "estado": "salteado",
+    "motivo": "Es un pedido de cotización, no una reserva (por ahora no se lee)",
+    "reservas": 0,
     "reporte": "Kilroy-INBOX-15965.md"
   },
   {
     "archivo": "Kilroy-INBOX-15966.eml",
-    "estado": "procesado",
-    "reservas": 1,
+    "estado": "salteado",
+    "motivo": "Es un pedido de cotización, no una reserva (por ahora no se lee)",
+    "reservas": 0,
     "reporte": "Kilroy-INBOX-15966.md"
   },
   {

@@ -1,7 +1,7 @@
 # Reserva de Cliente Kilroy UK - 5 Countries 5C01.docx
 
 - **Agencia:** Kilroy
-- **Gasto de IA de este mail:** US$ 0,0203
+- **Gasto de IA de este mail:** US$ 0,0202
 
 ## Qué entendió la IA
 

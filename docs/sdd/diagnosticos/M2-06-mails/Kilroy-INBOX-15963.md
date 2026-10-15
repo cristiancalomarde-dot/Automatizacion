@@ -1,7 +1,7 @@
 # Kilroy-INBOX-15963.eml
 
 - **Agencia:** Kilroy
-- **Gasto de IA de este mail:** US$ 0,0168
+- **Gasto de IA de este mail:** US$ 0,0167
 
 ## Qué entendió la IA
 
@@ -19,8 +19,8 @@
 ### La reserva
 
 - **Lo que pidió la agencia:** San Pedro de Atacama Explorer - 4 Days (HI_ARGENTINA_SAN_PEDRO_ATACAMA_4DAYS-677)
-- **Producto:** No se emparejó con ningún producto.
+- **Producto:** **OD030** San Pedro de Atacama Explorer, por el código exacto que mandó la agencia.
 - **Fechas:** 07/03/2027 al 10/03/2027 · **Pax:** 2
 - **Estado:** Para revisión
 - **Por qué quedó en revisión:**
-  - El producto HI_ARGENTINA_SAN_PEDRO_ATACAMA_4DAYS-677 (San Pedro de Atacama Explorer - 4 Days) no está en el catálogo
+  - Falta el vuelo de llegada a Calama (CJC) para el traslado de OD030

@@ -1,7 +1,7 @@
 # Booking Statement 1377598 - 25372219 - vendorbill.pdf
 
 - **Agencia:** TourRadar
-- **Gasto de IA de este mail:** US$ 0,0325
+- **Gasto de IA de este mail:** US$ 0,0270
 
 ## Qué entendió la IA
 
@@ -22,8 +22,10 @@
 ### La reserva
 
 - **Lo que pidió la agencia:** Patagonia Adventure Tour 16 Days
-- **Producto:** No se emparejó con ningún producto. La IA sugirió **AR09** Patagonia Adventure Tour, pero no alcanza para darlo por bueno.
+- **Producto:** **AR09** Patagonia Adventure Tour, por el nombre que usa la agencia (cargado en el sistema).
+- **Partes del tour:** 9
 - **Fechas:** desde el 28/10/2026 · **Pax:** 1
 - **Estado:** Para revisión
 - **Por qué quedó en revisión:**
-  - No se pudo reconocer con seguridad el producto Patagonia Adventure Tour 16 Days (la IA sugiere AR09, con confianza 0,82)
+  - Falta el vuelo de llegada a Buenos Aires (EZE o AEP) para el traslado de OD018
+  - Falta el vuelo de salida de Ushuaia (USH) para el traslado de OD022

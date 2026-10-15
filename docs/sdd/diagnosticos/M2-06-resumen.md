@@ -1,14 +1,16 @@
 # Modo prueba (M2-06): resumen
 
-Generado el 2026-10-14 con `npm run probar:mails -- --resumen`.
+Generado el 2026-10-15 con `npm run probar:mails -- --resumen`.
 
 ## La medición
 
-La marca del owner todavía no está disponible (falta aplicar la migración 0014): no hay medición.
+**Revisadas 0 de 23 · faltan 23 por revisar**
+
+Si más del 20% de las reservas revisadas está mal, se frena y no se activa la lectura automática (M2-07).
 
 ## Gasto y modelo
 
-- Gasto de IA de las reservas de prueba: **US$ 0,4590** (22 lecturas de mails y 4 propuestas de producto).
+- Gasto de IA de las reservas de prueba: **US$ 0,4143** (20 lecturas de mails y 2 propuestas de producto).
 - Modelo usado: claude-sonnet-5-5. Instrucciones: lectura-mail.v2.
 
 ## Sonnet contra Opus (`npm run eval:lectura`)
@@ -31,18 +33,19 @@ El mismo set de evaluación (las fichas que validó el owner), leído por cada m
 
 El modelo se fija en `src/lib/ia/modelos.ts` con el OK del owner (y se anota en `DECISIONS.md`).
 
-## Las reservas de prueba (24)
+## Las reservas de prueba (23)
 
 | Archivo | Agencia | Número | Producto | Estado | Marca del owner |
 |---|---|---|---|---|---|
 | Booking Statement 1363612 - 25160515 - vendorcredit.pdf | TourRadar | 1363612 | OD010A | Para revisión | sin marcar |
+| Booking Statement 1363612 - 25160515 - vendorcredit.pdf | TourRadar | 1363612 | sin producto | Para revisión | sin marcar |
 | Booking Statement 1376833 - 25351215 - vendorbill.pdf | TourRadar | 1376833 | CHB31 | Para revisión | sin marcar |
 | Booking Statement 1377583 - 25365166 - vendorbill.pdf | TourRadar | 1377583 | sin producto | Para revisión | sin marcar |
-| Booking Statement 1377598 - 25372219 - vendorbill.pdf | TourRadar | 1377598 | sin producto | Para revisión | sin marcar |
+| Booking Statement 1377598 - 25372219 - vendorbill.pdf | TourRadar | 1377598 | AR09 | Para revisión | sin marcar |
 | Booking Statement 1383503 - 25500905 - vendorbill.pdf | TourRadar | 1383503 | sin producto | Para revisión | sin marcar |
+| Reserva de Cliente Kilroy - Overland uyuni a san pedro saliendo de la paz (reverse).docx | Kilroy | DK1559523/fnie | BOCHI04R | Para revisión | sin marcar |
 | Reserva de Cliente Kilroy Aarhus - Rio Starter Package OD032.docx | Kilroy | DK1576836-26196085 | OD032 | Para revisión | sin marcar |
 | Reserva de Cliente Kilroy Aarhus -Iguazu Falls Combined OD010D.docx | Kilroy | DK1564627/cafj | OD010D | Recibida | sin marcar |
-| Reserva de Cliente Kilroy - Overland uyuni a san pedro saliendo de la paz (reverse).docx | Kilroy | DK1559523/fnie | BOCHI04R | Para revisión | sin marcar |
 | Reserva de Cliente Kilroy Copenagiue varias.docx | Kilroy | DK1594100/maga | OD010D | Para revisión | sin marcar |
 | Reserva de Cliente Kilroy Copenagiue varias.docx | Kilroy | DK1594100/maga | sin producto | Para revisión | sin marcar |
 | Reserva de Cliente Kilroy Copenagiue varias.docx | Kilroy | DK1594100/maga | CHB31 | Para revisión | sin marcar |
@@ -54,11 +57,9 @@ El modelo se fija en `src/lib/ia/modelos.ts` con el OK del owner (y se anota en 
 | Reserva de Cliente Kilroy Olso - Patagonia HIghlights ARCH31.docx | Kilroy | NO1569851/saha | ARCH31 | Para revisión | sin marcar |
 | Reserva de Cliente Kilroy UK - 5 Countries 5C01.docx | Kilroy | UK1586142/fagu | 5C01 | Para revisión | sin marcar |
 | Kilroy-INBOX-15933.eml | Kilroy | DK1587664/emhe | OD010C | Recibida | sin marcar |
-| Kilroy-INBOX-15958.eml | Kilroy | DK1585447/casa | sin producto | Para revisión | sin marcar |
-| Kilroy-INBOX-15962.eml | Kilroy | DK1593111/mhee | sin producto | Para revisión | sin marcar |
-| Kilroy-INBOX-15963.eml | Kilroy | DK1593111/mhee | sin producto | Para revisión | sin marcar |
-| Kilroy-INBOX-15965.eml | Kilroy | sin número | sin producto | Para revisión | sin marcar |
-| Kilroy-INBOX-15966.eml | Kilroy | 00736078 | sin producto | Para revisión | sin marcar |
+| Kilroy-INBOX-15958.eml | Kilroy | DK1585447/casa | OD010B | Recibida | sin marcar |
+| Kilroy-INBOX-15962.eml | Kilroy | DK1593111/mhee | OD010B | Recibida | sin marcar |
+| Kilroy-INBOX-15963.eml | Kilroy | DK1593111/mhee | OD030 | Para revisión | sin marcar |
 
 ## Qué pasó con cada archivo
 
@@ -66,7 +67,7 @@ Cada uno tiene su reporte en `docs/sdd/diagnosticos/M2-06-mails/`.
 
 | Archivo | Resultado | Reservas | Reporte |
 |---|---|---|---|
-| Booking Statement 1363612 - 25160515 - vendorcredit.pdf | Leído con IA | 1 | [Booking Statement 1363612 - 25160515 - vendorcredit.md](M2-06-mails/Booking%20Statement%201363612%20-%2025160515%20-%20vendorcredit.md) |
+| Booking Statement 1363612 - 25160515 - vendorcredit.pdf | Leído con IA | 2 | [Booking Statement 1363612 - 25160515 - vendorcredit.md](M2-06-mails/Booking%20Statement%201363612%20-%2025160515%20-%20vendorcredit.md) |
 | Booking Statement 1376833 - 25351215 - vendorbill.pdf | Leído con IA | 1 | [Booking Statement 1376833 - 25351215 - vendorbill.md](M2-06-mails/Booking%20Statement%201376833%20-%2025351215%20-%20vendorbill.md) |
 | Booking Statement 1377583 - 25365166 - vendorbill.pdf | Leído con IA | 1 | [Booking Statement 1377583 - 25365166 - vendorbill.md](M2-06-mails/Booking%20Statement%201377583%20-%2025365166%20-%20vendorbill.md) |
 | Booking Statement 1377598 - 25372219 - vendorbill.pdf | Leído con IA | 1 | [Booking Statement 1377598 - 25372219 - vendorbill.md](M2-06-mails/Booking%20Statement%201377598%20-%2025372219%20-%20vendorbill.md) |
@@ -106,8 +107,8 @@ Cada uno tiene su reporte en `docs/sdd/diagnosticos/M2-06-mails/`.
 | Kilroy-INBOX-15959.eml | Es una respuesta o un reenvío, y su número no es de una reserva cargada | 0 | [Kilroy-INBOX-15959.md](M2-06-mails/Kilroy-INBOX-15959.md) |
 | Kilroy-INBOX-15962.eml | Leído con IA | 1 | [Kilroy-INBOX-15962.md](M2-06-mails/Kilroy-INBOX-15962.md) |
 | Kilroy-INBOX-15963.eml | Leído con IA | 1 | [Kilroy-INBOX-15963.md](M2-06-mails/Kilroy-INBOX-15963.md) |
-| Kilroy-INBOX-15965.eml | Leído con IA | 1 | [Kilroy-INBOX-15965.md](M2-06-mails/Kilroy-INBOX-15965.md) |
-| Kilroy-INBOX-15966.eml | Leído con IA | 1 | [Kilroy-INBOX-15966.md](M2-06-mails/Kilroy-INBOX-15966.md) |
+| Kilroy-INBOX-15965.eml | Es un pedido de cotización, no una reserva (por ahora no se lee) | 0 | [Kilroy-INBOX-15965.md](M2-06-mails/Kilroy-INBOX-15965.md) |
+| Kilroy-INBOX-15966.eml | Es un pedido de cotización, no una reserva (por ahora no se lee) | 0 | [Kilroy-INBOX-15966.md](M2-06-mails/Kilroy-INBOX-15966.md) |
 | Kilroy-INBOX-15969.eml | Es una respuesta o un reenvío, y su número no es de una reserva cargada | 0 | [Kilroy-INBOX-15969.md](M2-06-mails/Kilroy-INBOX-15969.md) |
 | Kilroy-INBOX-15991.eml | Es una respuesta o un reenvío, y su número no es de una reserva cargada | 0 | [Kilroy-INBOX-15991.md](M2-06-mails/Kilroy-INBOX-15991.md) |
 | Kilroy-INBOX-15994.eml | Es una respuesta o un reenvío, y su número no es de una reserva cargada | 0 | [Kilroy-INBOX-15994.md](M2-06-mails/Kilroy-INBOX-15994.md) |
