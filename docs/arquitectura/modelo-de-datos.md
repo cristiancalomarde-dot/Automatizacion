@@ -301,6 +301,11 @@ después (la salida de Puerto Natales de ARCH31 y ARCH33). Iguazú conserva sus 
   aeropuerto; una salida, uno con número y hora de salida. A pedido u opcional: solo si el mail pide
   un traslado. `segun_reserva` (OD019 solo): "Elegir la variante" si el mail no dice con o sin
   traslados.
+- **Iguazú sin dato de llegada** (owner, 2026-10-14; `src/lib/reservas/llegada-iguazu.ts`): una
+  reserva de OD010A–D sin vuelo de llegada a IGR/IGU ni "bus" en los pedidos sigue "recibida" y
+  muestra el aviso "Sin dato de llegada (vuelo o bus): pasárselo a Cuenca del Plata cuando llegue".
+  No se guarda: se calcula con producto, vuelos y pedidos. Una respuesta con el asunto de esa reserva
+  se lee como la de una reserva que espera el vuelo; al sumar el vuelo, el aviso se va solo.
 
 ## Abierto
 
