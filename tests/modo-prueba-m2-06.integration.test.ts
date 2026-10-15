@@ -155,6 +155,7 @@ function registroMes(gastoInicial = 0) {
       mailInventado("jysk.eml", "Someone <someone@jr.dk>", "JY0000001 - Buenos Aires - 2 pax");
       mailInventado("journaway.eml", "journaway <de@journaway.com>", "de-DE Activity Booking / Client Inventado / ID 00000000001");
       mailInventado("respuesta.eml", "testtown@kilroy.dk", "Re: Pax Inventado UK0000099");
+      mailInventado("cotizacion.eml", "testtown@kilroy.dk", "New request 6-days Inventado 00000001");
 
       // Si una corrida anterior del test se cortó, sus mails (los mismos archivos) siguen ahí: se borran antes.
       const ids = await Promise.all(listarArchivos(carpeta).map(async (r) => (await leerArchivoDeMail(r)).messageId!));
@@ -198,11 +199,14 @@ function registroMes(gastoInicial = 0) {
       }
 
       const por = Object.fromEntries(r.archivos.map((a) => [a.archivo, a]));
-      expect(Object.keys(por)).toHaveLength(8); // el .txt no se procesa
+      expect(Object.keys(por)).toHaveLength(9); // el .txt no se procesa
       expect(por["proveedor.eml"]).toMatchObject({ estado: "salteado", motivo: "No es un mail de agencia" });
       expect(por["journaway.eml"]).toMatchObject({ estado: "salteado", motivo: "Journaway entra con M2-09" });
       expect(por["jysk.eml"]).toMatchObject({ estado: "salteado", agencia: "Jysk" });
       expect(por["respuesta.eml"]).toMatchObject({ estado: "salteado", numerosAsunto: ["UK0000099"] });
+      // Owner 2026-10-15: un pedido de cotización de Kilroy se registra, sin IA y sin reserva.
+      expect(por["cotizacion.eml"]).toMatchObject({ estado: "salteado", agencia: "Kilroy", motivo: "Es un pedido de cotización, no una reserva (por ahora no se lee)" });
+      expect(por["cotizacion.eml"].mailRecibidoId).toBeTruthy();
       for (const n of ["kilroy-inventado.eml", "kilroy-copia.docx", "tourradar-con-pdf.eml"]) expect(por[n].estado, n).toBe("procesado");
       // La IA solo se llamó por los 4 mails de agencia que se leen.
       expect(ia.create).toHaveBeenCalledTimes(4);
@@ -245,7 +249,7 @@ function registroMes(gastoInicial = 0) {
       try {
         mailInventado("a-proveedor.eml", "x@proveedor-inventado.com.ar", "otro pedido", otra);
         writeFileSync(join(otra, "b-kilroy.eml"), `From: testtown@kilroy.dk\r\nSubject: DK0000045/abcd - Overland - KILROY booking request\r\n\r\nKILROY Reference.:DK0000045/abcd ${randomUUID()}\r\n`);
-        writeFileSync(join(otra, "c-kilroy.eml"), `From: testtown@kilroy.dk\r\nSubject: DK0000042/abcd - otra\r\n\r\nKILROY Reference.:DK0000042/abcd ${randomUUID()}\r\n`);
+        writeFileSync(join(otra, "c-kilroy.eml"), `From: testtown@kilroy.dk\r\nSubject: DK0000042/abcd - otra - KILROY booking request\r\n\r\nKILROY Reference.:DK0000042/abcd ${randomUUID()}\r\n`);
         const ia = iaFalsa();
         const r = await correrModoPrueba(listarArchivos(otra), opciones(ia, { tope: 0.000001 }));
         for (const a of r.archivos) registro.mail(a.mailRecibidoId);

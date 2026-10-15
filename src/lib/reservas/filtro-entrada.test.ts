@@ -31,7 +31,8 @@ describe("decidirEntrada", () => {
     for (const [remitente, asunto] of [
       ["testtown@kilroy.dk", "DK0000042/abcd - Overland - KILROY booking request"],
       ["system@sent-via.netsuite.com", "Booking Statement 0000042 - 00000042 - vendorbill"],
-      ["KILROY UK <travels@kilroy.co.uk>", "NEW FLIGHT: UK0000042"],
+      ["KILROY UK <travels@kilroy.co.uk>", "NEW BOOKING: UK0000042 - Inventado x1 - Iguazu Falls"],
+      ["testtown@kilroy.dk", "dk0000042/abcd - overland - kilroy BOOKING request"],
     ]) {
       expect(await decidirEntrada({ remitente, asunto }, { buscarReservas: buscar, dePrueba: true })).toMatchObject({
         leer: true,
@@ -39,6 +40,36 @@ describe("decidirEntrada", () => {
       });
     }
     expect(buscar).not.toHaveBeenCalled();
+  });
+
+  describe("Kilroy (owner 2026-10-15): reserva nueva solo con 'NEW BOOKING' o 'KILROY booking request' en el asunto", () => {
+    it("un pedido de cotización (cualquier formato, aun con un número adelante) no se lee: se registra, sin IA", async () => {
+      for (const asunto of ["New request 6-days Buenos Aires + Uruguay 00736078 - Inventada", "KILROY - Madidi National Park", "NL0000077 - quote Patagonia 2 pax"]) {
+        const d = await decidirEntrada({ remitente: "testtown@kilroy.dk", asunto }, { buscarReservas: sinReservas(), dePrueba: true });
+        expect(d, asunto).toEqual({ leer: false, agencia: "Kilroy", motivo: "pedido_cotizacion", registrar: true });
+      }
+      expect(TEXTO_SALTEO.pedido_cotizacion).toBe("Es un pedido de cotización, no una reserva (por ahora no se lee)");
+    });
+
+    it("un original que nombra una reserva ya cargada (cambio, cancelación, vuelo) sigue entrando", async () => {
+      const buscar = vi.fn(async () => [reserva({ estado: "recibida", motivos_revision: [] })]);
+      const d = await decidirEntrada({ remitente: "testtown@kilroy.dk", asunto: "DK0000077" }, { buscarReservas: buscar, dePrueba: true });
+      expect(d).toEqual({ leer: true, agencia: "Kilroy", motivo: "original", reservaIds: [] });
+      expect(buscar).toHaveBeenCalledWith("DK0000077", "Kilroy");
+    });
+
+    it("el número de una reserva del otro modo (real/prueba) no cuenta", async () => {
+      const buscar = vi.fn(async () => [reserva({ de_prueba: false })]);
+      const d = await decidirEntrada({ remitente: "testtown@kilroy.dk", asunto: "NEW FLIGHT: DK0000077" }, { buscarReservas: buscar, dePrueba: true });
+      expect(d).toMatchObject({ leer: false, motivo: "pedido_cotizacion" });
+    });
+
+    it("una copia sin asunto (un .docx sin encabezado) se decide por el cuerpo", async () => {
+      const si = await decidirEntrada({ remitente: "oslo@kilroy.no", asunto: null, cuerpoTexto: "NEW BOOKING\nTour name: X" }, { buscarReservas: sinReservas(), dePrueba: true });
+      expect(si).toMatchObject({ leer: true });
+      const no = await decidirEntrada({ remitente: "oslo@kilroy.no", asunto: null, cuerpoTexto: "Could you quote a tour?" }, { buscarReservas: sinReservas(), dePrueba: true });
+      expect(no).toMatchObject({ leer: false, motivo: "pedido_cotizacion" });
+    });
   });
 
   it("los pedidos a proveedores (HI Travel o un proveedor) no son de agencia", async () => {
