@@ -8,6 +8,7 @@
  * su mensaje con "Reintentar" y nunca datos a medias.
  */
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { sinDatoDeLlegada } from "./llegada-iguazu";
 import { cuerpoComoTexto } from "./reglas";
 import {
   BUCKET_ADJUNTOS,
@@ -28,9 +29,9 @@ export const VIGENCIA_ENLACE_PDF_SEGUNDOS = 300;
 const PRODUCTO = "producto:producto_id(id,codigo,nombre)";
 const CAMPOS_FILA =
   "id,estado,agencia,booking_id,booking_id_original,fecha_inicio,fecha_fin,pax,motivos_revision," +
-  `posible_duplicada,de_prueba,created_at,${PRODUCTO},mail:mail_recibido_id(fecha_mail)`;
+  `posible_duplicada,de_prueba,created_at,vuelos,pedidos_especiales,${PRODUCTO},mail:mail_recibido_id(fecha_mail)`;
 const CAMPOS_DETALLE =
-  `${CAMPOS_FILA},mail_recibido_id,producto_texto_agencia,duplicada_de_id,pasajeros,vuelos,habitacion,pedidos_especiales`;
+  `${CAMPOS_FILA},mail_recibido_id,producto_texto_agencia,duplicada_de_id,pasajeros,habitacion`;
 const CAMPOS_MAIL = "id,remitente,remitente_nombre,asunto,fecha_mail,carpeta,cuerpo_texto,cuerpo_html,adjuntos,created_at";
 
 /* eslint-disable @typescript-eslint/no-explicit-any -- filas crudas de PostgREST, se tipan al mapear */
@@ -60,6 +61,11 @@ function aFila(r: any): FilaReserva {
     motivos: Array.isArray(r.motivos_revision) ? r.motivos_revision : [],
     posibleDuplicada: Boolean(r.posible_duplicada),
     dePrueba: Boolean(r.de_prueba),
+    sinDatoLlegada: sinDatoDeLlegada({
+      productoCodigo: r.producto?.codigo ?? null,
+      vuelos: Array.isArray(r.vuelos) ? r.vuelos : [],
+      pedidos: r.pedidos_especiales ?? null,
+    }),
   };
 }
 

@@ -65,12 +65,13 @@ function Detalle({ reserva }: { reserva: DetalleReserva }) {
   return (
     <>
       {reserva.dePrueba ? <Aviso tono="info">{T.avisoPrueba}</Aviso> : null}
+      {reserva.sinDatoLlegada ? <Aviso tono="aviso">{T.avisoLlegada}</Aviso> : null}
 
       <header className={ui.seccion} data-testid="encabezado-reserva">
         <div className={ui.encabezado}>
           <span className={`${ui.chips} ${estilos.chipGrande}`}>
             <ChipEstado estado={reserva.estado} />
-            <MarcasReserva posibleDuplicada={reserva.posibleDuplicada} dePrueba={reserva.dePrueba} />
+            <MarcasReserva posibleDuplicada={reserva.posibleDuplicada} dePrueba={reserva.dePrueba} sinDatoLlegada={reserva.sinDatoLlegada} />
           </span>
           <h1 className={ui.titulo} title={T.numero}>
             <span className={estilos.numeroTitulo}>{reserva.numero ?? SIN_DATO}</span>

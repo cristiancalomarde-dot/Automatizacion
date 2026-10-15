@@ -248,6 +248,8 @@ export interface FilaReserva {
   motivos: string[];
   posibleDuplicada: boolean;
   dePrueba: boolean;
+  /** Iguazú (OD010A–D) sin vuelo ni bus de llegada (`llegada-iguazu.ts`): aviso, no motivo de revisión. */
+  sinDatoLlegada: boolean;
 }
 
 /** Un vuelo como lo dice el mail: fechas y horas del aeropuerto, sin convertir. */

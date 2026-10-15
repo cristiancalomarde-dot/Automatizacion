@@ -133,7 +133,7 @@ function TablaReservas({ filas }: { filas: FilaReserva[] }) {
                 <td>
                   <span className={ui.chips}>
                     <ChipEstado estado={fila.estado} />
-                    <MarcasReserva posibleDuplicada={fila.posibleDuplicada} dePrueba={fila.dePrueba} />
+                    <MarcasReserva posibleDuplicada={fila.posibleDuplicada} dePrueba={fila.dePrueba} sinDatoLlegada={fila.sinDatoLlegada} />
                   </span>
                 </td>
                 <td>{fila.agencia}</td>

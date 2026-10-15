@@ -45,10 +45,23 @@ export function ChipEstado({ estado }: { estado: EstadoReserva }) {
   );
 }
 
-/** Las marcas que se apilan sobre el estado: posible duplicada y de prueba. */
-export function MarcasReserva({ posibleDuplicada, dePrueba }: { posibleDuplicada: boolean; dePrueba: boolean }) {
+/** Las marcas que se apilan sobre el estado: posible duplicada, de prueba y (Iguazú) sin dato de llegada. */
+export function MarcasReserva({
+  posibleDuplicada,
+  dePrueba,
+  sinDatoLlegada = false,
+}: {
+  posibleDuplicada: boolean;
+  dePrueba: boolean;
+  sinDatoLlegada?: boolean;
+}) {
   return (
     <>
+      {sinDatoLlegada ? (
+        <Chip tono="aviso" titulo={TEXTOS.reserva.avisoLlegada}>
+          {T.sinDatoLlegada}
+        </Chip>
+      ) : null}
       {posibleDuplicada ? <Chip tono="aviso">{T.posibleDuplicada}</Chip> : null}
       {dePrueba ? <Chip tono="info">{T.dePrueba}</Chip> : null}
     </>

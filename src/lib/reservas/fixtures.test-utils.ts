@@ -49,6 +49,7 @@ function fila(extra: Partial<FilaReserva> & Pick<FilaReserva, "id">): FilaReserv
     motivos: [],
     posibleDuplicada: false,
     dePrueba: false,
+    sinDatoLlegada: false,
     ...extra,
   };
 }

@@ -200,6 +200,8 @@ export const TEXTOS = {
     sinProducto: "Sin producto reconocido",
     dePrueba: "De prueba",
     posibleDuplicada: "posible duplicada",
+    /** Owner 2026-10-14: Iguazú sin vuelo ni bus de llegada (chip de la lista). */
+    sinDatoLlegada: "sin dato de llegada",
     /** Modo prueba (spec M2-06 §4). */
     verPrueba: (n: number) => `Ver las de prueba (${n})`,
     soloPrueba: (n: number) =>
@@ -224,6 +226,7 @@ export const TEXTOS = {
     error: "No pudimos abrir esta reserva.",
     noExiste: "Esta reserva no existe.",
     volver: "Volver a las reservas",
+    avisoLlegada: "Sin dato de llegada (vuelo o bus): pasárselo a Cuenca del Plata cuando llegue.",
     avisoPrueba: "Reserva de prueba. Se cargó para revisar cómo se leen los mails. No es una reserva real.",
     /** La marca del owner sobre una reserva de prueba (spec M2-06 fila 13). */
     revision: {
