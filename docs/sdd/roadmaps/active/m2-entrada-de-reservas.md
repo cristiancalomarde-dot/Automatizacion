@@ -155,6 +155,14 @@ diga cada ficha.
   pasa a Cuenca del Plata cuando llegue. Códigos confirmados el mismo día:
   `HI_ARGENTINA_IGUAZU_BR_4DAYS-677` = OD010B, `HI_ARGENTINA_SAN_PEDRO_ATACAMA_4DAYS-677` = OD030,
   y "Patagonia Adventure Tour 16 Days" de TourRadar = AR09.
+- **Kilroy: reserva nueva solo con "NEW BOOKING" o "KILROY booking request" en el asunto
+  (owner, 2026-10-14).** Los pedidos de cotización (tailor made) vienen en cualquier formato y
+  pueden traer un número DK/NL adelante, pero nunca dicen esas frases. Por ahora las cotizaciones
+  se ignoran: se registra el mail, no se gasta IA y no se crea reserva. Un original que nombra
+  una reserva ya conocida (cambio, cancelación, vuelo) sigue entrando por la lógica de M2-04.
+  Ejemplo: 00736078 "New request 6-days Buenos Aires + Uruguay" era una cotización.
+- **Orden de la lista de reservas (owner, 2026-10-14):** primero las "para revisión"; dentro de
+  cada grupo, por fecha de inicio del viaje, la más próxima arriba.
 - **Base de pruebas separada antes de M2-07 (2026-10-14):** las pruebas automáticas y el
   desarrollo pasan a un segundo proyecto de Supabase; la base actual queda para producción.
   Va como paso previo de M2-07 (ver `DECISIONS.md` 2026-10-14).
