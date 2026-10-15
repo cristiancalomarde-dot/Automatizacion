@@ -38,7 +38,10 @@ export function numerosDelAsunto(asunto: string | null | undefined, agencia: str
   return [...new Set(numeros)];
 }
 
-export type ReservaParaRespuesta = Pick<ReservaExistente, "id" | "agencia" | "booking_id" | "estado" | "motivos_revision" | "de_prueba">;
+export type ReservaParaRespuesta = Pick<ReservaExistente, "id" | "agencia" | "booking_id" | "estado" | "motivos_revision" | "de_prueba"> & {
+  /** Iguazú sin vuelo ni bus de llegada (`llegada-iguazu.ts`, owner 2026-10-14): también espera el dato. */
+  sin_dato_llegada?: boolean;
+};
 
 export type MotivoLectura = "original" | "espera_vuelo" | "no_espera_vuelo" | "sin_numero_conocido";
 
@@ -51,8 +54,9 @@ export interface DecisionLectura {
 
 const FALTA_VUELO = /^Falta el vuelo de /;
 
-export const esperaVuelo = (r: Pick<ReservaParaRespuesta, "estado" | "motivos_revision">) =>
-  r.estado === "para_revision" && r.motivos_revision.some((m) => FALTA_VUELO.test(m));
+export const esperaVuelo = (r: Pick<ReservaParaRespuesta, "estado" | "motivos_revision" | "sin_dato_llegada">) =>
+  (r.estado === "para_revision" && r.motivos_revision.some((m) => FALTA_VUELO.test(m))) ||
+  (r.estado === "recibida" && r.sin_dato_llegada === true);
 
 /**
  * `reservas`: las candidatas (puede traer de todo; se filtra por agencia, por

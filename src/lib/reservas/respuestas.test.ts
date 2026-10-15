@@ -62,6 +62,16 @@ describe("respuestaMereceLectura", () => {
     const r = respuestaMereceLectura(asunto, "Kilroy", [reserva({ estado: "recibida", motivos_revision: [] })], { dePrueba: false });
     expect(r).toMatchObject({ leer: false, motivo: "no_espera_vuelo" });
   });
+  it("Iguazú recibida sin dato de llegada (owner 2026-10-14) → se lee, para sumar el vuelo o el bus", () => {
+    const iguazu = reserva({ estado: "recibida", motivos_revision: [], sin_dato_llegada: true });
+    expect(respuestaMereceLectura(asunto, "Kilroy", [iguazu], { dePrueba: false })).toEqual({
+      leer: true,
+      motivo: "espera_vuelo",
+      reservaIds: ["r1"],
+    });
+    const conDato = reserva({ estado: "recibida", motivos_revision: [], sin_dato_llegada: false });
+    expect(respuestaMereceLectura(asunto, "Kilroy", [conDato], { dePrueba: false })).toMatchObject({ leer: false });
+  });
   it("para revisión pero no por un vuelo → no se lee", () => {
     const r = respuestaMereceLectura(asunto, "Kilroy", [reserva({ motivos_revision: ["El producto X no está en el catálogo"] })], {
       dePrueba: false,

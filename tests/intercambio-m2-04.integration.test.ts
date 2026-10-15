@@ -579,6 +579,47 @@ const ASUNTO_OVERLAND = n("DK1594100/maga - Overland San Pedro de Atacama to Uyu
       expect((agregado.detalle as { nota: string }).nota).toBe("Pasó a recibida porque llegaron los vuelos (mail del 12/10)");
     });
 
+    it("Iguazú (owner 2026-10-14): OD010D sin vuelo queda recibida; 'Re: NEW FLIGHT' se lee, suma el vuelo y el aviso se va", async () => {
+      const alta = fichaGrabada("kilroy-od010d") as Ficha;
+      Object.assign(alta, { vuelos: [], pedidos_especiales: [] });
+      await procesarMail(
+        entrada(mailDePrueba("kilroy-od010d")),
+        opciones(lector(respuestaCon(alta)).leer),
+      );
+      const [r] = await reservasDe("DK1564627");
+      expect(r).toMatchObject({ estado: "recibida", motivos_revision: [] });
+
+      const asunto = n("Re: NEW FLIGHT: DK1564627 /cafj - Iguazu Falls Combined");
+      const antes = await cargarReservasDelAsunto(admin, asunto, "Kilroy", true, registro.mails);
+      expect(antes).toEqual([expect.objectContaining({ id: r.id, sin_dato_llegada: true })]);
+      expect(respuestaMereceLectura(asunto, "Kilroy", antes, { dePrueba: true })).toEqual({ leer: true, motivo: "espera_vuelo", reservaIds: [r.id] });
+
+      const vuelo = fichaGrabada("kilroy-od010d") as Ficha;
+      Object.assign(vuelo, {
+        tipo_mail: { valor: "respuesta_intercambio", confianza: 1 },
+        numero_reserva: { valor: "DK1564627", confianza: 1 },
+        productos: [],
+        fecha_inicio: { valor: null, confianza: 0 },
+        fecha_fin: { valor: null, confianza: 0 },
+        pax: { valor: null, confianza: 0 },
+        pasajeros: [],
+        pedidos_especiales: [],
+        vuelos: [
+          { numero: "G31234", aerolinea: "GOL", origen: "GRU", destino: "IGU", fecha_salida: "2026-09-06", hora_salida: "08:00", fecha_llegada: "2026-09-06", hora_llegada: "09:45", confianza: 0.95 },
+        ],
+      });
+      const p = await procesarMail(
+        entrada({ remitente: "aarhus@kilroy.dk", asunto, cuerpoTexto: "Flight G31234 GRU-IGU 06 Sep 2026 dep 08:00 arr 09:45" }),
+        opciones(lector(respuestaCon(vuelo)).leer),
+      );
+      expect(p.estado === "procesado" && p.pedidos.map((x) => x.accion)).toEqual(["sumada"]);
+      const [despues] = await reservasDe("DK1564627");
+      expect(despues).toMatchObject({ id: r.id, estado: "recibida" });
+      expect((despues.vuelos as Array<{ numero: string }>).map((v) => v.numero)).toEqual(["G31234"]);
+      const ahora = await cargarReservasDelAsunto(admin, asunto, "Kilroy", true, registro.mails);
+      expect(ahora).toEqual([expect.objectContaining({ id: r.id, sin_dato_llegada: false })]);
+    });
+
     it("la misma respuesta con la reserva ya recibida, o sin número conocido → no se lee (sin IA)", async () => {
       await altaQueEsperaVuelo();
       await admin

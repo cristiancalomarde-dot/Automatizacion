@@ -22,6 +22,7 @@ import {
   type ReservaExistente,
 } from "./intercambio";
 import type { MailParaLeer } from "./preparar-mail";
+import { sinDatoDeLlegada } from "./llegada-iguazu";
 import { numerosDelAsunto, type ReservaParaRespuesta } from "./respuestas";
 import type { MailEntrada } from "./tipos";
 
@@ -386,12 +387,16 @@ export async function cargarReservasDelAsunto(
   if (numeros.length === 0) return [];
   let consulta = admin
     .from("reserva")
-    .select("id,agencia,booking_id,estado,motivos_revision,de_prueba")
+    .select("id,agencia,booking_id,estado,motivos_revision,de_prueba,vuelos,pedidos_especiales,producto:producto_id(codigo)")
     .eq("agencia", agencia)
     .eq("de_prueba", dePrueba)
     .in("booking_id", numeros);
   if (alcance) consulta = consulta.in("mail_recibido_id", [...alcance]);
   const { data, error } = await consulta;
   if (error) throw new Error(`No se pudieron buscar las reservas del asunto: ${error.message}`);
-  return (data ?? []) as ReservaParaRespuesta[];
+  type Fila = ReservaParaRespuesta & { vuelos: VueloIA[] | null; pedidos_especiales: string | null; producto: { codigo: string } | null };
+  return ((data ?? []) as unknown as Fila[]).map(({ vuelos, pedidos_especiales, producto, ...r }) => ({
+    ...r,
+    sin_dato_llegada: sinDatoDeLlegada({ productoCodigo: producto?.codigo ?? null, vuelos: vuelos ?? [], pedidos: pedidos_especiales }),
+  }));
 }
