@@ -3,6 +3,17 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
 
 # Dónde retomar
 
+- **M2-06 terminada (2026-10-15).** Modo prueba: `npm run probar:mails` (72 archivos, 22 leídos con IA,
+  24 reservas de prueba, US$ 0,46). Migración 0014 aplicada con OK del owner (marca `de_prueba` en partes
+  e historial, tabla `revision_prueba`). Lista oculta las de prueba salvo `?prueba=1`; botones "Está bien" /
+  "Hay que corregir" y medición. Ajustes del owner: Iguazú sin dato de llegada = aviso (no revisión),
+  códigos OD010B/OD030/AR09 cargados, Kilroy nueva reserva solo con "NEW BOOKING" / "KILROY booking
+  request" (lo demás = cotización, se ignora), orden de la lista. Filtro reutilizable para M2-07:
+  `src/lib/reservas/filtro-entrada.ts`. Sonnet 5.5 100% vs Opus 64% en `eval:lectura`.
+  - **Pendiente:** decidir con el owner cómo refrescar las 24 reservas de prueba (re-emparejado sin IA,
+    o `--borrar` + corrida de nuevo ~US$ 0,46): 4 cambiarían por los códigos y 2 son cotizaciones.
+    Después, el owner marca cada una (gate de M2-07). Fijar Sonnet 5.5 en DECISIONS. Demo al profesor
+    el lunes 2026-10-19.
 - **M2 planificado (2026-10-11):**
   - Plan en `docs/sdd/roadmaps/active/m2-entrada-de-reservas.md`, con 9 piezas.
   - Decisiones del owner:
