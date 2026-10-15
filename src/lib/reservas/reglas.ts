@@ -180,6 +180,21 @@ export function ordenarPorLlegada<T extends { llego: string }>(filas: T[]): T[] 
   return [...filas].sort((a, b) => Date.parse(b.llego) - Date.parse(a.llego));
 }
 
+/**
+ * El orden de trabajo de la lista (owner, 2026-10-15): primero las "para
+ * revisión"; dentro de cada grupo, el viaje que empieza antes arriba (sin
+ * fecha, al final); a igual fecha, la que llegó más recientemente.
+ */
+export function ordenarParaTrabajar<T extends { estado: string; fechaInicio: string | null; llego: string }>(filas: T[]): T[] {
+  const grupo = (f: T) => (f.estado === "para_revision" ? 0 : 1);
+  return [...filas].sort(
+    (a, b) =>
+      grupo(a) - grupo(b) ||
+      (a.fechaInicio ?? "9999-99-99").localeCompare(b.fechaInicio ?? "9999-99-99") ||
+      Date.parse(b.llego) - Date.parse(a.llego),
+  );
+}
+
 export function contarReservas(filas: Array<{ dePrueba: boolean }>): { total: number; dePrueba: number } {
   return { total: filas.length, dePrueba: filas.filter((f) => f.dePrueba).length };
 }

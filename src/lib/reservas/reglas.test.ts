@@ -11,6 +11,7 @@ import {
   frasesDeMotivos,
   fraseDeMotivo,
   motivoEnPantalla,
+  ordenarParaTrabajar,
   ordenarPorLlegada,
 } from "./reglas";
 
@@ -224,6 +225,29 @@ describe("lista: orden y total", () => {
   it("la que llegó más recientemente, arriba", () => {
     const filas = [fila("a", "2026-10-01T10:00:00Z"), fila("b", "2026-10-03T10:00:00Z"), fila("c", "2026-10-02T10:00:00Z")];
     expect(ordenarPorLlegada(filas).map((f) => f.id)).toEqual(["b", "c", "a"]);
+  });
+
+  it("owner 2026-10-15: primero las para revisión; en cada grupo, el viaje más próximo arriba y sin fecha al final", () => {
+    const f = (id: string, estado: string, fechaInicio: string | null, llego = "2026-10-01T10:00:00Z") => ({ id, estado, fechaInicio, llego });
+    const filas = [
+      f("recibida-sin-fecha", "recibida", null),
+      f("revision-lejos", "para_revision", "2027-03-01"),
+      f("recibida-cerca", "recibida", "2026-11-01"),
+      f("revision-sin-fecha", "para_revision", null),
+      f("revision-cerca", "para_revision", "2026-10-20"),
+      f("recibida-lejos", "recibida", "2027-01-01"),
+      // Mismo viaje y estado: la que llegó más recientemente, arriba.
+      f("revision-cerca-nueva", "para_revision", "2026-10-20", "2026-10-05T10:00:00Z"),
+    ];
+    expect(ordenarParaTrabajar(filas).map((x) => x.id)).toEqual([
+      "revision-cerca-nueva",
+      "revision-cerca",
+      "revision-lejos",
+      "revision-sin-fecha",
+      "recibida-cerca",
+      "recibida-lejos",
+      "recibida-sin-fecha",
+    ]);
   });
 
   it("cuenta las reales y las de prueba", () => {

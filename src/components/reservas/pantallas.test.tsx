@@ -88,7 +88,7 @@ describe("lista de reservas (#2, #3, #4, #16)", () => {
     expect(screen.queryByText("No pudimos cargar las reservas.")).toBeNull();
   });
 
-  it("las 7 columnas pobladas, la más nueva arriba, fechas DD/MM/AAAA y pax entero", async () => {
+  it("las 7 columnas pobladas; primero las para revisión y el viaje más próximo arriba (owner 2026-10-15); fechas DD/MM/AAAA y pax entero", async () => {
     consultas.cargarReservas.mockResolvedValue(listaReservas);
     render(<ListaReservasPantalla />);
     const tabla = await screen.findByRole("table");
@@ -96,9 +96,9 @@ describe("lista de reservas (#2, #3, #4, #16)", () => {
     expect(encabezados).toEqual(["Estado", "Agencia", "Número de la agencia", "Producto", "Fechas del viaje", "Pax", "Llegó"]);
 
     const filas = within(tabla).getAllByRole("row").slice(1);
-    expect(filas.map((f) => f.getAttribute("data-id"))).toEqual([IDS.revision, IDS.tour, IDS.sinProducto, IDS.kilroy]);
+    expect(filas.map((f) => f.getAttribute("data-id"))).toEqual([IDS.revision, IDS.sinProducto, IDS.kilroy, IDS.tour]);
 
-    const kilroy = within(filas[3]).getAllByRole("cell").map((c) => c.textContent);
+    const kilroy = within(filas[2]).getAllByRole("cell").map((c) => c.textContent);
     expect(kilroy[0]).toContain("recibida");
     expect(kilroy[1]).toBe("Kilroy");
     expect(kilroy[2]).toBe("DK1531608");
@@ -107,7 +107,7 @@ describe("lista de reservas (#2, #3, #4, #16)", () => {
     expect(kilroy[5]).toBe("2");
     expect(kilroy[6]).toBe(formatearFechaHora("2026-10-10T09:00:00.000Z"));
 
-    expect(within(filas[2]).getByText("Sin producto reconocido")).toBeInTheDocument();
+    expect(within(filas[1]).getByText("Sin producto reconocido")).toBeInTheDocument();
   });
 
   it("tocar una fila abre el detalle", async () => {

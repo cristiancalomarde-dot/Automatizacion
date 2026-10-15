@@ -7,7 +7,7 @@ import { useConsulta } from "@/lib/catalogo/use-consulta";
 import { formatearFechaHora, formatearRango } from "@/lib/formato";
 import { cargarReservas, cargarRevisiones } from "@/lib/reservas/consultas";
 import { medirRevision, textoMedicion } from "@/lib/reservas/medicion-prueba";
-import { contarReservas, ordenarPorLlegada } from "@/lib/reservas/reglas";
+import { contarReservas, ordenarParaTrabajar } from "@/lib/reservas/reglas";
 import type { FilaReserva } from "@/lib/reservas/tipos";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { TEXTOS } from "@/lib/textos";
@@ -20,9 +20,11 @@ import estilos from "./reservas.module.css";
 const T = TEXTOS.reservas;
 const SIN_DATO = TEXTOS.comunes.sinDato;
 
-type Columna = "estado" | "agencia" | "numero" | "producto" | "fechas" | "pax" | "llego";
+/** "prioridad": el orden de trabajo por defecto (ordenarParaTrabajar), sin columna propia. */
+type Columna = "prioridad" | "estado" | "agencia" | "numero" | "producto" | "fechas" | "pax" | "llego";
 
 const VALOR: Record<Columna, (f: FilaReserva) => string | number> = {
+  prioridad: () => 0,
   estado: (f) => T.estados[f.estado],
   agencia: (f) => f.agencia,
   numero: (f) => f.numero ?? "",
@@ -100,8 +102,8 @@ function MedicionPrueba({ idsPrueba }: { idsPrueba: string[] }) {
 
 function TablaReservas({ filas }: { filas: FilaReserva[] }) {
   const router = useRouter();
-  const orden = useOrden<Columna>("llego", false);
-  const visibles = useMemo(() => orden.ordenar(ordenarPorLlegada(filas), VALOR), [filas, orden]);
+  const orden = useOrden<Columna>("prioridad");
+  const visibles = useMemo(() => orden.ordenar(ordenarParaTrabajar(filas), VALOR), [filas, orden]);
 
   return (
     <div className={ui.panel}>
