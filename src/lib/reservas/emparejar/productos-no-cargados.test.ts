@@ -56,14 +56,14 @@ describe("data/productos-no-cargados.csv", () => {
 describe("data/codigos-tourradar.csv", () => {
   it("trae solo 150146 → AR09", () => {
     expect(leerCodigosTourRadarCsv(CODIGOS_TR)).toEqual([
-      { codigo: "150146", nombre: "Patagonia Adventure Tour From Buenos Aires to Ushuaia", nuestroCodigo: "AR09" },
+      { codigo: "150146", nombre: "Patagonia Adventure Tour 16 Days", nuestroCodigo: "AR09" },
     ]);
   });
 
   it("la carga apunta a AR09; si el producto no existe, falla sin escribir nada", () => {
     const filas = leerCodigosTourRadarCsv(CODIGOS_TR);
     expect(planCargaCodigosTourRadar(filas, new Map([["AR09", "id-ar09"]]))).toEqual([
-      { productoId: "id-ar09", agencia: "TourRadar", codigo: "150146", nombre: "Patagonia Adventure Tour From Buenos Aires to Ushuaia" },
+      { productoId: "id-ar09", agencia: "TourRadar", codigo: "150146", nombre: "Patagonia Adventure Tour 16 Days" },
     ]);
     expect(() => planCargaCodigosTourRadar(filas, new Map())).toThrow(
       "codigos-tourradar.csv: el código HI Travel AR09 no existe en el catálogo (TourRadar 150146). No se cargó nada.",

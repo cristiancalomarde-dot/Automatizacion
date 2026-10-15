@@ -21,6 +21,16 @@ describe("M2-03 fila 2 — data/codigos-kilroy.csv", () => {
     expect(filas.map((f) => f.codigoHiTravel)).not.toContain("ARCH33EXP");
   });
 
+  it("owner 2026-10-15 (mails reales del modo prueba): IGUAZU_BR_4DAYS → OD010B y SAN_PEDRO_ATACAMA_4DAYS → OD030", () => {
+    const filas = leerCodigosKilroy(CSV);
+    expect(filas).toContainEqual(
+      expect.objectContaining({ codigoKilroy: "HI_ARGENTINA_IGUAZU_BR_4DAYS-677", codigoHiTravel: "OD010B" }),
+    );
+    expect(filas).toContainEqual(
+      expect.objectContaining({ codigoKilroy: "HI_ARGENTINA_SAN_PEDRO_ATACAMA_4DAYS-677", codigoHiTravel: "OD030" }),
+    );
+  });
+
   it("una fila vacía o repetida es un error con su número de fila", () => {
     expect(() => leerCodigosKilroy(`${ENCABEZADO}\n,CHB31,,`)).toThrow(/fila 2/);
     expect(() => leerCodigosKilroy(`${ENCABEZADO}\nX-677,CHB31,,\nX-677,ARCH31,,`)).toThrow(/fila 3.*X-677/);
