@@ -18,8 +18,8 @@ const ENCABEZADO = "codigo,nombre,agencia,codigo_agencia,nombre_agencia,nota";
 describe("data/productos-no-cargados.csv", () => {
   const lista = leerProductosNoCargados(NO_CARGADOS);
 
-  it("trae solo ARCH33EXP, ARBR23 y ARUY01", () => {
-    expect([...new Set(lista.map((p) => p.codigo))].sort()).toEqual(["ARBR23", "ARCH33EXP", "ARUY01"]);
+  it("trae solo ARCH33EXP, ARBR23, ARUY01 y OD014", () => {
+    expect([...new Set(lista.map((p) => p.codigo))].sort()).toEqual(["ARBR23", "ARCH33EXP", "ARUY01", "OD014"]);
   });
 
   it.each([
@@ -27,6 +27,8 @@ describe("data/productos-no-cargados.csv", () => {
     ["TourRadar", "275366", "ARCH33EXP"],
     ["TourRadar", "150104", "ARBR23"],
     ["TourRadar", "317766", "ARUY01"],
+    // Owner 2026-10-16 (revisión del modo prueba, Kilroy DK1594100): existe pero no está cargado.
+    ["Kilroy", "HI_ARGENTINA_OD014-677", "OD014"],
   ])("%s %s → %s", (agencia, codigo, esperado) => {
     expect(buscarNoCargado(lista, agencia, { codigos: [codigo], nombre: null })?.codigo).toBe(esperado);
   });

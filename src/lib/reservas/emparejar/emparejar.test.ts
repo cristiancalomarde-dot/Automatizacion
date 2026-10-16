@@ -393,13 +393,27 @@ describe("Productos y códigos (owner, 2026-10-14) — productos conocidos que n
 
   it("Kilroy con un código desconocido que no está en la lista sigue igual: no está en el catálogo, sin IA", async () => {
     const proponer = iaQueDice("OD013", 0.99);
+    const r = await emparejarProducto(pedido("Some Invented Tour - 4 nights", "HI_ARGENTINA_XX999-677"), {
+      agencia: "Kilroy",
+      catalogo,
+      proponer,
+      noCargados,
+    });
+    expect(r.motivo).toBe("El producto HI_ARGENTINA_XX999-677 (Some Invented Tour - 4 nights) no está en el catálogo");
+    expect(proponer).not.toHaveBeenCalled();
+  });
+
+  it("owner 2026-10-16: OD014 de Kilroy (HI_ARGENTINA_OD014-677) existe pero todavía no está cargado, sin IA", async () => {
+    const proponer = iaQueDice("OD013", 0.99);
     const r = await emparejarProducto(pedido("El Calafate & El Chalten full day - 4 nights", "HI_ARGENTINA_OD014-677"), {
       agencia: "Kilroy",
       catalogo,
       proponer,
       noCargados,
     });
-    expect(r.motivo).toBe("El producto HI_ARGENTINA_OD014-677 (El Calafate & El Chalten full day - 4 nights) no está en el catálogo");
+    expect(r.motivo).toBe(
+      "El producto OD014 (El Calafate & El Chalten full day) existe en el catálogo de HI Travel pero todavía no está cargado en el sistema.",
+    );
     expect(proponer).not.toHaveBeenCalled();
   });
 });

@@ -3,8 +3,8 @@ import { normalizarNombre } from "./emparejar";
 
 /**
  * Productos que existen en el catálogo de HI Travel pero todavía no están
- * cargados en el sistema (owner, 2026-10-14, roadmap M2 §3): ARCH33EXP,
- * ARBR23 y ARUY01. Viven en `data/productos-no-cargados.csv`, una fila por
+ * cargados en el sistema (owner, 2026-10-14 y 2026-10-16, roadmap M2 §3): ARCH33EXP,
+ * ARBR23, ARUY01 y OD014. Viven en `data/productos-no-cargados.csv`, una fila por
  * código o nombre de agencia que los nombra (codigo, nombre, agencia,
  * codigo_agencia, nombre_agencia, nota).
  *
