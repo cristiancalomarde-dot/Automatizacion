@@ -72,6 +72,32 @@ describe("decidirEntrada", () => {
     });
   });
 
+  describe("TourRadar (owner 2026-10-16): se lee solo el statement en PDF", () => {
+    it("el mail 'BOOKING CONFIRMED' de tourradar.com (o un subdominio) no se lee: se registra, sin IA ni base", async () => {
+      for (const [remitente, asunto] of [
+        ["TourRadar <explore@mail.tourradar.com>", "BOOKING CONFIRMED - Booking #0000042"],
+        ["msg@notify.tourradar.com", "New booking #0000042 is confirmed"],
+        ["bookings@tourradar.com", "Booking confirmed"],
+      ]) {
+        const buscar = sinReservas();
+        const d = await decidirEntrada({ remitente, asunto }, { buscarReservas: buscar, dePrueba: true });
+        expect(d, remitente).toEqual({ leer: false, agencia: "TourRadar", motivo: "tourradar_solo_statement", registrar: true });
+        expect(buscar).not.toHaveBeenCalled();
+      }
+      expect(TEXTO_SALTEO.tourradar_solo_statement).toBe(
+        "De TourRadar se lee solo el estado de cuenta en PDF; este mail se registra sin leer",
+      );
+    });
+
+    it("el statement (system@sent-via.netsuite.com) se sigue leyendo", async () => {
+      const d = await decidirEntrada(
+        { remitente: "TourRadar Finance <system@sent-via.netsuite.com>", asunto: "Booking Statement 0000042 - 00000042 - vendorcredit" },
+        { buscarReservas: sinReservas(), dePrueba: true },
+      );
+      expect(d).toEqual({ leer: true, agencia: "TourRadar", motivo: "original", reservaIds: [] });
+    });
+  });
+
   it("los pedidos a proveedores (HI Travel o un proveedor) no son de agencia", async () => {
     for (const remitente of ["operations@hitravel.com.ar", "reservas@proveedor-inventado.com.ar", ""]) {
       const d = await decidirEntrada({ remitente, asunto: "Reserva x4" }, { buscarReservas: sinReservas(), dePrueba: true });

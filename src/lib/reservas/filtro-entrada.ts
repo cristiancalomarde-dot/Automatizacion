@@ -1,4 +1,4 @@
-import { AGENCIA_DESCONOCIDA, agenciaDelRemitente } from "./agencias";
+import { AGENCIA_DESCONOCIDA, agenciaDelRemitente, direccionDelRemitente } from "./agencias";
 import { numerosDelAsunto, respuestaMereceLectura, type ReservaParaRespuesta } from "./respuestas";
 
 /**
@@ -11,6 +11,11 @@ import { numerosDelAsunto, respuestaMereceLectura, type ReservaParaRespuesta } f
  * 2. Jysk no se lee (owner, 2026-10-13: el 95% son viajes a medida). El mail se
  *    registra, sin IA, para no volver a mirarlo.
  * 3. Journaway entra con M2-09.
+ * 3a. TourRadar: se lee solo el estado de cuenta en PDF que manda
+ *    system@sent-via.netsuite.com (owner, 2026-10-16). Trae habitación, precio
+ *    neto, cancelaciones y cargos; llega casi junto con el mail "BOOKING
+ *    CONFIRMED" de tourradar.com, que no los trae y cambia de formato. Un
+ *    original de cualquier otra dirección de TourRadar se registra sin IA.
  * 3b. Kilroy: un original es reserva nueva solo con "NEW BOOKING" o "KILROY
  *    booking request" en el asunto; si no, y no nombra una reserva ya cargada,
  *    es un pedido de cotización: se registra sin IA (owner, 2026-10-15).
@@ -32,7 +37,8 @@ export type MotivoSalteo =
   | "agencia_no_se_lee"
   | "respuesta_sin_reserva"
   | "respuesta_no_espera_vuelo"
-  | "pedido_cotizacion";
+  | "pedido_cotizacion"
+  | "tourradar_solo_statement";
 
 /** Por qué no se leyó, en llano (reportes y registro). */
 export const TEXTO_SALTEO: Readonly<Record<MotivoSalteo, string>> = {
@@ -43,7 +49,11 @@ export const TEXTO_SALTEO: Readonly<Record<MotivoSalteo, string>> = {
   respuesta_sin_reserva: "Es una respuesta o un reenvío, y su número no es de una reserva cargada",
   respuesta_no_espera_vuelo: "Es una respuesta o un reenvío, y la reserva no está esperando un vuelo",
   pedido_cotizacion: "Es un pedido de cotización, no una reserva (por ahora no se lee)",
+  tourradar_solo_statement: "De TourRadar se lee solo el estado de cuenta en PDF; este mail se registra sin leer",
 };
+
+/** Quien manda los estados de cuenta (Booking Statement) de TourRadar: lo único que se lee de esa agencia. */
+export const REMITENTE_STATEMENT_TOURRADAR = "system@sent-via.netsuite.com";
 
 /**
  * Kilroy (owner, 2026-10-15): una reserva nueva siempre trae "NEW BOOKING" o
@@ -77,6 +87,12 @@ export async function decidirEntrada(
 
   const sinBase = respuestaMereceLectura(mail.asunto, agencia, [], { dePrueba: opciones.dePrueba });
   if (sinBase.motivo === "original") {
+    if (agencia === "TourRadar") {
+      if (direccionDelRemitente(mail.remitente) === REMITENTE_STATEMENT_TOURRADAR) {
+        return { leer: true, agencia, motivo: "original", reservaIds: [] };
+      }
+      return { leer: false, agencia, motivo: "tourradar_solo_statement", registrar: true };
+    }
     if (agencia !== "Kilroy") return { leer: true, agencia, motivo: "original", reservaIds: [] };
     // Sin asunto (una copia .docx sin encabezado), se mira el cuerpo.
     const asunto = mail.asunto?.trim();
