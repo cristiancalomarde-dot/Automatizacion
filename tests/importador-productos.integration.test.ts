@@ -374,15 +374,21 @@ interface FilaServicioDB {
         OD010D: ["318444", "Iguazu Falls Combined 2 Nts BRA + 1 Nt ARG (4 Days)"],
         OD011: ["285055", "Iguazu Glamping  (4 days)"],
       };
+      // M2-06 (owner 2026-10-15): el código propio de Kilroy para OD010B, de data/codigos-kilroy.csv.
+      const kilroyPropio: Record<string, [string, string]> = {
+        OD010B: ["HI_ARGENTINA_IGUAZU_BR_4DAYS-677", "Iguazu Falls on a Shoestring - 4 Days - Start in Brazil"],
+      };
       for (const codigo of CODIGOS_PILOTO) {
         const producto = await productoPorCodigo(codigo);
         const { data } = await admin
           .from("codigo_externo")
           .select("agencia, codigo, nombre_externo, producto_id")
           .eq("producto_id", producto.id)
-          .order("agencia");
+          .order("agencia")
+          .order("codigo");
         expect(data!.map((c) => [c.agencia, c.codigo, c.nombre_externo])).toEqual([
           ["HI Travel", codigo, null],
+          ...(kilroyPropio[codigo] ? [["Kilroy", ...kilroyPropio[codigo]]] : []),
           ["Kilroy", codigo, null],
           ["TourRadar", tr[codigo][0], tr[codigo][1]],
         ]);
@@ -591,7 +597,8 @@ interface FilaServicioDB {
 
       expect(trasSegunda).toEqual(trasPrimera);
       expect(trasPrimera.productos).toBe(5);
-      expect(trasPrimera.codigos).toBe(15);
+      // 15 del Excel + el código propio de Kilroy para OD010B (M2-06, data/codigos-kilroy.csv).
+      expect(trasPrimera.codigos).toBe(16);
       expect(segunda.creados).toEqual({ productos: 0, servicios: 0, codigos: 0 });
       expect(segunda.servicios.eliminados).toBe(0);
 
