@@ -11,7 +11,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { cargarProducto } from "@/lib/catalogo/consultas";
 import { cargarAvisosDeVuelo } from "./avisos-vuelo";
 import { sinDatoDeLlegada } from "./llegada-iguazu";
-import { cuerpoComoTexto } from "./reglas";
+import { cuerpoComoTexto, esCancelacion } from "./reglas";
 import {
   BUCKET_ADJUNTOS,
   type DetalleReserva,
@@ -49,7 +49,8 @@ function aProducto(fila: any): ProductoDeReserva | null {
   return fila?.id ? { id: fila.id, codigo: fila.codigo, nombre: fila.nombre } : null;
 }
 
-function aFila(r: any, avisosVuelo: string[] = []): FilaReserva {
+function aFila(r: any, avisosVuelo: string[] = [], canceladaEnHistorial = false): FilaReserva {
+  const motivos: string[] = Array.isArray(r.motivos_revision) ? r.motivos_revision : [];
   return {
     id: r.id,
     estado: r.estado as EstadoReserva,
@@ -60,7 +61,7 @@ function aFila(r: any, avisosVuelo: string[] = []): FilaReserva {
     fechaFin: r.fecha_fin ?? null,
     pax: typeof r.pax === "number" ? r.pax : null,
     llego: r.mail?.fecha_mail ?? r.created_at,
-    motivos: Array.isArray(r.motivos_revision) ? r.motivos_revision : [],
+    motivos,
     posibleDuplicada: Boolean(r.posible_duplicada),
     dePrueba: Boolean(r.de_prueba),
     sinDatoLlegada: sinDatoDeLlegada({
@@ -69,7 +70,20 @@ function aFila(r: any, avisosVuelo: string[] = []): FilaReserva {
       pedidos: r.pedidos_especiales ?? null,
     }),
     avisosVuelo,
+    cancelacion: canceladaEnHistorial || esCancelacion(motivos),
   };
+}
+
+/**
+ * Owner 2026-10-16: las reservas a las que la agencia les mandó una
+ * cancelación, según su historial (el mail sumado con `cancelacion: true`,
+ * M2-04). Cubre las que ya no estaban en un estado que se pudiera tocar.
+ */
+async function canceladasEnHistorial(cliente: SupabaseClient, ids?: string[]): Promise<Set<string>> {
+  let consulta = cliente.from("evento_reserva").select("reserva_id").eq("tipo", "mail_agregado").contains("detalle", { cancelacion: true });
+  if (ids) consulta = consulta.in("reserva_id", ids);
+  const filas = verificar(await consulta) as any[];
+  return new Set(filas.map((e) => e.reserva_id as string));
 }
 
 /**
@@ -97,8 +111,8 @@ export async function cargarReservas(cliente: SupabaseClient): Promise<FilaReser
   const filas = verificar(
     await cliente.from("reserva").select(CAMPOS_FILA).order("created_at", { ascending: false }),
   ) as any[];
-  const avisos = await avisosDe(cliente, filas);
-  return filas.map((r) => aFila(r, avisos.get(r.id)));
+  const [avisos, canceladas] = await Promise.all([avisosDe(cliente, filas), canceladasEnHistorial(cliente)]);
+  return filas.map((r) => aFila(r, avisos.get(r.id), canceladas.has(r.id)));
 }
 
 function aPasajeros(lista: unknown): string[] {
@@ -161,7 +175,7 @@ export async function cargarReserva(cliente: SupabaseClient, id: string): Promis
   const r = verificar(await cliente.from("reserva").select(CAMPOS_DETALLE).eq("id", id).maybeSingle()) as any;
   if (!r) return null;
 
-  const [partes, eventos, avisos] = await Promise.all([
+  const [partes, eventos, avisos, canceladas] = await Promise.all([
     cliente
       .from("reserva_componente")
       .select(`orden,tipo,descripcion_ruta,texto_agencia,fecha_inicio,fecha_fin,es_tarea,${PRODUCTO}`)
@@ -169,6 +183,7 @@ export async function cargarReserva(cliente: SupabaseClient, id: string): Promis
       .order("orden"),
     cliente.from("evento_reserva").select("mail_recibido_id").eq("reserva_id", id).not("mail_recibido_id", "is", null),
     avisosDe(cliente, [r]),
+    canceladasEnHistorial(cliente, [id]),
   ]);
   const filasPartes = verificar(partes) as any[];
   const idsSumados = (verificar(eventos) as any[]).map((e) => e.mail_recibido_id as string);
@@ -180,7 +195,7 @@ export async function cargarReserva(cliente: SupabaseClient, id: string): Promis
   const sumados = filasMails.filter((m) => m.id !== r.mail_recibido_id).sort((a, b) => llegada(a) - llegada(b));
 
   return {
-    ...aFila(r, avisos.get(r.id)),
+    ...aFila(r, avisos.get(r.id), canceladas.has(r.id)),
     productoTextoAgencia: texto(r.producto_texto_agencia),
     duplicadaDeId: r.duplicada_de_id ?? null,
     pasajeros: aPasajeros(r.pasajeros),

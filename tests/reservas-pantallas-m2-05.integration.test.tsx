@@ -227,6 +227,16 @@ function sinSesion(): SupabaseClient {
       expect(filas.find((f) => f.id === ids.simple)!.avisosVuelo).toEqual([]);
     });
 
+    it("owner 2026-10-16: una cancelación se marca por su motivo o por su historial, aunque no haya cambiado de estado", async () => {
+      expect((await cargarReserva(equipo, ids.simple))!.cancelacion).toBe(false);
+      // La agencia cancela una reserva que ya no estaba en un estado tocable: queda solo en el historial.
+      await agregarEvento(ids.simple, { tipo: "mail_agregado", detalle: { cancelacion: true } }, admin);
+      expect((await cargarReserva(equipo, ids.simple))!.cancelacion).toBe(true);
+      const filas = await cargarReservas(equipo);
+      expect(filas.find((f) => f.id === ids.simple)!.cancelacion).toBe(true);
+      expect(filas.find((f) => f.id === ids.tour)!.cancelacion).toBe(false);
+    });
+
     it("la de 2 mails los trae en orden de llegada, con el PDF del primero", async () => {
       const r = (await cargarReserva(equipo, ids.dosMails))!;
       expect(r.mails.map((m) => m.asunto)).toEqual([`${PREFIJO} DK0000005 - NEW BOOKING`, `${PREFIJO} NEW FLIGHT: DK0000005`]);

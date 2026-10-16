@@ -256,6 +256,11 @@ export interface FilaReserva {
    * `avisos-vuelo.ts`. Aviso, no motivo de revisión: se va solo cuando llega el vuelo.
    */
   avisosVuelo: string[];
+  /**
+   * Owner 2026-10-16: la agencia mandó una cancelación (al crearla o después,
+   * `esCancelacion` + el historial). Se dice de forma evidente en la lista y el detalle.
+   */
+  cancelacion: boolean;
 }
 
 /** Un vuelo como lo dice el mail: fechas y horas del aeropuerto, sin convertir. */

@@ -88,9 +88,11 @@ function Detalle({ reserva }: { reserva: DetalleReserva }) {
               dePrueba={reserva.dePrueba}
               sinDatoLlegada={reserva.sinDatoLlegada}
               avisosVuelo={reserva.avisosVuelo}
+              cancelacion={reserva.cancelacion}
             />
           </span>
           <h1 className={ui.titulo} title={T.numero}>
+            {reserva.cancelacion ? <span className={estilos.cancelacionTitulo}>{TEXTOS.reservas.cancelacion}</span> : null}
             <span className={estilos.numeroTitulo}>{reserva.numero ?? SIN_DATO}</span>
           </h1>
         </div>

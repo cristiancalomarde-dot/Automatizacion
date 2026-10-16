@@ -190,3 +190,9 @@
   margin: 0;
   font-weight: 600;
 }
+
+/* Owner 2026-10-16: "CANCELACIÓN" delante del número, en el título del detalle. */
+.cancelacionTitulo {
+  margin-right: 10px;
+  color: var(--color-error-texto);
+}

@@ -204,6 +204,8 @@ export const TEXTOS = {
     sinDatoLlegada: "sin dato de llegada",
     /** Owner 2026-10-16: falta un vuelo para un traslado (aviso, no revisión). */
     faltaVuelo: "falta el vuelo",
+    /** Owner 2026-10-16: la agencia cancela (marca junto al estado y en el título del detalle). */
+    cancelacion: "CANCELACIÓN",
     /** Modo prueba (spec M2-06 §4). */
     verPrueba: (n: number) => `Ver las de prueba (${n})`,
     soloPrueba: (n: number) =>

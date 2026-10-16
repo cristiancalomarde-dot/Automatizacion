@@ -140,6 +140,7 @@ function TablaReservas({ filas }: { filas: FilaReserva[] }) {
                       dePrueba={fila.dePrueba}
                       sinDatoLlegada={fila.sinDatoLlegada}
                       avisosVuelo={fila.avisosVuelo}
+                      cancelacion={fila.cancelacion}
                     />
                   </span>
                 </td>

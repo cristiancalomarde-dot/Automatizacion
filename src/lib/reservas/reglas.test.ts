@@ -7,6 +7,7 @@ import {
   categoriaDeMotivo,
   contarReservas,
   cuerpoComoTexto,
+  esCancelacion,
   esIdDeReserva,
   frasesDeMotivos,
   fraseDeMotivo,
@@ -278,5 +279,17 @@ describe("cuerpo del mail como texto (#13)", () => {
 
   it("sin cuerpo, vacío", () => {
     expect(cuerpoComoTexto({ cuerpoTexto: null, cuerpoHtml: null })).toBe("");
+  });
+});
+
+describe("cancelación bien visible (owner 2026-10-16)", () => {
+  it("una reserva con el motivo de cancelación (nueva o sumada) es una cancelación", () => {
+    expect(esCancelacion([MI.cancelacionSinReserva, ME.dudosos(["producto"])])).toBe(true);
+    expect(esCancelacion([MI.cancelacion])).toBe(true);
+    expect(esCancelacion([ME.tipoMail.cancelacion])).toBe(true);
+  });
+  it("otros motivos, o ninguno, no", () => {
+    expect(esCancelacion([])).toBe(false);
+    expect(esCancelacion([ME.tipoMail.cambio_o_cargo, MI.datosDistintos])).toBe(false);
   });
 });

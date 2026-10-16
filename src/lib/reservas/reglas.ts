@@ -214,3 +214,17 @@ export function cuerpoComoTexto(mail: { cuerpoTexto: string | null; cuerpoHtml: 
   if (mail.cuerpoTexto && mail.cuerpoTexto.trim()) return mail.cuerpoTexto;
   return mail.cuerpoHtml ? htmlATexto(mail.cuerpoHtml) : "";
 }
+
+/**
+ * Owner 2026-10-16: una reserva cuyo mail es una cancelación tiene que decirlo
+ * de forma evidente (en la lista y en el título del detalle). Por sus motivos:
+ * la cancelación de una reserva que no estaba, o la que se sumó a una que sí.
+ * Si la reserva ya no estaba en un estado tocable, lo dice su historial
+ * (`consultas.ts`).
+ */
+export function esCancelacion(motivos: readonly string[]): boolean {
+  return motivos.some((m) => {
+    const c = categoriaDeMotivo(m);
+    return c === "cancelacion" || c === "cancelacion_sin_reserva";
+  });
+}

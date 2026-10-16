@@ -51,6 +51,7 @@ function fila(extra: Partial<FilaReserva> & Pick<FilaReserva, "id">): FilaReserv
     dePrueba: false,
     sinDatoLlegada: false,
     avisosVuelo: [],
+    cancelacion: false,
     ...extra,
   };
 }
