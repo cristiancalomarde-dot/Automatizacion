@@ -135,7 +135,12 @@ function TablaReservas({ filas }: { filas: FilaReserva[] }) {
                 <td>
                   <span className={ui.chips}>
                     <ChipEstado estado={fila.estado} />
-                    <MarcasReserva posibleDuplicada={fila.posibleDuplicada} dePrueba={fila.dePrueba} sinDatoLlegada={fila.sinDatoLlegada} />
+                    <MarcasReserva
+                      posibleDuplicada={fila.posibleDuplicada}
+                      dePrueba={fila.dePrueba}
+                      sinDatoLlegada={fila.sinDatoLlegada}
+                      avisosVuelo={fila.avisosVuelo}
+                    />
                   </span>
                 </td>
                 <td>{fila.agencia}</td>
@@ -148,6 +153,11 @@ function TablaReservas({ filas }: { filas: FilaReserva[] }) {
                   ) : (
                     <span className={ui.secundario}>{T.sinProducto}</span>
                   )}
+                  {fila.avisosVuelo.map((a) => (
+                    <span key={a} className={estilos.avisoFila}>
+                      {a}
+                    </span>
+                  ))}
                 </td>
                 <td className={ui.nowrap}>{formatearRango(fila.fechaInicio, fila.fechaFin)}</td>
                 <td className={ui.numero}>{fila.pax ?? SIN_DATO}</td>

@@ -246,66 +246,68 @@ describe("fila 4: un dato distinto no pisa al que está", () => {
   });
 });
 
-describe("fila 5: los vuelos que llegan después resuelven el 'falta el vuelo'", () => {
+describe("fila 5 (owner 2026-10-16): el vuelo que falta es un aviso, no un motivo de revisión", () => {
   // Kilroy ARCH33 (DK1576932, "flights after tour are from Puerto Natales"): pide el vuelo
   // de llegada a El Calafate y el de salida de Puerto Natales (catálogo real).
   const ficha = fichaDePrueba("kilroy-dk1576932");
   const llegada = vuelo({ numero: "AR1874", origen: "AEP", destino: "FTE", fecha_llegada: "2027-02-23", hora_llegada: "12:30" });
   const salida = vuelo({ numero: "LA290", origen: "PNT", destino: "SCL", fecha_salida: "2027-03-06", hora_salida: "15:00" });
-  const recheck = (vuelos: VueloIA[]) =>
+  const avisos = (vuelos: VueloIA[]) =>
     motivosDeVuelos(detalleDePrueba("ARCH33"), {
       vuelos,
       pedidos: ficha.pedidos_especiales.map((p) => p.texto),
       producto: ficha.productos[0],
       finalPuertoNatales: true,
     });
-  const motivosSinVuelo = recheck([]);
-  const enRevision = (c: Partial<ReservaExistente> = {}) =>
-    reserva({
-      booking_id: "DK1576932",
-      producto_id: "p-arch33",
-      fecha_inicio: "2027-02-23",
-      fecha_fin: "2027-03-06",
-      estado: "para_revision",
-      motivos_revision: motivosSinVuelo,
-      ...c,
-    });
+  const avisosSinVuelo = avisos([]);
+  const esperando = (c: Partial<ReservaExistente> = {}) =>
+    reserva({ booking_id: "DK1576932", producto_id: "p-arch33", fecha_inicio: "2027-02-23", fecha_fin: "2027-03-06", ...c });
   const conVuelos = (vuelos: VueloIA[], c: Partial<Parameters<typeof armarCambios>[1]> = {}) =>
     entrante({ fechaInicio: "2027-02-23", fechaFin: "2027-03-06", vuelos, ...c });
-  const opciones = { recheckVuelos: recheck, fechaMail: "2026-10-09T08:38:00Z" };
+  const opciones = { avisosVuelo: avisos, fechaMail: "2026-10-09T08:38:00Z" };
 
-  it("sin vuelos, ARCH33 con final en Puerto Natales pide los dos", () => {
-    expect(motivosSinVuelo).toEqual([
+  it("sin vuelos, ARCH33 con final en Puerto Natales avisa los dos", () => {
+    expect(avisosSinVuelo).toEqual([
       "Falta el vuelo de llegada a El Calafate (FTE) para el traslado de OD033",
       "Falta el vuelo de salida de Puerto Natales (PNT) para el traslado al aeropuerto de Puerto Natales",
     ]);
   });
-  it("(a) solo faltaba el vuelo y llegan los dos con confianza alta → recibida, con la nota", () => {
-    const c = armarCambios(enRevision(), conVuelos([llegada, salida]), opciones);
+  it("(a) recibida con el aviso: llegan los dos con confianza alta → sigue recibida, con los vuelos y la nota", () => {
+    const c = armarCambios(esperando(), conVuelos([llegada, salida]), opciones);
     expect(c).toMatchObject({ estado: "recibida", motivos: [], completados: ["vuelos"] });
-    expect(c.nota).toBe("Pasó a recibida porque llegaron los vuelos (mail del 09/10)");
+    expect(c.nota).toBe("Llegaron los vuelos (mail del 09/10)");
   });
-  it("(b) llega solo el de llegada y el producto también tiene traslado de salida → sigue en revisión", () => {
-    const c = armarCambios(enRevision(), conVuelos([llegada]), opciones);
-    expect(c.estado).toBe("para_revision");
-    expect(c.motivos).toEqual([...motivosSinVuelo, MI.llegaronVuelos]);
+  it("(b) llega solo el de llegada → sigue recibida; la nota dice qué falta todavía", () => {
+    const c = armarCambios(esperando(), conVuelos([llegada]), opciones);
+    expect(c).toMatchObject({ estado: "recibida", motivos: [] });
+    expect(c.nota).toBe(`Llegaron vuelos (mail del 09/10). Todavía falta: ${avisosSinVuelo[1]}`);
   });
-  it("(c) había otro motivo más (producto con baja confianza) → sigue en revisión, con la nota", () => {
-    const c = armarCambios(enRevision({ motivos_revision: [...motivosSinVuelo, "No se pudo reconocer con seguridad el producto X"] }), conVuelos([llegada, salida]), opciones);
-    expect(c.estado).toBe("para_revision");
-    expect(c.motivos).toContain(MI.llegaronVuelos);
-    expect(c.motivos).toContain("No se pudo reconocer con seguridad el producto X");
+  it("(c) había otro motivo (producto con baja confianza) → sigue en revisión con ese motivo, sin sumar otro", () => {
+    const otro = "No se pudo reconocer con seguridad el producto X";
+    const c = armarCambios(esperando({ estado: "para_revision", motivos_revision: [otro] }), conVuelos([llegada, salida]), opciones);
+    expect(c).toMatchObject({ estado: "para_revision", motivos: [otro] });
   });
-  it("(d) vuelos con confianza baja → sigue en revisión", () => {
+  it("(d) vuelos con confianza baja → para revisión: 'llegaron vuelos, revisar' (duda de la lectura)", () => {
     const bajos = [llegada, salida].map((v) => ({ ...v, confianza: 0.5 }));
-    expect(armarCambios(enRevision(), conVuelos(bajos), opciones).estado).toBe("para_revision");
-    expect(armarCambios(enRevision(), conVuelos([llegada, salida], { vuelosDudosos: true }), opciones).estado).toBe("para_revision");
+    expect(armarCambios(esperando(), conVuelos(bajos), opciones)).toMatchObject({ estado: "para_revision", motivos: [MI.llegaronVuelos] });
+    expect(armarCambios(esperando(), conVuelos([llegada, salida], { vuelosDudosos: true }), opciones).motivos).toEqual([MI.llegaronVuelos]);
   });
-  it("con un dato distinto en el mismo mail tampoco pasa sola", () => {
-    expect(armarCambios(enRevision(), conVuelos([llegada, salida], { pax: 3 }), opciones).estado).toBe("para_revision");
+  it("con un dato distinto en el mismo mail pasa a revisión por el dato distinto", () => {
+    expect(armarCambios(esperando(), conVuelos([llegada, salida], { pax: 3 }), opciones)).toMatchObject({
+      estado: "para_revision",
+      motivos: [MI.datosDistintos],
+    });
   });
-  it("sin poder volver a chequear (no hay producto) → sigue en revisión", () => {
-    expect(armarCambios(enRevision(), conVuelos([llegada, salida]), { fechaMail: null }).estado).toBe("para_revision");
+  it("una reserva que no esperaba vuelos: los vuelos se completan sin nota", () => {
+    const c = armarCambios(esperando(), conVuelos([llegada, salida]), { avisosVuelo: () => [], fechaMail: null });
+    expect(c).toMatchObject({ estado: "recibida", completados: ["vuelos"], nota: null });
+  });
+  it("las de antes del cambio ('para revisión' solo por 'Falta el vuelo…'): ese motivo se va y queda recibida", () => {
+    const vieja = esperando({ estado: "para_revision", motivos_revision: avisosSinVuelo });
+    const c = armarCambios(vieja, conVuelos([llegada]), opciones);
+    expect(c).toMatchObject({ estado: "recibida", motivos: [] });
+    // Sin poder recalcular (no hay producto) igual cuenta que esperaba el vuelo.
+    expect(armarCambios(vieja, conVuelos([llegada, salida]), { fechaMail: null })).toMatchObject({ estado: "recibida", motivos: [] });
   });
 });
 
@@ -316,7 +318,7 @@ describe("fila 9: cancelación de la agencia", () => {
   });
   it("en una cancelación los vuelos que vengan no la pasan a recibida", () => {
     const c = armarCambios(reserva({ estado: "para_revision", motivos_revision: ["Falta el vuelo de llegada a X"] }), entrante({ esCancelacion: true }), {
-      recheckVuelos: () => [],
+      avisosVuelo: () => [],
     });
     expect(c.estado).toBe("para_revision");
     expect(c.motivos).toContain(MI.cancelacion);

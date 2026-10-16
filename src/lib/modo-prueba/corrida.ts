@@ -1,6 +1,8 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { RegistroLlamadasIA } from "@/lib/ia/registro-llamadas";
+import { cargarProducto } from "@/lib/catalogo/consultas";
 import type { RegistroUsoIA } from "@/lib/ia/techo-gasto";
+import { cargarAvisosDeVuelo } from "@/lib/reservas/avisos-vuelo";
 import type { DependenciasReservas } from "@/lib/reservas/emparejar/reservas-del-mail";
 import type { ResultadoLectura } from "@/lib/reservas/extraer";
 import { decidirEntrada, TEXTO_SALTEO } from "@/lib/reservas/filtro-entrada";
@@ -101,6 +103,7 @@ export async function reservasDelMail(
     .from("reserva")
     .select(
       "id,booking_id,booking_id_original,producto_texto_agencia,origen_emparejado,confianza_emparejado,fecha_inicio,fecha_fin,pax,estado,motivos_revision," +
+        "producto_id,vuelos,pedidos_especiales," +
         "producto:producto_id(codigo,nombre),sugerencia:sugerencia_producto_id(codigo,nombre)",
     )
     .in("id", ids);
@@ -108,6 +111,19 @@ export async function reservasDelMail(
   const { data: partes } = await admin.from("reserva_componente").select("reserva_id").in("reserva_id", ids);
   const cuantas = (id: string) => (partes ?? []).filter((p) => p.reserva_id === id).length;
   const porId = new Map((data as any[]).map((r) => [r.id as string, r]));
+  const avisos = await cargarAvisosDeVuelo(
+    (id) => cargarProducto(admin, id),
+    (data as any[]).map((r) => ({
+      id: r.id,
+      productoId: r.producto_id,
+      estado: r.estado,
+      productoTexto: r.producto_texto_agencia,
+      fechaInicio: r.fecha_inicio,
+      fechaFin: r.fecha_fin,
+      vuelos: Array.isArray(r.vuelos) ? r.vuelos : [],
+      pedidos: r.pedidos_especiales,
+    })),
+  );
   return ids
     .map((id) => porId.get(id))
     .filter(Boolean)
@@ -125,6 +141,7 @@ export async function reservasDelMail(
       pax: r.pax,
       estado: r.estado as EstadoReserva,
       motivos: r.motivos_revision ?? [],
+      avisos: avisos.get(r.id) ?? [],
       partes: cuantas(r.id),
     }));
 }

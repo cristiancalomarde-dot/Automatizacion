@@ -250,6 +250,12 @@ export interface FilaReserva {
   dePrueba: boolean;
   /** Iguazú (OD010A–D) sin vuelo ni bus de llegada (`llegada-iguazu.ts`): aviso, no motivo de revisión. */
   sinDatoLlegada: boolean;
+  /**
+   * Owner 2026-10-16: los vuelos que faltan para un traslado ("Falta el vuelo de
+   * llegada a Calama (CJC) para el traslado de OD030"), calculados con
+   * `avisos-vuelo.ts`. Aviso, no motivo de revisión: se va solo cuando llega el vuelo.
+   */
+  avisosVuelo: string[];
 }
 
 /** Un vuelo como lo dice el mail: fechas y horas del aeropuerto, sin convertir. */

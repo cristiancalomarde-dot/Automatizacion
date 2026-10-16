@@ -58,12 +58,26 @@ describe("respuestaMereceLectura", () => {
       reservaIds: ["r1"],
     });
   });
+  it("owner 2026-10-16: una reserva con el aviso 'Falta el vuelo…' pendiente → se lee, cualquiera sea su estado", () => {
+    for (const estado of ["recibida", "para_revision", "pedido_a_proveedor"] as const) {
+      const r = reserva({ estado, motivos_revision: estado === "para_revision" ? ["La IA no está segura de: fechas"] : [], avisos_vuelo: [FALTA] });
+      expect(respuestaMereceLectura(asunto, "Kilroy", [r], { dePrueba: false }), estado).toEqual({
+        leer: true,
+        motivo: "espera_vuelo",
+        reservaIds: ["r1"],
+      });
+    }
+  });
+  it("sin aviso pendiente (el vuelo ya llegó) → no se lee", () => {
+    const r = reserva({ estado: "recibida", motivos_revision: [], avisos_vuelo: [] });
+    expect(respuestaMereceLectura(asunto, "Kilroy", [r], { dePrueba: false })).toMatchObject({ leer: false, motivo: "no_espera_vuelo" });
+  });
   it("la misma respuesta con la reserva ya recibida → no se lee", () => {
     const r = respuestaMereceLectura(asunto, "Kilroy", [reserva({ estado: "recibida", motivos_revision: [] })], { dePrueba: false });
     expect(r).toMatchObject({ leer: false, motivo: "no_espera_vuelo" });
   });
-  it("Iguazú recibida sin dato de llegada (owner 2026-10-14) → se lee, para sumar el vuelo o el bus", () => {
-    const iguazu = reserva({ estado: "recibida", motivos_revision: [], sin_dato_llegada: true });
+  it("Iguazú sin dato de llegada (owner 2026-10-14), cualquiera sea su estado → se lee, para sumar el vuelo o el bus", () => {
+    const iguazu = reserva({ estado: "pedido_a_proveedor", motivos_revision: [], sin_dato_llegada: true });
     expect(respuestaMereceLectura(asunto, "Kilroy", [iguazu], { dePrueba: false })).toEqual({
       leer: true,
       motivo: "espera_vuelo",

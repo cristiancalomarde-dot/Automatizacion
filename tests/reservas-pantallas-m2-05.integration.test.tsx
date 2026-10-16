@@ -216,6 +216,17 @@ function sinSesion(): SupabaseClient {
       });
     });
 
+    it("owner 2026-10-16: el tour CHB31 sin vuelos trae el aviso calculado con el catálogo, en la lista y en el detalle", async () => {
+      const aviso = "Falta el vuelo de llegada a Calama (CJC) para el traslado de OD030";
+      const r = (await cargarReserva(equipo, ids.tour))!;
+      expect(r).toMatchObject({ estado: "recibida", motivos: [] });
+      expect(r.avisosVuelo).toContain(aviso);
+      const filas = await cargarReservas(equipo);
+      expect(filas.find((f) => f.id === ids.tour)!.avisosVuelo).toEqual(r.avisosVuelo);
+      // La de Iguazú con su vuelo de llegada no lleva aviso de vuelo.
+      expect(filas.find((f) => f.id === ids.simple)!.avisosVuelo).toEqual([]);
+    });
+
     it("la de 2 mails los trae en orden de llegada, con el PDF del primero", async () => {
       const r = (await cargarReserva(equipo, ids.dosMails))!;
       expect(r.mails.map((m) => m.asunto)).toEqual([`${PREFIJO} DK0000005 - NEW BOOKING`, `${PREFIJO} NEW FLIGHT: DK0000005`]);

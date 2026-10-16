@@ -122,6 +122,19 @@ describe("armarReporteMail", () => {
     expect(md).toContain("La IA sugirió **AR09** Patagonia Adventure Tour (confianza 0,80)");
   });
 
+  it("owner 2026-10-16: el vuelo que falta va como aviso, no como motivo de revisión", () => {
+    const r = resultado();
+    r.reservas[0] = {
+      ...r.reservas[0],
+      estado: "recibida",
+      motivos: [],
+      avisos: ["Falta el vuelo de llegada a Calama (CJC) para el traslado de OD030"],
+    };
+    const md = armarReporteMail(r);
+    expect(md).toContain("- **Aviso (no la manda a revisión):** Falta el vuelo de llegada a Calama (CJC) para el traslado de OD030");
+    expect(md).not.toContain("Por qué quedó en revisión");
+  });
+
   it("un mail que se sumó a una reserva que ya existía: no creó otra", () => {
     const r = resultado();
     r.reservas[0] = { ...r.reservas[0], accion: "sumada" };

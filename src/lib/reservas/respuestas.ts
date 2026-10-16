@@ -9,7 +9,10 @@ import type { ReservaExistente } from "./intercambio";
  *
  * 1. su asunto trae el número de una reserva que existe (lo cruza el código,
  *    sin IA), y
- * 2. esa reserva está "para revisión" esperando un vuelo.
+ * 2. esa reserva espera un vuelo: tiene el aviso "Falta el vuelo…" pendiente
+ *    (`avisos-vuelo.ts`, owner 2026-10-16) o es Iguazú sin dato de llegada,
+ *    cualquiera sea su estado. Las reservas de antes del 2026-10-16 que
+ *    quedaron "para revisión" con el motivo guardado también cuentan.
  *
  * Una vez leída, se suma a la reserva como cualquier mail del mismo
  * intercambio (`procesar-mail.ts`). El filtro de la casilla es de M2-07: esto
@@ -41,6 +44,8 @@ export function numerosDelAsunto(asunto: string | null | undefined, agencia: str
 export type ReservaParaRespuesta = Pick<ReservaExistente, "id" | "agencia" | "booking_id" | "estado" | "motivos_revision" | "de_prueba"> & {
   /** Iguazú sin vuelo ni bus de llegada (`llegada-iguazu.ts`, owner 2026-10-14): también espera el dato. */
   sin_dato_llegada?: boolean;
+  /** Los avisos "Falta el vuelo…" calculados (`avisos-vuelo.ts`, owner 2026-10-16). */
+  avisos_vuelo?: string[];
 };
 
 export type MotivoLectura = "original" | "espera_vuelo" | "no_espera_vuelo" | "sin_numero_conocido";
@@ -54,9 +59,10 @@ export interface DecisionLectura {
 
 const FALTA_VUELO = /^Falta el vuelo de /;
 
-export const esperaVuelo = (r: Pick<ReservaParaRespuesta, "estado" | "motivos_revision" | "sin_dato_llegada">) =>
-  (r.estado === "para_revision" && r.motivos_revision.some((m) => FALTA_VUELO.test(m))) ||
-  (r.estado === "recibida" && r.sin_dato_llegada === true);
+export const esperaVuelo = (r: Pick<ReservaParaRespuesta, "estado" | "motivos_revision" | "sin_dato_llegada" | "avisos_vuelo">) =>
+  (r.avisos_vuelo?.length ?? 0) > 0 ||
+  r.sin_dato_llegada === true ||
+  (r.estado === "para_revision" && r.motivos_revision.some((m) => FALTA_VUELO.test(m)));
 
 /**
  * `reservas`: las candidatas (puede traer de todo; se filtra por agencia, por

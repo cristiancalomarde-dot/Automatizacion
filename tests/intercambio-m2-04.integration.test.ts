@@ -559,15 +559,16 @@ const ASUNTO_OVERLAND = n("DK1594100/maga - Overland San Pedro de Atacama to Uyu
       return { mail, ...lector(respuestaCon(f)) };
     }
 
-    it("respuesta 'Re: NEW FLIGHT: DK1562336' con la reserva esperando el vuelo → se lee, se suma y pasa a recibida", async () => {
+    it("owner 2026-10-16: 'Re: NEW FLIGHT: DK1562336' con la reserva recibida y el aviso del vuelo → se lee, se suma y el aviso se va", async () => {
       const alta = await altaQueEsperaVuelo();
-      expect(alta.estado).toBe("para_revision");
-      expect(alta.motivos_revision).toEqual(["Falta el vuelo de llegada a Calama (CJC) para el traslado de OD030"]);
+      expect(alta).toMatchObject({ estado: "recibida", motivos_revision: [] });
 
       const r = respuestaConVuelo();
-      const decision = respuestaMereceLectura(ASUNTO_VUELO, "Kilroy", await cargarReservasDelAsunto(admin, ASUNTO_VUELO, "Kilroy", true), {
-        dePrueba: true,
-      });
+      const candidatas = await cargarReservasDelAsunto(admin, ASUNTO_VUELO, "Kilroy", true, registro.mails);
+      expect(candidatas).toEqual([
+        expect.objectContaining({ id: alta.id, avisos_vuelo: ["Falta el vuelo de llegada a Calama (CJC) para el traslado de OD030"] }),
+      ]);
+      const decision = respuestaMereceLectura(ASUNTO_VUELO, "Kilroy", candidatas, { dePrueba: true });
       expect(decision).toEqual({ leer: true, motivo: "espera_vuelo", reservaIds: [alta.id] });
 
       const p = await procesarMail(r.mail, opciones(r.leer));
@@ -576,7 +577,9 @@ const ASUNTO_OVERLAND = n("DK1594100/maga - Overland San Pedro de Atacama to Uyu
       expect(await reservasDe("DK1562336")).toHaveLength(1);
       expect(despues).toMatchObject({ id: alta.id, estado: "recibida", motivos_revision: [] });
       const agregado = (await eventosDe(alta.id)).find((e) => e.tipo === "mail_agregado")!;
-      expect((agregado.detalle as { nota: string }).nota).toBe("Pasó a recibida porque llegaron los vuelos (mail del 12/10)");
+      expect((agregado.detalle as { nota: string }).nota).toBe("Llegaron los vuelos (mail del 12/10)");
+      const ahora = await cargarReservasDelAsunto(admin, ASUNTO_VUELO, "Kilroy", true, registro.mails);
+      expect(ahora).toEqual([expect.objectContaining({ id: alta.id, avisos_vuelo: [] })]);
     });
 
     it("Iguazú (owner 2026-10-14): OD010D sin vuelo queda recibida; 'Re: NEW FLIGHT' se lee, suma el vuelo y el aviso se va", async () => {
@@ -620,11 +623,12 @@ const ASUNTO_OVERLAND = n("DK1594100/maga - Overland San Pedro de Atacama to Uyu
       expect(ahora).toEqual([expect.objectContaining({ id: r.id, sin_dato_llegada: false })]);
     });
 
-    it("la misma respuesta con la reserva ya recibida, o sin número conocido → no se lee (sin IA)", async () => {
+    it("la misma respuesta con la reserva que ya tiene el vuelo, o sin número conocido → no se lee (sin IA)", async () => {
       await altaQueEsperaVuelo();
+      const llegada = { numero: "LA148", aerolinea: "LATAM", origen: "SCL", destino: "CJC", fecha_salida: "2027-03-06", hora_salida: "12:00", fecha_llegada: "2027-03-06", hora_llegada: "14:10", confianza: 0.95 };
       await admin
         .from("reserva")
-        .update({ estado: "recibida", motivos_revision: [] })
+        .update({ estado: "recibida", motivos_revision: [], vuelos: [llegada] })
         .eq("booking_id", n("DK1562336"))
         .eq("de_prueba", true)
         .in("mail_recibido_id", registro.mails);

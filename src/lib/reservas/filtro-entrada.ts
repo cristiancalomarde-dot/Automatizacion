@@ -20,8 +20,9 @@ import { numerosDelAsunto, respuestaMereceLectura, type ReservaParaRespuesta } f
  *    booking request" en el asunto; si no, y no nombra una reserva ya cargada,
  *    es un pedido de cotización: se registra sin IA (owner, 2026-10-15).
  * 4. Solo los mails originales. Una respuesta o reenvío ("Re:", "SV:", "FW:"…)
- *    se lee solo si su asunto trae el número de una reserva cargada que está
- *    "para revisión" esperando un vuelo (owner, 2026-10-14; `respuestas.ts`).
+ *    se lee solo si su asunto trae el número de una reserva cargada que espera
+ *    un vuelo: tiene el aviso "Falta el vuelo…" pendiente, cualquiera sea su
+ *    estado (owner, 2026-10-14 y 2026-10-16; `respuestas.ts`, `avisos-vuelo.ts`).
  *    Ese cruce lo hace el código contra la base, sin IA.
  *
  * Solo decide: no guarda nada ni llama a la IA.

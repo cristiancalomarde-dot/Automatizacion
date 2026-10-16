@@ -179,10 +179,11 @@ export interface CambiosIntercambio {
 
 export interface OpcionesCambios {
   /**
-   * Fila 5: el mismo control de vuelos de M2-03 sobre los vuelos que quedan
-   * (`motivosDeVuelos`). Null o sin función = no se puede volver a chequear.
+   * Fila 5 (owner 2026-10-16): los avisos "Falta el vuelo…" de la reserva con
+   * una lista de vuelos (`avisosDeVuelo`, el control de M2-03). Sin función =
+   * no se puede recalcular (no hay producto).
    */
-  recheckVuelos?: (vuelos: VueloIA[]) => string[] | null;
+  avisosVuelo?: (vuelos: VueloIA[]) => string[];
   /** Fecha del mail nuevo, para la nota. */
   fechaMail?: string | null;
 }
@@ -298,7 +299,11 @@ export function armarCambios(existente: ReservaExistente, entrante: DatosEntrant
     return { completar, completados, distintos, estado: existente.estado, motivos: existente.motivos_revision, nota: null };
   }
 
-  const motivos = [...existente.motivos_revision];
+  // Owner 2026-10-16: el vuelo que falta ya no es motivo de revisión sino un aviso que se
+  // calcula. Las reservas de antes del cambio pueden traerlo guardado: se saca.
+  const esperabaVuelos =
+    existente.motivos_revision.some((m) => FALTA_VUELO.test(m)) || (opciones.avisosVuelo?.(vuelosAntes).length ?? 0) > 0;
+  const motivos = existente.motivos_revision.filter((m) => !FALTA_VUELO.test(m));
   const sumar = (m: string) => {
     if (!motivos.includes(m)) motivos.push(m);
   };
@@ -307,22 +312,16 @@ export function armarCambios(existente: ReservaExistente, entrante: DatosEntrant
   // Owner 2026-10-14: un cargo implica un servicio nuevo (tour extra, upgrade a SGL, hotel mejor).
   if (entrante.cargoExtra) sumar(M.cargoExtra(entrante.cargoExtra));
 
-  // Fila 5: pasa sola a recibida solo si (a) lo único abierto era el vuelo, (b) el control
-  // de M2-03 ya no encuentra faltantes y los vuelos vinieron con confianza alta, y (c) no
-  // hay datos distintos (ni una cancelación).
+  // Fila 5 (owner 2026-10-16): los vuelos que llegan a una reserva que los esperaba se suman y
+  // el aviso se va solo (se recalcula con los vuelos guardados). Solo si la lectura dudó de
+  // los vuelos pasa a revisión, para que alguien los mire.
   let nota: string | null = null;
-  const esperabaVuelos = existente.motivos_revision.some((m) => FALTA_VUELO.test(m));
   if (cruce.agregados.length && esperabaVuelos) {
-    const soloVuelo = existente.motivos_revision.every((m) => FALTA_VUELO.test(m));
     const confiables = !entrante.vuelosDudosos && cruce.agregados.every((v) => v.confianza >= UMBRAL_VUELO);
-    const faltan = opciones.recheckVuelos?.([...vuelosAntes, ...cruce.agregados]) ?? null;
-    if (soloVuelo && confiables && faltan !== null && faltan.length === 0 && !distintos.length && !entrante.esCancelacion) {
-      motivos.splice(0, motivos.length);
-      const fecha = opciones.fechaMail ? ` (mail del ${ddmm(new Date(opciones.fechaMail).toISOString())})` : "";
-      nota = `Pasó a recibida porque llegaron los vuelos${fecha}`;
-    } else {
-      sumar(MOTIVOS_INTERCAMBIO.llegaronVuelos);
-    }
+    if (!confiables) sumar(MOTIVOS_INTERCAMBIO.llegaronVuelos);
+    const fecha = opciones.fechaMail ? ` (mail del ${ddmm(new Date(opciones.fechaMail).toISOString())})` : "";
+    const faltan = opciones.avisosVuelo?.([...vuelosAntes, ...cruce.agregados]) ?? [];
+    nota = faltan.length ? `Llegaron vuelos${fecha}. Todavía falta: ${faltan.join("; ")}` : `Llegaron los vuelos${fecha}`;
   }
 
   return { completar, completados, distintos, estado: motivos.length ? "para_revision" : "recibida", motivos, nota };

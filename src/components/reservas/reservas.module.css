@@ -177,3 +177,16 @@
   border-radius: 4px;
   resize: vertical;
 }
+
+/* Owner 2026-10-16: el vuelo que falta (aviso, no revisión), debajo del producto en la lista. */
+.avisoFila {
+  display: block;
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--color-texto-secundario);
+}
+
+.avisoTitulo {
+  margin: 0;
+  font-weight: 600;
+}

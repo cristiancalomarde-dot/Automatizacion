@@ -56,14 +56,15 @@ describe("M2-03 fila 14 — estado final", () => {
     expect(r.entrada.datosExtraidos).toBeTruthy();
   });
 
-  it("el PDF del Overland → CHB31 por IA, pero para revisión porque falta el vuelo", async () => {
+  it("owner 2026-10-16: el PDF del Overland → CHB31 por IA, recibida, con el aviso de que falta el vuelo", async () => {
     const proponer = iaQueDice("CHB31", 0.95);
     const [r] = await armarReservas(fichaDePrueba("tourradar-overland-1376833"), deps(proponer));
     expect(r.entrada.productoId).toBe(idDe("CHB31"));
     expect(r.entrada.origenEmparejado).toBe("ia");
     expect(r.entrada.confianzaEmparejado).toBe(0.95);
-    expect(r.entrada.estado).toBe("para_revision");
-    expect(r.entrada.motivosRevision).toEqual(["Falta el vuelo de llegada a Calama (CJC) para el traslado de OD030"]);
+    expect(r.entrada.estado).toBe("recibida");
+    expect(r.entrada.motivosRevision).toEqual([]);
+    expect(r.avisos).toEqual(["Falta el vuelo de llegada a Calama (CJC) para el traslado de OD030"]);
     // Las partes del tour, desde el 11 Oct.
     expect(r.entrada.componentes?.[0]).toMatchObject({ productoId: idDe("OD030"), fechaInicio: "2026-10-11" });
     // La llamada a la IA queda para registrarla con la reserva.
@@ -115,13 +116,16 @@ describe("M2-03 fila 8 — un mail con varios productos", () => {
     // Cada una con su estado y sus fechas.
     expect(rs[0].entrada.fechaInicio).toBe("2027-02-23");
     expect(rs[1].entrada.fechaInicio).toBe("2027-03-06");
-    expect(rs[0].entrada.motivosRevision).toEqual([
+    // Owner 2026-10-16: falta el vuelo = aviso; las dos quedan recibidas.
+    expect(rs.map((r) => r.entrada.estado)).toEqual(["recibida", "recibida"]);
+    expect(rs[0].avisos).toEqual([
       "Falta el vuelo de llegada a El Calafate (FTE) para el traslado de OD033",
       "Falta el vuelo de salida de Puerto Natales (PNT) para el traslado al aeropuerto de Puerto Natales",
     ]);
     // Fila 10: el TOUR 1 termina con el transfer a PNT.
     expect(rs[0].entrada.componentes?.at(-1)?.descripcionRuta).toBe("Transfer al aeropuerto de Puerto Natales (PNT)");
-    expect(rs[1].entrada.motivosRevision).toEqual(["Falta el vuelo de llegada a Calama (CJC) para el traslado de OD030"]);
+    expect(rs[1].avisos).toEqual(["Falta el vuelo de llegada a Calama (CJC) para el traslado de OD030"]);
+    expect(rs[1].entrada.motivosRevision).toEqual([]);
   });
 });
 

@@ -36,6 +36,8 @@ export interface ReservaParaReporte {
   pax: number | null;
   estado: EstadoReserva;
   motivos: string[];
+  /** Owner 2026-10-16: los vuelos que faltan (`avisos-vuelo.ts`); no la mandan a revisión. */
+  avisos?: string[];
   /** Cantidad de partes (tour compuesto). */
   partes: number;
 }
@@ -183,6 +185,7 @@ function seccionReserva(r: ReservaParaReporte, i: number, total: number): string
     l.push("- **Por qué quedó en revisión:**");
     for (const m of r.motivos) l.push(`  - ${sinDatosPersonales(m)}`);
   }
+  for (const a of r.avisos ?? []) l.push(`- **Aviso (no la manda a revisión):** ${sinDatosPersonales(a)}`);
   l.push("");
   return l;
 }

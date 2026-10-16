@@ -66,12 +66,29 @@ function Detalle({ reserva }: { reserva: DetalleReserva }) {
     <>
       {reserva.dePrueba ? <Aviso tono="info">{T.avisoPrueba}</Aviso> : null}
       {reserva.sinDatoLlegada ? <Aviso tono="aviso">{T.avisoLlegada}</Aviso> : null}
+      {reserva.avisosVuelo.length > 0 ? (
+        <Aviso tono="aviso">
+          <div data-testid="avisos-vuelo">
+            <p className={estilos.avisoTitulo}>{T.avisoVuelo}</p>
+            <ul className={estilos.motivos}>
+              {reserva.avisosVuelo.map((a) => (
+                <li key={a}>{a}</li>
+              ))}
+            </ul>
+          </div>
+        </Aviso>
+      ) : null}
 
       <header className={ui.seccion} data-testid="encabezado-reserva">
         <div className={ui.encabezado}>
           <span className={`${ui.chips} ${estilos.chipGrande}`}>
             <ChipEstado estado={reserva.estado} />
-            <MarcasReserva posibleDuplicada={reserva.posibleDuplicada} dePrueba={reserva.dePrueba} sinDatoLlegada={reserva.sinDatoLlegada} />
+            <MarcasReserva
+              posibleDuplicada={reserva.posibleDuplicada}
+              dePrueba={reserva.dePrueba}
+              sinDatoLlegada={reserva.sinDatoLlegada}
+              avisosVuelo={reserva.avisosVuelo}
+            />
           </span>
           <h1 className={ui.titulo} title={T.numero}>
             <span className={estilos.numeroTitulo}>{reserva.numero ?? SIN_DATO}</span>

@@ -1,12 +1,11 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { FilaLlamadaIA, RegistroLlamadasIA } from "@/lib/ia/registro-llamadas";
-import type { DetalleProducto } from "@/lib/catalogo/tipos";
+import { cargarProducto } from "@/lib/catalogo/consultas";
 import { agenciaDelRemitente } from "./agencias";
+import { avisosDeVuelo, cargarAvisosDeVuelo } from "./avisos-vuelo";
 import { bookingIdDelAsunto, esCancelacionDeAgencia } from "./booking-id";
-import { saleDePuertoNatales } from "./emparejar/componentes";
 import { MOTIVOS_EMPAREJADO as M } from "./emparejar/motivos";
 import { armarReservas, type DependenciasReservas, type ReservaArmada } from "./emparejar/reservas-del-mail";
-import { motivosDeVuelos } from "./emparejar/vuelos-requeridos";
 import type { FichaLectura, VueloIA } from "./esquema-ficha";
 import type { ResultadoLectura } from "./extraer";
 import { agregarEvento, crearReserva, guardarMailRecibido } from "./guardar";
@@ -143,8 +142,6 @@ interface ContextoMail {
   alcance: readonly string[] | null;
 }
 
-const FALTA_VUELO = /^Falta el vuelo de /;
-
 /** Los motivos de una reserva nueva, con lo que agrega el intercambio (filas 7, 8 y 9). */
 function motivosDeNueva(armada: ReservaArmada, decision: DecisionIntercambio, ctx: ContextoMail): string[] {
   let motivos = [...armada.entrada.motivosRevision];
@@ -198,21 +195,22 @@ async function crearNueva(
   return { accion, reservaId: reserva.id, enlazadas: duplicadaDe ? [duplicadaDe] : enlazadas };
 }
 
-/** Fila 5: el control de vuelos de M2-03 sobre la reserva que ya existe. */
-async function recheckDe(ctx: ContextoMail, existente: ReservaExistente): Promise<((v: VueloIA[]) => string[]) | undefined> {
-  const esperaVuelos = existente.estado === "para_revision" && existente.motivos_revision.some((m) => FALTA_VUELO.test(m));
-  if (!esperaVuelos || !existente.producto_id || !ctx.ficha?.vuelos.length) return undefined;
-  const detalle: DetalleProducto = await ctx.deps.detalle(existente.producto_id);
-  const pedidos = [
-    ...(existente.pedidos_especiales ? existente.pedidos_especiales.split("\n") : []),
-    ...ctx.ficha.pedidos_especiales.map((p) => p.texto),
-  ];
+/**
+ * Fila 5 (owner 2026-10-16): los avisos "Falta el vuelo…" de la reserva que ya
+ * existe, para una lista de vuelos (`avisos-vuelo.ts`). Solo hace falta si el
+ * mail trae vuelos y la reserva tiene producto.
+ */
+async function avisosDe(ctx: ContextoMail, existente: ReservaExistente): Promise<((v: VueloIA[]) => string[]) | undefined> {
+  if (!existente.producto_id || !ctx.ficha?.vuelos.length) return undefined;
+  const detalle = await ctx.deps.detalle(existente.producto_id);
+  const pedidos = [existente.pedidos_especiales, ...ctx.ficha.pedidos_especiales.map((p) => p.texto)].filter(Boolean).join("\n");
   return (vuelos) =>
-    motivosDeVuelos(detalle, {
+    avisosDeVuelo(detalle, {
       vuelos,
       pedidos,
-      producto: { nombre: existente.producto_texto_agencia ?? "", opcionales: [], fecha_inicio: existente.fecha_inicio, fecha_fin: existente.fecha_fin },
-      finalPuertoNatales: saleDePuertoNatales({ vuelos, pedidos_especiales: pedidos.map((texto) => ({ texto, confianza: 1 })) }),
+      productoTexto: existente.producto_texto_agencia,
+      fechaInicio: existente.fecha_inicio,
+      fechaFin: existente.fecha_fin,
     });
 }
 
@@ -233,7 +231,7 @@ async function sumarA(ctx: ContextoMail, armada: ReservaArmada, existente: Reser
       vuelosDudosos: ctx.ficha?.datos_dudosos.includes("vuelos") ?? false,
       cargoExtra: cargoExtraDelMail({ agencia: ctx.agencia, tipoMail: ctx.ficha?.tipo_mail.valor ?? null, esCancelacion: ctx.esCancelacion }),
     },
-    { recheckVuelos: await recheckDe(ctx, existente), fechaMail: ctx.fechaMail },
+    { avisosVuelo: await avisosDe(ctx, existente), fechaMail: ctx.fechaMail },
   );
 
   await agregarEvento(
@@ -373,7 +371,8 @@ export async function procesarMails(entradas: MailEntrada[], opciones: OpcionesP
 
 /**
  * Para decidir si una respuesta se lee (`respuestas.ts`, owner 2026-10-14):
- * las reservas de la agencia cuyos números aparecen en el asunto. Solo lee.
+ * las reservas de la agencia cuyos números aparecen en el asunto, con sus
+ * avisos de vuelo calculados (owner 2026-10-16). Solo lee.
  */
 export async function cargarReservasDelAsunto(
   admin: Cliente,
@@ -387,16 +386,47 @@ export async function cargarReservasDelAsunto(
   if (numeros.length === 0) return [];
   let consulta = admin
     .from("reserva")
-    .select("id,agencia,booking_id,estado,motivos_revision,de_prueba,vuelos,pedidos_especiales,producto:producto_id(codigo)")
+    .select(
+      "id,agencia,booking_id,estado,motivos_revision,de_prueba,vuelos,pedidos_especiales,producto_id,producto_texto_agencia," +
+        "fecha_inicio,fecha_fin,producto:producto_id(codigo)",
+    )
     .eq("agencia", agencia)
     .eq("de_prueba", dePrueba)
     .in("booking_id", numeros);
   if (alcance) consulta = consulta.in("mail_recibido_id", [...alcance]);
   const { data, error } = await consulta;
   if (error) throw new Error(`No se pudieron buscar las reservas del asunto: ${error.message}`);
-  type Fila = ReservaParaRespuesta & { vuelos: VueloIA[] | null; pedidos_especiales: string | null; producto: { codigo: string } | null };
-  return ((data ?? []) as unknown as Fila[]).map(({ vuelos, pedidos_especiales, producto, ...r }) => ({
-    ...r,
-    sin_dato_llegada: sinDatoDeLlegada({ productoCodigo: producto?.codigo ?? null, vuelos: vuelos ?? [], pedidos: pedidos_especiales }),
+  type Fila = ReservaParaRespuesta & {
+    vuelos: VueloIA[] | null;
+    pedidos_especiales: string | null;
+    producto_id: string | null;
+    producto_texto_agencia: string | null;
+    fecha_inicio: string | null;
+    fecha_fin: string | null;
+    producto: { codigo: string } | null;
+  };
+  const filas = (data ?? []) as unknown as Fila[];
+  const avisos = await cargarAvisosDeVuelo(
+    (id) => cargarProducto(admin, id),
+    filas.map((f) => ({
+      id: f.id,
+      productoId: f.producto_id,
+      estado: f.estado,
+      productoTexto: f.producto_texto_agencia,
+      fechaInicio: f.fecha_inicio,
+      fechaFin: f.fecha_fin,
+      vuelos: f.vuelos ?? [],
+      pedidos: f.pedidos_especiales,
+    })),
+  );
+  return filas.map((f) => ({
+    id: f.id,
+    agencia: f.agencia,
+    booking_id: f.booking_id,
+    estado: f.estado,
+    motivos_revision: f.motivos_revision,
+    de_prueba: f.de_prueba,
+    sin_dato_llegada: sinDatoDeLlegada({ productoCodigo: f.producto?.codigo ?? null, vuelos: f.vuelos ?? [], pedidos: f.pedidos_especiales }),
+    avisos_vuelo: avisos.get(f.id) ?? [],
   }));
 }

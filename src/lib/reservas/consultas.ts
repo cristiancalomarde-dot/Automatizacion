@@ -8,6 +8,8 @@
  * su mensaje con "Reintentar" y nunca datos a medias.
  */
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { cargarProducto } from "@/lib/catalogo/consultas";
+import { cargarAvisosDeVuelo } from "./avisos-vuelo";
 import { sinDatoDeLlegada } from "./llegada-iguazu";
 import { cuerpoComoTexto } from "./reglas";
 import {
@@ -29,9 +31,9 @@ export const VIGENCIA_ENLACE_PDF_SEGUNDOS = 300;
 const PRODUCTO = "producto:producto_id(id,codigo,nombre)";
 const CAMPOS_FILA =
   "id,estado,agencia,booking_id,booking_id_original,fecha_inicio,fecha_fin,pax,motivos_revision," +
-  `posible_duplicada,de_prueba,created_at,vuelos,pedidos_especiales,${PRODUCTO},mail:mail_recibido_id(fecha_mail)`;
-const CAMPOS_DETALLE =
-  `${CAMPOS_FILA},mail_recibido_id,producto_texto_agencia,duplicada_de_id,pasajeros,habitacion`;
+  "posible_duplicada,de_prueba,created_at,vuelos,pedidos_especiales,producto_texto_agencia," +
+  `${PRODUCTO},mail:mail_recibido_id(fecha_mail)`;
+const CAMPOS_DETALLE = `${CAMPOS_FILA},mail_recibido_id,duplicada_de_id,pasajeros,habitacion`;
 const CAMPOS_MAIL = "id,remitente,remitente_nombre,asunto,fecha_mail,carpeta,cuerpo_texto,cuerpo_html,adjuntos,created_at";
 
 /* eslint-disable @typescript-eslint/no-explicit-any -- filas crudas de PostgREST, se tipan al mapear */
@@ -47,7 +49,7 @@ function aProducto(fila: any): ProductoDeReserva | null {
   return fila?.id ? { id: fila.id, codigo: fila.codigo, nombre: fila.nombre } : null;
 }
 
-function aFila(r: any): FilaReserva {
+function aFila(r: any, avisosVuelo: string[] = []): FilaReserva {
   return {
     id: r.id,
     estado: r.estado as EstadoReserva,
@@ -66,7 +68,28 @@ function aFila(r: any): FilaReserva {
       vuelos: Array.isArray(r.vuelos) ? r.vuelos : [],
       pedidos: r.pedidos_especiales ?? null,
     }),
+    avisosVuelo,
   };
+}
+
+/**
+ * Owner 2026-10-16: los avisos "Falta el vuelo…" de cada reserva, con el
+ * detalle de cada producto (una vez por producto, con la sesión del usuario).
+ */
+async function avisosDe(cliente: SupabaseClient, filas: any[]): Promise<Map<string, string[]>> {
+  return cargarAvisosDeVuelo(
+    (id) => cargarProducto(cliente, id),
+    filas.map((r) => ({
+      id: r.id,
+      productoId: r.producto?.id ?? null,
+      estado: r.estado as EstadoReserva,
+      productoTexto: texto(r.producto_texto_agencia),
+      fechaInicio: r.fecha_inicio ?? null,
+      fechaFin: r.fecha_fin ?? null,
+      vuelos: Array.isArray(r.vuelos) ? r.vuelos : [],
+      pedidos: r.pedidos_especiales ?? null,
+    })),
+  );
 }
 
 /** La lista de reservas (#2). El orden lo pone la pantalla (por llegada). */
@@ -74,7 +97,8 @@ export async function cargarReservas(cliente: SupabaseClient): Promise<FilaReser
   const filas = verificar(
     await cliente.from("reserva").select(CAMPOS_FILA).order("created_at", { ascending: false }),
   ) as any[];
-  return filas.map(aFila);
+  const avisos = await avisosDe(cliente, filas);
+  return filas.map((r) => aFila(r, avisos.get(r.id)));
 }
 
 function aPasajeros(lista: unknown): string[] {
@@ -137,13 +161,14 @@ export async function cargarReserva(cliente: SupabaseClient, id: string): Promis
   const r = verificar(await cliente.from("reserva").select(CAMPOS_DETALLE).eq("id", id).maybeSingle()) as any;
   if (!r) return null;
 
-  const [partes, eventos] = await Promise.all([
+  const [partes, eventos, avisos] = await Promise.all([
     cliente
       .from("reserva_componente")
       .select(`orden,tipo,descripcion_ruta,texto_agencia,fecha_inicio,fecha_fin,es_tarea,${PRODUCTO}`)
       .eq("reserva_id", id)
       .order("orden"),
     cliente.from("evento_reserva").select("mail_recibido_id").eq("reserva_id", id).not("mail_recibido_id", "is", null),
+    avisosDe(cliente, [r]),
   ]);
   const filasPartes = verificar(partes) as any[];
   const idsSumados = (verificar(eventos) as any[]).map((e) => e.mail_recibido_id as string);
@@ -155,7 +180,7 @@ export async function cargarReserva(cliente: SupabaseClient, id: string): Promis
   const sumados = filasMails.filter((m) => m.id !== r.mail_recibido_id).sort((a, b) => llegada(a) - llegada(b));
 
   return {
-    ...aFila(r),
+    ...aFila(r, avisos.get(r.id)),
     productoTextoAgencia: texto(r.producto_texto_agencia),
     duplicadaDeId: r.duplicada_de_id ?? null,
     pasajeros: aPasajeros(r.pasajeros),

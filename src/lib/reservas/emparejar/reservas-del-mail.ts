@@ -4,6 +4,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { FilaLlamadaIA, RegistroLlamadasIA } from "@/lib/ia/registro-llamadas";
 import { cargarProducto } from "@/lib/catalogo/consultas";
 import type { DetalleProducto } from "@/lib/catalogo/tipos";
+import { separarAvisosDeVuelo } from "../avisos-vuelo";
 import type { FichaLectura, ProductoIA } from "../esquema-ficha";
 import type { ResultadoLectura } from "../extraer";
 import { crearReserva } from "../guardar";
@@ -51,6 +52,12 @@ export interface ReservaArmada {
   /** Las llamadas a la IA de esta reserva, para registrarlas con su id. */
   llamadas: FilaLlamadaIA[];
   costo: number;
+  /**
+   * Owner 2026-10-16: los vuelos que faltan ("Falta el vuelo…"), que ya no son
+   * motivo de revisión. No se guardan (`avisos-vuelo.ts` los recalcula): van
+   * para el reporte del modo prueba.
+   */
+  avisos: string[];
 }
 
 const textoAgencia = (p: Pick<ProductoIA, "nombre" | "codigo">) =>
@@ -91,7 +98,7 @@ export async function armarReservas(
   if ("estado" in lectura && lectura.estado === "para_revision") {
     const entrada = base(null, opciones.agencia ?? "desconocida");
     entrada.motivosRevision = [M.lecturaFallida(lectura.motivo)];
-    return [{ entrada: cerrar(entrada), llamadas: [], costo: 0 }];
+    return [{ entrada: cerrar(entrada), llamadas: [], costo: 0, avisos: [] }];
   }
   const ficha: FichaLectura = "estado" in lectura ? lectura.ficha : lectura;
   const agencia = ficha.agencia.valor ?? opciones.agencia ?? "desconocida";
@@ -101,7 +108,7 @@ export async function armarReservas(
   if (ficha.productos.length === 0) {
     const entrada = base(ficha, agencia);
     entrada.motivosRevision = [tipo === "reserva_nueva" ? M.sinProducto : M.tipoMail[tipo], ...dudosos];
-    return [{ entrada: cerrar(entrada), llamadas: [], costo: 0 }];
+    return [{ entrada: cerrar(entrada), llamadas: [], costo: 0, avisos: [] }];
   }
 
   const armadas: ReservaArmada[] = [];
@@ -123,6 +130,7 @@ export async function armarReservas(
     });
 
     const motivos: string[] = [];
+    let avisos: string[] = [];
     if (tipo !== "reserva_nueva") {
       motivos.push(M.tipoMail[tipo]);
     } else if (!r.producto) {
@@ -142,18 +150,21 @@ export async function armarReservas(
         finalPuertoNatales,
         proveedorTransferPNT: deps.proveedorTransferPNT,
       });
-      motivos.push(
-        ...motivosDeVuelos(detalle, {
+      // Owner 2026-10-16: el vuelo que falta es un aviso; solo "elegir la variante" queda como motivo.
+      const vuelos = separarAvisosDeVuelo(
+        motivosDeVuelos(detalle, {
           vuelos: ficha.vuelos,
           pedidos: ficha.pedidos_especiales.map((x) => x.texto),
           producto: { ...p, fecha_inicio: entrada.fechaInicio ?? null, fecha_fin: entrada.fechaFin ?? null },
           finalPuertoNatales,
         }),
       );
+      motivos.push(...vuelos.motivos);
+      avisos = vuelos.avisos;
       if (!entrada.fechaInicio) motivos.push(M.sinFechaInicio);
     }
     entrada.motivosRevision = [...motivos, ...dudosos];
-    armadas.push({ entrada: cerrar(entrada), llamadas: r.llamada ? [r.llamada] : [], costo: r.costo });
+    armadas.push({ entrada: cerrar(entrada), llamadas: r.llamada ? [r.llamada] : [], costo: r.costo, avisos });
   }
   return armadas;
 }

@@ -137,14 +137,11 @@ const fichaDePrueba = (nombre: string) => conNumerosDeTest(fichaDePruebaReal(nom
       const creadas = await crear(fichaDePrueba("kilroy-dk1576932"));
       expect(creadas.map((c) => c.reserva.producto_id)).toEqual([idPorCodigo.get("ARCH33"), idPorCodigo.get("CHB31")]);
       for (const c of creadas) {
-        expect(c.reserva).toMatchObject({ booking_id: aNumeroDeTest("DK1576932"), estado: "para_revision", origen_emparejado: "codigo", de_prueba: true });
+        // Owner 2026-10-16: falta el vuelo = aviso calculado, no motivo: quedan recibidas.
+        expect(c.reserva).toMatchObject({ booking_id: aNumeroDeTest("DK1576932"), estado: "recibida", motivos_revision: [], origen_emparejado: "codigo", de_prueba: true });
         const { data: eventos } = await admin.from("evento_reserva").select("tipo,autor_id,estado_nuevo").eq("reserva_id", c.reserva.id);
-        expect(eventos).toEqual([{ tipo: "creada", autor_id: null, estado_nuevo: "para_revision" }]);
+        expect(eventos).toEqual([{ tipo: "creada", autor_id: null, estado_nuevo: "recibida" }]);
       }
-      expect(creadas[0].reserva.motivos_revision).toEqual([
-        "Falta el vuelo de llegada a El Calafate (FTE) para el traslado de OD033",
-        "Falta el vuelo de salida de Puerto Natales (PNT) para el traslado al aeropuerto de Puerto Natales",
-      ]);
       const partes = await componentesDe(creadas[0].reserva.id);
       expect(partes.at(-1)).toMatchObject({ tipo: "servicio", es_tarea: false, descripcion_ruta: "Transfer al aeropuerto de Puerto Natales (PNT)" });
       expect(partes.at(-1)!.proveedor_id).toBeTruthy();
@@ -152,7 +149,7 @@ const fichaDePrueba = (nombre: string) => conNumerosDeTest(fichaDePruebaReal(nom
 
     it("fila 9: CHB31 desde el 13 Sep 2026 → OD030 el 13/9, COMPBO20 el 16/9, bus Uyuni – La Paz el 18/9 con Imperio Inca", async () => {
       const [c] = await crear(fichaDePrueba("kilroy-chb31-dk1547743"));
-      expect(c.reserva.motivos_revision).toEqual(["Falta el vuelo de llegada a Calama (CJC) para el traslado de OD030"]);
+      expect(c.reserva).toMatchObject({ estado: "recibida", motivos_revision: [] });
       const partes = await componentesDe(c.reserva.id);
       expect(partes.map((p) => [p.tipo, p.producto_id ?? p.descripcion_ruta, p.fecha_inicio])).toEqual([
         ["paquete", idPorCodigo.get("OD030"), "2026-09-13"],
@@ -205,8 +202,8 @@ const fichaDePrueba = (nombre: string) => conNumerosDeTest(fichaDePruebaReal(nom
       expect(c.reserva).toMatchObject({
         producto_id: idPorCodigo.get("CHB31"),
         origen_emparejado: "ia",
-        estado: "para_revision",
-        motivos_revision: ["Falta el vuelo de llegada a Calama (CJC) para el traslado de OD030"],
+        estado: "recibida",
+        motivos_revision: [],
       });
       expect(Number(c.reserva.confianza_emparejado)).toBe(0.95);
       const { data: llamadas } = await admin
