@@ -5,6 +5,7 @@ import { MOTIVOS as MP } from "./preparar-mail";
 import {
   CATEGORIAS_MOTIVO,
   categoriaDeMotivo,
+  coincideBusqueda,
   contarReservas,
   cuerpoComoTexto,
   esCancelacion,
@@ -14,6 +15,7 @@ import {
   motivoEnPantalla,
   ordenarParaTrabajar,
   ordenarPorLlegada,
+  pasajeroYCantidad,
 } from "./reglas";
 
 // Spec M2-05 #6: cada motivo de "para revisión" se lee en voz de la app.
@@ -291,5 +293,21 @@ describe("cancelación bien visible (owner 2026-10-16)", () => {
   it("otros motivos, o ninguno, no", () => {
     expect(esCancelacion([])).toBe(false);
     expect(esCancelacion([ME.tipoMail.cambio_o_cargo, MI.datosDistintos])).toBe(false);
+  });
+});
+
+describe("pasajero principal y búsqueda (owner 2026-10-16)", () => {
+  it("'Juan Perez x 3': el primer pasajero y la cantidad (pax o, si falta, los nombres)", () => {
+    expect(pasajeroYCantidad({ pasajeros: ["Juan Perez", "Ana Gomez"], pax: 3 })).toBe("Juan Perez x 3");
+    expect(pasajeroYCantidad({ pasajeros: ["Juan Perez", "Ana Gomez"], pax: null })).toBe("Juan Perez x 2");
+    expect(pasajeroYCantidad({ pasajeros: [], pax: 3 })).toBe("3");
+    expect(pasajeroYCantidad({ pasajeros: [], pax: null })).toBeNull();
+  });
+
+  it("busca por nombre de cualquier pasajero o por número de la agencia, sin mayúsculas ni acentos", () => {
+    const fila = { pasajeros: ["José Muñoz", "Ana Gómez"], numero: "DK1594100/maga" };
+    for (const q of ["", "  ", "jose", "MUNOZ", "gomez", "ana gó", "dk1594100", "1594100/MAGA"]) expect(coincideBusqueda(fila, q), q).toBe(true);
+    for (const q of ["pedro", "DK1594101", "jose gomez"]) expect(coincideBusqueda(fila, q), q).toBe(false);
+    expect(coincideBusqueda({ pasajeros: [], numero: null }, "x")).toBe(false);
   });
 });

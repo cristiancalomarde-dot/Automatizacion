@@ -228,3 +228,36 @@ export function esCancelacion(motivos: readonly string[]): boolean {
     return c === "cancelacion" || c === "cancelacion_sin_reserva";
   });
 }
+
+/**
+ * Owner 2026-10-16: la columna del pasajero principal con la cantidad
+ * ("Juan Perez x 3"). La cantidad es el pax de la reserva o, si falta, los
+ * nombres que trae. Sin nombre, solo la cantidad; sin nada, null.
+ */
+export function pasajeroYCantidad(f: { pasajeros: readonly string[]; pax: number | null }): string | null {
+  const principal = f.pasajeros[0]?.trim() || null;
+  const cantidad = f.pax ?? (f.pasajeros.length || null);
+  if (principal) return cantidad ? `${principal} x ${cantidad}` : principal;
+  return cantidad ? String(cantidad) : null;
+}
+
+/** Para comparar en la búsqueda: sin mayúsculas, sin acentos y con los espacios simples. */
+export function normalizarBusqueda(texto: string): string {
+  return texto
+    .normalize("NFD")
+    .replace(/\p{M}/gu, "")
+    .toLowerCase()
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+/**
+ * Owner 2026-10-16: la caja de búsqueda de la lista. Coincide si el texto está
+ * en el nombre de algún pasajero o en el número de reserva de la agencia, sin
+ * distinguir mayúsculas ni acentos. Vacío = todas.
+ */
+export function coincideBusqueda(f: { pasajeros: readonly string[]; numero: string | null }, texto: string): boolean {
+  const q = normalizarBusqueda(texto);
+  if (!q) return true;
+  return [...f.pasajeros, f.numero ?? ""].some((x) => normalizarBusqueda(x).includes(q));
+}

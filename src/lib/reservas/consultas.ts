@@ -31,9 +31,9 @@ export const VIGENCIA_ENLACE_PDF_SEGUNDOS = 300;
 const PRODUCTO = "producto:producto_id(id,codigo,nombre)";
 const CAMPOS_FILA =
   "id,estado,agencia,booking_id,booking_id_original,fecha_inicio,fecha_fin,pax,motivos_revision," +
-  "posible_duplicada,de_prueba,created_at,vuelos,pedidos_especiales,producto_texto_agencia," +
+  "posible_duplicada,de_prueba,created_at,vuelos,pedidos_especiales,producto_texto_agencia,pasajeros," +
   `${PRODUCTO},mail:mail_recibido_id(fecha_mail)`;
-const CAMPOS_DETALLE = `${CAMPOS_FILA},mail_recibido_id,duplicada_de_id,pasajeros,habitacion`;
+const CAMPOS_DETALLE = `${CAMPOS_FILA},mail_recibido_id,duplicada_de_id,habitacion`;
 const CAMPOS_MAIL = "id,remitente,remitente_nombre,asunto,fecha_mail,carpeta,cuerpo_texto,cuerpo_html,adjuntos,created_at";
 
 /* eslint-disable @typescript-eslint/no-explicit-any -- filas crudas de PostgREST, se tipan al mapear */
@@ -60,6 +60,7 @@ function aFila(r: any, avisosVuelo: string[] = [], canceladaEnHistorial = false)
     fechaInicio: r.fecha_inicio ?? null,
     fechaFin: r.fecha_fin ?? null,
     pax: typeof r.pax === "number" ? r.pax : null,
+    pasajeros: aPasajeros(r.pasajeros),
     llego: r.mail?.fecha_mail ?? r.created_at,
     motivos,
     posibleDuplicada: Boolean(r.posible_duplicada),
@@ -198,7 +199,6 @@ export async function cargarReserva(cliente: SupabaseClient, id: string): Promis
     ...aFila(r, avisos.get(r.id), canceladas.has(r.id)),
     productoTextoAgencia: texto(r.producto_texto_agencia),
     duplicadaDeId: r.duplicada_de_id ?? null,
-    pasajeros: aPasajeros(r.pasajeros),
     habitacion: texto(r.habitacion),
     pedidosEspeciales: texto(r.pedidos_especiales),
     vuelos: aVuelos(r.vuelos),

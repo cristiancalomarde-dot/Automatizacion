@@ -52,6 +52,7 @@ function fila(extra: Partial<FilaReserva> & Pick<FilaReserva, "id">): FilaReserv
     sinDatoLlegada: false,
     avisosVuelo: [],
     cancelacion: false,
+    pasajeros: ["Ana Prueba", "Juan Ejemplo"],
     ...extra,
   };
 }
@@ -81,6 +82,7 @@ export const listaReservas: FilaReserva[] = [
     llego: "2026-10-13T11:00:00.000Z",
     dePrueba: true,
     numero: "DK1594100/maga",
+    pasajeros: ["Lola Muñoz"],
   }),
   fila({
     id: IDS.sinProducto,
@@ -91,6 +93,7 @@ export const listaReservas: FilaReserva[] = [
     motivos: [MI.posibleDuplicada],
     posibleDuplicada: true,
     pax: 3,
+    pasajeros: [],
     fechaInicio: "2026-11-01",
     fechaFin: "2026-11-08",
     llego: "2026-10-11T08:30:00.000Z",
@@ -103,6 +106,7 @@ export const listaReservas: FilaReserva[] = [
     fechaInicio: "2026-04-02",
     fechaFin: "2026-04-09",
     pax: 1,
+    pasajeros: ["Pepe Ficticio"],
     llego: "2026-10-12T16:45:00.000Z",
   }),
 ];

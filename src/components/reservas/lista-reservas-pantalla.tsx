@@ -1,13 +1,13 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useConsulta } from "@/lib/catalogo/use-consulta";
 import { formatearFechaHora, formatearRango } from "@/lib/formato";
 import { cargarReservas, cargarRevisiones } from "@/lib/reservas/consultas";
 import { medirRevision, textoMedicion } from "@/lib/reservas/medicion-prueba";
-import { contarReservas, ordenarParaTrabajar } from "@/lib/reservas/reglas";
+import { coincideBusqueda, contarReservas, ordenarParaTrabajar, pasajeroYCantidad } from "@/lib/reservas/reglas";
 import type { FilaReserva } from "@/lib/reservas/tipos";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { TEXTOS } from "@/lib/textos";
@@ -21,7 +21,7 @@ const T = TEXTOS.reservas;
 const SIN_DATO = TEXTOS.comunes.sinDato;
 
 /** "prioridad": el orden de trabajo por defecto (ordenarParaTrabajar), sin columna propia. */
-type Columna = "prioridad" | "estado" | "agencia" | "numero" | "producto" | "fechas" | "pax" | "llego";
+type Columna = "prioridad" | "estado" | "agencia" | "numero" | "producto" | "fechas" | "pasajeros" | "llego";
 
 const VALOR: Record<Columna, (f: FilaReserva) => string | number> = {
   prioridad: () => 0,
@@ -30,7 +30,8 @@ const VALOR: Record<Columna, (f: FilaReserva) => string | number> = {
   numero: (f) => f.numero ?? "",
   producto: (f) => (f.producto ? `${f.producto.codigo} ${f.producto.nombre}` : "~"),
   fechas: (f) => f.fechaInicio ?? "9999",
-  pax: (f) => f.pax ?? -1,
+  // Por el nombre del pasajero principal; sin nombre, al final.
+  pasajeros: (f) => f.pasajeros[0] ?? "￿",
   llego: (f) => Date.parse(f.llego) || 0,
 };
 
@@ -46,6 +47,8 @@ export function ListaReservasPantalla() {
   const visibles = estado.tipo === "listo" ? estado.datos.filter((f) => verPrueba || !f.dePrueba) : [];
   const dePrueba = conteo?.dePrueba ?? 0;
   const soloPrueba = conteo !== null && conteo.total > 0 && conteo.total === dePrueba;
+  const [busqueda, setBusqueda] = useState("");
+  const encontradas = visibles.filter((f) => coincideBusqueda(f, busqueda));
 
   return (
     <div className={ui.pagina}>
@@ -75,7 +78,22 @@ export function ListaReservasPantalla() {
       {estado.tipo === "listo" && verPrueba && dePrueba > 0 ? (
         <MedicionPrueba idsPrueba={estado.datos.filter((f) => f.dePrueba).map((f) => f.id)} />
       ) : null}
-      {visibles.length > 0 ? <TablaReservas filas={visibles} /> : null}
+      {visibles.length > 0 ? (
+        <div className={ui.barra}>
+          <label className={ui.campo}>
+            {T.buscar}
+            <input
+              type="search"
+              className={ui.input}
+              value={busqueda}
+              placeholder={T.buscarPlaceholder}
+              onChange={(e) => setBusqueda(e.target.value)}
+            />
+          </label>
+        </div>
+      ) : null}
+      {visibles.length > 0 && encontradas.length === 0 ? <EstadoVacio mensaje={T.sinCoincidencias(busqueda)} /> : null}
+      {encontradas.length > 0 ? <TablaReservas filas={encontradas} /> : null}
     </div>
   );
 }
@@ -115,7 +133,7 @@ function TablaReservas({ filas }: { filas: FilaReserva[] }) {
             <EncabezadoOrdenable orden={orden} columna="numero" texto={T.columnas.numero} />
             <EncabezadoOrdenable orden={orden} columna="producto" texto={T.columnas.producto} />
             <EncabezadoOrdenable orden={orden} columna="fechas" texto={T.columnas.fechas} />
-            <EncabezadoOrdenable orden={orden} columna="pax" texto={T.columnas.pax} numero />
+            <EncabezadoOrdenable orden={orden} columna="pasajeros" texto={T.columnas.pasajeros} />
             <EncabezadoOrdenable orden={orden} columna="llego" texto={T.columnas.llego} />
           </tr>
         </thead>
@@ -161,7 +179,7 @@ function TablaReservas({ filas }: { filas: FilaReserva[] }) {
                   ))}
                 </td>
                 <td className={ui.nowrap}>{formatearRango(fila.fechaInicio, fila.fechaFin)}</td>
-                <td className={ui.numero}>{fila.pax ?? SIN_DATO}</td>
+                <td className={ui.nowrap}>{pasajeroYCantidad(fila) ?? SIN_DATO}</td>
                 <td className={`${ui.secundario} ${ui.nowrap}`}>{formatearFechaHora(fila.llego) || SIN_DATO}</td>
               </tr>
             );

@@ -194,9 +194,14 @@ export const TEXTOS = {
       numero: "Número de la agencia",
       producto: "Producto",
       fechas: "Fechas del viaje",
-      pax: "Pax",
+      /** Owner 2026-10-16: el pasajero principal con la cantidad ("Juan Perez x 3"). */
+      pasajeros: "Pasajeros",
       llego: "Llegó",
     },
+    /** Owner 2026-10-16: la caja de búsqueda de la lista. */
+    buscar: "Buscar por pasajero o número de reserva",
+    buscarPlaceholder: "Ej. Perez o DK1594100",
+    sinCoincidencias: (texto: string) => `Ninguna reserva coincide con «${texto.trim()}».`,
     sinProducto: "Sin producto reconocido",
     dePrueba: "De prueba",
     posibleDuplicada: "posible duplicada",

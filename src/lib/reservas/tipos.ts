@@ -242,6 +242,8 @@ export interface FilaReserva {
   fechaInicio: string | null;
   fechaFin: string | null;
   pax: number | null;
+  /** Nombres de los pasajeros, si el mail los trae; el primero es el principal (owner 2026-10-16: columna y búsqueda). */
+  pasajeros: string[];
   /** Fecha y hora del primer mail (o de la carga, si el mail no la trae). ISO. */
   llego: string;
   /** Tal como los guardó la base: se muestran con `fraseDeMotivo`. */
@@ -308,8 +310,6 @@ export interface MailDeReserva {
 export interface DetalleReserva extends FilaReserva {
   productoTextoAgencia: string | null;
   duplicadaDeId: string | null;
-  /** Nombres de los pasajeros, si el mail los trae. */
-  pasajeros: string[];
   habitacion: string | null;
   pedidosEspeciales: string | null;
   vuelos: VueloDeReserva[];

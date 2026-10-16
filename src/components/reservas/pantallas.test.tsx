@@ -44,10 +44,11 @@ import { ListaReservasPantalla } from "./lista-reservas-pantalla";
 import { DetalleReservaPantalla } from "./detalle-reserva-pantalla";
 
 const nunca = () => new Promise(() => {});
-const BOTONES_PERMITIDOS = /^(Reintentar|Ver mail|Abrir el PDF|(Estado|Agencia|Número de la agencia|Producto|Fechas del viaje|Pax|Llegó)( [↑↓])?)$/;
+const BOTONES_PERMITIDOS = /^(Reintentar|Ver mail|Abrir el PDF|(Estado|Agencia|Número de la agencia|Producto|Fechas del viaje|Pasajeros|Llegó)( [↑↓])?)$/;
 
 function sinControlesDeEdicion() {
-  expect(document.querySelectorAll("input, textarea, select")).toHaveLength(0);
+  // La caja de búsqueda (owner 2026-10-16) filtra la lista: no edita nada.
+  expect(document.querySelectorAll("input:not([type=search]), textarea, select")).toHaveLength(0);
   for (const b of screen.queryAllByRole("button")) expect(b.textContent?.trim()).toMatch(BOTONES_PERMITIDOS);
   expect(screen.queryByText(/Editar|Guardar|Resolver revisión|Armar pedidos|Descartar|Reprocesar/)).toBeNull();
 }
@@ -88,12 +89,12 @@ describe("lista de reservas (#2, #3, #4, #16)", () => {
     expect(screen.queryByText("No pudimos cargar las reservas.")).toBeNull();
   });
 
-  it("las 7 columnas pobladas; primero las para revisión y el viaje más próximo arriba (owner 2026-10-15); fechas DD/MM/AAAA y pax entero", async () => {
+  it("las 7 columnas pobladas; primero las para revisión y el viaje más próximo arriba (owner 2026-10-15); fechas DD/MM/AAAA y pasajero principal con la cantidad (owner 2026-10-16)", async () => {
     consultas.cargarReservas.mockResolvedValue(listaReservas);
     render(<ListaReservasPantalla />);
     const tabla = await screen.findByRole("table");
     const encabezados = within(tabla).getAllByRole("columnheader").map((h) => h.textContent?.replace(/ [↑↓]$/, ""));
-    expect(encabezados).toEqual(["Estado", "Agencia", "Número de la agencia", "Producto", "Fechas del viaje", "Pax", "Llegó"]);
+    expect(encabezados).toEqual(["Estado", "Agencia", "Número de la agencia", "Producto", "Fechas del viaje", "Pasajeros", "Llegó"]);
 
     const filas = within(tabla).getAllByRole("row").slice(1);
     expect(filas.map((f) => f.getAttribute("data-id"))).toEqual([IDS.revision, IDS.sinProducto, IDS.kilroy, IDS.tour]);
@@ -104,7 +105,7 @@ describe("lista de reservas (#2, #3, #4, #16)", () => {
     expect(kilroy[2]).toBe("DK1531608");
     expect(kilroy[3]).toBe("OD019 Iguazu Falls Combined");
     expect(kilroy[4]).toBe("12/03/2026 → 15/03/2026");
-    expect(kilroy[5]).toBe("2");
+    expect(kilroy[5]).toBe("Ana Prueba x 2");
     expect(kilroy[6]).toBe(formatearFechaHora("2026-10-10T09:00:00.000Z"));
 
     expect(within(filas[1]).getByText("Sin producto reconocido")).toBeInTheDocument();
@@ -122,12 +123,13 @@ describe("lista de reservas (#2, #3, #4, #16)", () => {
     consultas.cargarReservas.mockResolvedValue(listaReservas);
     render(<ListaReservasPantalla />);
     const tabla = await screen.findByRole("table");
-    fireEvent.click(within(tabla).getByRole("button", { name: "Pax" }));
-    const pax = within(tabla)
+    fireEvent.click(within(tabla).getByRole("button", { name: "Pasajeros" }));
+    const pasajeros = within(tabla)
       .getAllByRole("row")
       .slice(1)
       .map((f) => within(f).getAllByRole("cell")[5].textContent);
-    expect(pax).toEqual(["1", "2", "2", "3"]);
+    // Por nombre del pasajero principal; sin nombre, al final.
+    expect(pasajeros).toEqual(["Ana Prueba x 2", "Lola Muñoz x 2", "Pepe Ficticio x 1", "3"]);
     fireEvent.click(within(tabla).getByRole("button", { name: /Agencia/ }));
     const agencias = within(tabla)
       .getAllByRole("row")

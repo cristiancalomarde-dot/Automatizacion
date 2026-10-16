@@ -227,6 +227,12 @@ function sinSesion(): SupabaseClient {
       expect(filas.find((f) => f.id === ids.simple)!.avisosVuelo).toEqual([]);
     });
 
+    it("owner 2026-10-16: la lista trae los pasajeros (para la columna 'Juan Perez x 3' y la búsqueda)", async () => {
+      const filas = await cargarReservas(equipo);
+      expect(filas.find((f) => f.id === ids.simple)!.pasajeros).toEqual(["Ana Prueba"]);
+      expect(filas.find((f) => f.id === ids.tour)!.pasajeros).toEqual([]);
+    });
+
     it("owner 2026-10-16: una cancelación se marca por su motivo o por su historial, aunque no haya cambiado de estado", async () => {
       expect((await cargarReserva(equipo, ids.simple))!.cancelacion).toBe(false);
       // La agencia cancela una reserva que ya no estaba en un estado tocable: queda solo en el historial.
