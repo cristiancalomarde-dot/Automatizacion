@@ -131,8 +131,15 @@ describe("armarReporteMail", () => {
       avisos: ["Falta el vuelo de llegada a Calama (CJC) para el traslado de OD030"],
     };
     const md = armarReporteMail(r);
-    expect(md).toContain("- **Aviso (no la manda a revisión):** Falta el vuelo de llegada a Calama (CJC) para el traslado de OD030");
+    expect(md).toContain("- **Falta dato de llegada (no la manda a revisión):** Falta el vuelo de llegada a Calama (CJC) para el traslado de OD030");
     expect(md).not.toContain("Por qué quedó en revisión");
+  });
+
+  it("owner 2026-10-16: Iguazú sin vuelo ni bus va bajo la misma marca 'falta dato de llegada'", () => {
+    const r = resultado();
+    const iguazu = "Falta el vuelo o bus de llegada a Iguazú: pasárselo a Cuenca del Plata cuando llegue.";
+    r.reservas[0] = { ...r.reservas[0], estado: "recibida", motivos: [], avisos: [iguazu] };
+    expect(armarReporteMail(r)).toContain(`- **Falta dato de llegada (no la manda a revisión):** ${iguazu}`);
   });
 
   it("un mail que se sumó a una reserva que ya existía: no creó otra", () => {

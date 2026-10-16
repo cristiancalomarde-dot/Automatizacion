@@ -1,4 +1,5 @@
 import type { DetalleProducto } from "@/lib/catalogo/tipos";
+import { TEXTOS } from "@/lib/textos";
 import { saleDePuertoNatales } from "./emparejar/componentes";
 import { motivosDeVuelos } from "./emparejar/vuelos-requeridos";
 import type { VueloIA } from "./esquema-ficha";
@@ -25,6 +26,16 @@ export const esAvisoDeVuelo = (texto: string) => FALTA_VUELO.test(texto);
 /** Lo que sale del control de vuelos, separado: los avisos y lo que sigue siendo motivo de revisión. */
 export function separarAvisosDeVuelo(textos: readonly string[]): { avisos: string[]; motivos: string[] } {
   return { avisos: textos.filter(esAvisoDeVuelo), motivos: textos.filter((t) => !esAvisoDeVuelo(t)) };
+}
+
+/**
+ * Owner 2026-10-16: lo que espera el dato de llegada va bajo UNA marca
+ * ("falta dato de llegada"), con una línea concreta por cada cosa: los vuelos
+ * que faltan para un traslado y, en Iguazú, el vuelo o bus (`llegada-iguazu.ts`).
+ * Lo usan la lista, el detalle y el reporte del modo prueba.
+ */
+export function avisosDeLlegada(r: { avisosVuelo: readonly string[]; sinDatoLlegada: boolean }): string[] {
+  return [...r.avisosVuelo, ...(r.sinDatoLlegada ? [TEXTOS.reserva.avisoLlegada] : [])];
 }
 
 /** Lo que el cálculo necesita de una reserva guardada. */

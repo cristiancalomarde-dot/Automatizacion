@@ -303,7 +303,8 @@ después (la salida de Puerto Natales de ARCH31 y ARCH33). Iguazú conserva sus 
   traslados.
 - **Iguazú sin dato de llegada** (owner, 2026-10-14; `src/lib/reservas/llegada-iguazu.ts`): una
   reserva de OD010A–D sin vuelo de llegada a IGR/IGU ni "bus" en los pedidos sigue "recibida" y
-  muestra el aviso "Sin dato de llegada (vuelo o bus): pasárselo a Cuenca del Plata cuando llegue".
+  muestra el aviso "Falta el vuelo o bus de llegada a Iguazú: pasárselo a Cuenca del Plata cuando
+  llegue", bajo la misma marca que los vuelos que faltan: "falta dato de llegada" (owner, 2026-10-16).
   No se guarda: se calcula con producto, vuelos y pedidos. Una respuesta con el asunto de esa reserva
   se lee como la de una reserva que espera el vuelo; al sumar el vuelo, el aviso se va solo.
 

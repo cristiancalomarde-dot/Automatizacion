@@ -45,31 +45,28 @@ export function ChipEstado({ estado }: { estado: EstadoReserva }) {
   );
 }
 
-/** Las marcas que se apilan sobre el estado: cancelación, falta el vuelo, posible duplicada, de prueba y (Iguazú) sin dato de llegada. */
+/**
+ * Las marcas que se apilan sobre el estado: cancelación, falta dato de llegada
+ * (los vuelos que faltan y el Iguazú sin vuelo ni bus, `avisosDeLlegada`),
+ * posible duplicada y de prueba.
+ */
 export function MarcasReserva({
   posibleDuplicada,
   dePrueba,
-  sinDatoLlegada = false,
-  avisosVuelo = [],
+  avisosLlegada = [],
   cancelacion = false,
 }: {
   posibleDuplicada: boolean;
   dePrueba: boolean;
-  sinDatoLlegada?: boolean;
-  avisosVuelo?: string[];
+  avisosLlegada?: string[];
   cancelacion?: boolean;
 }) {
   return (
     <>
       {cancelacion ? <Chip tono="error">{T.cancelacion}</Chip> : null}
-      {avisosVuelo.length > 0 ? (
-        <Chip tono="aviso" titulo={avisosVuelo.join(" · ")}>
-          {T.faltaVuelo}
-        </Chip>
-      ) : null}
-      {sinDatoLlegada ? (
-        <Chip tono="aviso" titulo={TEXTOS.reserva.avisoLlegada}>
-          {T.sinDatoLlegada}
+      {avisosLlegada.length > 0 ? (
+        <Chip tono="aviso" titulo={avisosLlegada.join(" · ")}>
+          {T.faltaDatoLlegada}
         </Chip>
       ) : null}
       {posibleDuplicada ? <Chip tono="aviso">{T.posibleDuplicada}</Chip> : null}

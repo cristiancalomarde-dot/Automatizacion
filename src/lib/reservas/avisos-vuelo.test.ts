@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { detalleDePrueba } from "./emparejar/__fixtures__/cargar";
 import type { VueloIA } from "./esquema-ficha";
-import { avisosDeVuelo, cargarAvisosDeVuelo, esAvisoDeVuelo, separarAvisosDeVuelo } from "./avisos-vuelo";
+import { avisosDeLlegada, avisosDeVuelo, cargarAvisosDeVuelo, esAvisoDeVuelo, separarAvisosDeVuelo } from "./avisos-vuelo";
 
 /**
  * Owner 2026-10-16 (plan M2 §3): "falta el vuelo" deja de mandar a revisión.
@@ -60,6 +60,21 @@ describe("avisosDeVuelo", () => {
 
   it("sin producto no hay aviso", () => {
     expect(avisosDeVuelo(null, { ...OD030, vuelos: [] })).toEqual([]);
+  });
+});
+
+describe("avisosDeLlegada (owner 2026-10-16: una sola marca 'falta dato de llegada')", () => {
+  const IGUAZU = "Falta el vuelo o bus de llegada a Iguazú: pasárselo a Cuenca del Plata cuando llegue.";
+  const CJC = "Falta el vuelo de llegada a Calama (CJC) para el traslado de OD030";
+
+  it("junta los vuelos que faltan y el Iguazú sin dato, cada uno con su texto concreto", () => {
+    expect(avisosDeLlegada({ avisosVuelo: [CJC], sinDatoLlegada: true })).toEqual([CJC, IGUAZU]);
+    expect(avisosDeLlegada({ avisosVuelo: [], sinDatoLlegada: true })).toEqual([IGUAZU]);
+    expect(avisosDeLlegada({ avisosVuelo: [CJC], sinDatoLlegada: false })).toEqual([CJC]);
+  });
+
+  it("sin nada pendiente, ninguno", () => {
+    expect(avisosDeLlegada({ avisosVuelo: [], sinDatoLlegada: false })).toEqual([]);
   });
 });
 

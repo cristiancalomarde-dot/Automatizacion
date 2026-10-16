@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useConsulta } from "@/lib/catalogo/use-consulta";
 import { formatearFechaHora, formatearRango } from "@/lib/formato";
+import { avisosDeLlegada } from "@/lib/reservas/avisos-vuelo";
 import { cargarReservas, cargarRevisiones } from "@/lib/reservas/consultas";
 import { medirRevision, textoMedicion } from "@/lib/reservas/medicion-prueba";
 import { coincideBusqueda, contarReservas, ordenarParaTrabajar, pasajeroYCantidad } from "@/lib/reservas/reglas";
@@ -140,6 +141,7 @@ function TablaReservas({ filas }: { filas: FilaReserva[] }) {
         <tbody>
           {visibles.map((fila) => {
             const atencion = fila.estado === "para_revision" || fila.posibleDuplicada;
+            const avisosLlegada = avisosDeLlegada(fila);
             const clases = [ui.filaClic, atencion ? ui.filaAtencion : "", fila.dePrueba ? estilos.filaPrueba : ""];
             return (
               <tr
@@ -156,8 +158,7 @@ function TablaReservas({ filas }: { filas: FilaReserva[] }) {
                     <MarcasReserva
                       posibleDuplicada={fila.posibleDuplicada}
                       dePrueba={fila.dePrueba}
-                      sinDatoLlegada={fila.sinDatoLlegada}
-                      avisosVuelo={fila.avisosVuelo}
+                      avisosLlegada={avisosLlegada}
                       cancelacion={fila.cancelacion}
                     />
                   </span>
@@ -172,7 +173,7 @@ function TablaReservas({ filas }: { filas: FilaReserva[] }) {
                   ) : (
                     <span className={ui.secundario}>{T.sinProducto}</span>
                   )}
-                  {fila.avisosVuelo.map((a) => (
+                  {avisosLlegada.map((a) => (
                     <span key={a} className={estilos.avisoFila}>
                       {a}
                     </span>

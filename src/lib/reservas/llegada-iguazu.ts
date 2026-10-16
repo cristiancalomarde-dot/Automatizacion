@@ -4,8 +4,9 @@
  * Kilroy suele reservar Iguazú (OD010A–D) sin el vuelo de llegada, y a veces
  * los pasajeros llegan en bus. La reserva NO va a revisión por eso: sigue
  * "recibida" porque conseguir el alojamiento es lo crítico. Queda un aviso
- * visible ("sin dato de llegada") para pasarle el dato a Cuenca del Plata
- * cuando llegue.
+ * visible para pasarle el dato a Cuenca del Plata cuando llegue, bajo la misma
+ * marca que los vuelos que faltan: "falta dato de llegada" (owner, 2026-10-16;
+ * `avisosDeLlegada` en `avisos-vuelo.ts`).
  *
  * El aviso no se guarda: se calcula con lo que tiene la reserva (producto,
  * vuelos y pedidos especiales). Cuando un mail posterior trae el vuelo (o dice

@@ -3,7 +3,7 @@ import { esIguazu, sinDatoDeLlegada } from "./llegada-iguazu";
 
 // Owner 2026-10-14 (plan M2 §3): Kilroy suele reservar Iguazú (OD010A–D) sin el
 // vuelo de llegada; a veces llegan en bus. La reserva sigue "recibida" con un
-// aviso "sin dato de llegada", que se va cuando llega el vuelo o el bus.
+// aviso "falta dato de llegada", que se va cuando llega el vuelo o el bus.
 
 const vuelo = (destino: string | null, numero: string | null = "LA4420") => ({ destino, numero });
 

@@ -205,10 +205,11 @@ export const TEXTOS = {
     sinProducto: "Sin producto reconocido",
     dePrueba: "De prueba",
     posibleDuplicada: "posible duplicada",
-    /** Owner 2026-10-14: Iguazú sin vuelo ni bus de llegada (chip de la lista). */
-    sinDatoLlegada: "sin dato de llegada",
-    /** Owner 2026-10-16: falta un vuelo para un traslado (aviso, no revisión). */
-    faltaVuelo: "falta el vuelo",
+    /**
+     * Owner 2026-10-16: una sola marca para lo que espera el dato de llegada
+     * (un vuelo para un traslado, o Iguazú sin vuelo ni bus). Aviso, no revisión.
+     */
+    faltaDatoLlegada: "falta dato de llegada",
     /** Owner 2026-10-16: la agencia cancela (marca junto al estado y en el título del detalle). */
     cancelacion: "CANCELACIÓN",
     /** Modo prueba (spec M2-06 §4). */
@@ -235,9 +236,10 @@ export const TEXTOS = {
     error: "No pudimos abrir esta reserva.",
     noExiste: "Esta reserva no existe.",
     volver: "Volver a las reservas",
-    avisoLlegada: "Sin dato de llegada (vuelo o bus): pasárselo a Cuenca del Plata cuando llegue.",
-    /** Owner 2026-10-16: encabezado del aviso de los vuelos que faltan (abajo va cada uno). */
-    avisoVuelo: "Lo demás se puede pedir ya; el traslado espera el dato del vuelo.",
+    /** Owner 2026-10-14: Iguazú (OD010A–D) sin vuelo ni bus de llegada; una línea del aviso de llegada. */
+    avisoLlegada: "Falta el vuelo o bus de llegada a Iguazú: pasárselo a Cuenca del Plata cuando llegue.",
+    /** Owner 2026-10-16: encabezado del aviso "falta dato de llegada" (abajo va cada línea concreta). */
+    avisoVuelo: "Falta dato de llegada. Lo demás se puede pedir ya.",
     avisoPrueba: "Reserva de prueba. Se cargó para revisar cómo se leen los mails. No es una reserva real.",
     /** La marca del owner sobre una reserva de prueba (spec M2-06 fila 13). */
     revision: {

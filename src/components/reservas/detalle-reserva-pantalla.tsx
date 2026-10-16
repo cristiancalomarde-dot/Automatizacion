@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useConsulta } from "@/lib/catalogo/use-consulta";
 import { formatearFecha, formatearFechaHora, formatearHora, formatearRango } from "@/lib/formato";
+import { avisosDeLlegada } from "@/lib/reservas/avisos-vuelo";
 import { cargarReserva } from "@/lib/reservas/consultas";
 import { esIdDeReserva, frasesDeMotivos } from "@/lib/reservas/reglas";
 import type { DetalleReserva, ParteDeReserva, VueloDeReserva } from "@/lib/reservas/tipos";
@@ -61,17 +62,17 @@ function NoExiste() {
 
 function Detalle({ reserva }: { reserva: DetalleReserva }) {
   const frases = reserva.estado === "para_revision" || reserva.posibleDuplicada ? frasesDeMotivos(reserva.motivos) : [];
+  const avisosLlegada = avisosDeLlegada(reserva);
 
   return (
     <>
       {reserva.dePrueba ? <Aviso tono="info">{T.avisoPrueba}</Aviso> : null}
-      {reserva.sinDatoLlegada ? <Aviso tono="aviso">{T.avisoLlegada}</Aviso> : null}
-      {reserva.avisosVuelo.length > 0 ? (
+      {avisosLlegada.length > 0 ? (
         <Aviso tono="aviso">
           <div data-testid="avisos-vuelo">
             <p className={estilos.avisoTitulo}>{T.avisoVuelo}</p>
             <ul className={estilos.motivos}>
-              {reserva.avisosVuelo.map((a) => (
+              {avisosLlegada.map((a) => (
                 <li key={a}>{a}</li>
               ))}
             </ul>
@@ -86,8 +87,7 @@ function Detalle({ reserva }: { reserva: DetalleReserva }) {
             <MarcasReserva
               posibleDuplicada={reserva.posibleDuplicada}
               dePrueba={reserva.dePrueba}
-              sinDatoLlegada={reserva.sinDatoLlegada}
-              avisosVuelo={reserva.avisosVuelo}
+              avisosLlegada={avisosLlegada}
               cancelacion={reserva.cancelacion}
             />
           </span>

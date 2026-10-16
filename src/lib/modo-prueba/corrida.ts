@@ -2,12 +2,13 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { RegistroLlamadasIA } from "@/lib/ia/registro-llamadas";
 import { cargarProducto } from "@/lib/catalogo/consultas";
 import type { RegistroUsoIA } from "@/lib/ia/techo-gasto";
-import { cargarAvisosDeVuelo } from "@/lib/reservas/avisos-vuelo";
+import { avisosDeLlegada, cargarAvisosDeVuelo } from "@/lib/reservas/avisos-vuelo";
 import type { DependenciasReservas } from "@/lib/reservas/emparejar/reservas-del-mail";
 import type { ResultadoLectura } from "@/lib/reservas/extraer";
 import { decidirEntrada, TEXTO_SALTEO } from "@/lib/reservas/filtro-entrada";
 import { borrarDatosDePruebaDe, guardarMailRecibido } from "@/lib/reservas/guardar";
 import { MOTIVOS, type MailParaLeer } from "@/lib/reservas/preparar-mail";
+import { sinDatoDeLlegada } from "@/lib/reservas/llegada-iguazu";
 import { cargarReservasDelAsunto, procesarMail, type AccionPedido, type ResultadoPedido } from "@/lib/reservas/procesar-mail";
 import { numerosDelAsunto } from "@/lib/reservas/respuestas";
 import type { EstadoReserva, OrigenEmparejado } from "@/lib/reservas/tipos";
@@ -141,7 +142,15 @@ export async function reservasDelMail(
       pax: r.pax,
       estado: r.estado as EstadoReserva,
       motivos: r.motivos_revision ?? [],
-      avisos: avisos.get(r.id) ?? [],
+      // Owner 2026-10-16: una sola marca "falta dato de llegada" (vuelos que faltan + Iguazú sin vuelo ni bus).
+      avisos: avisosDeLlegada({
+        avisosVuelo: avisos.get(r.id) ?? [],
+        sinDatoLlegada: sinDatoDeLlegada({
+          productoCodigo: r.producto?.codigo ?? null,
+          vuelos: Array.isArray(r.vuelos) ? r.vuelos : [],
+          pedidos: r.pedidos_especiales ?? null,
+        }),
+      }),
       partes: cuantas(r.id),
     }));
 }
