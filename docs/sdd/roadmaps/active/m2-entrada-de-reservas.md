@@ -176,6 +176,10 @@ diga cada ficha.
   (vendorcredit) y cargos extra; el mail de confirmación no, y su formato está cambiando. El mail
   "BOOKING CONFIRMED" se registra sin IA y sin reserva. Ejemplos: `Insumos/Mails/BOOKING
   CONFIRMED nuevo formato TR*.docx` (1378369 y 1383503).
+- **Lista de reservas: pasajero principal y buscador (owner, 2026-10-16; va con el listado del
+  owner):** columna con el pasajero principal y la cantidad ("Juan Perez x 3") y una caja de
+  búsqueda por nombre de pasajero o número de reserva de la agencia. Los filtros completos
+  (estado, agencia, fechas) siguen siendo de M4.
 - **Orden de la lista de reservas (owner, 2026-10-14):** primero las "para revisión"; dentro de
   cada grupo, por fecha de inicio del viaje, la más próxima arriba.
 - **Base de pruebas separada antes de M2-07 (2026-10-14):** las pruebas automáticas y el
