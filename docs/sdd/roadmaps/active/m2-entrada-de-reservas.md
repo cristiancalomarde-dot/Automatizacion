@@ -170,6 +170,12 @@ diga cada ficha.
   IA en fechas o pax, cancelación y cargo extra de TourRadar. El owner marca el modo prueba
   mirando los datos (agencia, número, producto, fechas, pax, vuelos, pedidos y si el motivo es
   cierto), no el estado.
+- **TourRadar: se lee solo el statement (owner, 2026-10-16; va con el listado del owner):** el
+  PDF de finanzas (`system@sent-via.netsuite.com`) llega siempre y casi al mismo tiempo que el
+  mail "BOOKING CONFIRMED". El statement trae tipo de habitación, precio neto, cancelaciones
+  (vendorcredit) y cargos extra; el mail de confirmación no, y su formato está cambiando. El mail
+  "BOOKING CONFIRMED" se registra sin IA y sin reserva. Ejemplos: `Insumos/Mails/BOOKING
+  CONFIRMED nuevo formato TR*.docx` (1378369 y 1383503).
 - **Orden de la lista de reservas (owner, 2026-10-14):** primero las "para revisión"; dentro de
   cada grupo, por fecha de inicio del viaje, la más próxima arriba.
 - **Base de pruebas separada antes de M2-07 (2026-10-14):** las pruebas automáticas y el
