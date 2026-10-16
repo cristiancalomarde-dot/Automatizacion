@@ -58,6 +58,8 @@ export interface ReservaArmada {
    * para el reporte del modo prueba.
    */
   avisos: string[];
+  /** El producto del mail del que sale esta reserva (null si el mail no trae ninguno). */
+  productoIA: ProductoIA | null;
 }
 
 const textoAgencia = (p: Pick<ProductoIA, "nombre" | "codigo">) =>
@@ -90,6 +92,36 @@ function cerrar(entrada: Omit<EntradaArmada, "estado">): EntradaArmada {
   return { ...entrada, motivosRevision: motivos, estado: motivos.length ? "para_revision" : "recibida" };
 }
 
+const ddmmaaaa = (iso: string) => `${iso.slice(8, 10)}/${iso.slice(5, 7)}/${iso.slice(0, 4)}`;
+
+/**
+ * TourRadar (owner 2026-10-16): un número de reserva es UNA reserva. El
+ * estado de cuenta puede listar, además del tour, noches de hotel u otros
+ * extras (1363612: "Hotel La Aldea 4*"): van dentro de la misma reserva, como
+ * pedidos especiales. El tour es el que empieza en la fecha de inicio del
+ * statement (si no, el primero). Kilroy no cambia: un mail con varias
+ * reservas del mismo número se parte por producto.
+ */
+function productosDelMail(ficha: FichaLectura, agencia: string): { productos: ProductoIA[]; extras: ProductoIA[] } {
+  if (agencia !== "TourRadar" || ficha.productos.length < 2) return { productos: ficha.productos, extras: [] };
+  const inicio = ficha.fecha_inicio.valor;
+  const principal = ficha.productos.find((p) => !!inicio && p.fecha_inicio === inicio) ?? ficha.productos[0];
+  return { productos: [principal], extras: ficha.productos.filter((p) => p !== principal) };
+}
+
+/** "También en el estado de cuenta: Hotel La Aldea 4* (SGL, 1 noche, 10/10/2026 al 11/10/2026)". */
+function textoDeExtra(p: ProductoIA): string {
+  const fechas =
+    p.fecha_inicio && p.fecha_fin
+      ? `${ddmmaaaa(p.fecha_inicio)} al ${ddmmaaaa(p.fecha_fin)}`
+      : p.fecha_inicio
+        ? `desde ${ddmmaaaa(p.fecha_inicio)}`
+        : null;
+  const noches = p.noches ? `${p.noches} ${p.noches === 1 ? "noche" : "noches"}` : null;
+  const detalle = [p.habitacion, noches, fechas].filter(Boolean).join(", ");
+  return `También en el estado de cuenta: ${p.nombre}${detalle ? ` (${detalle})` : ""}`;
+}
+
 export async function armarReservas(
   lectura: FichaLectura | ResultadoLectura,
   deps: DependenciasReservas,
@@ -98,7 +130,7 @@ export async function armarReservas(
   if ("estado" in lectura && lectura.estado === "para_revision") {
     const entrada = base(null, opciones.agencia ?? "desconocida");
     entrada.motivosRevision = [M.lecturaFallida(lectura.motivo)];
-    return [{ entrada: cerrar(entrada), llamadas: [], costo: 0, avisos: [] }];
+    return [{ entrada: cerrar(entrada), llamadas: [], costo: 0, avisos: [], productoIA: null }];
   }
   const ficha: FichaLectura = "estado" in lectura ? lectura.ficha : lectura;
   const agencia = ficha.agencia.valor ?? opciones.agencia ?? "desconocida";
@@ -108,15 +140,19 @@ export async function armarReservas(
   if (ficha.productos.length === 0) {
     const entrada = base(ficha, agencia);
     entrada.motivosRevision = [tipo === "reserva_nueva" ? M.sinProducto : M.tipoMail[tipo], ...dudosos];
-    return [{ entrada: cerrar(entrada), llamadas: [], costo: 0, avisos: [] }];
+    return [{ entrada: cerrar(entrada), llamadas: [], costo: 0, avisos: [], productoIA: null }];
   }
 
+  const { productos, extras } = productosDelMail(ficha, agencia);
   const armadas: ReservaArmada[] = [];
-  for (const p of ficha.productos) {
+  for (const p of productos) {
     const entrada = base(ficha, agencia);
+    if (extras.length) {
+      entrada.pedidosEspeciales = [entrada.pedidosEspeciales, ...extras.map(textoDeExtra)].filter(Boolean).join("\n");
+    }
     entrada.productoTextoAgencia = textoAgencia(p);
-    entrada.fechaInicio = p.fecha_inicio ?? (ficha.productos.length === 1 ? entrada.fechaInicio : null);
-    entrada.fechaFin = p.fecha_fin ?? (ficha.productos.length === 1 ? entrada.fechaFin : null);
+    entrada.fechaInicio = p.fecha_inicio ?? (productos.length === 1 ? entrada.fechaInicio : null);
+    entrada.fechaFin = p.fecha_fin ?? (productos.length === 1 ? entrada.fechaFin : null);
     entrada.habitacion = p.habitacion;
     const pedido = { nombre: p.nombre, codigo: p.codigo, fechaInicio: p.fecha_inicio, fechaFin: p.fecha_fin };
 
@@ -164,7 +200,7 @@ export async function armarReservas(
       if (!entrada.fechaInicio) motivos.push(M.sinFechaInicio);
     }
     entrada.motivosRevision = [...motivos, ...dudosos];
-    armadas.push({ entrada: cerrar(entrada), llamadas: r.llamada ? [r.llamada] : [], costo: r.costo, avisos });
+    armadas.push({ entrada: cerrar(entrada), llamadas: r.llamada ? [r.llamada] : [], costo: r.costo, avisos, productoIA: p });
   }
   return armadas;
 }

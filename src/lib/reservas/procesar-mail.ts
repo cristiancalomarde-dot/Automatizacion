@@ -326,8 +326,8 @@ export async function procesarMail(entrada: MailEntrada, opciones: OpcionesProce
     };
 
     const pedidos: ResultadoPedido[] = [];
-    for (const [i, armada] of armadas.entries()) {
-      const producto = ficha && ficha.productos.length === armadas.length ? ficha.productos[i] : null;
+    for (const armada of armadas) {
+      const producto = armada.productoIA;
       const pedido: PedidoIntercambio = {
         agencia: ctx.agencia,
         bookingId: ctx.bookingId,

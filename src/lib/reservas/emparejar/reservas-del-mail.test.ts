@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { catalogoDePrueba, detallePorId, fichaDePrueba, idDe, noCargadosDePrueba, proveedorPatagoniaPlanet } from "./__fixtures__/cargar";
 import type { ProponerProducto } from "./emparejar";
+import type { ProductoIA } from "../esquema-ficha";
 import { armarReservas, type DependenciasReservas } from "./reservas-del-mail";
 
 /**
@@ -104,6 +105,62 @@ describe("M2-03 fila 14 — estado final", () => {
     expect(proponer).not.toHaveBeenCalled();
     expect(r.llamadas).toEqual([]);
     expect(r.costo).toBe(0);
+  });
+});
+
+describe("TourRadar (owner 2026-10-16): un número de reserva = UNA reserva", () => {
+  // La noche de hotel extra del statement (1363612: "Hotel La Aldea 4*") va dentro de la
+  // misma reserva, como pedido especial, no como otra reserva.
+  const conHotelExtra = (base: string, extra: Partial<ProductoIA> = {}) => {
+    const ficha = fichaDePrueba(base);
+    ficha.productos = [
+      ...ficha.productos,
+      {
+        nombre: "Hotel La Aldea 4*",
+        codigo: null,
+        fecha_inicio: null,
+        fecha_fin: null,
+        noches: null,
+        habitacion: "SGL",
+        punto_recogida: null,
+        opcionales: [],
+        confianza: 0.7,
+        ...extra,
+      },
+    ];
+    return ficha;
+  };
+
+  it("la cancelación 1363612 (tour + noche de hotel extra) deja una sola reserva, con el hotel como pedido especial", async () => {
+    const rs = await armarReservas(conHotelExtra("tourradar-cancelacion-1363612"), deps());
+    expect(rs).toHaveLength(1);
+    expect(rs[0].entrada.productoTextoAgencia).toBe("Iguazu Falls on a Shoestring (3N)");
+    expect(rs[0].entrada.pedidosEspeciales).toBe("También en el estado de cuenta: Hotel La Aldea 4* (SGL)");
+    expect(rs[0].productoIA?.nombre).toBe("Iguazu Falls on a Shoestring (3N)");
+  });
+
+  it("una reserva nueva con un extra con fechas: se empareja solo el tour (una llamada a la IA) y el extra dice sus fechas", async () => {
+    const proponer = iaQueDice("CHB31", 0.95);
+    const ficha = conHotelExtra("tourradar-overland-1376833", { fecha_inicio: "2026-10-10", fecha_fin: "2026-10-11", noches: 1 });
+    ficha.pedidos_especiales = [{ texto: "Vegetarian", confianza: 0.9 }];
+    const rs = await armarReservas(ficha, deps(proponer));
+    expect(rs).toHaveLength(1);
+    expect(rs[0].entrada.productoId).toBe(idDe("CHB31"));
+    expect(proponer).toHaveBeenCalledTimes(1);
+    expect(rs[0].entrada.pedidosEspeciales).toBe(
+      "Vegetarian\nTambién en el estado de cuenta: Hotel La Aldea 4* (SGL, 1 noche, 10/10/2026 al 11/10/2026)",
+    );
+  });
+
+  it("el tour es el que empieza en la fecha de inicio del statement, aunque no venga primero", async () => {
+    const ficha = conHotelExtra("tourradar-cancelacion-1363612");
+    ficha.productos = [...ficha.productos].reverse();
+    const [r] = await armarReservas(ficha, deps());
+    expect(r.entrada.productoTextoAgencia).toBe("Iguazu Falls on a Shoestring (3N)");
+  });
+
+  it("Kilroy no cambia: un mail con dos productos del mismo número sigue dando dos reservas", async () => {
+    expect(await armarReservas(fichaDePrueba("kilroy-dk1576932"), deps())).toHaveLength(2);
   });
 });
 

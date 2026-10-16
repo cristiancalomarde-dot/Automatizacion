@@ -420,6 +420,32 @@ const ASUNTO_OVERLAND = n("DK1594100/maga - Overland San Pedro de Atacama to Uyu
       expect(reservas[0].motivos_revision).toContain(MI.cancelacionSinReserva);
     });
 
+    it("owner 2026-10-16: la cancelación 1363612 con la noche de hotel extra → UNA reserva (la del tour), y otra igual se le suma", async () => {
+      const conHotel = () => {
+        const f = fichaGrabada("tourradar-cancelacion-1363612") as Ficha;
+        f.productos = [
+          ...f.productos,
+          { nombre: "Hotel La Aldea 4*", codigo: null, fecha_inicio: null, fecha_fin: null, noches: null, habitacion: "SGL", punto_recogida: null, opcionales: [], confianza: 0.7 },
+        ];
+        return f;
+      };
+      const r = await procesarMail(statement(ASUNTO_CANCELACION), opciones(lector(respuestaCon(conHotel())).leer));
+      expect(r.estado === "procesado" && r.pedidos.map((p) => p.accion)).toEqual(["nueva"]);
+      const [reserva, ...otras] = await reservasDe("1363612");
+      expect(otras).toEqual([]);
+      expect(reserva).toMatchObject({
+        producto_texto_agencia: "Iguazu Falls on a Shoestring (3N)",
+        producto_clave_agencia: "iguazu falls on a shoestring (3n)",
+        pedidos_especiales: expect.stringContaining("También en el estado de cuenta: Hotel La Aldea 4* (SGL)"),
+      });
+      const otra = await procesarMail(
+        statement("Booking Statement 1363612 - 25300001 - vendorcredit"),
+        opciones(lector(respuestaCon(conHotel())).leer),
+      );
+      expect(otra.estado === "procesado" && otra.pedidos.map((p) => p.accion)).toEqual(["sumada"]);
+      expect(await reservasDe("1363612")).toHaveLength(1);
+    });
+
     it("fila 9: con la reserva ya cargada → sigue siendo 1, ahora en revisión con el evento", async () => {
       const alta = fichaGrabada("tourradar-cancelacion-1363612") as Ficha;
       alta.tipo_mail = { valor: "reserva_nueva", confianza: 1 };
