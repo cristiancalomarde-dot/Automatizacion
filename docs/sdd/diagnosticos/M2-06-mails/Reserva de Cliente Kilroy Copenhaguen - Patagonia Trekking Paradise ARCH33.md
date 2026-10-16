@@ -1,7 +1,7 @@
 # Reserva de Cliente Kilroy Copenhaguen - Patagonia Trekking Paradise ARCH33.docx
 
 - **Agencia:** Kilroy
-- **Gasto de IA de este mail:** US$ 0,0211
+- **Gasto de IA de este mail:** US$ 0,0212
 
 ## Qué entendió la IA
 
@@ -26,10 +26,9 @@ Salieron 2 reservas.
 - **Producto:** **ARCH33** Patagonia, Trekking Paradise with W-Trek, por el código exacto que mandó la agencia.
 - **Partes del tour:** 5
 - **Fechas:** 23/02/2027 al 06/03/2027 · **Pax:** 2
-- **Estado:** Para revisión
-- **Por qué quedó en revisión:**
-  - Falta el vuelo de llegada a El Calafate (FTE) para el traslado de OD033
-  - Falta el vuelo de salida de Puerto Natales (PNT) para el traslado al aeropuerto de Puerto Natales
+- **Estado:** Recibida
+- **Aviso (no la manda a revisión):** Falta el vuelo de llegada a El Calafate (FTE) para el traslado de OD033
+- **Aviso (no la manda a revisión):** Falta el vuelo de salida de Puerto Natales (PNT) para el traslado al aeropuerto de Puerto Natales
 
 ### Reserva 2
 
@@ -37,6 +36,5 @@ Salieron 2 reservas.
 - **Producto:** **CHB31** Overland San Pedro de Atacama to Uyuni, end in La Paz, por el código exacto que mandó la agencia.
 - **Partes del tour:** 3
 - **Fechas:** 06/03/2027 al 12/03/2027 · **Pax:** 2
-- **Estado:** Para revisión
-- **Por qué quedó en revisión:**
-  - Falta el vuelo de llegada a Calama (CJC) para el traslado de OD030
+- **Estado:** Recibida
+- **Aviso (no la manda a revisión):** Falta el vuelo de llegada a Calama (CJC) para el traslado de OD030

@@ -1,7 +1,7 @@
 # Reserva de Cliente Kilroy Olso - Patagonia HIghlights ARCH31.docx
 
 - **Agencia:** Kilroy
-- **Gasto de IA de este mail:** US$ 0,0160
+- **Gasto de IA de este mail:** US$ 0,0163
 
 ## Qué entendió la IA
 
@@ -22,6 +22,5 @@
 - **Producto:** **ARCH31** Patagonia Highlights, por el código exacto que mandó la agencia.
 - **Partes del tour:** 5
 - **Fechas:** 01/03/2027 al 09/03/2027 · **Pax:** 1
-- **Estado:** Para revisión
-- **Por qué quedó en revisión:**
-  - Falta el vuelo de llegada a El Calafate (FTE) para el traslado de OD033
+- **Estado:** Recibida
+- **Aviso (no la manda a revisión):** Falta el vuelo de llegada a El Calafate (FTE) para el traslado de OD033

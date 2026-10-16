@@ -1,7 +1,7 @@
 # Reserva de Cliente Kilroy UK - 5 Countries 5C01.docx
 
 - **Agencia:** Kilroy
-- **Gasto de IA de este mail:** US$ 0,0202
+- **Gasto de IA de este mail:** US$ 0,0205
 
 ## Qué entendió la IA
 
@@ -22,6 +22,5 @@
 - **Producto:** **5C01** 5 Countries: Rio de Janeiro to la Paz, por el código exacto que mandó la agencia.
 - **Partes del tour:** 19
 - **Fechas:** 01/11/2026 al 30/11/2026 · **Pax:** 4
-- **Estado:** Para revisión
-- **Por qué quedó en revisión:**
-  - Falta el vuelo de llegada a Río de Janeiro (GIG) para el traslado de OD032
+- **Estado:** Recibida
+- **Aviso (no la manda a revisión):** Falta el vuelo de llegada a Río de Janeiro (GIG) para el traslado de OD032

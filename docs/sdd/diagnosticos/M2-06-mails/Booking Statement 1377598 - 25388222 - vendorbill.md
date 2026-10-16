@@ -1,7 +1,7 @@
 # Booking Statement 1377598 - 25388222 - vendorbill.pdf
 
 - **Agencia:** TourRadar
-- **Gasto de IA de este mail:** US$ 0,0217
+- **Gasto de IA de este mail:** US$ 0,0220
 
 ## Qué entendió la IA
 
@@ -23,7 +23,6 @@ No creó una reserva nueva: se sumó al historial de la reserva 1377598 (mismo n
 - **Producto:** **AR09** Patagonia Adventure Tour, por el nombre que usa la agencia (cargado en el sistema).
 - **Partes del tour:** 9
 - **Fechas:** desde el 28/10/2026 · **Pax:** 1
-- **Estado:** Para revisión
-- **Por qué quedó en revisión:**
-  - Falta el vuelo de llegada a Buenos Aires (EZE o AEP) para el traslado de OD018
-  - Falta el vuelo de salida de Ushuaia (USH) para el traslado de OD022
+- **Estado:** Recibida
+- **Aviso (no la manda a revisión):** Falta el vuelo de llegada a Buenos Aires (EZE o AEP) para el traslado de OD018
+- **Aviso (no la manda a revisión):** Falta el vuelo de salida de Ushuaia (USH) para el traslado de OD022

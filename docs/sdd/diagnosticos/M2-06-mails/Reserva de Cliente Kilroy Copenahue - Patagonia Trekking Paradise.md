@@ -1,7 +1,7 @@
 # Reserva de Cliente Kilroy Copenahue - Patagonia Trekking Paradise.docx
 
 - **Agencia:** Kilroy
-- **Gasto de IA de este mail:** US$ 0,0188
+- **Gasto de IA de este mail:** US$ 0,0191
 
 ## Qué entendió la IA
 

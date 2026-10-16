@@ -1,8 +1,22 @@
 [
   {
+    "archivo": "BOOKING CONFIRMED nuevo formato TR 2.docx",
+    "estado": "salteado",
+    "motivo": "No es un mail de agencia",
+    "reservas": 0,
+    "reporte": "BOOKING CONFIRMED nuevo formato TR 2.md"
+  },
+  {
+    "archivo": "BOOKING CONFIRMED nuevo formato TR.docx",
+    "estado": "salteado",
+    "motivo": "No es un mail de agencia",
+    "reservas": 0,
+    "reporte": "BOOKING CONFIRMED nuevo formato TR.md"
+  },
+  {
     "archivo": "Booking Statement 1363612 - 25160515 - vendorcredit.pdf",
     "estado": "procesado",
-    "reservas": 2,
+    "reservas": 1,
     "reporte": "Booking Statement 1363612 - 25160515 - vendorcredit.md"
   },
   {

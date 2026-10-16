@@ -1,7 +1,7 @@
 # Booking Statement 1376833 - 25351215 - vendorbill.pdf
 
 - **Agencia:** TourRadar
-- **Gasto de IA de este mail:** US$ 0,0317
+- **Gasto de IA de este mail:** US$ 0,0324
 
 ## Qué entendió la IA
 
@@ -22,6 +22,5 @@
 - **Producto:** **CHB31** Overland San Pedro de Atacama to Uyuni, end in La Paz, por propuesta de la IA, con confianza 0,90.
 - **Partes del tour:** 3
 - **Fechas:** desde el 11/10/2026 · **Pax:** 2
-- **Estado:** Para revisión
-- **Por qué quedó en revisión:**
-  - Falta el vuelo de llegada a Calama (CJC) para el traslado de OD030
+- **Estado:** Recibida
+- **Aviso (no la manda a revisión):** Falta el vuelo de llegada a Calama (CJC) para el traslado de OD030

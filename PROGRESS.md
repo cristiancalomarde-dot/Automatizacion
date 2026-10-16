@@ -3,6 +3,14 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
 
 # Dónde retomar
 
+- **Ajustes tras la revisión del owner (2026-10-16).** Revisión: 23 marcadas, 20 bien / 3 mal (13%),
+  guardada en `docs/sdd/diagnosticos/M2-06-revision-owner.md`. Hecho: falta de vuelo = aviso (`avisos-vuelo.ts`),
+  TourRadar solo statement, una reserva por número en TourRadar (extras como pedido especial), marca CANCELACIÓN,
+  columna "Juan Perez x 3" + buscador, `lectura-mail.v3` (eval 100%), OD014 no cargado. Corrida de nuevo con OK
+  del owner: 22 reservas de prueba, 17 recibidas y 5 para revisión, US$ 0,42; mes en US$ 2,79 de 20.
+  - **Pendiente:** `tests/importador-productos.integration.test.ts` espera 15 códigos / 3 para OD010B y ahora hay
+    uno más (el Kilroy IGUAZU_BR_4DAYS cargado en M2-06): actualizar la expectativa. Preguntar al owner si algún
+    mail original de tourradar.com distinto del statement (ej. vuelos sin "Re:") debería leerse.
 - **M2-06 terminada (2026-10-15).** Modo prueba: `npm run probar:mails` (72 archivos, 22 leídos con IA,
   24 reservas de prueba, US$ 0,46). Migración 0014 aplicada con OK del owner (marca `de_prueba` en partes
   e historial, tabla `revision_prueba`). Lista oculta las de prueba salvo `?prueba=1`; botones "Está bien" /

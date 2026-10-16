@@ -1,7 +1,7 @@
 # Reserva de Cliente Kilroy - Overland uyuni a san pedro saliendo de la paz (reverse).docx
 
 - **Agencia:** Kilroy
-- **Gasto de IA de este mail:** US$ 0,0170
+- **Gasto de IA de este mail:** US$ 0,0173
 
 ## Qué entendió la IA
 
@@ -22,6 +22,5 @@
 - **Producto:** **BOCHI04R** OVERLAND UYUNI TO SAN PEDRO DE ATACAMA BEGINNING IN LA PAZ, por el código exacto que mandó la agencia.
 - **Partes del tour:** 3
 - **Fechas:** 01/10/2026 al 07/10/2026 · **Pax:** 2
-- **Estado:** Para revisión
-- **Por qué quedó en revisión:**
-  - Falta el vuelo de salida de Calama (CJC) para el traslado de OD030
+- **Estado:** Recibida
+- **Aviso (no la manda a revisión):** Falta el vuelo de salida de Calama (CJC) para el traslado de OD030

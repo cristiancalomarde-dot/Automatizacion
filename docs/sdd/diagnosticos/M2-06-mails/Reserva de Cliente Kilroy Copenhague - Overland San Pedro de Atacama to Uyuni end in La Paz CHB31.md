@@ -1,7 +1,7 @@
 # Reserva de Cliente Kilroy Copenhague - Overland San Pedro de Atacama to Uyuni end in La Paz CHB31.docx
 
 - **Agencia:** Kilroy
-- **Gasto de IA de este mail:** US$ 0,0170
+- **Gasto de IA de este mail:** US$ 0,0172
 
 ## Qué entendió la IA
 
@@ -22,6 +22,5 @@
 - **Producto:** **CHB31** Overland San Pedro de Atacama to Uyuni, end in La Paz, por el código exacto que mandó la agencia.
 - **Partes del tour:** 3
 - **Fechas:** 13/09/2026 al 19/09/2026 · **Pax:** 2
-- **Estado:** Para revisión
-- **Por qué quedó en revisión:**
-  - Falta el vuelo de llegada a Calama (CJC) para el traslado de OD030
+- **Estado:** Recibida
+- **Aviso (no la manda a revisión):** Falta el vuelo de llegada a Calama (CJC) para el traslado de OD030

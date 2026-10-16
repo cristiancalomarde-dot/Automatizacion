@@ -1,7 +1,7 @@
 # Booking Statement 1377583 - 25365166 - vendorbill.pdf
 
 - **Agencia:** TourRadar
-- **Gasto de IA de este mail:** US$ 0,0257
+- **Gasto de IA de este mail:** US$ 0,0260
 
 ## Qué entendió la IA
 

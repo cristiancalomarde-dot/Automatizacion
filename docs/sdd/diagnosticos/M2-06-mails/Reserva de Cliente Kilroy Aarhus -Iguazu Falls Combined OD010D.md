@@ -1,7 +1,7 @@
 # Reserva de Cliente Kilroy Aarhus -Iguazu Falls Combined OD010D.docx
 
 - **Agencia:** Kilroy
-- **Gasto de IA de este mail:** US$ 0,0169
+- **Gasto de IA de este mail:** US$ 0,0172
 
 ## Qué entendió la IA
 
