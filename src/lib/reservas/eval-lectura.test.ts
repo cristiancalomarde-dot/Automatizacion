@@ -87,6 +87,17 @@ describe("compararFicha (fila 28)", () => {
     expect(compararFicha({ ...ESPERADA, tipo_mail: "cancelacion" }, f).campos.tipo).toBe(false);
   });
 
+  it("owner 2026-10-16: si el caso pide pax sin dudas, un pax correcto pero dudoso falla 'pax'", () => {
+    const f = fichaSpap05();
+    expect(compararFicha({ ...ESPERADA, sin_dudas: ["pax"] }, f).campos.pax).toBe(true);
+    f.datos_dudosos = ["pax"];
+    const r = compararFicha({ ...ESPERADA, sin_dudas: ["pax"] }, f);
+    expect(r.campos.pax).toBe(false);
+    expect(r.diferencias).toContain("Pax: el dato es correcto pero quedó como dudoso.");
+    // Sin pedirlo, la duda no cuenta (los casos validados siguen igual).
+    expect(compararFicha(ESPERADA, f).campos.pax).toBe(true);
+  });
+
   it("si la lectura quedó para revisión, no acierta ningún campo", () => {
     const r = compararFicha(ESPERADA, null);
     expect(Object.values(r.campos).some(Boolean)).toBe(false);

@@ -1,4 +1,4 @@
-import type { FichaLectura, TipoMail } from "./esquema-ficha";
+import type { DatoClave, FichaLectura, TipoMail } from "./esquema-ficha";
 
 /**
  * El comparador del set de evaluación de la lectura (spec M2-02 fila 28;
@@ -39,6 +39,11 @@ export interface FichaEsperada {
   fecha_fin?: string | null;
   pax: number | null;
   vuelos: VueloEsperado[];
+  /**
+   * Owner 2026-10-16: datos que, además de correctos, no pueden quedar dudosos
+   * (Kilroy "3 bookings" con 2 pasajeros: el pax no es una duda). Hoy: pax.
+   */
+  sin_dudas?: DatoClave[];
 }
 
 export interface ResultadoEval {
@@ -76,6 +81,10 @@ export function compararFicha(esperada: FichaEsperada, obtenida: FichaLectura | 
   igual("agencia", esperada.agencia, obtenida.agencia.valor, "Agencia");
   igual("numero", esperada.numero_reserva, obtenida.numero_reserva.limpio, "Número de reserva");
   igual("pax", esperada.pax, obtenida.pax.valor, "Pax");
+  if (campos.pax && esperada.sin_dudas?.includes("pax") && obtenida.datos_dudosos.includes("pax")) {
+    campos.pax = false;
+    diferencias.push("Pax: el dato es correcto pero quedó como dudoso.");
+  }
 
   // Productos: cada esperado con uno obtenido (por código si se espera, si no por nombre).
   const usados = new Set<number>();

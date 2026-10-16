@@ -26,8 +26,9 @@ export type { MailParaLeer } from "./preparar-mail";
  * la llamada no lleva el contenido del mail.
  */
 
-/** v2 (2026-10-13): número de Journaway en el asunto y pax de TourRadar. v1 queda como historia. */
-export const VERSION_INSTRUCCIONES = "lectura-mail.v2";
+// v2 (2026-10-13): número de Journaway en el asunto y pax de TourRadar. v1 y v2 quedan como historia.
+/** v3 (2026-10-16): en Kilroy "3 bookings" son productos para los mismos pasajeros, no una duda de pax. */
+export const VERSION_INSTRUCCIONES = "lectura-mail.v3";
 export type ClienteMensajesIA = Pick<Anthropic, "messages">;
 
 let instruccionesCache: string | null = null;

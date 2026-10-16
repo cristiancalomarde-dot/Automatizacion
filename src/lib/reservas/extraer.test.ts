@@ -81,7 +81,9 @@ describe("qué se le manda a la IA (filas 2, 3, 4 y 26)", () => {
     const { create } = await leer(mailDePrueba("kilroy-od010d"), respuestaGrabada("kilroy-od010d"));
     const p = parametros(create);
     const instrucciones = readFileSync(join(process.cwd(), "src", "lib", "reservas", "instrucciones", `${VERSION_INSTRUCCIONES}.md`), "utf-8");
-    expect(VERSION_INSTRUCCIONES).toBe("lectura-mail.v2");
+    expect(VERSION_INSTRUCCIONES).toBe("lectura-mail.v3");
+    // Owner 2026-10-16: en Kilroy "3 bookings" son 3 productos para los mismos pasajeros, no una duda de pax.
+    expect(instrucciones).toMatch(/Kilroy.*bookings.*mismos pasajeros/i);
     expect(p.model).toBe(MODELOS.lectura_mail.modelo);
     expect(p.system).toBe(instrucciones);
     expect(p.max_tokens).toBe(4000);
@@ -125,7 +127,7 @@ describe("qué devuelve, con los casos reales (filas 5-13)", () => {
     expect(r.estado).toBe("leido");
     if (r.estado !== "leido") return;
     const f = r.ficha;
-    expect(f.version_instrucciones).toBe("lectura-mail.v2");
+    expect(f.version_instrucciones).toBe("lectura-mail.v3");
     expect(f.modelo).toBe(MODELOS.lectura_mail.modelo);
     expect(f.tipo_mail.valor).toBe("reserva_nueva");
     expect(f.agencia.valor).toBe("Kilroy");
@@ -356,7 +358,7 @@ describe("registro de cada llamada (fila 29)", () => {
     expect(filas[0]).toEqual({
       tarea: "lectura_mail",
       modelo: MODELOS.lectura_mail.modelo,
-      versionInstrucciones: "lectura-mail.v2",
+      versionInstrucciones: "lectura-mail.v3",
       tokensIn: 3000,
       tokensOut: 500,
       costoUsd: expect.closeTo(0.011, 6),
