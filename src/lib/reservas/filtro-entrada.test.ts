@@ -96,6 +96,27 @@ describe("decidirEntrada", () => {
       );
       expect(d).toEqual({ leer: true, agencia: "TourRadar", motivo: "original", reservaIds: [] });
     });
+
+    it("un segundo statement del mismo número (reserva ya cargada) se sigue leyendo", async () => {
+      const buscar = vi.fn(async () => [reserva({ agencia: "TourRadar", booking_id: "0000042", avisos_vuelo: [ESPERA] })]);
+      const d = await decidirEntrada(
+        { remitente: "system@sent-via.netsuite.com", asunto: "Booking Statement 0000042 - 00000043 - vendorbill" },
+        { buscarReservas: buscar, dePrueba: true },
+      );
+      expect(d).toEqual({ leer: true, agencia: "TourRadar", motivo: "original", reservaIds: [] });
+    });
+
+    it("owner 2026-10-16: una respuesta de TourRadar no se lee buscando vuelos, aunque la reserva espere el vuelo (van a mano, M4)", async () => {
+      for (const asunto of ["Re: BOOKING CONFIRMED - Booking #0000042", "RE: Flight details 0000042", "Fwd: Re: Booking 0000042"]) {
+        const buscar = vi.fn(async () => [reserva({ agencia: "TourRadar", booking_id: "0000042", avisos_vuelo: [ESPERA] })]);
+        const d = await decidirEntrada({ remitente: "TourRadar <explore@mail.tourradar.com>", asunto }, { buscarReservas: buscar, dePrueba: true });
+        expect(d, asunto).toEqual({ leer: false, agencia: "TourRadar", motivo: "tourradar_respuesta", registrar: false });
+        expect(buscar).not.toHaveBeenCalled();
+      }
+      expect(TEXTO_SALTEO.tourradar_respuesta).toBe(
+        "Es una respuesta de TourRadar: sus vuelos se cargan a mano, no se leen de los mails",
+      );
+    });
   });
 
   it("los pedidos a proveedores (HI Travel o un proveedor) no son de agencia", async () => {

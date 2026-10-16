@@ -23,7 +23,10 @@ import { numerosDelAsunto, respuestaMereceLectura, type ReservaParaRespuesta } f
  *    se lee solo si su asunto trae el número de una reserva cargada que espera
  *    un vuelo: tiene el aviso "Falta el vuelo…" pendiente, cualquiera sea su
  *    estado (owner, 2026-10-14 y 2026-10-16; `respuestas.ts`, `avisos-vuelo.ts`).
- *    Ese cruce lo hace el código contra la base, sin IA.
+ *    Ese cruce lo hace el código contra la base, sin IA. Vale para Kilroy, no
+ *    para TourRadar: sus vuelos llegan mezclados entre muchos mensajes del
+ *    dashboard y se cargan a mano (M4; owner, 2026-10-16). Una respuesta de
+ *    TourRadar no se lee ni consulta la base; el aviso queda hasta la carga.
  *
  * Solo decide: no guarda nada ni llama a la IA.
  */
@@ -39,7 +42,8 @@ export type MotivoSalteo =
   | "respuesta_sin_reserva"
   | "respuesta_no_espera_vuelo"
   | "pedido_cotizacion"
-  | "tourradar_solo_statement";
+  | "tourradar_solo_statement"
+  | "tourradar_respuesta";
 
 /** Por qué no se leyó, en llano (reportes y registro). */
 export const TEXTO_SALTEO: Readonly<Record<MotivoSalteo, string>> = {
@@ -51,6 +55,7 @@ export const TEXTO_SALTEO: Readonly<Record<MotivoSalteo, string>> = {
   respuesta_no_espera_vuelo: "Es una respuesta o un reenvío, y la reserva no está esperando un vuelo",
   pedido_cotizacion: "Es un pedido de cotización, no una reserva (por ahora no se lee)",
   tourradar_solo_statement: "De TourRadar se lee solo el estado de cuenta en PDF; este mail se registra sin leer",
+  tourradar_respuesta: "Es una respuesta de TourRadar: sus vuelos se cargan a mano, no se leen de los mails",
 };
 
 /** Quien manda los estados de cuenta (Booking Statement) de TourRadar: lo único que se lee de esa agencia. */
@@ -109,6 +114,11 @@ export async function decidirEntrada(
       : [];
     if (conocidas.length) return { leer: true, agencia, motivo: "original", reservaIds: [] };
     return { leer: false, agencia, motivo: "pedido_cotizacion", registrar: true };
+  }
+
+  // Una respuesta de TourRadar (no del statement) no se lee buscando vuelos: van a mano (owner, 2026-10-16).
+  if (agencia === "TourRadar" && direccionDelRemitente(mail.remitente) !== REMITENTE_STATEMENT_TOURRADAR) {
+    return { leer: false, agencia, motivo: "tourradar_respuesta", registrar: false };
   }
 
   const reservas = await opciones.buscarReservas(mail.asunto, agencia);
