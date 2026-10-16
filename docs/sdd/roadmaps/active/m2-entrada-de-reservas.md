@@ -161,6 +161,15 @@ diga cada ficha.
   se ignoran: se registra el mail, no se gasta IA y no se crea reserva. Un original que nombra
   una reserva ya conocida (cambio, cancelación, vuelo) sigue entrando por la lógica de M2-04.
   Ejemplo: 00736078 "New request 6-days Buenos Aires + Uruguay" era una cotización.
+- **"Falta el vuelo" deja de mandar a revisión (owner, 2026-10-16; se construye DESPUÉS de su
+  listado de la revisión del modo prueba):** se generaliza la regla de Iguazú. La reserva queda
+  "recibida" con un aviso concreto ("Falta el vuelo de llegada a Calama (CJC) para el traslado de
+  OD030"). Lo que no depende del vuelo (alojamiento, excursiones, bus) se puede pedir ya; solo el
+  traslado espera el dato, y el aviso se va cuando llega la respuesta con el vuelo. "Para
+  revisión" queda para lo que pide una decisión: producto no reconocido o no cargado, dudas de la
+  IA en fechas o pax, cancelación y cargo extra de TourRadar. El owner marca el modo prueba
+  mirando los datos (agencia, número, producto, fechas, pax, vuelos, pedidos y si el motivo es
+  cierto), no el estado.
 - **Orden de la lista de reservas (owner, 2026-10-14):** primero las "para revisión"; dentro de
   cada grupo, por fecha de inicio del viaje, la más próxima arriba.
 - **Base de pruebas separada antes de M2-07 (2026-10-14):** las pruebas automáticas y el
