@@ -176,6 +176,11 @@ diga cada ficha.
   (vendorcredit) y cargos extra; el mail de confirmación no, y su formato está cambiando. El mail
   "BOOKING CONFIRMED" se registra sin IA y sin reserva. Ejemplos: `Insumos/Mails/BOOKING
   CONFIRMED nuevo formato TR*.docx` (1378369 y 1383503).
+- **TourRadar: los vuelos van a mano (owner, 2026-10-16):** se le piden al pasajero por el
+  dashboard de TourRadar y la respuesta llega mezclada entre muchos mensajes. De TourRadar se lee
+  solo el statement, también en las respuestas: no se leen "Re:" de TourRadar buscando vuelos. El
+  aviso "falta el vuelo" queda hasta que alguien cargue el vuelo a mano (M4). Regla para M3/M4:
+  una reserva no pasa a confirmada mientras le falte el vuelo (o el bus en Iguazú).
 - **Lista de reservas: pasajero principal y buscador (owner, 2026-10-16; va con el listado del
   owner):** columna con el pasajero principal y la cantidad ("Juan Perez x 3") y una caja de
   búsqueda por nombre de pasajero o número de reserva de la agencia. Los filtros completos
