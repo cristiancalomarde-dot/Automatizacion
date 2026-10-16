@@ -180,6 +180,13 @@ diga cada ficha.
   owner):** columna con el pasajero principal y la cantidad ("Juan Perez x 3") y una caja de
   búsqueda por nombre de pasajero o número de reserva de la agencia. Los filtros completos
   (estado, agencia, fechas) siguen siendo de M4.
+- **Para M3 (owner, 2026-10-16): Geysers del Tatio en el día 3** en todos los San Pedro de
+  Atacama Explorer (OD030 y los tours que lo incluyen): llegada y día 1 son de adaptación a la
+  altura. Importa al fechar los pedidos a proveedores.
+- **Revisión del modo prueba (owner, 2026-10-16):** 23 reservas marcadas, 20 bien y 3 mal
+  (13%, bajo el 20%). Las 3 mal: el mail "varias" de Kilroy (duda de pax) y la cancelación
+  1363612 de TourRadar, partida en dos y sin decir que era cancelación. Detalle en
+  `docs/sdd/diagnosticos/M2-06-revision-owner.md`.
 - **Orden de la lista de reservas (owner, 2026-10-14):** primero las "para revisión"; dentro de
   cada grupo, por fecha de inicio del viaje, la más próxima arriba.
 - **Base de pruebas separada antes de M2-07 (2026-10-14):** las pruebas automáticas y el
