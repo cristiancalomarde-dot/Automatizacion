@@ -75,9 +75,16 @@ export const REMITENTE_STATEMENT_TOURRADAR = "system@sent-via.netsuite.com";
  */
 const RESERVA_KILROY = /new booking|kilroy booking request/i;
 
-/** Journaway (M2-09): los pedidos de reserva dicen "Booking" en el asunto y piden reservar en el cuerpo. */
-const RESERVA_JOURNAWAY_ASUNTO = /\bbooking\b/i;
-const RESERVA_JOURNAWAY_CUERPO = /please book (as follows|the following)/i;
+/**
+ * Journaway (M2-09, owner 2026-10-17): se lee si el asunto dice "book",
+ * "booking" o una cancelación ("cancel", "cancellation", "Stornierung"), o si
+ * el cuerpo pide reservar ("please book …"). Una cancelación sin asunto (copia
+ * .docx) se reconoce por el cuerpo; con asunto, la del cuerpo no alcanza (los
+ * mails comerciales hablan de "free cancellation").
+ */
+const RESERVA_JOURNAWAY_ASUNTO = /\bbook(ing)?\b|\bcancel(l?ation|l?ed)?\b|\bstorn(o|ierung)\b/i;
+const RESERVA_JOURNAWAY_CUERPO = /\bplease book\b/i;
+const CANCELACION_JOURNAWAY_CUERPO = /\bcancel(l?ation|l?ed)?\b|\bstornierung\b/i;
 
 export type DecisionEntrada =
   | { leer: true; agencia: string; motivo: "original" | "espera_vuelo"; reservaIds: string[] }
@@ -117,7 +124,8 @@ export async function decidirEntrada(
         ? asunto
           ? RESERVA_KILROY.test(asunto)
           : RESERVA_KILROY.test(mail.cuerpoTexto ?? "")
-        : (!!asunto && RESERVA_JOURNAWAY_ASUNTO.test(asunto)) || RESERVA_JOURNAWAY_CUERPO.test(mail.cuerpoTexto ?? "");
+        : (asunto ? RESERVA_JOURNAWAY_ASUNTO.test(asunto) : CANCELACION_JOURNAWAY_CUERPO.test(mail.cuerpoTexto ?? "")) ||
+          RESERVA_JOURNAWAY_CUERPO.test(mail.cuerpoTexto ?? "");
     if (esPedido) return { leer: true, agencia, motivo: "original", reservaIds: [] };
     // Un original que nombra una reserva ya cargada (cambio, cancelación, vuelo) sigue por M2-04.
     const numeros = new Set(numerosDelAsunto(mail.asunto, agencia));

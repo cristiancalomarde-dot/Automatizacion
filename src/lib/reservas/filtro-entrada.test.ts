@@ -154,6 +154,34 @@ describe("decidirEntrada", () => {
       expect(d).toMatchObject({ leer: true, agencia: "Journaway", motivo: "original" });
     });
 
+    it("owner 2026-10-17: 'book' en el asunto, o 'please book' en el cuerpo aunque el asunto no diga booking", async () => {
+      for (const m of [
+        { remitente: "de@journaway.com", asunto: "Please book / Client Inventado / ID 65600000005" },
+        { remitente: "de@journaway.com", asunto: "Neue Anfrage Client Inventado", cuerpoTexto: "Dear Team, please book as follows:" },
+      ]) {
+        expect(await decidirEntrada(m, { buscarReservas: sinReservas(), dePrueba: false })).toMatchObject({ leer: true, motivo: "original" });
+      }
+    });
+
+    it("owner 2026-10-17: una cancelación se lee aunque la reserva no esté cargada", async () => {
+      for (const m of [
+        { remitente: "operations@journaway.com", asunto: "Cancellation / Client Inventado / ID 65600000009" },
+        { remitente: "operations@journaway.com", asunto: "Please cancel Client Inventado" },
+        { remitente: "de@journaway.com", asunto: "Stornierung / Client Inventado / ID 65600000010" },
+        { remitente: "de@journaway.com", asunto: null, cuerpoTexto: "Dear Team, the client cancelled the trip." },
+      ]) {
+        expect(await decidirEntrada(m, { buscarReservas: sinReservas(), dePrueba: false })).toMatchObject({ leer: true, motivo: "original" });
+      }
+    });
+
+    it("con asunto, 'cancellation' solo en el cuerpo (ej. 'free cancellation' de un boletín) no alcanza", async () => {
+      const d = await decidirEntrada(
+        { remitente: "newsletter@journaway.com", asunto: "Neue Reiseideen", cuerpoTexto: "Jetzt buchen mit free cancellation!" },
+        { buscarReservas: sinReservas(), dePrueba: false },
+      );
+      expect(d).toMatchObject({ leer: false, motivo: "journaway_no_es_reserva" });
+    });
+
     it("un original que no es un pedido de reserva se registra sin IA y sin reserva", async () => {
       const d = await decidirEntrada(
         { remitente: "newsletter@journaway.com", asunto: "Unsere Reiseideen für den Herbst", cuerpoTexto: "Hallo!" },

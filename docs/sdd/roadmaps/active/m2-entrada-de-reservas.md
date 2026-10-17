@@ -220,6 +220,11 @@ diga cada ficha.
   techo que no se lee en esa semana quedaría afuera. **Ajuste pendiente (chico):** guardar esos
   mails como "en espera" para que se lean aunque pasen los 7 días. Las pruebas automáticas gastan
   en la base de pruebas, no en el techo real (owner OK, 2026-10-17).
+- **Journaway: qué se lee (owner, 2026-10-17).** El número de reserva es el ID de 11 dígitos del asunto (el Trip
+  Number va aparte). Se lee un mail si el asunto dice "book", "booking" o una cancelación ("cancel", "cancellation",
+  "Stornierung"), o si el cuerpo dice "please book…". Ejemplos de asunto: "Activity Booking / Client Huber / ID 62073917770",
+  "Program Booking / Client Hasler / ID 53210552707", "de-DE Transfer + Activity Booking / Client Senkyr / ID 51727479110".
+  Sin esas palabras y sin nombrar una reserva ya cargada, no se lee. SPAP05/06 con noches que no coinciden: nota, no revisión.
 - **TourRadar sin statements en sales@ (owner, 2026-10-17):** es normal, las reservas de
   TourRadar son esporádicas; en esa semana no hubo nuevas. No hay que cambiar nada.
 
