@@ -69,6 +69,11 @@ export function contactoEnPalabras(p: Pick<RegistroProveedor, "mails" | "canal">
   return "sin contacto";
 }
 
+/** Para comparar palabras enteras: sin acentos, solo letras y números, con un espacio a cada lado. */
+function palabras(texto: string): string {
+  return ` ${texto.normalize("NFD").replace(/\p{M}/gu, "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim()} `;
+}
+
 function clave(nombreNormalizado: string, ciudad: string | null): string {
   return `${ciudad ?? ""}\u0000${nombreNormalizado}`;
 }
@@ -107,7 +112,10 @@ export function compararDirectorio(registros: RegistroProveedor[], existentes: P
     if (idDe[i] || r.mails.length === 0) return;
     const mails = new Set(r.mails.map((m) => m.toLowerCase()));
     let candidatos = libres().filter((p) => p.ciudad === r.ciudad && p.mails.some((m) => mails.has(m.toLowerCase())));
-    if (candidatos.length > 1) candidatos = candidatos.filter((p) => r.nombre_normalizado.startsWith(p.nombre_normalizado));
+    // Varios con ese mail (un grupo con una fila por hotel o por producto): es el que tiene el nombre viejo
+    // escrito, como palabras enteras, dentro del nuevo ("…, proveedor Patagonian Group", M1-08;
+    // "Excursion Lado Argentino Premium IGRE01", M2-08).
+    if (candidatos.length > 1) candidatos = candidatos.filter((p) => palabras(r.nombre_normalizado).includes(palabras(p.nombre_normalizado)));
     if (candidatos.length !== 1) return;
     const p = candidatos[0];
     idDe[i] = p.id;

@@ -129,3 +129,38 @@ describe("grupo con un mail para varios hoteles: cada hotel renombrado a su fila
     expect(c.bajas).toHaveLength(3);
   });
 });
+
+describe("Cuenca del Plata: el owner agrega el tipo y el código al nombre de cada fila (M2-08, 2026-10-17)", () => {
+  const mail = { mails: ["reservas8@cuencadelplata.com"], canal: "mail" as const };
+  const cargados = [
+    enBase("foz", registro("Paquete 105 Premium desde Foz: Transfer in+out en Foz/Igu, Lado Arg, Lado Bra", "IGUAZU", mail)),
+    enBase("bra", registro("Lado Brasilero Premium", "IGUAZU", mail)),
+    enBase("arg", registro("Lado Argentino Premium", "IGUAZU", mail)),
+  ];
+
+  it("si el nombre nuevo contiene al viejo como palabras enteras, es ese mismo proveedor (conserva el id); las filas nuevas son altas", () => {
+    const excel = [
+      registro("Paquete 105 Premium desde Foz: Transfer in+out en Foz/Igu, Lado Arg, Lado Bra IGRP01", "IGUAZU", mail),
+      registro("Excursion Lado Brasilero Premium IGRE02", "IGUAZU", mail),
+      registro("Excursion Lado Argentino Premium IGRE01", "IGUAZU", mail),
+      registro("Ruinas de San Ignacio and Minas de Wanda full day IGRE03", "IGUAZU", mail),
+    ];
+    const c = compararDirectorio(excel, cargados);
+    expect(c.idDe).toEqual(["foz", "bra", "arg", null]);
+    expect(c.renombrados.map((r) => r.despues)).toEqual([
+      "Paquete 105 Premium desde Foz: Transfer in+out en Foz/Igu, Lado Arg, Lado Bra IGRP01",
+      "Excursion Lado Brasilero Premium IGRE02",
+      "Excursion Lado Argentino Premium IGRE01",
+    ]);
+    expect(c.altas.map((a) => a.nombre)).toEqual(["Ruinas de San Ignacio and Minas de Wanda full day IGRE03"]);
+    expect(c.bajas).toEqual([]);
+  });
+
+  it("un pedazo de palabra no cuenta como el nombre viejo", () => {
+    const c = compararDirectorio(
+      [registro("Sentido Hotel", "CALAFATE", mail)],
+      [enBase("s", registro("Sent", "CALAFATE", mail)), enBase("o", registro("Otro", "CALAFATE", mail))],
+    );
+    expect(c.idDe).toEqual([null]);
+  });
+});
