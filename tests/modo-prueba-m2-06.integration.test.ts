@@ -17,6 +17,7 @@ import { crearRegistroLlamadasSupabase } from "@/lib/ia/registro-llamadas-supaba
 import { fichaGrabada, respuestaCon } from "@/lib/reservas/__fixtures__/cargar";
 import { cargarDependenciasReservas, type DependenciasReservas } from "@/lib/reservas/emparejar/reservas-del-mail";
 import { leerMailConIA, type ClienteMensajesIA } from "@/lib/reservas/extraer";
+import { TEXTO_SALTEO } from "@/lib/reservas/filtro-entrada";
 import { procesarMail } from "@/lib/reservas/procesar-mail";
 import type { MailEntrada } from "@/lib/reservas/tipos";
 import { correrModoPrueba, type OpcionesCorrida, type ResultadoCorrida } from "@/lib/modo-prueba/corrida";
@@ -153,7 +154,8 @@ function registroMes(gastoInicial = 0) {
       }
       mailInventado("proveedor.eml", "Reservas <reservas@proveedor-inventado.com.ar>", "Pedido OD018 x4");
       mailInventado("jysk.eml", "Someone <someone@jr.dk>", "JY0000001 - Buenos Aires - 2 pax");
-      mailInventado("journaway.eml", "journaway <de@journaway.com>", "de-DE Activity Booking / Client Inventado / ID 00000000001");
+      // Desde M2-09 Journaway se lee; un mail suyo que no es un pedido de reserva se registra sin IA.
+      mailInventado("journaway.eml", "journaway <newsletter@journaway.com>", "Unsere Reiseideen für den Herbst");
       mailInventado("respuesta.eml", "testtown@kilroy.dk", "Re: Pax Inventado UK0000099");
       mailInventado("cotizacion.eml", "testtown@kilroy.dk", "New request 6-days Inventado 00000001");
 
@@ -201,7 +203,7 @@ function registroMes(gastoInicial = 0) {
       const por = Object.fromEntries(r.archivos.map((a) => [a.archivo, a]));
       expect(Object.keys(por)).toHaveLength(9); // el .txt no se procesa
       expect(por["proveedor.eml"]).toMatchObject({ estado: "salteado", motivo: "No es un mail de agencia" });
-      expect(por["journaway.eml"]).toMatchObject({ estado: "salteado", motivo: "Journaway entra con M2-09" });
+      expect(por["journaway.eml"]).toMatchObject({ estado: "salteado", agencia: "Journaway", motivo: TEXTO_SALTEO.journaway_no_es_reserva });
       expect(por["jysk.eml"]).toMatchObject({ estado: "salteado", agencia: "Jysk" });
       expect(por["respuesta.eml"]).toMatchObject({ estado: "salteado", numerosAsunto: ["UK0000099"] });
       // Owner 2026-10-15: un pedido de cotización de Kilroy se registra, sin IA y sin reserva.

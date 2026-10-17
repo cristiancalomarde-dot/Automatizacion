@@ -45,6 +45,12 @@ export interface DependenciasReservas {
   noCargados?: readonly ProductoNoCargado[];
   /** M2-09: los paquetes armados de Journaway y sus señales. Sin esto, Journaway va por el camino general. */
   journaway?: DependenciasJournaway;
+  /**
+   * M2-09: por qué no se pudieron armar las señales o los paquetes de Journaway
+   * (un código de `data/journaway-senales.csv` que no existe). Solo frena los
+   * mails de Journaway; las demás agencias siguen.
+   */
+  errorJournaway?: string;
 }
 
 export type EntradaArmada = Omit<ReservaEntrada, "mailRecibidoId" | "dePrueba" | "motivosRevision"> & {
@@ -185,6 +191,7 @@ export async function armarReservas(
     return [{ entrada: cerrar(entrada), llamadas: [], costo: 0, avisos: [], productoIA: null }];
   }
 
+  if (agencia === "Journaway" && deps.errorJournaway) throw new Error(deps.errorJournaway);
   if (agencia === "Journaway" && deps.journaway) return armarDeJournaway(ficha, deps, opciones.mail ?? null);
 
   const { productos, extras } = productosDelMail(ficha, agencia);
@@ -303,13 +310,22 @@ export async function cargarDependenciasReservas(
   ]);
   if (proveedor.error) throw new Error(`No se pudo leer el proveedor del transfer a PNT: ${proveedor.error.message}`);
   const detalle = (id: string) => cargarProducto(admin, id);
-  // M2-09: las señales de Journaway se validan contra el catálogo antes de usar nada (un código que no existe frena).
-  const senales = leerSenalesJournaway(readFileSync(join(process.cwd(), "data", ARCHIVO_SENALES_JOURNAWAY), "utf-8"));
-  verificarSenales(senales, catalogo);
+  // M2-09: las señales de Journaway se validan contra el catálogo antes de usar nada. Un código que no
+  // existe frena los mails de Journaway con un mensaje claro (sin reservas), no los de las demás agencias.
+  let journaway: DependenciasJournaway | undefined;
+  let errorJournaway: string | undefined;
+  try {
+    const senales = leerSenalesJournaway(readFileSync(join(process.cwd(), "data", ARCHIVO_SENALES_JOURNAWAY), "utf-8"));
+    verificarSenales(senales, catalogo);
+    journaway = { catalogo: await cargarCatalogoJournaway(catalogo, detalle), senales };
+  } catch (e) {
+    errorJournaway = e instanceof Error ? e.message : "No se pudieron leer las señales de Journaway.";
+  }
   return {
     catalogo,
     detalle,
-    journaway: { catalogo: await cargarCatalogoJournaway(catalogo, detalle), senales },
+    journaway,
+    errorJournaway,
     proponer,
     proveedorTransferPNT: (proveedor.data as { id: string; nombre: string } | null) ?? null,
     noCargados: leerProductosNoCargados(readFileSync(join(process.cwd(), "data", ARCHIVO_PRODUCTOS_NO_CARGADOS), "utf-8")),

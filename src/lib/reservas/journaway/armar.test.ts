@@ -172,3 +172,14 @@ describe("mail D (SPAP05)", () => {
     expect(conAdjunto.armadas[0].entrada.notas).toContain("Trae adjuntos: pasaportes (no se leen)");
   });
 });
+
+describe("señales rotas (data/journaway-senales.csv con un código que no existe)", () => {
+  it("frena solo el mail de Journaway, con el mensaje claro y sin reservas", async () => {
+    const caso = lecturaDeVariante(original("A"));
+    const { catalogo, detalle } = catalogoJournawayDePrueba();
+    const error = "data/journaway-senales.csv, fila 12: el código IGRE99 no está en el catálogo. No se procesó el mail.";
+    await expect(
+      armarReservas(caso.ficha, { catalogo, detalle, proveedorTransferPNT: null, errorJournaway: error }, { agencia: "Journaway", mail: caso.mail }),
+    ).rejects.toThrow(error);
+  });
+});
