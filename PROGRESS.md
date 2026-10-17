@@ -3,6 +3,16 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
 
 # Dónde retomar
 
+- **M2-07 terminada y ACTIVA (2026-10-17).** Lectura diaria de sales@ (Inbox + Spam) a las 12 hora Argentina
+  (cron `0 15 * * *` en Vercel), solo lectura. Migración 0015 aplicada a la real con OK del owner. Base de pruebas
+  separada (`.env.pruebas.local`): tests y scripts de prueba gastan ahí, no en el techo real. Variables en Vercel:
+  `SALES_IMAP_*`, `ANTHROPIC_API_KEY`, `CRON_SECRET`, `LECTURA_SALES_ACTIVA=si`, `LECTURA_SALES_DESDE=2026-10-17T03:40:14Z`
+  (lo anterior ya estaba en gestión, no entra). Primera corrida manual: anduvo bien, 0 mails. Todos los días, domingo incluido.
+  - **Pendientes:** (1) ajuste chico del techo: mails cortados por el techo quedan "en espera" aunque pasen los 7
+    días de ventana (regla del owner en plan §3). (2) `tests/lectura-sales-m2-07.integration.test.ts` falló una vez
+    en la corrida completa y pasa solo (posible timeout por carga): vigilar. (3) Revisar el registro de las corridas
+    del fin de semana. Siguiente pieza: M2-08.
+
 - **Ajustes tras la revisión del owner (2026-10-16).** Revisión: 23 marcadas, 20 bien / 3 mal (13%),
   guardada en `docs/sdd/diagnosticos/M2-06-revision-owner.md`. Hecho: falta de vuelo = aviso (`avisos-vuelo.ts`),
   TourRadar solo statement, una reserva por número en TourRadar (extras como pedido especial), marca CANCELACIÓN,
