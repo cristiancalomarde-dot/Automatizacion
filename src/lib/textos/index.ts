@@ -289,6 +289,19 @@ export const TEXTOS = {
     pedidos: "Pedidos especiales",
     vuelos: "Vuelos",
     sinVuelos: "El mail no trae datos de vuelo.",
+    /** Spec M2-09 §4: lo que suma el detalle de una reserva de Journaway. */
+    journaway: {
+      numeroViaje: "Número de viaje",
+      sinNumeroViaje: "Journaway no mandó número de viaje",
+      /** La referencia visible sin número: pasajero principal + fecha del primer servicio. */
+      referencia: (pasajero: string | null, fecha: string) => [pasajero, fecha].filter(Boolean).join(" · "),
+      notas: "Notas",
+      hoteles: "Lo que reserva Journaway (no se pide)",
+      hotel: "Hotel",
+      fechasHotel: "Fechas",
+      pickUp: "Pick up / drop off",
+      contacto: "Contacto del cliente",
+    },
     columnasVuelo: {
       vuelo: "Vuelo",
       aerolinea: "Aerolínea",

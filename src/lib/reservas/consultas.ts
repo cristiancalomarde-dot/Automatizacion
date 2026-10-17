@@ -14,7 +14,9 @@ import { sinDatoDeLlegada } from "./llegada-iguazu";
 import { cuerpoComoTexto, esCancelacion } from "./reglas";
 import {
   BUCKET_ADJUNTOS,
+  type ContactoDelCliente,
   type DetalleReserva,
+  type HotelDeLaAgencia,
   type EstadoReserva,
   type FilaReserva,
   type MailDeReserva,
@@ -32,8 +34,9 @@ const PRODUCTO = "producto:producto_id(id,codigo,nombre)";
 const CAMPOS_FILA =
   "id,estado,agencia,booking_id,booking_id_original,fecha_inicio,fecha_fin,pax,motivos_revision," +
   "posible_duplicada,de_prueba,created_at,vuelos,pedidos_especiales,producto_texto_agencia,pasajeros," +
-  `${PRODUCTO},mail:mail_recibido_id(fecha_mail)`;
-const CAMPOS_DETALLE = `${CAMPOS_FILA},mail_recibido_id,duplicada_de_id,habitacion`;
+  // M2-09 (0016): el lado del traslado que lleva otra reserva del mismo pedido (para los avisos de vuelo).
+  `sin_traslado_de,${PRODUCTO},mail:mail_recibido_id(fecha_mail)`;
+const CAMPOS_DETALLE = `${CAMPOS_FILA},mail_recibido_id,duplicada_de_id,habitacion,trip_number,hoteles_agencia,contacto_cliente,notas`;
 const CAMPOS_MAIL = "id,remitente,remitente_nombre,asunto,fecha_mail,carpeta,cuerpo_texto,cuerpo_html,adjuntos,created_at";
 
 /* eslint-disable @typescript-eslint/no-explicit-any -- filas crudas de PostgREST, se tipan al mapear */
@@ -103,6 +106,7 @@ async function avisosDe(cliente: SupabaseClient, filas: any[]): Promise<Map<stri
       fechaFin: r.fecha_fin ?? null,
       vuelos: Array.isArray(r.vuelos) ? r.vuelos : [],
       pedidos: r.pedidos_especiales ?? null,
+      sinTrasladoDe: r.sin_traslado_de ?? null,
     })),
   );
 }
@@ -144,11 +148,27 @@ function aParte(c: any): ParteDeReserva {
     orden: c.orden,
     tipo: c.tipo as TipoComponenteReserva,
     producto: aProducto(c.producto),
-    descripcion: texto(c.descripcion_ruta) ?? texto(c.texto_agencia),
+    descripcion: texto(c.descripcion_ruta) ?? (c.producto?.id ? null : texto(c.texto_agencia)),
     fechaInicio: c.fecha_inicio ?? null,
     fechaFin: c.fecha_fin ?? null,
     esTarea: Boolean(c.es_tarea),
+    pickUp: texto(c.pick_up),
+    textoAgencia: texto(c.texto_agencia),
   };
+}
+
+/** M2-09: lo que reserva la agencia ("booked by us"), solo para mostrar. */
+function aHoteles(lista: unknown): HotelDeLaAgencia[] {
+  if (!Array.isArray(lista)) return [];
+  return lista
+    .filter((h: any) => h && typeof h === "object" && texto(h.nombre))
+    .map((h: any) => ({ nombre: texto(h.nombre)!, desde: texto(h.desde), hasta: texto(h.hasta) }));
+}
+
+function aContacto(c: any): ContactoDelCliente | null {
+  if (!c || typeof c !== "object") return null;
+  const contacto = { nombre: texto(c.nombre), email: texto(c.email), telefono: texto(c.telefono) };
+  return contacto.nombre || contacto.email || contacto.telefono ? contacto : null;
 }
 
 function aMail(m: any): MailDeReserva {
@@ -179,7 +199,7 @@ export async function cargarReserva(cliente: SupabaseClient, id: string): Promis
   const [partes, eventos, avisos, canceladas] = await Promise.all([
     cliente
       .from("reserva_componente")
-      .select(`orden,tipo,descripcion_ruta,texto_agencia,fecha_inicio,fecha_fin,es_tarea,${PRODUCTO}`)
+      .select(`orden,tipo,descripcion_ruta,texto_agencia,fecha_inicio,fecha_fin,es_tarea,pick_up,${PRODUCTO}`)
       .eq("reserva_id", id)
       .order("orden"),
     cliente.from("evento_reserva").select("mail_recibido_id").eq("reserva_id", id).not("mail_recibido_id", "is", null),
@@ -204,6 +224,10 @@ export async function cargarReserva(cliente: SupabaseClient, id: string): Promis
     vuelos: aVuelos(r.vuelos),
     partes: filasPartes.map(aParte),
     mails: [...primero, ...sumados].map(aMail),
+    tripNumber: texto(r.trip_number),
+    hotelesAgencia: aHoteles(r.hoteles_agencia),
+    contactoCliente: aContacto(r.contacto_cliente),
+    notas: Array.isArray(r.notas) ? r.notas.filter((n: unknown): n is string => typeof n === "string" && !!n.trim()) : [],
   };
 }
 

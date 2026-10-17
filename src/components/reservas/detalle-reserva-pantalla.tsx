@@ -6,7 +6,7 @@ import { formatearFecha, formatearFechaHora, formatearHora, formatearRango } fro
 import { avisosDeLlegada } from "@/lib/reservas/avisos-vuelo";
 import { cargarReserva } from "@/lib/reservas/consultas";
 import { esIdDeReserva, frasesDeMotivos } from "@/lib/reservas/reglas";
-import type { DetalleReserva, ParteDeReserva, VueloDeReserva } from "@/lib/reservas/tipos";
+import type { DetalleReserva, HotelDeLaAgencia, ParteDeReserva, VueloDeReserva } from "@/lib/reservas/tipos";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { TEXTOS } from "@/lib/textos";
 import { Aviso, Chip, EsqueletoDetalle, EstadoError, EstadoVacio } from "@/components/ui/estados";
@@ -17,6 +17,7 @@ import { RevisionPrueba } from "./revision-prueba";
 import estilos from "./reservas.module.css";
 
 const T = TEXTOS.reserva;
+const J = TEXTOS.reserva.journaway;
 const SIN_DATO = TEXTOS.comunes.sinDato;
 const VOLVER = { href: "/reservas", texto: T.volver };
 
@@ -60,9 +61,17 @@ function NoExiste() {
   );
 }
 
+/** Spec M2-09 #12: sin número, la referencia visible es el pasajero principal + la fecha del primer servicio. */
+function tituloDe(reserva: DetalleReserva): string {
+  if (reserva.numero) return reserva.numero;
+  if (reserva.agencia !== "Journaway") return SIN_DATO;
+  return J.referencia(reserva.pasajeros[0] ?? null, reserva.fechaInicio ? formatearFecha(reserva.fechaInicio) : "") || SIN_DATO;
+}
+
 function Detalle({ reserva }: { reserva: DetalleReserva }) {
   const frases = reserva.estado === "para_revision" || reserva.posibleDuplicada ? frasesDeMotivos(reserva.motivos) : [];
   const avisosLlegada = avisosDeLlegada(reserva);
+  const notas = reserva.notas ?? [];
 
   return (
     <>
@@ -93,7 +102,7 @@ function Detalle({ reserva }: { reserva: DetalleReserva }) {
           </span>
           <h1 className={ui.titulo} title={T.numero}>
             {reserva.cancelacion ? <span className={estilos.cancelacionTitulo}>{TEXTOS.reservas.cancelacion}</span> : null}
-            <span className={estilos.numeroTitulo}>{reserva.numero ?? SIN_DATO}</span>
+            <span className={estilos.numeroTitulo}>{tituloDe(reserva)}</span>
           </h1>
         </div>
         <dl className={ui.datos}>
@@ -101,6 +110,12 @@ function Detalle({ reserva }: { reserva: DetalleReserva }) {
           <dd>{reserva.agencia}</dd>
           <dt>{T.llego}</dt>
           <dd>{formatearFechaHora(reserva.llego) || SIN_DATO}</dd>
+          {reserva.agencia === "Journaway" ? (
+            <>
+              <dt>{J.numeroViaje}</dt>
+              <dd>{reserva.tripNumber ?? J.sinNumeroViaje}</dd>
+            </>
+          ) : null}
         </dl>
       </header>
 
@@ -129,6 +144,19 @@ function Detalle({ reserva }: { reserva: DetalleReserva }) {
         </Aviso>
       ) : null}
 
+      {notas.length > 0 ? (
+        <Aviso tono="info">
+          <div data-testid="notas-reserva">
+            <p className={estilos.avisoTitulo}>{J.notas}</p>
+            <ul className={estilos.motivos}>
+              {notas.map((n) => (
+                <li key={n}>{n}</li>
+              ))}
+            </ul>
+          </div>
+        </Aviso>
+      ) : null}
+
       {reserva.dePrueba ? <RevisionPrueba reservaId={reserva.id} /> : null}
 
       <div className={estilos.columnas}>
@@ -137,6 +165,7 @@ function Detalle({ reserva }: { reserva: DetalleReserva }) {
           {reserva.partes.length > 0 ? <Partes partes={reserva.partes} /> : null}
           <Datos reserva={reserva} />
           <Vuelos vuelos={reserva.vuelos} />
+          {reserva.hotelesAgencia?.length ? <HotelesDeLaAgencia hoteles={reserva.hotelesAgencia} /> : null}
         </div>
         <div className={estilos.columna}>
           <MailOriginal mails={reserva.mails} />
@@ -172,8 +201,9 @@ function fechasDeParte(p: ParteDeReserva): string {
   return formatearFecha(p.fechaInicio ?? p.fechaFin);
 }
 
-/** Las partes de un tour compuesto, en el orden del tour (#8). */
+/** Las partes de un tour compuesto, en el orden del tour (#8). Journaway suma el pick up de cada tour (M2-09 #11). */
 function Partes({ partes }: { partes: ParteDeReserva[] }) {
+  const conPickUp = partes.some((p) => p.pickUp);
   return (
     <section className={ui.seccion}>
       <h2 className={ui.subtitulo}>{T.componentes}</h2>
@@ -183,6 +213,7 @@ function Partes({ partes }: { partes: ParteDeReserva[] }) {
             <tr>
               <th scope="col">{TEXTOS.reservas.columnas.fechas}</th>
               <th scope="col">{T.producto}</th>
+              {conPickUp ? <th scope="col">{J.pickUp}</th> : null}
             </tr>
           </thead>
           <tbody>
@@ -196,6 +227,12 @@ function Partes({ partes }: { partes: ParteDeReserva[] }) {
                         {p.producto.codigo}
                       </Link>{" "}
                       {p.producto.nombre}
+                      {p.textoAgencia || p.descripcion ? (
+                        <span className={ui.meta}>
+                          {" "}
+                          {p.descripcion ?? T.enElMail(p.textoAgencia!)}
+                        </span>
+                      ) : null}
                     </>
                   ) : (
                     <>
@@ -209,6 +246,7 @@ function Partes({ partes }: { partes: ParteDeReserva[] }) {
                     </>
                   )}
                 </td>
+                {conPickUp ? <td>{p.pickUp ?? SIN_DATO}</td> : null}
               </tr>
             ))}
           </tbody>
@@ -244,6 +282,14 @@ function Datos({ reserva }: { reserva: DetalleReserva }) {
         <dd>{reserva.habitacion ?? SIN_DATO}</dd>
         <dt>{T.pedidos}</dt>
         <dd className={ui.preformateado}>{reserva.pedidosEspeciales ?? SIN_DATO}</dd>
+        {reserva.contactoCliente ? (
+          <>
+            <dt>{J.contacto}</dt>
+            <dd>
+              {[reserva.contactoCliente.nombre, reserva.contactoCliente.email, reserva.contactoCliente.telefono].filter(Boolean).join(" · ")}
+            </dd>
+          </>
+        ) : null}
       </dl>
     </section>
   );
@@ -252,6 +298,33 @@ function Datos({ reserva }: { reserva: DetalleReserva }) {
 function tramo(lugar: string | null, fecha: string | null, hora: string | null): string {
   const cuando = [fecha ? formatearFecha(fecha) : null, hora ? formatearHora(hora) : null].filter(Boolean).join(" ");
   return [lugar, cuando].filter(Boolean).join(" · ") || SIN_DATO;
+}
+
+/** Spec M2-09 #10: lo que reserva Journaway ("booked by us"). Solo información: no se pide. */
+function HotelesDeLaAgencia({ hoteles }: { hoteles: HotelDeLaAgencia[] }) {
+  return (
+    <section className={ui.seccion} data-testid="hoteles-agencia">
+      <h2 className={ui.subtitulo}>{J.hoteles}</h2>
+      <div className={ui.panel}>
+        <table className={ui.tabla} aria-label={J.hoteles}>
+          <thead>
+            <tr>
+              <th scope="col">{J.hotel}</th>
+              <th scope="col">{J.fechasHotel}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {hoteles.map((h, i) => (
+              <tr key={`${i}-${h.nombre}`}>
+                <td>{h.nombre}</td>
+                <td className={ui.nowrap}>{h.desde || h.hasta ? formatearRango(h.desde, h.hasta) : SIN_DATO}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  );
 }
 
 /** Los vuelos, con la fecha y la hora del aeropuerto tal como las dice el mail (#10). */
