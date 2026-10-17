@@ -212,6 +212,16 @@ diga cada ficha.
   anticipación, así que no hace falta leer cada 5 minutos. Alcanza con el cron diario del plan
   Hobby de Vercel. Si hiciera falta más seguido, se revisa.
 - **El modelo de IA** (Sonnet vs. Opus): se decide con la precisión medida en el modo prueba.
+- **El techo de gasto y las reservas (owner, 2026-10-17):** si entran muchas reservas y se llega
+  al techo, es mejor subir el techo que dejar de procesar reservas. En la práctica: (1) llegar al
+  techo nunca pierde una reserva, los mails quedan en espera y se leen apenas haya margen; (2) al
+  80% del techo y al tocarlo, la línea de la última lectura lo dice claro y pide subirlo; (3) subir
+  el techo es cambiar un número. Hoy la ventana de lectura es de 7 días: un mail cortado por el
+  techo que no se lee en esa semana quedaría afuera. **Ajuste pendiente (chico):** guardar esos
+  mails como "en espera" para que se lean aunque pasen los 7 días. Las pruebas automáticas gastan
+  en la base de pruebas, no en el techo real (owner OK, 2026-10-17).
+- **TourRadar sin statements en sales@ (owner, 2026-10-17):** es normal, las reservas de
+  TourRadar son esporádicas; en esa semana no hubo nuevas. No hay que cambiar nada.
 
 **Riesgos y su límite aceptado:**
 - **La IA lee mal (PRD riesgo #1).** El modo prueba mide cuánto hay que corregir. Si más del 20%
