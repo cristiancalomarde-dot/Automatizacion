@@ -15,6 +15,7 @@ import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest
 import type { RegistroUsoIA } from "@/lib/ia/techo-gasto";
 import { crearRegistroLlamadasSupabase } from "@/lib/ia/registro-llamadas-supabase";
 import { abrirCasillaImap } from "@/lib/lectura-sales/casilla";
+import { lineaDeLaLectura } from "@/lib/lectura-sales/consulta-estado";
 import { leerSales, type OpcionesLectura, type ResumenCorrida } from "@/lib/lectura-sales/corrida";
 import { correrModoPrueba } from "@/lib/modo-prueba/corrida";
 import { fichaGrabada, respuestaCon } from "@/lib/reservas/__fixtures__/cargar";
@@ -428,6 +429,17 @@ const desconocido = (i: number) =>
       expect(sigue!.estado).toBe("fallo"); // la del #1: sigue como estaba
       const { data: anon } = await anonimo.from("lectura_casilla").select("id").in("id", corridas);
       expect(anon ?? []).toEqual([]);
+
+      // #20: la línea de la lista se arma con la sesión del equipo (la última corrida de este archivo).
+      vi.stubEnv("LECTURA_SALES_ACTIVA", "si");
+      try {
+        const linea = await lineaDeLaLectura(equipo);
+        expect(linea.lineas[0]).toMatch(/^Última lectura de sales@: (hoy|ayer) \d{2}:\d{2} · /);
+        expect((await lineaDeLaLectura(anonimo)).lineas).toEqual(["Todavía no corrió ninguna lectura de sales@."]);
+      } finally {
+        vi.unstubAllEnvs();
+      }
+      expect((await lineaDeLaLectura(equipo)).lineas).toEqual(["La lectura automática de sales@ está apagada hasta tu OK del modo prueba."]);
     });
 
     it("#15: al final, todos los mails del falso conservan sus marcas (el no leído sigue no leído)", () => {

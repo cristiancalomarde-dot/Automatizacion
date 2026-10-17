@@ -196,3 +196,32 @@
   margin-right: 10px;
   color: var(--color-error-texto);
 }
+
+/* M2-07: la línea de la última lectura de sales@, arriba de la lista. */
+.lineaLectura {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 12px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border-left: 3px solid var(--color-borde-control);
+  background: var(--color-superficie-alterna);
+  font-size: 0.9rem;
+}
+
+.lineaLectura_ok {
+  border-left-color: var(--color-exito-texto);
+}
+
+.lineaLectura_aviso {
+  border-left-color: var(--color-aviso-texto);
+}
+
+.lineaLectura_error {
+  border-left-color: var(--color-error-texto);
+}
+
+.lineaLecturaDetalle {
+  color: var(--color-texto-secundario);
+}

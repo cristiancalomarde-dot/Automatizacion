@@ -15,6 +15,8 @@ import { TEXTOS } from "@/lib/textos";
 import { Aviso, EsqueletoTabla, EstadoError, EstadoVacio } from "@/components/ui/estados";
 import { EncabezadoOrdenable, useOrden } from "@/components/ui/orden";
 import ui from "@/components/ui/ui.module.css";
+import type { LineaLectura } from "@/lib/lectura-sales/estado";
+import { LineaLecturaSales } from "./linea-lectura";
 import { ChipEstado, MarcasReserva } from "./marcas";
 import estilos from "./reservas.module.css";
 
@@ -39,9 +41,10 @@ const VALOR: Record<Columna, (f: FilaReserva) => string | number> = {
 /**
  * Reservas: la pantalla de inicio (spec M2-05 #1 a #4, #16). Solo para mirar.
  * Las de prueba (M2-06) se ven con "Ver las de prueba" (`?prueba=1`), con la
- * medición de la revisión del owner arriba.
+ * medición de la revisión del owner arriba. Arriba de todo, la línea de la
+ * última lectura de sales@ (M2-07 §4), que llega armada desde el servidor.
  */
-export function ListaReservasPantalla() {
+export function ListaReservasPantalla({ lineaLectura }: { lineaLectura?: LineaLectura } = {}) {
   const verPrueba = useSearchParams()?.get("prueba") === "1";
   const { estado, reintentar } = useConsulta(() => cargarReservas(createSupabaseBrowserClient()));
   const conteo = estado.tipo === "listo" ? contarReservas(estado.datos) : null;
@@ -58,6 +61,7 @@ export function ListaReservasPantalla() {
         {conteo && conteo.total > 0 ? <span className={ui.meta}>{T.total(conteo.total, conteo.dePrueba)}</span> : null}
       </div>
 
+      {lineaLectura ? <LineaLecturaSales linea={lineaLectura} /> : null}
       {estado.tipo === "cargando" ? <EsqueletoTabla etiqueta={T.cargando} columnas={7} /> : null}
       {estado.tipo === "error" ? <EstadoError mensaje={T.error} onReintentar={reintentar} /> : null}
       {estado.tipo === "listo" && estado.datos.length === 0 ? <EstadoVacio mensaje={T.vacio} /> : null}
