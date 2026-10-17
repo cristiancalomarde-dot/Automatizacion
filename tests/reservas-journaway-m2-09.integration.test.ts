@@ -126,7 +126,8 @@ function entrada(texto: string): MailEntrada {
       deps = await cargarDependenciasReservas(admin);
       const codigos = deps.journaway!.catalogo.paquetes.map((p) => p.codigo);
       if (!codigos.includes("SPAP05")) throw new Error("La base de pruebas no tiene el catálogo de Journaway (M2-08): correr importar:journaway en pruebas.");
-    }, 120_000);
+      // Hasta 5 minutos esperando el candado de datos de prueba (otros archivos lo usan) más la carga.
+    }, 420_000);
 
     afterAll(async () => {
       try {

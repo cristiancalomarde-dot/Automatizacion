@@ -104,7 +104,8 @@ const registroMes = (): RegistroUsoIA => ({ gastoDelMes: async () => 0, sumar: a
       const c = x.producto?.codigo ?? "sin producto";
       porCodigo.set(c, [...(porCodigo.get(c) ?? []), x.id]);
     }
-  }, 240_000);
+    // Hasta 5 minutos esperando el candado de datos de prueba más la corrida del modo prueba.
+  }, 540_000);
 
   afterEach(() => cleanup());
 
