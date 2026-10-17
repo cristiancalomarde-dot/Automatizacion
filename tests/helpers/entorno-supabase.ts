@@ -1,37 +1,20 @@
-import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { asegurarBaseDePruebas, cargarEntornoDePruebas } from "@/lib/entorno/base-de-pruebas";
 
 /**
- * Carga `.env.local` a `process.env` para los tests de integración que hablan
- * con el proyecto Supabase real (spec M1-02: V2 y V3 corren contra el
- * proyecto real, no un mock). El archivo nunca se commitea (regla #2 —
- * `docs/arquitectura/secretos.md`) y este loader nunca imprime su contenido,
- * solo lo copia a variables de entorno del proceso de test.
+ * Las variables de los tests de integración, que hablan con un Supabase de
+ * verdad (spec M1-02: no un mock).
  *
- * Si el archivo no existe (por ejemplo, una máquina sin las credenciales
- * reales), no hace nada: los tests que dependen de esto se saltean solos con
- * `credencialesSupabaseDisponibles()`.
+ * Desde M2-07 (DECISIONS 2026-10-14) ese Supabase es la BASE DE PRUEBAS:
+ * primero `.env.pruebas.local` (las claves de Supabase) y después `.env.local`
+ * (lo demás, sin pisar). Ningún archivo se commitea (#2) y este loader nunca
+ * imprime su contenido.
  */
 export function cargarEnvLocal(): void {
-  const ruta = resolve(__dirname, "..", "..", ".env.local");
-  if (!existsSync(ruta)) return;
-
-  for (const lineaCruda of readFileSync(ruta, "utf-8").split("\n")) {
-    const linea = lineaCruda.trim();
-    if (!linea || linea.startsWith("#")) continue;
-
-    const separador = linea.indexOf("=");
-    if (separador === -1) continue;
-
-    const clave = linea.slice(0, separador).trim();
-    const valor = linea.slice(separador + 1).trim();
-    if (clave && !(clave in process.env)) {
-      process.env[clave] = valor;
-    }
-  }
+  cargarEntornoDePruebas(resolve(__dirname, "..", ".."));
 }
 
-/** Nombres de variable que necesitan los tests de integración de esta spec. */
+/** Nombres de variable que necesitan los tests de integración. */
 const VARIABLES_REQUERIDAS = [
   "NEXT_PUBLIC_SUPABASE_URL",
   "NEXT_PUBLIC_SUPABASE_ANON_KEY",
@@ -39,12 +22,13 @@ const VARIABLES_REQUERIDAS = [
 ] as const;
 
 /**
- * `true` si están las 3 credenciales de Supabase necesarias para hablar con
- * el proyecto real. Los tests de integración usan esto para saltearse
- * (en vez de fallar de forma confusa) cuando corren en una máquina sin
- * `.env.local`.
+ * `true` si están las 3 credenciales de Supabase. Sin ellas los tests de
+ * integración se saltean. Si apuntan a la base REAL de producción, frena con
+ * un error claro: ninguna prueba automática escribe en producción.
  */
 export function credencialesSupabaseDisponibles(): boolean {
   cargarEnvLocal();
-  return VARIABLES_REQUERIDAS.every((variable) => Boolean(process.env[variable]));
+  const hay = VARIABLES_REQUERIDAS.every((variable) => Boolean(process.env[variable]));
+  if (hay) asegurarBaseDePruebas();
+  return hay;
 }

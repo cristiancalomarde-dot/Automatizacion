@@ -11,7 +11,7 @@
  * #3) y queda en `ia_llamada`; además la corrida se frena si pasa US$ 1. No
  * imprime datos de pasajeros. Una sola corrida: no reintenta.
  *
- * Variables de entorno (regla #2, en local desde `.env.local`):
+ * Variables de entorno (regla #2, en local: Supabase de `.env.pruebas.local`, la base de pruebas; lo demás de `.env.local`):
  * ANTHROPIC_API_KEY, NEXT_PUBLIC_SUPABASE_URL y SUPABASE_SERVICE_ROLE_KEY.
  */
 import { existsSync, readFileSync } from "node:fs";
@@ -28,6 +28,7 @@ import { cargarDependenciasReservas, crearReservasDelMail } from "@/lib/reservas
 import { leerMailConIA } from "@/lib/reservas/extraer";
 import { borrarDatosDePruebaDe, guardarMailRecibido } from "@/lib/reservas/guardar";
 import { aNumeroDeTest, conNumerosDeTest } from "@/lib/reservas/numeros-de-test";
+import { asegurarBaseDePruebas, cargarEntornoDePruebas } from "@/lib/entorno/base-de-pruebas";
 import { mailDeArchivo } from "./mail-de-archivo";
 
 const TOPE_CORRIDA_USD = 1;
@@ -107,8 +108,9 @@ function cuerpoDesde(ruta: string, desde: RegExp): string {
 }
 
 async function main() {
-  const envLocal = resolve(process.cwd(), ".env.local");
-  if (existsSync(envLocal)) process.loadEnvFile(envLocal);
+  // Base de pruebas separada (DECISIONS 2026-10-14): Supabase de .env.pruebas.local; lo demás de .env.local.
+  cargarEntornoDePruebas();
+  asegurarBaseDePruebas();
   for (const v of ["ANTHROPIC_API_KEY", "NEXT_PUBLIC_SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"]) {
     if (!process.env[v]) throw new Error(`Falta la variable de entorno ${v}.`);
   }

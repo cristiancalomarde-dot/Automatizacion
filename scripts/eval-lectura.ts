@@ -17,7 +17,7 @@
  * nombres de productos. Las fichas completas quedan en
  * `Insumos/evals/lectura/resultados/` (fuera de Git) para revisarlas.
  *
- * Variables de entorno (regla #2, en local desde `.env.local`):
+ * Variables de entorno (regla #2, en local: Supabase de `.env.pruebas.local`, la base de pruebas; lo demás de `.env.local`):
  * ANTHROPIC_API_KEY, NEXT_PUBLIC_SUPABASE_URL y SUPABASE_SERVICE_ROLE_KEY.
  */
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
@@ -30,6 +30,7 @@ import { crearRegistroUsoIASupabase } from "@/lib/ia/registro-uso-ia-supabase";
 import { mesActual } from "@/lib/ia/techo-gasto";
 import { CAMPOS_EVAL, compararFicha, resumirEval, type FichaEsperada, type ResultadoEval } from "@/lib/reservas/eval-lectura";
 import { VERSION_INSTRUCCIONES, leerMailConIA } from "@/lib/reservas/extraer";
+import { asegurarBaseDePruebas, cargarEntornoDePruebas } from "@/lib/entorno/base-de-pruebas";
 import { mailDeArchivo } from "./mail-de-archivo";
 
 const DIR = resolve(process.cwd(), "Insumos", "evals", "lectura");
@@ -47,8 +48,9 @@ function argumento(nombre: string): string | undefined {
 }
 
 async function main() {
-  const envLocal = resolve(process.cwd(), ".env.local");
-  if (existsSync(envLocal)) process.loadEnvFile(envLocal);
+  // Base de pruebas separada (DECISIONS 2026-10-14): Supabase de .env.pruebas.local; lo demás de .env.local.
+  cargarEntornoDePruebas();
+  asegurarBaseDePruebas();
   for (const v of ["ANTHROPIC_API_KEY", "NEXT_PUBLIC_SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"]) {
     if (!process.env[v]) throw new Error(`Falta la variable de entorno ${v}.`);
   }
