@@ -57,6 +57,14 @@ separación por usuario.
   resto del catálogo (migración 0009).
 - **codigo_externo** — mapea un código de una agencia/partner (Kilroy, TourRadar, etc.) al código
   interno de HI Travel. El mail de reserva trae uno de estos; acá se traduce.
+  **Journaway (M2-08):** además de su código (solo los productos que Journaway pide de verdad, los
+  celestes de la planilla del owner), cada producto lleva los nombres con que Journaway lo escribe:
+  `codigo` = el nombre **limpio** para buscarlo (`limpiarNombreJournaway`: sin la numeración del
+  mail, sin prefijos de lugar o tipo como "San Pedro de Atacama:" o "From Foz do Iguaçu:", sin
+  acentos ni mayúsculas) y `nombre_externo` = el nombre tal cual, para mostrarlo. Un mismo nombre
+  limpio no puede apuntar a dos productos. **Un producto es de Journaway si tiene algún
+  `codigo_externo` de esa agencia** (sin columna nueva): así el importador sabe que no pisa un
+  producto de otro catálogo y el catálogo le pone el chip "Journaway".
 - **producto_componente** — solo para **tours compuestos** (ej. Patagonia Highlights, Overland San
   Pedro–Uyuni): la secuencia ordenada de lo que arma el tour. Cada fila es, en orden, o bien otro
   **producto** de catálogo (un paquete, con sus propios `producto_servicio` y proveedores), o bien
@@ -161,6 +169,19 @@ paquete conserva un traslado de ese lado después de los ajustes, o si la marca 
 ajuste lo anula y no se llega (o sale) con un bus del tour. El primer paquete llega en bus si el
 tour tiene un bus propio ese día o antes; el último sale en bus si el tour tiene un bus propio
 después (la salida de Puerto Natales de ARCH31 y ARCH33). Iguazú conserva sus marcas.
+
+**Los paquetes de Journaway (M2-08) son armados sin la regla de buses.** Los paquetes de San
+Pedro (SPAP01 a SPAP06) son `producto_componente` en orden, con su día (`dia_desde`), de
+excursiones y traslados que también son productos (y el Overland privado UYUO01, con sus servicios
+a Imperio Inca: la excursión, las dos noches en los Tayka con `producto_servicio_noches` y el bus
+nocturno a La Paz). No llevan servicios propios ni alojamiento, y las marcas `transfer_in` /
+`transfer_out` van en falso. La regla de M1-08 no se aplica: supone que entre las partes se viaja en
+bus, y acá todo es el mismo destino (o el Overland arranca desde el hotel). El lado de un traslado
+sale **solo** de `data/journaway-composicion.csv` y se guarda en `tour_servicio_ajuste` con origen
+`excepcion` (el shuttle de Calama "solo salida" en SPAP03 y "solo llegada" en SPAP05 y SPAP06).
+`npm run importar:tours` no los toca: solo escribe los ajustes de sus 7 tours. Los productos
+simples de Journaway guardan en `fila_excel` la fila de la planilla de Journaway, y la pantalla lo
+dice así (no "Excel de paquetes").
 
 ### Dos cosas que parecen lo mismo y no lo son
 
