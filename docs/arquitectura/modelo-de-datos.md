@@ -329,6 +329,39 @@ dice así (no "Excel de paquetes").
   No se guarda: se calcula con producto, vuelos y pedidos. Una respuesta con el asunto de esa reserva
   se lee como la de una reserva que espera el vuelo; al sumar el vuelo, el aviso se va solo.
 
+### Reservas de Journaway (M2-09, migración 0016)
+
+- **El reconocedor** (`src/lib/reservas/journaway/`), una rama de la agencia dentro de
+  `armarReservas`: 1) nuestro código en el mail ("SPAP05"), como palabra entera, contra `producto`
+  (`codigo.ts`); un código que no existe o que contradice los tours va a revisión (SPAP05 ↔ SPAP06
+  no: para HI Travel son el mismo tour, queda una nota); 2) cada tour suelto por su nombre limpio
+  (`limpiarNombreJournaway`) contra `codigo_externo` de Journaway; si no está, la propuesta de la
+  IA de M2-03; si no hay confianza, revisión con "No se reconoce el tour '…'"; 3) el paquete con la
+  combinación exacta y única de los SPAP (`paquete.ts`, fuerza bruta; los traslados no cuentan);
+  4) Tayka: el Overland de Imperio Inca, y las noches en San Pedro (desde el vuelo a Calama o el
+  primer tour hasta el día 1 del Overland) deciden SPAP05 (4) o SPAP06 (5); el título N/D es la
+  tercera señal y, si no coincide, queda una nota. Las señales viven en `data/journaway-senales.csv`
+  (editable por el owner; un código que no existe frena antes de procesar).
+- **Una reserva por paquete o tour suelto**, con el mismo `booking_id`: el ID de 11 dígitos del
+  asunto (owner, 2026-10-13). Sin ID, el `booking_id` queda vacío (no se arma con nombres ni
+  fechas) y M2-04 compara por producto + fecha + pax ("posible duplicada").
+- `reserva.trip_number`: el "Trip Number" del cuerpo, referencia secundaria. El detalle dice
+  "Journaway no mandó número de viaje" si no vino.
+- `reserva.hoteles_agencia` (`[{nombre, desde, hasta}]`): lo que reserva Journaway ("booked by
+  us"). Solo información: nunca es una parte ni un pedido.
+- `reserva.contacto_cliente` (`{nombre, email, telefono}`): el "Client reference", leído por el
+  código (`journaway/cuerpo.ts`). Una dirección de HI Travel se ignora.
+- `reserva.notas`: avisos que no mandan a revisión ("Journaway lo llama half-day; es el full day",
+  "Trae adjuntos: pasaportes (no se leen)", "Todos los hoteles los reserva Journaway").
+- `reserva.sin_traslado_de` (`llegada | salida`): el lado del traslado que lleva otra reserva del
+  mismo pedido (SPAP01 seguido de SPAP03: la salida va con SPAP03). Ese lado no pide vuelo.
+- `reserva_componente`: las partes del paquete del catálogo, cada tour con **su** fecha (aunque se
+  intercalen) y `pick_up` tal como vino (vacío si el mail no lo trae); el Overland es una sola
+  parte (UYUO01) del día 1 al 3; los traslados con la fecha del vuelo que llega o sale de Calama.
+  Un tour suelto o lo que va a revisión: un renglón por tour, con `texto_agencia`.
+- Pasajeros: `Anrede` mr/mrs se guarda como `tratamiento` (Sr./Sra.) en cada pasajero.
+- Los adjuntos de Journaway (pasaportes) no se mandan a la IA: se lee el cuerpo.
+
 ## Abierto
 
 - ¿Un producto puede tener servicios en más de un destino? El README de los Excel dice que sí
