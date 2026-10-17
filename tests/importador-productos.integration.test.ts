@@ -123,11 +123,12 @@ interface FilaServicioDB {
     // M1-04d: la lista pasó al formato con destino y modo (76 filas: las 15 de
     // Iguazú, con destino IGR, más las de los 17 paquetes de los tours).
     // M1-08: 92 filas (Cuenca del Plata y Patagonian Group pasaron a resolverse hotel por hotel).
-    it("#1 cargar la lista real deja 92 alias; los 81 que nombran un proveedor apuntan a uno existente; una segunda carga deja 92", async () => {
+    // M2-08: 95 (Transvip sin doble p y Plataforma10 en PNT y PUQ, las tres manuales y sin proveedor).
+    it("#1 cargar la lista real deja 95 alias; los 81 que nombran un proveedor apuntan a uno existente; una segunda carga deja 95", async () => {
       const texto = readFileSync(RUTA_EQUIVALENCIAS, "utf-8");
       const primera = await cargarEquivalencias({ admin, textoCsv: texto });
-      expect(primera.total).toBe(92);
-      expect(await contarAlias()).toBe(92);
+      expect(primera.total).toBe(95);
+      expect(await contarAlias()).toBe(95);
 
       const { data, error } = await admin
         .from("proveedor_alias")
@@ -148,8 +149,8 @@ interface FilaServicioDB {
       expect((pueblito.proveedor as unknown as { nombre: string }).nombre).toBe("El Pueblito, proveedor Cuenca del Plata");
 
       const segunda = await cargarEquivalencias({ admin, textoCsv: texto });
-      expect(segunda).toMatchObject({ total: 92, creados: 0, actualizados: 0, sinCambios: 92 });
-      expect(await contarAlias()).toBe(92);
+      expect(segunda).toMatchObject({ total: 95, creados: 0, actualizados: 0, sinCambios: 95 });
+      expect(await contarAlias()).toBe(95);
     }, TIMEOUT);
 
     it("#2 un CSV que nombra un proveedor inexistente falla con un mensaje claro: 0 proveedores y 0 alias nuevos", async () => {
@@ -416,7 +417,7 @@ interface FilaServicioDB {
       expect(data.detalle.proveedores_sin_resolver.length).toBe(resumen.proveedoresSinResolver.length);
       expect(data.detalle.proveedores_para_revisar).toHaveLength(0);
       expect(data.detalle.nombres_sin_resolver).toEqual([]);
-      expect(data.detalle.alias_cargados).toBe(92);
+      expect(data.detalle.alias_cargados).toBe(95);
       expect(data.detalle.bloques_que_necesitan_ia).toEqual(resumen.bloquesQueNecesitanIA);
     });
   });

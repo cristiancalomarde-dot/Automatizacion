@@ -104,7 +104,8 @@ interface FilaServicio {
 
   it("#2 los servicios de OD010C/OD010D que nombran Cuenca del Plata/Plana siguen yendo a Cuenca del Plata (desde M1-08, a la fila de cada hotel)", async () => {
     // M1-08 §3 #7: cada hotel va a su fila "…, proveedor Cuenca del Plata"; todas con el mail de Cuenca del Plata.
-    const { data: filas } = await admin.from("proveedor").select("id").contains("mails", ["reservas3@cuencadelplata.com"]);
+    // El owner cambió reservas3@ por reservas8@ en el Excel de proveedores (2026-10-13); entra con la recarga de M2-08.
+    const { data: filas } = await admin.from("proveedor").select("id").contains("mails", ["reservas8@cuencadelplata.com"]);
     const deCuencaIds = new Set((filas ?? []).map((f) => f.id));
     for (const codigo of ["OD010C", "OD010D"]) {
       const deCuenca = (await servicios(codigo)).filter((s) => /cuenca del pla(t|n)a/i.test(s.booking_supplier_nombre ?? ""));
