@@ -352,6 +352,25 @@ describe("Pendientes (#18)", () => {
     );
   });
 
+  it("spec M2-08: un pendiente de Journaway dice que se corrige en el Excel de proveedores y viene de la planilla de Journaway", async () => {
+    consultas.cargarPendientes.mockResolvedValue([
+      {
+        servicioId: "svc-igrp02",
+        producto: { id: "prod-igrp02", codigo: "IGRP02", nombre: "Package 2: Transfers & Excursions in Small Groups" },
+        servicio: "Package 2: Transfers & Excursions in Small Groups",
+        proveedorNombre: "Cuenca del Plata, mail general",
+        proveedorId: null,
+        motivo: "«Cuenca del Plata, mail general» no está en el directorio. Se carga en el Excel de proveedores.",
+        filaExcel: 22,
+        deJournaway: true,
+      },
+    ]);
+    render(<PendientesPantalla />);
+    const tabla = await screen.findByRole("table");
+    expect(within(tabla).getByText("Planilla de productos de Journaway, fila 22")).toBeInTheDocument();
+    expect(within(tabla).queryByText(/Excel de paquetes/)).toBeNull();
+  });
+
   it("sin pendientes lo dice; si falla, error con Reintentar", async () => {
     consultas.cargarPendientes.mockResolvedValueOnce([]);
     const { unmount } = render(<PendientesPantalla />);

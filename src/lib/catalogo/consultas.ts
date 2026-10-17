@@ -10,7 +10,7 @@
  * muestre su mensaje de error con "Reintentar" y nunca datos parciales (#12).
  */
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { esPendiente, estadoServicio, etiquetasTransferEnTour, proveedoresDeServicios } from "./reglas";
+import { AGENCIA_JOURNAWAY, esPendiente, estadoServicio, etiquetasTransferEnTour, proveedoresDeServicios } from "./reglas";
 import type {
   AjusteEnTour,
   Canal,
@@ -153,10 +153,13 @@ const CAMPOS_COMPONENTE =
 /** Servicios de varios productos, con las noches de cada uno (M1-07), agrupados por producto. */
 async function serviciosDe(supabase: SupabaseClient, ids: string[]): Promise<Map<string, Servicio[]>> {
   if (ids.length === 0) return new Map();
-  const [svc, noches] = await Promise.all([
+  const [svc, noches, journaway] = await Promise.all([
     supabase.from("producto_servicio").select(CAMPOS_SERVICIO).in("producto_id", ids),
     supabase.from("producto_servicio_noches").select("producto_id,orden,noche_desde,noches,lugar").in("producto_id", ids),
+    supabase.from("codigo_externo").select("producto_id").eq("agencia", AGENCIA_JOURNAWAY).in("producto_id", ids),
   ]);
+  // M2-08: los productos de Journaway dicen que su fila sale de la planilla de Journaway.
+  const deJournaway = new Set((verificar(journaway) as any[]).map((c) => c.producto_id as string));
   const tramos = new Map<string, TramoNoches[]>();
   for (const n of verificar(noches) as any[]) {
     const clave = `${n.producto_id}:${n.orden}`;
@@ -165,7 +168,8 @@ async function serviciosDe(supabase: SupabaseClient, ids: string[]): Promise<Map
     tramos.set(clave, lista.sort((a, b) => a.nocheDesde - b.nocheDesde));
   }
   const lista = (verificar(svc) as any[]).map((fila) => {
-    const s = aServicio(fila);
+    const base = aServicio(fila);
+    const s = deJournaway.has(base.productoId) ? { ...base, deJournaway: true } : base;
     const t = tramos.get(`${s.productoId}:${s.orden}`);
     return t ? { ...s, tramosNoches: t } : s;
   });
@@ -338,10 +342,12 @@ export async function cargarProveedor(supabase: SupabaseClient, id: string): Pro
 // === Pendientes (#18) =====================================================================
 
 export async function cargarPendientes(supabase: SupabaseClient): Promise<Pendiente[]> {
-  const respuesta = await supabase
-    .from("producto_servicio")
-    .select(`${CAMPOS_SERVICIO},producto:producto_id(id,codigo,nombre)`);
+  const [respuesta, journaway] = await Promise.all([
+    supabase.from("producto_servicio").select(`${CAMPOS_SERVICIO},producto:producto_id(id,codigo,nombre)`),
+    supabase.from("codigo_externo").select("producto_id").eq("agencia", AGENCIA_JOURNAWAY),
+  ]);
   const filas = verificar(respuesta) as any[];
+  const deJournaway = new Set((verificar(journaway) as any[]).map((c) => c.producto_id as string));
 
   return filas
     .map((fila) => ({ fila, servicio: aServicio(fila) }))
@@ -354,6 +360,7 @@ export async function cargarPendientes(supabase: SupabaseClient): Promise<Pendie
       proveedorId: servicio.bookingSupplier?.id ?? null,
       motivo: estadoServicio(servicio).motivo ?? "",
       filaExcel: servicio.filaExcel,
+      ...(deJournaway.has(fila.producto.id) ? { deJournaway: true } : {}),
     }))
     .sort((a, b) => a.producto.codigo.localeCompare(b.producto.codigo) || (a.filaExcel ?? 0) - (b.filaExcel ?? 0));
 }

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { cargarPendientes } from "@/lib/catalogo/consultas";
+import { origenDelServicio } from "@/lib/catalogo/reglas";
 import type { Pendiente } from "@/lib/catalogo/tipos";
 import { useConsulta } from "@/lib/catalogo/use-consulta";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
@@ -74,7 +75,7 @@ function TablaPendientes({ filas }: { filas: Pendiente[] }) {
               <td>
                 <div className={ui.nowrap}>{p.proveedorNombre ? EXCEL.proveedores : EXCEL.paquetes}</div>
                 {p.filaExcel !== null ? (
-                  <div className={`${ui.meta} ${ui.nowrap}`}>{TEXTOS.producto.origenExcel(p.filaExcel)}</div>
+                  <div className={`${ui.meta} ${ui.nowrap}`}>{origenDelServicio(p)}</div>
                 ) : null}
               </td>
             </tr>

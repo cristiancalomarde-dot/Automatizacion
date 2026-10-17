@@ -352,6 +352,13 @@ export function codigosDebajoDelCodigo(fila: Pick<FilaCatalogo, "codigo" | "codi
   return fila.codigosExternos.filter((c) => c.codigo !== fila.codigo && c.agencia !== AGENCIA_JOURNAWAY);
 }
 
+/** De dónde salió un servicio: la fila del Excel de paquetes, de la planilla de Journaway, o los tramos de los tours. */
+export function origenDelServicio(servicio: { filaExcel: number | null; deJournaway?: boolean }): string {
+  const P = TEXTOS.producto;
+  if (servicio.deJournaway) return servicio.filaExcel !== null ? P.origenJournaway(servicio.filaExcel) : P.origenJournawayInterno;
+  return servicio.filaExcel !== null ? P.origenExcel(servicio.filaExcel) : P.origenTramos;
+}
+
 /** Por código, nombre, códigos y nombres de agencia, y el nombre de la agencia ("journaway"). */
 export function filtrarCatalogo(filas: FilaCatalogo[], busqueda: string): FilaCatalogo[] {
   const q = normalizarTexto(busqueda);

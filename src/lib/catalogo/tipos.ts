@@ -59,6 +59,8 @@ export interface Servicio {
   /** M1-08: no se pide siempre (a pedido del pax/vendedor, o según la variante vendida). */
   aPedido?: "a_pedido" | "segun_reserva" | null;
   aPedidoNota?: string | null;
+  /** M2-08: el producto es del catálogo de Journaway (su fila sale de la planilla de Journaway). */
+  deJournaway?: boolean;
   /** M1-08: solo dentro de un tour, cómo queda en ese tour. Ausente = se pide tal cual. */
   ajusteTour?: AjusteEnTour;
 }
@@ -140,4 +142,6 @@ export interface Pendiente {
   proveedorId: string | null;
   motivo: string;
   filaExcel: number | null;
+  /** M2-08: el servicio es de un producto de Journaway. */
+  deJournaway?: boolean;
 }

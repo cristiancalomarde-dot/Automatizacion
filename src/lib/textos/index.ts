@@ -83,6 +83,8 @@ export const TEXTOS = {
     sinMailCargado: "sin mail cargado",
     origenExcel: (fila: number) => `${EXCEL.paquetes}, fila ${fila}`,
     origenTramos: `Cargado de los ${EXCEL.tramosTours}`,
+    origenJournaway: (fila: number) => `Planilla de productos de Journaway, fila ${fila}`,
+    origenJournawayInterno: "Datos de Journaway: producto interno, armado con el tarifario",
     dia: (n: number) => `Día ${n}`,
     noches: (n: number) => (n === 1 ? "1 noche" : `${n} noches`),
     transferIn: "Transfer de llegada",

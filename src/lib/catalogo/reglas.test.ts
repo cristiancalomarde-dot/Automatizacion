@@ -9,6 +9,7 @@ import {
   codigosDebajoDelCodigo,
   esDeJournaway,
   filtrarCatalogo,
+  origenDelServicio,
   filtrarDirectorio,
   normalizarTexto,
   partesPorNoche,
@@ -338,5 +339,14 @@ describe("partesPorNoche (spec M1-07 #8, #9)", () => {
 
   it("sin noches por servicio devuelve null (el paquete se muestra como antes)", () => {
     expect(partesPorNoche([servicio({ id: "x" })])).toBeNull();
+  });
+});
+
+describe("origenDelServicio (spec M2-08: lo de Journaway sale de su planilla, no del Excel de paquetes)", () => {
+  it("dice de dónde salió cada servicio", () => {
+    expect(origenDelServicio({ filaExcel: 83 })).toBe("Excel de paquetes, fila 83");
+    expect(origenDelServicio({ filaExcel: null })).toBe("Cargado de los tramos de los tours (data/tramos-con-proveedor.csv)");
+    expect(origenDelServicio({ filaExcel: 22, deJournaway: true })).toBe("Planilla de productos de Journaway, fila 22");
+    expect(origenDelServicio({ filaExcel: null, deJournaway: true })).toBe("Datos de Journaway: producto interno, armado con el tarifario");
   });
 });

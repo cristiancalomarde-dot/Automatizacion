@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { estadoServicio, queEs } from "@/lib/catalogo/reglas";
+import { estadoServicio, origenDelServicio, queEs } from "@/lib/catalogo/reglas";
 import type { Servicio } from "@/lib/catalogo/tipos";
 import { TEXTOS } from "@/lib/textos";
 import { Chip, type TonoChip } from "@/components/ui/estados";
@@ -117,7 +117,7 @@ export function FilaServicio({
       <td>
         <ChipsServicio servicio={servicio} />
       </td>
-      <td className={ui.meta}>{servicio.filaExcel !== null ? T.origenExcel(servicio.filaExcel) : T.origenTramos}</td>
+      <td className={ui.meta}>{origenDelServicio(servicio)}</td>
     </tr>
   );
 }
