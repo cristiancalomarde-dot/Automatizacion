@@ -164,7 +164,8 @@ export async function crearImapFalso(opciones: {
   carpetas: Array<{ path: string; atributos?: string[] }>;
 }): Promise<ImapFalso> {
   const carpetas = new Map<string, CarpetaFalsa>();
-  let validez = 1000;
+  // Como un servidor real: cada casilla nueva con su propio UIDVALIDITY (si no, dos falsos parecerían el mismo mail).
+  let validez = 1 + Math.floor(Math.random() * 2_000_000_000);
   for (const c of opciones.carpetas) {
     carpetas.set(c.path, { path: c.path, atributos: c.atributos ?? [], uidValidity: validez++, mensajes: [], proximoUid: 1 });
   }

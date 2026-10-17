@@ -357,4 +357,42 @@ export const TEXTOS = {
       },
     },
   },
+  /** La lectura automática de sales@ (spec M2-07): el registro de corridas y la línea de la lista. */
+  lecturaSales: {
+    motivos: {
+      faltaClave: "falta la clave de sales@",
+      noResponde: "la casilla no respondió",
+      clave: "la clave de sales@ no es válida",
+      inesperado: "un error inesperado",
+    },
+    avisos: {
+      sinSpam: "No encontré la carpeta Spam: solo se leyó la bandeja de entrada.",
+      techo: (n: number) =>
+        `Se alcanzó el techo de gasto de IA: ${n === 1 ? "1 mail queda" : `${n} mails quedan`} para mañana.`,
+      tiempo: (n: number) =>
+        `Se acabó el tiempo de la corrida: ${n === 1 ? "1 mail queda" : `${n} mails quedan`} para mañana.`,
+      fallaMail: (agencia: string, motivo: string) => `Un mail de ${agencia} no se pudo procesar (${motivo}): se reintenta mañana.`,
+      noSePudoLeer: (agencia: string, motivo: string) =>
+        `Un mail de ${agencia} no se pudo leer en 3 intentos (${motivo}): no se reintenta solo.`,
+    },
+    /** La línea arriba de la lista de reservas (§4). Las horas, en hora Argentina. */
+    linea: {
+      bien: (cuando: string, resumen: string) => `Última lectura de sales@: ${cuando} · ${resumen}.`,
+      resumen: (nuevas: number, actualizadas: number, miro: number, deAgencias: number) =>
+        `${nuevas === 1 ? "1 reserva nueva" : `${nuevas} reservas nuevas`}${
+          actualizadas > 0 ? `, ${actualizadas === 1 ? "1 actualizada" : `${actualizadas} actualizadas`}` : ""
+        } (de ${miro === 1 ? "1 mail" : `${miro} mails`}, ${deAgencias} de agencias)`,
+      fallo: (cuando: string, motivo: string) =>
+        `La última lectura falló (${cuando}): ${motivo}. Se reintenta mañana a las 12 y no se pierde nada.`,
+      noSePudoLeer: (n: number) =>
+        n === 1 ? "1 mail de agencia no se pudo leer y espera revisión." : `${n} mails de agencias no se pudieron leer y esperan revisión.`,
+      atrasada: (cuando: string) => `No hubo lectura de sales@ desde ${cuando}.`,
+      nunca: "Todavía no corrió ninguna lectura de sales@.",
+      apagada: "La lectura automática de sales@ está apagada hasta tu OK del modo prueba.",
+      error: "No pude consultar el registro de lecturas.",
+      hoy: (hora: string) => `hoy ${hora}`,
+      ayer: (hora: string) => `ayer ${hora}`,
+      dia: (dia: string, hora: string) => `el ${dia} ${hora}`,
+    },
+  },
 } as const;

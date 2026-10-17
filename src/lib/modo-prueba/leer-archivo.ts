@@ -221,7 +221,13 @@ function direcciones(a: AddressObject | AddressObject[] | undefined): string[] {
   return lista.flatMap((x) => x.value.map((v) => (v.address ?? "").toLowerCase())).filter(Boolean);
 }
 
-async function mailDeEml(nombre: string, contenido: Uint8Array): Promise<MailEntrada> {
+/**
+ * Lo que se lee de un .eml (remitente, asunto, fecha, cuerpo, adjuntos): el
+ * mismo parseo para el modo prueba y para la lectura de sales@ (M2-07).
+ */
+export async function camposDeEml(
+  contenido: Uint8Array,
+): Promise<Pick<MailEntrada, "remitente" | "remitenteNombre" | "destinatarios" | "asunto" | "fechaMail" | "cuerpoTexto" | "cuerpoHtml" | "adjuntos">> {
   const m = await simpleParser(Buffer.from(contenido), { skipImageLinks: true, skipTextToHtml: true });
   const de = m.from?.value[0];
   const adjuntos: AdjuntoEntrada[] = m.attachments.map((a) => {
@@ -233,10 +239,6 @@ async function mailDeEml(nombre: string, contenido: Uint8Array): Promise<MailEnt
       : { nombre: nombreAdjunto, tipo, tamano: a.size ?? a.content.byteLength };
   });
   return {
-    origen: "archivo",
-    carpeta: null,
-    archivoOrigen: nombre,
-    messageId: messageIdDeArchivo(contenido),
     remitente: (de?.address ?? "").toLowerCase(),
     remitenteNombre: de?.name?.trim() || null,
     destinatarios: direcciones(m.to),
@@ -245,6 +247,16 @@ async function mailDeEml(nombre: string, contenido: Uint8Array): Promise<MailEnt
     cuerpoTexto: m.text ?? null,
     cuerpoHtml: typeof m.html === "string" ? m.html : null,
     adjuntos,
+  };
+}
+
+async function mailDeEml(nombre: string, contenido: Uint8Array): Promise<MailEntrada> {
+  return {
+    origen: "archivo",
+    carpeta: null,
+    archivoOrigen: nombre,
+    messageId: messageIdDeArchivo(contenido),
+    ...(await camposDeEml(contenido)),
     dePrueba: true,
   };
 }
