@@ -317,7 +317,7 @@ export async function procesarMail(entrada: MailEntrada, opciones: OpcionesProce
   try {
     const lectura = await opciones.leer(mailParaLeer(entrada), { mailRecibidoId: mail.id });
     const deps = await opciones.deps({ mailRecibidoId: mail.id });
-    const armadas = await armarReservas(lectura, deps, { agencia });
+    const armadas = await armarReservas(lectura, deps, { agencia, mail: mailParaLeer(entrada) });
     pendientes.push(...armadas.flatMap((a) => a.llamadas));
 
     const ficha = lectura.estado === "leido" ? lectura.ficha : null;

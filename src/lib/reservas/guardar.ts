@@ -149,6 +149,22 @@ export async function guardarMailRecibido(
  * base rechaza cualquier otro) y sus componentes en orden. La entrada
  * "creada" del historial la agrega la base.
  */
+/**
+ * M2-09 (migración 0016): los datos de Journaway (número de viaje, hoteles de
+ * la agencia, contacto, notas y el lado del traslado que lleva otra reserva).
+ * Solo viajan si vienen: una reserva de Kilroy o TourRadar se guarda igual
+ * que antes de la migración.
+ */
+function columnasJournaway(e: ReservaEntrada): Record<string, unknown> {
+  const c: Record<string, unknown> = {};
+  if (e.tripNumber) c.trip_number = e.tripNumber;
+  if (e.hotelesAgencia?.length) c.hoteles_agencia = e.hotelesAgencia;
+  if (e.contactoCliente) c.contacto_cliente = e.contactoCliente;
+  if (e.notas?.length) c.notas = e.notas;
+  if (e.sinTrasladoDe) c.sin_traslado_de = e.sinTrasladoDe;
+  return c;
+}
+
 export async function crearReserva(
   entrada: ReservaEntrada,
   cliente: Cliente = clientePorDefecto(),
@@ -179,6 +195,7 @@ export async function crearReserva(
       origen_emparejado: entrada.origenEmparejado ?? null,
       confianza_emparejado: entrada.confianzaEmparejado ?? null,
       sugerencia_producto_id: entrada.sugerenciaProductoId ?? null,
+      ...columnasJournaway(entrada),
     })
     .select("*")
     .single();
@@ -199,6 +216,8 @@ export async function crearReserva(
     es_tarea: c.esTarea ?? false,
     producto_servicio_id: c.productoServicioId ?? null,
     proveedor_id: c.proveedorId ?? null,
+    // M2-09 (0016): solo si viene, así las demás agencias no dependen de la migración.
+    ...(c.pickUp ? { pick_up: c.pickUp } : {}),
   }));
   if (filas.length === 0) return { reserva, componentes: [] };
 

@@ -130,6 +130,22 @@ export interface ComponenteEntrada {
   productoServicioId?: string | null;
   /** A quién se le pide una parte de tipo servicio. */
   proveedorId?: string | null;
+  /** M2-09: el "Pick up / Drop off" del tour tal como lo manda Journaway (migración 0016). */
+  pickUp?: string | null;
+}
+
+/** M2-09: un hotel que reserva la agencia ("booked by us"): solo información, no se pide. */
+export interface HotelDeLaAgencia {
+  nombre: string;
+  desde: string | null;
+  hasta: string | null;
+}
+
+/** M2-09: el contacto del pasajero principal ("Client reference" de Journaway). */
+export interface ContactoDelCliente {
+  nombre: string | null;
+  email: string | null;
+  telefono: string | null;
 }
 
 export interface ReservaEntrada {
@@ -165,6 +181,15 @@ export interface ReservaEntrada {
   sugerenciaProductoId?: string | null;
   /** En el orden del tour (o de la lista de Journaway). */
   componentes?: ComponenteEntrada[];
+  // M2-09 (migración 0016): solo Journaway; en las demás agencias no viajan.
+  /** El "Trip Number" del cuerpo (referencia secundaria; el booking_id es el ID del asunto). */
+  tripNumber?: string | null;
+  hotelesAgencia?: HotelDeLaAgencia[];
+  contactoCliente?: ContactoDelCliente | null;
+  /** Avisos que no mandan a revisión ("Journaway lo llama half-day; es el full day"). */
+  notas?: string[];
+  /** El lado del traslado que lleva otra reserva del mismo pedido (SPAP01 + SPAP03). */
+  sinTrasladoDe?: "llegada" | "salida" | null;
 }
 
 export interface ReservaComponente {
@@ -181,6 +206,8 @@ export interface ReservaComponente {
   es_tarea: boolean;
   producto_servicio_id: string | null;
   proveedor_id: string | null;
+  /** M2-09 (0016). */
+  pick_up?: string | null;
 }
 
 export interface Reserva {
@@ -210,6 +237,12 @@ export interface Reserva {
   origen_emparejado: OrigenEmparejado | null;
   confianza_emparejado: number | null;
   sugerencia_producto_id: string | null;
+  // M2-09 (migración 0016).
+  trip_number?: string | null;
+  hoteles_agencia?: HotelDeLaAgencia[];
+  contacto_cliente?: ContactoDelCliente | null;
+  notas?: string[];
+  sin_traslado_de?: "llegada" | "salida" | null;
   created_at: string;
   updated_at: string;
 }
@@ -291,6 +324,10 @@ export interface ParteDeReserva {
   fechaInicio: string | null;
   fechaFin: string | null;
   esTarea: boolean;
+  /** M2-09: el pick up / drop off del tour (Journaway), tal como vino. */
+  pickUp?: string | null;
+  /** M2-09: el texto con que la agencia nombró la parte ("San Pedro de Atacama: Tour …"). */
+  textoAgencia?: string | null;
 }
 
 export interface PdfDelMail {
@@ -321,6 +358,11 @@ export interface DetalleReserva extends FilaReserva {
   partes: ParteDeReserva[];
   /** Por orden de llegada: el primero es el que creó la reserva. */
   mails: MailDeReserva[];
+  // M2-09 (Journaway): vacíos en las demás agencias.
+  tripNumber?: string | null;
+  hotelesAgencia?: HotelDeLaAgencia[];
+  contactoCliente?: ContactoDelCliente | null;
+  notas?: string[];
 }
 
 /** La marca del owner sobre una reserva de prueba (spec M2-06 fila 13, tabla `revision_prueba`). */

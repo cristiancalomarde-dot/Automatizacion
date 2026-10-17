@@ -270,12 +270,19 @@ export function conPax(v: Variante, pax: number): Variante {
 }
 
 export function sinVuelo(v: Variante, numero: string): Variante {
+  const sacado = v.ficha.vuelos.find((x) => x.numero === numero);
+  // Sin ese renglón, el fin del viaje que salía del vuelo ya no está escrito en el mail.
+  const finDelVuelo = sacado && [sacado.fecha_salida, sacado.fecha_llegada].includes(v.ficha.fecha_fin.valor);
   return {
     texto: v.texto
       .split("\n")
       .filter((l) => !l.includes(numero))
       .join("\n"),
-    ficha: { ...v.ficha, vuelos: v.ficha.vuelos.filter((x) => x.numero !== numero) },
+    ficha: {
+      ...v.ficha,
+      vuelos: v.ficha.vuelos.filter((x) => x.numero !== numero),
+      ...(finDelVuelo ? { fecha_fin: { valor: null, confianza: 0 } } : {}),
+    },
   };
 }
 

@@ -46,6 +46,8 @@ export interface DatosParaAvisos {
   vuelos: readonly VueloIA[];
   /** Los pedidos especiales tal como se guardan (uno por renglón). */
   pedidos: string | null;
+  /** M2-09: el lado del traslado que lleva otra reserva del mismo pedido (no pide vuelo). */
+  sinTrasladoDe?: "llegada" | "salida" | null;
 }
 
 /** Los avisos "Falta el vuelo…" de una reserva. Sin producto del catálogo, ninguno. */
@@ -58,6 +60,7 @@ export function avisosDeVuelo(detalle: DetalleProducto | null, r: DatosParaAviso
     pedidos,
     producto: { nombre: r.productoTexto ?? "", opcionales: [], fecha_inicio: r.fechaInicio, fecha_fin: r.fechaFin },
     finalPuertoNatales: saleDePuertoNatales({ vuelos, pedidos_especiales: pedidos.map((texto) => ({ texto, confianza: 1 })) }),
+    omitir: r.sinTrasladoDe === "salida" ? ["out"] : r.sinTrasladoDe === "llegada" ? ["in"] : [],
   });
   return separarAvisosDeVuelo(motivos).avisos;
 }

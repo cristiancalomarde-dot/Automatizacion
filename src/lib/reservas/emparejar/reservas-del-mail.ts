@@ -7,6 +7,10 @@ import type { DetalleProducto } from "@/lib/catalogo/tipos";
 import { separarAvisosDeVuelo } from "../avisos-vuelo";
 import type { FichaLectura, ProductoIA } from "../esquema-ficha";
 import type { ResultadoLectura } from "../extraer";
+import { armarJournaway, type DependenciasJournaway } from "../journaway/armar";
+import { cargarCatalogoJournaway } from "../journaway/catalogo";
+import { ARCHIVO_SENALES_JOURNAWAY, leerSenalesJournaway, verificarSenales } from "../journaway/senales";
+import type { MailParaLeer } from "../preparar-mail";
 import { crearReserva } from "../guardar";
 import type { ComponenteEntrada, Reserva, ReservaComponente, ReservaEntrada } from "../tipos";
 import type { LectorDeAgencia } from "./agencias";
@@ -39,6 +43,8 @@ export interface DependenciasReservas {
   lectores?: Readonly<Record<string, LectorDeAgencia>>;
   /** Productos conocidos que todavía no están cargados (owner 2026-10-14). */
   noCargados?: readonly ProductoNoCargado[];
+  /** M2-09: los paquetes armados de Journaway y sus señales. Sin esto, Journaway va por el camino general. */
+  journaway?: DependenciasJournaway;
 }
 
 export type EntradaArmada = Omit<ReservaEntrada, "mailRecibidoId" | "dePrueba" | "motivosRevision"> & {
@@ -122,10 +128,46 @@ function textoDeExtra(p: ProductoIA): string {
   return `También en el estado de cuenta: ${p.nombre}${detalle ? ` (${detalle})` : ""}`;
 }
 
+/**
+ * M2-09: Journaway manda una lista de tours sueltos. El reconocedor de
+ * `journaway/` arma los paquetes y `armarJournaway` las reservas; acá se
+ * cierran con los mismos campos que las demás agencias.
+ */
+async function armarDeJournaway(ficha: FichaLectura, deps: DependenciasReservas, mail: MailParaLeer | null): Promise<ReservaArmada[]> {
+  const { piezas, llamadas, costo } = await armarJournaway(
+    ficha,
+    { catalogo: deps.catalogo, journaway: deps.journaway!, detalle: deps.detalle, proponer: deps.proponer },
+    mail,
+  );
+  return piezas.map((p, i) => {
+    const entrada = base(ficha, "Journaway");
+    Object.assign(entrada, {
+      productoId: p.productoId,
+      origenEmparejado: p.origenEmparejado,
+      confianzaEmparejado: p.confianzaEmparejado,
+      sugerenciaProductoId: p.sugerenciaProductoId,
+      productoTextoAgencia: p.productoTextoAgencia,
+      fechaInicio: p.fechaInicio,
+      fechaFin: p.fechaFin,
+      pasajeros: p.pasajeros,
+      pedidosEspeciales: p.pedidosEspeciales,
+      componentes: p.componentes,
+      motivosRevision: p.motivos,
+      tripNumber: p.tripNumber,
+      hotelesAgencia: p.hotelesAgencia,
+      contactoCliente: p.contactoCliente,
+      notas: p.notas,
+      sinTrasladoDe: p.sinTrasladoDe,
+    });
+    // Las llamadas a la IA (propuesta de un tour) son del mail: van con la primera reserva.
+    return { entrada: cerrar(entrada), llamadas: i === 0 ? llamadas : [], costo: i === 0 ? costo : 0, avisos: p.avisos, productoIA: p.productoIA };
+  });
+}
+
 export async function armarReservas(
   lectura: FichaLectura | ResultadoLectura,
   deps: DependenciasReservas,
-  opciones: { agencia?: string } = {},
+  opciones: { agencia?: string; mail?: MailParaLeer | null } = {},
 ): Promise<ReservaArmada[]> {
   if ("estado" in lectura && lectura.estado === "para_revision") {
     const entrada = base(null, opciones.agencia ?? "desconocida");
@@ -142,6 +184,8 @@ export async function armarReservas(
     entrada.motivosRevision = [tipo === "reserva_nueva" ? M.sinProducto : M.tipoMail[tipo], ...dudosos];
     return [{ entrada: cerrar(entrada), llamadas: [], costo: 0, avisos: [], productoIA: null }];
   }
+
+  if (agencia === "Journaway" && deps.journaway) return armarDeJournaway(ficha, deps, opciones.mail ?? null);
 
   const { productos, extras } = productosDelMail(ficha, agencia);
   const armadas: ReservaArmada[] = [];
@@ -258,9 +302,14 @@ export async function cargarDependenciasReservas(
     admin.from("proveedor").select("id,nombre").ilike("nombre", PROVEEDOR_TRANSFER_PNT).limit(1).maybeSingle(),
   ]);
   if (proveedor.error) throw new Error(`No se pudo leer el proveedor del transfer a PNT: ${proveedor.error.message}`);
+  const detalle = (id: string) => cargarProducto(admin, id);
+  // M2-09: las señales de Journaway se validan contra el catálogo antes de usar nada (un código que no existe frena).
+  const senales = leerSenalesJournaway(readFileSync(join(process.cwd(), "data", ARCHIVO_SENALES_JOURNAWAY), "utf-8"));
+  verificarSenales(senales, catalogo);
   return {
     catalogo,
-    detalle: (id) => cargarProducto(admin, id),
+    detalle,
+    journaway: { catalogo: await cargarCatalogoJournaway(catalogo, detalle), senales },
     proponer,
     proveedorTransferPNT: (proveedor.data as { id: string; nombre: string } | null) ?? null,
     noCargados: leerProductosNoCargados(readFileSync(join(process.cwd(), "data", ARCHIVO_PRODUCTOS_NO_CARGADOS), "utf-8")),

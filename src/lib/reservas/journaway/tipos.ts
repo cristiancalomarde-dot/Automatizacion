@@ -63,6 +63,8 @@ export interface ReservaJournaway {
   notas: string[];
   /** Fila 15: el lado del traslado que lleva otra reserva del mismo pedido (SPAP01 + SPAP03). */
   sinTrasladoDe: "salida" | null;
+  /** Con qué paquete del mismo pedido va la salida ("SPAP03"), si `sinTrasladoDe` es "salida". */
+  salidaCon: string | null;
   origen: OrigenEmparejado | null;
   confianza: number | null;
   /** Lo que darían los tours, cuando no se eligió (para quien revisa). */

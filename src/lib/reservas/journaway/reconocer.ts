@@ -48,7 +48,7 @@ function reserva(tours: TourJournaway[], extra: Partial<ReservaJournaway> = {}):
   const desdeTours = tours.length && tours.every((t) => t.origen) ? tours : [];
   const origen: OrigenEmparejado | null = desdeTours.some((t) => t.origen === "ia") ? "ia" : desdeTours.length ? "nombre" : null;
   const confianza = desdeTours.length ? Math.min(...desdeTours.map((t) => t.confianza ?? 1)) : null;
-  return { producto: null, paquete: null, tours, motivos: [], notas: [], sinTrasladoDe: null, origen, confianza, sugerencia: null, ...extra };
+  return { producto: null, paquete: null, tours, motivos: [], notas: [], sinTrasladoDe: null, salidaCon: null, origen, confianza, sugerencia: null, ...extra };
 }
 
 const revision = (tours: TourJournaway[], motivos: string[], extra: Partial<ReservaJournaway> = {}) =>
@@ -237,9 +237,13 @@ function armarDesdeTours(tours: TourJournaway[], ctx: Contexto): Armado {
           !!conSalida && conSalida.paquete !== paquete && paquete.partes.some((x) => x.esTraslado && x.lados.includes("out"));
         const r = reserva(
           propios.map((t) => tours.find((x) => x.indice === t.indice)!),
-          { producto: productoDe(ctx, paquete), paquete, sinTrasladoDe: sinSalida ? "salida" : null },
+          {
+            producto: productoDe(ctx, paquete),
+            paquete,
+            sinTrasladoDe: sinSalida ? "salida" : null,
+            salidaCon: sinSalida ? conSalida!.paquete.codigo : null,
+          },
         );
-        if (sinSalida) r.notas.push(N.soloLlegada(conSalida!.paquete.codigo));
         reservas.push(r);
       }
     } else if (combinacion.exactas.length > 1) {

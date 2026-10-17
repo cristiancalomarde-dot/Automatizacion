@@ -73,6 +73,11 @@ export interface DatosParaVuelos {
   pedidos: string[];
   producto: Pick<ProductoIA, "nombre" | "opcionales" | "fecha_inicio" | "fecha_fin"> | undefined;
   finalPuertoNatales: boolean;
+  /**
+   * M2-09 fila 15: los lados que lleva otra reserva del mismo pedido (SPAP01
+   * seguido de SPAP03: la salida va con SPAP03). No piden vuelo acá.
+   */
+  omitir?: readonly Lado[];
 }
 
 /** Un servicio por orden: las alternativas "/" del mismo traslado no se piden dos veces. */
@@ -131,6 +136,7 @@ export function motivosDeVuelos(detalle: DetalleProducto, datos: DatosParaVuelos
       const texto = s.ajusteTour?.texto ?? s.descripcion ?? "";
       const lugar = lugarDelTraslado(texto, paso.destino);
       for (const lado of lados) {
+        if (datos.omitir?.includes(lado)) continue;
         if (lado === "in" && paso.llegaEnBus) continue;
         if (lado === "out" && paso.saleEnBus) continue;
         const fecha = lado === "in" ? fechaDe(paso.dia) : (datos.producto?.fecha_fin ?? null);
