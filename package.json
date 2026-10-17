@@ -14,6 +14,7 @@
     "importar:equivalencias": "tsx scripts/cargar-equivalencias-proveedores.ts",
     "importar:paquetes": "tsx scripts/importar-paquetes-tours.ts",
     "importar:tours": "tsx scripts/importar-tours-compuestos.ts",
+    "importar:journaway": "tsx scripts/importar-journaway.ts",
     "diagnosticar:paquetes": "tsx scripts/diagnosticar-paquetes.ts",
     "probar:lectura": "tsx --conditions=react-server scripts/probar-lectura-mail.ts",
     "eval:lectura": "tsx --conditions=react-server scripts/eval-lectura.ts",
