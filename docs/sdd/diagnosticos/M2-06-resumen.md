@@ -1,16 +1,18 @@
 # Modo prueba (M2-06): resumen
 
-Generado el 2026-10-16 con `npm run probar:mails -- --resumen`.
+Generado el 2026-10-17 con `npm run probar:mails -- --resumen`.
 
 ## La medición
 
-**Revisadas 0 de 22 · faltan 22 por revisar**
+**Revisadas 4 de 27 · 0 mal (0%) · faltan 23 por revisar**
+
+Producto mal: 0 de 4 revisadas (0%). Es el número del PRD (riesgo #1).
 
 Si más del 20% de las reservas revisadas está mal, se frena y no se activa la lectura automática (M2-07).
 
 ## Gasto y modelo
 
-- Gasto de IA de las reservas de prueba: **US$ 0,4184** (20 lecturas de mails y 2 propuestas de producto).
+- Gasto de IA de las reservas de prueba: **US$ 0,5140** (24 lecturas de mails y 2 propuestas de producto).
 - Modelo usado: claude-sonnet-5-5. Instrucciones: lectura-mail.v3.
 
 ## Sonnet contra Opus (`npm run eval:lectura`)
@@ -27,28 +29,28 @@ El mismo set de evaluación (las fichas que validó el owner), leído por cada m
 | pax | 100% | 66,7% |
 | vuelos | 100% | 50% |
 | **Total** | **100%** | **64,3%** |
-| Costo de la corrida | US$ 0,1645 | US$ 0,1996 |
+| Costo de la corrida | US$ 0,2062 | US$ 0,1996 |
 | Instrucciones | lectura-mail.v3 | lectura-mail.v2 |
-| Cuándo | 2026-10-16 22:18 UTC | 2026-10-14 22:57 UTC |
+| Cuándo | 2026-10-17 20:20 UTC | 2026-10-14 22:57 UTC |
 
 El modelo se fija en `src/lib/ia/modelos.ts` con el OK del owner (y se anota en `DECISIONS.md`).
 
-## Las reservas de prueba (22)
+## Las reservas de prueba (27)
 
 | Archivo | Agencia | Número | Producto | Estado | Marca del owner |
 |---|---|---|---|---|---|
 | Booking Statement 1363612 - 25160515 - vendorcredit.pdf | TourRadar | 1363612 | OD010A | Para revisión | sin marcar |
 | Booking Statement 1376833 - 25351215 - vendorbill.pdf | TourRadar | 1376833 | CHB31 | Recibida | sin marcar |
-| Booking Statement 1377583 - 25365166 - vendorbill.pdf | TourRadar | 1377583 | sin producto | Para revisión | sin marcar |
+| Booking Statement 1377583 - 25365166 - vendorbill.pdf | TourRadar | 1377583 | sin producto | Para revisión | Bien |
 | Booking Statement 1377598 - 25372219 - vendorbill.pdf | TourRadar | 1377598 | AR09 | Recibida | sin marcar |
-| Booking Statement 1383503 - 25500905 - vendorbill.pdf | TourRadar | 1383503 | sin producto | Para revisión | sin marcar |
+| Booking Statement 1383503 - 25500905 - vendorbill.pdf | TourRadar | 1383503 | sin producto | Para revisión | Bien |
 | Reserva de Cliente Kilroy - Overland uyuni a san pedro saliendo de la paz (reverse).docx | Kilroy | DK1559523/fnie | BOCHI04R | Recibida | sin marcar |
 | Reserva de Cliente Kilroy Aarhus - Rio Starter Package OD032.docx | Kilroy | DK1576836-26196085 | OD032 | Recibida | sin marcar |
 | Reserva de Cliente Kilroy Aarhus -Iguazu Falls Combined OD010D.docx | Kilroy | DK1564627/cafj | OD010D | Recibida | sin marcar |
 | Reserva de Cliente Kilroy Copenagiue varias.docx | Kilroy | DK1594100/maga | OD010D | Recibida | sin marcar |
-| Reserva de Cliente Kilroy Copenagiue varias.docx | Kilroy | DK1594100/maga | sin producto | Para revisión | sin marcar |
+| Reserva de Cliente Kilroy Copenagiue varias.docx | Kilroy | DK1594100/maga | sin producto | Para revisión | Bien |
 | Reserva de Cliente Kilroy Copenagiue varias.docx | Kilroy | DK1594100/maga | CHB31 | Recibida | sin marcar |
-| Reserva de Cliente Kilroy Copenahue - Patagonia Trekking Paradise.docx | Kilroy | DK1586168/pela | sin producto | Para revisión | sin marcar |
+| Reserva de Cliente Kilroy Copenahue - Patagonia Trekking Paradise.docx | Kilroy | DK1586168/pela | sin producto | Para revisión | Bien |
 | Reserva de Cliente Kilroy Copenhague - Overland San Pedro de Atacama to Uyuni end in La Paz CHB31.docx | Kilroy | DK1547743/pela | CHB31 | Recibida | sin marcar |
 | Reserva de Cliente Kilroy Copenhague Overland San Pedro to Uyuni.docx | Kilroy | DK1594392/olha | CHB31 | Recibida | sin marcar |
 | Reserva de Cliente Kilroy Copenhaguen - Patagonia Trekking Paradise ARCH33.docx | Kilroy | DK1576932/emhe | ARCH33 | Recibida | sin marcar |
@@ -59,6 +61,11 @@ El modelo se fija en `src/lib/ia/modelos.ts` con el OK del owner (y se anota en 
 | Kilroy-INBOX-15958.eml | Kilroy | DK1585447/casa | OD010B | Recibida | sin marcar |
 | Kilroy-INBOX-15962.eml | Kilroy | DK1593111/mhee | OD010B | Recibida | sin marcar |
 | Kilroy-INBOX-15963.eml | Kilroy | DK1593111/mhee | OD030 | Recibida | sin marcar |
+| Reserva de Cliente Journaway - Iguazu Fall Argentina Side.docx | Journaway | sin número | IGRE01 | Recibida | sin marcar |
+| Reserva de Cliente Journaway - All San Pedro 4 days mas San Pedro Extension.docx | Journaway | Trip 62992 | SPAP01 | Recibida | sin marcar |
+| Reserva de Cliente Journaway - All San Pedro 4 days mas San Pedro Extension.docx | Journaway | Trip 62992 | SPAP03 | Recibida | sin marcar |
+| Reserva de Cliente Journaway - Iguazu Falls Brazilian Side.docx | Journaway | sin número | IGRE02 | Recibida | sin marcar |
+| Reserva de Cliente Journaway - San Pedro de Atacama and Uyuni Salt Flats in Tayka Hotels 7N8D SPAP05.docx | Journaway | sin número | SPAP05 | Recibida | sin marcar |
 
 ## Qué pasó con cada archivo
 
@@ -126,10 +133,10 @@ Cada uno tiene su reporte en `docs/sdd/diagnosticos/M2-06-mails/`.
 | Pedido Proveedor - La Bicicleta Naranja OD018.docx | No es un mail de agencia | 0 | [Pedido Proveedor - La Bicicleta Naranja OD018.md](M2-06-mails/Pedido%20Proveedor%20-%20La%20Bicicleta%20Naranja%20OD018.md) |
 | Pedido Proveedor - Milhouse Hostel OD018.docx | No es un mail de agencia | 0 | [Pedido Proveedor - Milhouse Hostel OD018.md](M2-06-mails/Pedido%20Proveedor%20-%20Milhouse%20Hostel%20OD018.md) |
 | Pedido Proveedor - Rancho Grande y Chalten Travel OD033.docx | No es un mail de agencia | 0 | [Pedido Proveedor - Rancho Grande y Chalten Travel OD033.md](M2-06-mails/Pedido%20Proveedor%20-%20Rancho%20Grande%20y%20Chalten%20Travel%20OD033.md) |
-| Reserva de Cliente Journaway - All San Pedro 4 days mas San Pedro Extension.docx | Journaway entra con M2-09 | 0 | [Reserva de Cliente Journaway - All San Pedro 4 days mas San Pedro Extension.md](M2-06-mails/Reserva%20de%20Cliente%20Journaway%20-%20All%20San%20Pedro%204%20days%20mas%20San%20Pedro%20Extension.md) |
-| Reserva de Cliente Journaway - Iguazu Fall Argentina Side.docx | Journaway entra con M2-09 | 0 | [Reserva de Cliente Journaway - Iguazu Fall Argentina Side.md](M2-06-mails/Reserva%20de%20Cliente%20Journaway%20-%20Iguazu%20Fall%20Argentina%20Side.md) |
-| Reserva de Cliente Journaway - Iguazu Falls Brazilian Side.docx | Journaway entra con M2-09 | 0 | [Reserva de Cliente Journaway - Iguazu Falls Brazilian Side.md](M2-06-mails/Reserva%20de%20Cliente%20Journaway%20-%20Iguazu%20Falls%20Brazilian%20Side.md) |
-| Reserva de Cliente Journaway - San Pedro de Atacama and Uyuni Salt Flats in Tayka Hotels 7N8D SPAP05.docx | Journaway entra con M2-09 | 0 | [Reserva de Cliente Journaway - San Pedro de Atacama and Uyuni Salt Flats in Tayka Hotels 7N8D SPAP05.md](M2-06-mails/Reserva%20de%20Cliente%20Journaway%20-%20San%20Pedro%20de%20Atacama%20and%20Uyuni%20Salt%20Flats%20in%20Tayka%20Hotels%207N8D%20SPAP05.md) |
+| Reserva de Cliente Journaway - All San Pedro 4 days mas San Pedro Extension.docx | Leído con IA | 2 | [Reserva de Cliente Journaway - All San Pedro 4 days mas San Pedro Extension.md](M2-06-mails/Reserva%20de%20Cliente%20Journaway%20-%20All%20San%20Pedro%204%20days%20mas%20San%20Pedro%20Extension.md) |
+| Reserva de Cliente Journaway - Iguazu Fall Argentina Side.docx | Leído con IA | 1 | [Reserva de Cliente Journaway - Iguazu Fall Argentina Side.md](M2-06-mails/Reserva%20de%20Cliente%20Journaway%20-%20Iguazu%20Fall%20Argentina%20Side.md) |
+| Reserva de Cliente Journaway - Iguazu Falls Brazilian Side.docx | Leído con IA | 1 | [Reserva de Cliente Journaway - Iguazu Falls Brazilian Side.md](M2-06-mails/Reserva%20de%20Cliente%20Journaway%20-%20Iguazu%20Falls%20Brazilian%20Side.md) |
+| Reserva de Cliente Journaway - San Pedro de Atacama and Uyuni Salt Flats in Tayka Hotels 7N8D SPAP05.docx | Leído con IA | 1 | [Reserva de Cliente Journaway - San Pedro de Atacama and Uyuni Salt Flats in Tayka Hotels 7N8D SPAP05.md](M2-06-mails/Reserva%20de%20Cliente%20Journaway%20-%20San%20Pedro%20de%20Atacama%20and%20Uyuni%20Salt%20Flats%20in%20Tayka%20Hotels%207N8D%20SPAP05.md) |
 | Reserva de Cliente Kilroy - Overland uyuni a san pedro saliendo de la paz (reverse).docx | Leído con IA | 1 | [Reserva de Cliente Kilroy - Overland uyuni a san pedro saliendo de la paz (reverse).md](M2-06-mails/Reserva%20de%20Cliente%20Kilroy%20-%20Overland%20uyuni%20a%20san%20pedro%20saliendo%20de%20la%20paz%20(reverse).md) |
 | Reserva de Cliente Kilroy Aarhus - Rio Starter Package OD032.docx | Leído con IA | 1 | [Reserva de Cliente Kilroy Aarhus - Rio Starter Package OD032.md](M2-06-mails/Reserva%20de%20Cliente%20Kilroy%20Aarhus%20-%20Rio%20Starter%20Package%20OD032.md) |
 | Reserva de Cliente Kilroy Aarhus -Iguazu Falls Combined OD010D.docx | Leído con IA | 1 | [Reserva de Cliente Kilroy Aarhus -Iguazu Falls Combined OD010D.md](M2-06-mails/Reserva%20de%20Cliente%20Kilroy%20Aarhus%20-Iguazu%20Falls%20Combined%20OD010D.md) |

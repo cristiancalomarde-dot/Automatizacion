@@ -411,30 +411,26 @@
   },
   {
     "archivo": "Reserva de Cliente Journaway - All San Pedro 4 days mas San Pedro Extension.docx",
-    "estado": "salteado",
-    "motivo": "Journaway entra con M2-09",
-    "reservas": 0,
+    "estado": "procesado",
+    "reservas": 2,
     "reporte": "Reserva de Cliente Journaway - All San Pedro 4 days mas San Pedro Extension.md"
   },
   {
     "archivo": "Reserva de Cliente Journaway - Iguazu Fall Argentina Side.docx",
-    "estado": "salteado",
-    "motivo": "Journaway entra con M2-09",
-    "reservas": 0,
+    "estado": "procesado",
+    "reservas": 1,
     "reporte": "Reserva de Cliente Journaway - Iguazu Fall Argentina Side.md"
   },
   {
     "archivo": "Reserva de Cliente Journaway - Iguazu Falls Brazilian Side.docx",
-    "estado": "salteado",
-    "motivo": "Journaway entra con M2-09",
-    "reservas": 0,
+    "estado": "procesado",
+    "reservas": 1,
     "reporte": "Reserva de Cliente Journaway - Iguazu Falls Brazilian Side.md"
   },
   {
     "archivo": "Reserva de Cliente Journaway - San Pedro de Atacama and Uyuni Salt Flats in Tayka Hotels 7N8D SPAP05.docx",
-    "estado": "salteado",
-    "motivo": "Journaway entra con M2-09",
-    "reservas": 0,
+    "estado": "procesado",
+    "reservas": 1,
     "reporte": "Reserva de Cliente Journaway - San Pedro de Atacama and Uyuni Salt Flats in Tayka Hotels 7N8D SPAP05.md"
   },
   {
