@@ -19,7 +19,7 @@
  * Variables de entorno (regla #2, en local: Supabase de `.env.pruebas.local`, la base de pruebas; lo demás de `.env.local`):
  * ANTHROPIC_API_KEY, NEXT_PUBLIC_SUPABASE_URL y SUPABASE_SERVICE_ROLE_KEY.
  */
-import { existsSync, readFileSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { randomUUID } from "node:crypto";
 import Anthropic from "@anthropic-ai/sdk";
