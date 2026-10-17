@@ -21,7 +21,7 @@ import { leerMailConIA, type ClienteMensajesIA } from "@/lib/reservas/extraer";
 import { parsearMailDeTexto } from "@/lib/reservas/mail-de-texto";
 import { procesarMail } from "@/lib/reservas/procesar-mail";
 import type { MailEntrada } from "@/lib/reservas/tipos";
-import { fichaIAJournaway, original, sinVuelo, textoJournaway, type LetraMail } from "./fixtures/journaway/fichas";
+import { fichaIAJournaway, original, sinVuelo, textoJournaway } from "./fixtures/journaway/fichas";
 import { tomarBloqueoDatosDePrueba } from "./helpers/bloqueo-datos-de-prueba";
 import { credencialesSupabaseDisponibles } from "./helpers/entorno-supabase";
 import { comandosDeEscritura, crearImapFalso, emlSintetico, type ImapFalso } from "./helpers/imap-falso";
