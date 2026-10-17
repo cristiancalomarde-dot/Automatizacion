@@ -3,6 +3,13 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
 
 # Dónde retomar
 
+- **M2-08 terminada y cargada en la real (2026-10-17).** Catálogo de Journaway: 53 productos (44 celestes, 8 solo
+  dentro de paquete, Overland interno UYUO01), 6 paquetes SPAP; `npm run importar:journaway`. El owner agregó una fila por
+  producto de Cuenca del Plata (IGRP01/02, IGRE01/02/03, IGRT01, reservas8@): ninguno sin proveedor. Recarga del directorio:
+  renombre reconocido si el nombre viejo está dentro del nuevo (ids conservados). Real: productos 29→82, proveedores 262→269,
+  nada borrado (respaldo previo en el scratchpad de la sesión). Siguiente: M2-09 (reservas de Journaway). Nota: SPAT02 no
+  pide vuelo; 42 productos sin nombre de mail (se reconocen por código o nombre del tarifario).
+
 - **M2-07 terminada y ACTIVA (2026-10-17).** Lectura diaria de sales@ (Inbox + Spam) a las 12 hora Argentina
   (cron `0 15 * * *` en Vercel), solo lectura. Migración 0015 aplicada a la real con OK del owner. Base de pruebas
   separada (`.env.pruebas.local`): tests y scripts de prueba gastan ahí, no en el techo real. Variables en Vercel:
