@@ -85,6 +85,36 @@ describe("Catálogo de productos (#1, #2, #10, #12)", () => {
     expect(screen.getByText("Ningún producto coincide con la búsqueda.")).toBeInTheDocument();
   });
 
+  it("spec M2-08 #11: chip 'Journaway', sin sus nombres largos debajo del código; 'journaway' en el buscador deja solo esos", async () => {
+    const spae05 = {
+      ...catalogo[2],
+      id: "prod-spae05",
+      codigo: "SPAE05",
+      nombre: "Salt Flats Route Tour (Trip F)",
+      destino: "SPA",
+      cantidadPendientes: 0,
+      codigosExternos: [
+        { agencia: "Journaway", codigo: "SPAE05", nombreExterno: null },
+        { agencia: "Journaway", codigo: "salt flats route tour", nombreExterno: "Salt Flats Route Tour" },
+      ],
+    };
+    consultas.cargarCatalogo.mockResolvedValue([...catalogo, spae05]);
+    render(<CatalogoPantalla />);
+    const tabla = await screen.findByRole("table");
+    const fila = within(tabla).getAllByRole("row").find((f) => within(f).queryByText("SPAE05"))!;
+    expect(within(fila).getByText("Journaway")).toBeInTheDocument();
+    expect(within(fila).queryByText(/salt flats route tour$/i)).toBeNull();
+    expect(within(fila).queryByText(/Journaway SPAE05/)).toBeNull();
+    const od010aFila = within(tabla).getAllByRole("row").find((f) => within(f).queryByText("OD010A"))!;
+    expect(within(od010aFila).getByText(/TourRadar 160955/)).toBeInTheDocument();
+    expect(within(od010aFila).queryByText("Journaway")).toBeNull();
+
+    fireEvent.change(screen.getByLabelText("Buscar por código o nombre"), { target: { value: "journaway" } });
+    const filas = within(screen.getByRole("table")).getAllByRole("row").slice(1);
+    expect(filas).toHaveLength(1);
+    expect(within(filas[0]).getByText("SPAE05")).toBeInTheDocument();
+  });
+
   it("la fila entera lleva al detalle del producto", async () => {
     consultas.cargarCatalogo.mockResolvedValue(catalogo);
     render(<CatalogoPantalla />);

@@ -6,6 +6,8 @@ import {
   duracionTour,
   estadoServicio,
   esPendiente,
+  codigosDebajoDelCodigo,
+  esDeJournaway,
   filtrarCatalogo,
   filtrarDirectorio,
   normalizarTexto,
@@ -227,6 +229,30 @@ describe("búsqueda y filtros (spec M1-06 #2, #8)", () => {
 
   it("por código de agencia", () => {
     expect(filtrarCatalogo(filas, "160955").map((f) => f.codigo)).toEqual(["OD010A"]);
+  });
+
+  it("por el nombre de la agencia: 'journaway' deja solo los productos con nombres de Journaway (spec M2-08 #11)", () => {
+    const deJournaway: FilaCatalogo = {
+      ...fila("SPAE05", "Salt Flats Route Tour (Trip F)"),
+      codigosExternos: [{ agencia: "Journaway", codigo: "SPAE05", nombreExterno: null }],
+    };
+    expect(filtrarCatalogo([...filas, deJournaway], "journaway").map((f) => f.codigo)).toEqual(["SPAE05"]);
+    expect(filtrarCatalogo([...filas, deJournaway], "TourRadar").map((f) => f.codigo)).toEqual(["OD010A"]);
+    expect(esDeJournaway(deJournaway)).toBe(true);
+    expect(esDeJournaway(filas[2])).toBe(false);
+  });
+
+  it("debajo del código van los códigos de otras agencias, no el propio ni los nombres de Journaway (spec M2-08 #11)", () => {
+    const f: FilaCatalogo = {
+      ...fila("IGRE01", "Argentina Side"),
+      codigosExternos: [
+        { agencia: "HI Travel", codigo: "IGRE01", nombreExterno: null },
+        { agencia: "Journaway", codigo: "IGRE01", nombreExterno: null },
+        { agencia: "Journaway", codigo: "argentina side of the falls", nombreExterno: "Argentina Side of the Falls" },
+        { agencia: "TourRadar", codigo: "160955", nombreExterno: "Iguazu Falls" },
+      ],
+    };
+    expect(codigosDebajoDelCodigo(f)).toEqual([{ agencia: "TourRadar", codigo: "160955", nombreExterno: "Iguazu Falls" }]);
   });
 
   it("búsqueda vacía devuelve todo", () => {

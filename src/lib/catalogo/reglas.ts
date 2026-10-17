@@ -335,11 +335,29 @@ export function normalizarTexto(texto: string): string {
     .trim();
 }
 
+/** La agencia de los nombres de Journaway en `codigo_externo` (spec M2-08; el nombre de `data/agencias.csv`). */
+export const AGENCIA_JOURNAWAY = "Journaway";
+
+/** Un producto del catálogo de Journaway: tiene algún código o nombre de esa agencia (spec M2-08 #10, #11). */
+export function esDeJournaway(fila: Pick<FilaCatalogo, "codigosExternos">): boolean {
+  return fila.codigosExternos.some((c) => c.agencia === AGENCIA_JOURNAWAY);
+}
+
+/**
+ * Los códigos de agencia que se muestran debajo del código: los cortos de las
+ * otras agencias (TourRadar), sin el propio ni los de Journaway, que son
+ * nombres largos y se ven en el detalle (spec M2-08 #11).
+ */
+export function codigosDebajoDelCodigo(fila: Pick<FilaCatalogo, "codigo" | "codigosExternos">): FilaCatalogo["codigosExternos"] {
+  return fila.codigosExternos.filter((c) => c.codigo !== fila.codigo && c.agencia !== AGENCIA_JOURNAWAY);
+}
+
+/** Por código, nombre, códigos y nombres de agencia, y el nombre de la agencia ("journaway"). */
 export function filtrarCatalogo(filas: FilaCatalogo[], busqueda: string): FilaCatalogo[] {
   const q = normalizarTexto(busqueda);
   if (!q) return filas;
   return filas.filter((f) =>
-    [f.codigo, f.nombre, ...f.codigosExternos.flatMap((c) => [c.codigo, c.nombreExterno ?? ""])].some(
+    [f.codigo, f.nombre, ...f.codigosExternos.flatMap((c) => [c.agencia, c.codigo, c.nombreExterno ?? ""])].some(
       (texto) => normalizarTexto(texto).includes(q),
     ),
   );

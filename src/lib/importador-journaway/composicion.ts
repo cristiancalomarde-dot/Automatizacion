@@ -91,7 +91,8 @@ export function parsearInternos(texto: string): ProductoInterno[] {
     const tipo = (r.tipo ?? "").trim() as TipoServicio;
     if (!TIPOS.includes(tipo)) throw error(`tipo «${r.tipo}» inválido (usar ${TIPOS.join(" | ")}).`);
     const queEs = (r.que_es ?? "").trim();
-    const descripcion = (r.descripcion ?? "").trim();
+    // Un salto de línea dentro de la celda vale igual con LF o CRLF (checkout en Windows).
+    const descripcion = (r.descripcion ?? "").replace(/\r\n?/g, "\n").trim();
     if (!queEs || !descripcion) throw error("falta que_es o la descripción.");
     const desde = (r.noche_desde ?? "").trim();
     const cuantas = (r.noches ?? "").trim();

@@ -45,6 +45,11 @@ describe("parsearInternos (data/journaway-internos.csv)", () => {
     ]);
   });
 
+  it("un salto de línea dentro de la descripción queda igual con LF o con CRLF", () => {
+    const [p] = parsearInternos(`${ENCABEZADO_INTERNOS}UYUO01,O,UYU,1,excursion,X,"Línea 1\r\nLínea 2",,,,\r\n`);
+    expect(p.servicios[0].descripcion).toBe("Línea 1\nLínea 2");
+  });
+
   it("tipo desconocido, orden repetido o noches a medias → error con la fila", () => {
     expect(() => parsearInternos(`${ENCABEZADO_INTERNOS}UYUO01,O,UYU,1,trineo,X,Y,,,,\n`)).toThrow(/fila 2.*tipo/);
     expect(() =>

@@ -21,6 +21,9 @@ export const CIUDADES_POR_DESTINO: Record<string, string[]> = {
   LPB: ["BOLIVIA"],
   RIO: ["BRASIL"],
   SAO: ["SAO PAULO"],
+  // M2-08 (Journaway): Isla de Pascua y Punta Arenas.
+  IPC: ["ISLA DE PASCUA"],
+  PUQ: ["PUNTA ARENAS"],
 };
 
 export interface CandidatoProveedor {

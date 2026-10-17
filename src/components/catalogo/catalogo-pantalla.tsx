@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { cargarCatalogo } from "@/lib/catalogo/consultas";
-import { filtrarCatalogo } from "@/lib/catalogo/reglas";
+import { codigosDebajoDelCodigo, esDeJournaway, filtrarCatalogo } from "@/lib/catalogo/reglas";
 import type { FilaCatalogo } from "@/lib/catalogo/tipos";
 import { useConsulta } from "@/lib/catalogo/use-consulta";
 import { formatearFechaHora } from "@/lib/formato";
@@ -95,7 +95,7 @@ function TablaCatalogo({ filas }: { filas: FilaCatalogo[] }) {
             </thead>
             <tbody>
               {visibles.map((fila) => {
-                const externos = fila.codigosExternos.filter((c) => c.codigo !== fila.codigo);
+                const externos = codigosDebajoDelCodigo(fila);
                 return (
                   <tr
                     key={fila.id}
@@ -116,6 +116,7 @@ function TablaCatalogo({ filas }: { filas: FilaCatalogo[] }) {
                       <span>{fila.nombre}</span>{" "}
                       <span className={ui.chips}>
                         {fila.esTour ? <Chip tono="neutro">{T.tour}</Chip> : null}
+                        {esDeJournaway(fila) ? <Chip tono="neutro">{T.journaway}</Chip> : null}
                         {fila.cantidadPendientes > 0 ? (
                           <Chip tono="aviso">{T.pendientes(fila.cantidadPendientes)}</Chip>
                         ) : null}

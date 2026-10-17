@@ -52,6 +52,20 @@ describe("resolverProveedoresDeProducto", () => {
     expect(op).toMatchObject({ prioridad: 1, proveedorNombre: "Rumbo sur", proveedorId: "p-rumbo-ush", sinResolver: false, manual: false });
   });
 
+  it("desempata también en Isla de Pascua y Punta Arenas (destinos nuevos de Journaway)", () => {
+    const dos = crearIndiceProveedores([
+      { id: "p-santiago", nombre_normalizado: "reservas x", ciudad: "SANTIAGO", mails: ["a@x.cl"] },
+      { id: "p-pascua", nombre_normalizado: "reservas x", ciudad: "ISLA DE PASCUA", mails: ["b@x.cl"] },
+      { id: "p-puq", nombre_normalizado: "buses y", ciudad: "PUNTA ARENAS", mails: ["c@y.cl"] },
+      { id: "p-pnt", nombre_normalizado: "buses y", ciudad: "PUERTO NATALES", mails: ["d@y.cl"] },
+    ]);
+    const id = (codigo: string, destino: string, proveedor: string) =>
+      resolverProveedoresDeProducto({ codigo, destino, confirmado: "ok", filas: filas(`${codigo},${proveedor},1,alias,
+`), indice: dos })[0].proveedorId;
+    expect(id("IPCE01", "IPC", "Reservas X")).toBe("p-pascua");
+    expect(id("BUS02", "PUQ", "Buses Y")).toBe("p-puq");
+  });
+
   it("un proveedor que no está en el directorio queda sin resolver (nunca se crea)", () => {
     const [op] = resolverProveedoresDeProducto({
       codigo: "FTEE05",

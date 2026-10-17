@@ -49,6 +49,7 @@ export const TEXTOS = {
       actualizado: "Última edición",
     },
     tour: "Tour",
+    journaway: "Journaway",
     pendientes: (n: number) => (n === 1 ? "1 pendiente" : `${n} pendientes`),
     cantidad: (n: number) => (n === 1 ? "1 producto" : `${n} productos`),
   },
