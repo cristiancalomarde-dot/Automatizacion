@@ -9,7 +9,8 @@
  */
 
 /** Rutas que no requieren sesión: la pantalla de login y el callback de OAuth. */
-const RUTAS_PUBLICAS = ["/login", "/auth/callback"] as const;
+// M2-07: los cron de Vercel llegan sin sesión; los protege CRON_SECRET dentro de la ruta.
+const RUTAS_PUBLICAS = ["/login", "/auth/callback", "/api/cron"] as const;
 
 export function esRutaPublica(pathname: string): boolean {
   return RUTAS_PUBLICAS.some(

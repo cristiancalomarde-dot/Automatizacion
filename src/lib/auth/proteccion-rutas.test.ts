@@ -7,6 +7,12 @@ describe("esRutaPublica", () => {
     expect(esRutaPublica("/auth/callback")).toBe(true);
   });
 
+  it("/api/cron es pública: la protege CRON_SECRET en la ruta, no la sesión (spec M2-07 #5)", () => {
+    expect(esRutaPublica("/api/cron/leer-sales")).toBe(true);
+    expect(esRutaPublica("/api/cronometro")).toBe(false);
+    expect(esRutaPublica("/api/otra")).toBe(false);
+  });
+
   it("cualquier otra ruta no es pública", () => {
     expect(esRutaPublica("/")).toBe(false);
     expect(esRutaPublica("/catalogo")).toBe(false);

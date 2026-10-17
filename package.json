@@ -21,7 +21,8 @@
     "importar:codigos-tourradar": "tsx scripts/importar-codigos-tourradar.ts",
     "probar:emparejado": "tsx --conditions=react-server scripts/probar-emparejado.ts",
     "probar:intercambio": "tsx --conditions=react-server scripts/probar-intercambio.ts",
-    "probar:mails": "tsx --conditions=react-server scripts/probar-mails.ts"
+    "probar:mails": "tsx --conditions=react-server scripts/probar-mails.ts",
+    "leer:sales": "tsx --conditions=react-server scripts/leer-sales.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.128.0",
