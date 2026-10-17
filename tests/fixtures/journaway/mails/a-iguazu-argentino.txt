@@ -1,0 +1,37 @@
+Remitente: Agente Ejemplo von journaway <de@journaway.com>
+
+Dear Team,
+
+please book as follows and as per agreed rates and cancellation conditions:
+
+Booking information:
+Tour: From Foz do Iguaçu: Half-day tour to the Argentinean side of Iguazú Falls
+Date: 14.06.2027
+Pax: 2
+Pick up / Drop off: Hotel Rafain Centro
+
+Client reference:
+
+operaciones3@hitravel.com.ar
+
+Travellers:
+Reisender: 0
+Anrede: mrs
+Vorname: Klara Katharina
+Nachname: Ejemplo
+Nationality: Deutschland
+Ist Fahrer: False
+Geburtsdatum: 09.03.1978
+
+Reisender: 1
+Anrede: mr
+Vorname: Lenn
+Nachname: Ejemplo
+Nationality: Deutschland
+Ist Fahrer: False
+Geburtsdatum: 04.03.2008
+
+Let us know if you can confirm this booking.
+Thank you very much in advance.
+
+Kind regards,

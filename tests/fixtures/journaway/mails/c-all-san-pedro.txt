@@ -1,0 +1,56 @@
+Remitente: Operaciones Ejemplo von journaway GmbH <operations@journaway.com>
+
+Dear all,
+please book as follows and as per agreed rates and cancellation conditions:
+
+Booking information:
+Trip Number: 62992
+Trip Link: https://www.journaway.com/de/goto/62992
+
+Package All San Pedro de Atacama 8 Days - Transport + Activities
+
+Pax: 2
+All Hotels are booked by us.
+
+Additional services:
+San Pedro de Atacama: Astronomy Tour in the Atacama Desert - 16.03.2027
+San Pedro de Atacama: Tour to the Tatio Geysers - 17.03.2027
+San Pedro de Atacama: Tour through the Moon Valley - 17.03.2027
+San Pedro de Atacama: Tour to the Quepiaco River, Monjes de la Pacana, and the Salt Flats - 18.03.2027
+San Pedro de Atacama: Tour to Rainbow Valley - 19.03.2027
+San Pedro de Atacama: Full-Day Tour to the Red Rocks and Altiplano Lagoons - 20.03.2027
+San Pedro de Atacama: Tour to Laguna Cejar - 21.03.2027
+
+Transfers:
+
+Flights:
+16.03.2027 - Comodoro Arturo Merino Benítez International Airport(SCL) nach: El Loa Airport(CJC) LATAM Airlines Group LA156; Abflug: 15:33 - Ankunft: 17:41
+---------------------------------------
+23.03.2027 - El Loa Airport(CJC) nach: Comodoro Arturo Merino Benítez International Airport(SCL) LATAM Airlines Group LA377; Abflug: 20:39 - Ankunft: 22:43
+
+Client reference:
+Mrs. Ines Probe
+ines.probe@example.de
++49 150 0000002
+
+Travellers:
+Anrede: mrs
+Vorname: Ines
+Nachname: Probe
+Nationality: Deutschland
+Geburtsdatum: 29.01.1974
+
+Anrede: mrs
+Vorname: Sara
+Nachname: Muster
+Nationality: Deutschland
+Geburtsdatum: 26.05.1985
+
+Let us know if you can confirm this booking. If you have any other booking numbers than ours, please provide them to us.
+Thank you very much in advance.
+
+Kind regards,
+
+Operaciones
+journaway - discover yourself
+operations@journaway.com

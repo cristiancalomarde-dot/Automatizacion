@@ -1,0 +1,12 @@
+senal,texto,codigos,dia,nota
+hotel_tayka,Tayka del Desierto,,,"Spec M2-09 #6: un tour con pick up en un hotel Tayka es el Overland de Imperio Inca (SPAP05 o SPAP06)"
+hotel_tayka,Tayka del Sal,,,"Así lo escribe Journaway en el mail de ejemplo SPAP05"
+hotel_tayka,Tayka de Sal,,,"Así se llama el hotel (tarifario 2027)"
+dia_overland,"From San Pedro: Sol de Mañana Geysers, Licancabur Volcano & Laguna Colorada",UYUO01,1,"Día 1 del Overland (mail de ejemplo SPAP05)"
+dia_overland,Siloli: Full-day tour to the Siloli Desert & the Black Lagoon,UYUO01,2,"Día 2 del Overland"
+dia_overland,Salar de Uyuni: Full-day tour to Uyuni,UYUO01,3,"Día 3 del Overland"
+familia_tayka,San Pedro de Atacama + Uyuni Salt Flats,SPAP05 SPAP06,,"El título sin N/D indica la familia Tayka; cuál de los dos lo deciden las noches en San Pedro"
+titulo_noches,Tayka Hotels 7N/8D,SPAP05,,"Tarifario 2027, Trip D Option 1"
+titulo_noches,Tayka Hotels 8N/9D,SPAP06,,"Tarifario 2027, Trip D Option 2"
+aeropuerto,CJC,SPAP01 SPAP02 SPAP03 SPAP04 SPAP05 SPAP06,,"Los paquetes de San Pedro llegan y salen por Calama: el vuelo que llega fecha el traslado de llegada y cuenta las noches de SPAP05/06; el que sale fecha el de salida"
+nota_tour,Half-day tour to the Argentinean side,IGRE01,,"Journaway lo llama half-day; es el full day"
