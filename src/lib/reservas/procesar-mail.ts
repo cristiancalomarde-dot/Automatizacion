@@ -65,6 +65,12 @@ export interface OpcionesProceso {
    * entre todas las de la agencia y del mismo modo.
    */
   alcance?: () => readonly string[];
+  /**
+   * M2-07 (#13): un mail ya guardado que no terminó de procesarse (sin
+   * `procesado_en`) y no dejó ninguna reserva se vuelve a procesar. Sin esto,
+   * un mail ya guardado nunca se reprocesa.
+   */
+  reintentar?: boolean;
 }
 
 export type AccionPedido = "nueva" | "sumada" | "revision_ambigua" | "posible_duplicada";
@@ -286,13 +292,23 @@ async function aplicarPedido(ctx: ContextoMail, armada: ReservaArmada, pedido: P
   }
 }
 
+/** M2-07: un mail guardado que quedó a medias (sin procesar y sin reservas) se puede reintentar. */
+async function sePuedeReintentar(admin: Cliente, mail: { id: string; procesado_en: string | null }): Promise<boolean> {
+  if (mail.procesado_en) return false;
+  const { count, error } = await admin.from("reserva").select("id", { count: "exact", head: true }).eq("mail_recibido_id", mail.id);
+  if (error) throw new Error(`No se pudo revisar si el mail ya dejó reservas: ${error.message}`);
+  return (count ?? 0) === 0;
+}
+
 /** Procesa un mail de punta a punta. Si ya estaba guardado, no hace nada (fila 1). */
 export async function procesarMail(entrada: MailEntrada, opciones: OpcionesProceso): Promise<ResultadoProceso> {
   const admin = opciones.admin;
   const dePrueba = opciones.dePrueba ?? entrada.dePrueba ?? false;
   const agencia = entrada.agencia ?? agenciaDelRemitente(entrada.remitente);
   const { mail, nuevo } = await guardarMailRecibido({ ...entrada, agencia, dePrueba }, admin);
-  if (!nuevo) return { estado: "ya_procesado", mailRecibidoId: mail.id, pedidos: [], costo: 0 };
+  if (!nuevo && !(opciones.reintentar && (await sePuedeReintentar(admin, mail)))) {
+    return { estado: "ya_procesado", mailRecibidoId: mail.id, pedidos: [], costo: 0 };
+  }
 
   const pendientes: FilaLlamadaIA[] = [];
   const marcarMail = async (cambios: { procesado_en?: string; error_proceso?: string }) => {

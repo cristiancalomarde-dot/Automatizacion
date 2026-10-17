@@ -60,7 +60,8 @@ export async function guardarMailRecibido(
   cliente: Cliente = clientePorDefecto(),
 ): Promise<{ mail: MailRecibido; nuevo: boolean }> {
   const remitente = direccionDelRemitente(entrada.remitente) ?? entrada.remitente.trim().toLowerCase();
-  const huella = huellaDelMail({
+  // M2-07 pasa la huella armada con el sobre (sin el cuerpo), para reconocer el mail antes de bajarlo.
+  const huella = entrada.huella ?? huellaDelMail({
     messageId: entrada.messageId,
     remitente,
     fecha: entrada.fechaMail,

@@ -71,6 +71,11 @@ export interface MailEntrada {
   /** La agencia reconocida por el remitente; null si no se reconoció. */
   agencia?: string | null;
   dePrueba?: boolean;
+  /**
+   * M2-07: la huella ya calculada con el sobre (Message-ID, o remitente + fecha +
+   * asunto si no tiene). Sin esto, `guardarMailRecibido` la calcula (`huella.ts`).
+   */
+  huella?: string | null;
 }
 
 export interface MailRecibido {
