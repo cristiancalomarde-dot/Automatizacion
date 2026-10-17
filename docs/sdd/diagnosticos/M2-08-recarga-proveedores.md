@@ -1,21 +1,15 @@
 # Recarga del directorio de proveedores
 
-Recargué el directorio desde **Proveedores Hi Travel 2026 para IA.xlsx** (2026-10-17). Leí 266 proveedores: 4 nuevos y 262 que ya estaban (con sus datos al día).
+Recargué el directorio desde **Proveedores Hi Travel 2026 para IA.xlsx** (2026-10-17). Leí 269 proveedores: 3 nuevos y 266 que ya estaban (con sus datos al día).
 
 ## Qué cambió
 
-- **Nuevo:** Nativo Experience, proveedor: Patagonia Profunda (CALAFATE), mail reservas@patagoniaprofunda.com, producto@patagoniaprofunda.com.
-- **Nuevo:** Vai Moana, proveedor CL Mundo (ISLA DE PASCUA), mail gabriela@clmundo.cl.
-- **Nuevo:** Mata Nui (ISLA DE PASCUA), WhatsApp.
-- **Nuevo:** Kona Tau (ISLA DE PASCUA), WhatsApp.
-- **Cambió el contacto:** El Pueblito, proveedor Cuenca del Plata (IGUAZU): antes mail reservas3@cuencadelplata.com, ahora mail reservas8@cuencadelplata.com.
-- **Cambió el contacto:** Botanica House, proveedor Cuenca del Plata (IGUAZU): antes mail reservas3@cuencadelplata.com, ahora mail reservas8@cuencadelplata.com.
-- **Cambió el contacto:** La Aldea de la Selva, proveedor Cuenca del Plata (IGUAZU): antes mail reservas3@cuencadelplata.com, ahora mail reservas8@cuencadelplata.com.
-- **Cambió el contacto:** Glamping Selva Iguazu, proveedor Cuenca del Plata (IGUAZU): antes mail reservas3@cuencadelplata.com, ahora mail reservas8@cuencadelplata.com.
-- **Cambió el contacto:** Paquetes 105 Premium: Transfer in+out en IGR, Lado Arg, lado Bra (IGUAZU): antes mail reservas3@cuencadelplata.com, ahora mail reservas8@cuencadelplata.com.
-- **Cambió el contacto:** Paquete 105 Premium desde Foz: Transfer in+out en Foz/Igu, Lado Arg, Lado Bra (IGUAZU): antes mail reservas3@cuencadelplata.com, ahora mail reservas8@cuencadelplata.com.
-- **Cambió el contacto:** Lado Brasilero Premium (IGUAZU): antes mail reservas3@cuencadelplata.com, ahora mail reservas8@cuencadelplata.com.
-- **Cambió el contacto:** Lado Argentino Premium (IGUAZU): antes mail reservas3@cuencadelplata.com, ahora mail reservas8@cuencadelplata.com.
+- **Nuevo:** Ruinas de San Ignacio and Minas de Wanda full day IGRE03 (IGUAZU), mail reservas8@cuencadelplata.com.
+- **Nuevo:** Transfers IGU - Puerto Iguazu Hotels (regular 7 AM - 9 PM; privado de noche) IGRT01 (IGUAZU), mail reservas8@cuencadelplata.com.
+- **Nuevo:** PKT 101 x Foz: Transfer in + UN lado (argentino o brasileño) + transfer out IGRP02 (IGUAZU), mail reservas8@cuencadelplata.com.
+- **Cambió de nombre:** “Paquete 105 Premium desde Foz: Transfer in+out en Foz/Igu, Lado Arg, Lado Bra” ahora es “Paquete 105 Premium desde Foz: Transfer in+out en Foz/Igu, Lado Arg, Lado Bra IGRP01” (IGUAZU, mismo mail). Lo actualicé; los servicios que lo usaban siguen apuntándole.
+- **Cambió de nombre:** “Lado Brasilero Premium” ahora es “Excursion Lado Brasilero Premium IGRE02” (IGUAZU, mismo mail). Lo actualicé; los servicios que lo usaban siguen apuntándole.
+- **Cambió de nombre:** “Lado Argentino Premium” ahora es “Excursion Lado Argentino Premium IGRE01” (IGUAZU, mismo mail). Lo actualicé; los servicios que lo usaban siguen apuntándole.
 
 ## Ya no están en el Excel
 

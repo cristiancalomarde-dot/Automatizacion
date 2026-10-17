@@ -4,7 +4,8 @@
 // consultas reales y una sesión del equipo, contra la base de pruebas (después
 // de `importar:journaway`). El recorrido del owner: buscar «journaway» → 53
 // productos; abrir SPAP05 → sus 7 partes, el Overland con los Tayka y el bus a
-// La Paz, todo a Imperio Inca; abrir IGRP02 → falta el proveedor.
+// La Paz, todo a Imperio Inca; abrir IGRP02 → su fila de Cuenca del Plata (desde el
+// 2026-10-17 el owner tiene una fila por producto; antes faltaba el proveedor).
 //
 // Solo lectura.
 import type { SupabaseClient } from "@supabase/supabase-js";
@@ -73,9 +74,10 @@ const ESPERA = { timeout: 30_000 };
     expect(texto).not.toContain("tramos de los tours");
   }, 60_000);
 
-  it("3. IGRP02 se ve pendiente: falta el proveedor", async () => {
+  it("3. IGRP02 se pide a su fila de Cuenca del Plata, con mail, y no se ve pendiente", async () => {
     await abrir("IGRP02");
-    expect((await screen.findAllByText(/Cuenca del Plata, mail general/, {}, ESPERA)).length).toBeGreaterThan(0);
-    expect(document.body.textContent).toMatch(/no está en el directorio/);
+    expect((await screen.findAllByText(/PKT 101 x Foz/, {}, ESPERA)).length).toBeGreaterThan(0);
+    expect(document.body.textContent).toContain("reservas8@cuencadelplata.com");
+    expect(document.body.textContent).not.toMatch(/no está en el directorio/);
   }, 60_000);
 });

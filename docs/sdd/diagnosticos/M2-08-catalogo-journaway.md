@@ -33,12 +33,12 @@ En el catálogo de la app, escribí «journaway» en el buscador para verlos a t
 | SPAT01 | Regular shuttle Calama Airport - San Pedro - Calama Airport | a mano en Transvip |
 | SPAT02 | Transfer San Pedro - Hito Cajon regular | Imperio Inca (reservas.imperioincaturismo@gmail.com) |
 | UYUO01 | Overland privado San Pedro – Uyuni en hoteles Tayka | Imperio Inca (reservas.imperioincaturismo@gmail.com) |
-| IGRE01 | Argentina Side of the Falls, full day, Premium small groups | Lado Argentino Premium (reservas8@cuencadelplata.com) |
-| IGRE02 | Brazilian Side of the Falls, half day, Premium small groups (max 15) | Lado Brasilero Premium (reservas8@cuencadelplata.com) |
-| IGRE03 | Ruinas de San Ignacio and Minas de Wanda full day | falta: «Cuenca del Plata, mail general» no está en el Excel de proveedores |
-| IGRP01 | Package 1: Transfers & Excursions in Small Groups | Paquete 105 Premium desde Foz: Transfer in+out en Foz/Igu, Lado Arg, Lado Bra (reservas8@cuencadelplata.com) |
-| IGRP02 | Package 2: Transfers & Excursions in Small Groups | falta: «Cuenca del Plata, mail general» no está en el Excel de proveedores |
-| IGRT01 | Transfers IGU - Puerto Iguazu Hotels (regular 7 AM - 9 PM; privado de noche) | falta: «Cuenca del Plata, mail general» no está en el Excel de proveedores |
+| IGRE01 | Argentina Side of the Falls, full day, Premium small groups | Excursion Lado Argentino Premium IGRE01 (reservas8@cuencadelplata.com) |
+| IGRE02 | Brazilian Side of the Falls, half day, Premium small groups (max 15) | Excursion Lado Brasilero Premium IGRE02 (reservas8@cuencadelplata.com) |
+| IGRE03 | Ruinas de San Ignacio and Minas de Wanda full day | Ruinas de San Ignacio and Minas de Wanda full day IGRE03 (reservas8@cuencadelplata.com) |
+| IGRP01 | Package 1: Transfers & Excursions in Small Groups | Paquete 105 Premium desde Foz: Transfer in+out en Foz/Igu, Lado Arg, Lado Bra IGRP01 (reservas8@cuencadelplata.com) |
+| IGRP02 | Package 2: Transfers & Excursions in Small Groups | PKT 101 x Foz: Transfer in + UN lado (argentino o brasileño) + transfer out IGRP02 (reservas8@cuencadelplata.com) |
+| IGRT01 | Transfers IGU - Puerto Iguazu Hotels (regular 7 AM - 9 PM; privado de noche) | Transfers IGU - Puerto Iguazu Hotels (regular 7 AM - 9 PM; privado de noche) IGRT01 (reservas8@cuencadelplata.com) |
 | BUS01 | Bus Punta Arenas (ciudad o aeropuerto) - Puerto Natales, y vuelta | a mano en Kupos |
 | BUS02 | Bus Punta Arenas - Ushuaia, y vuelta | a mano en Plataforma10; si no hay lugar, Patagonia planet (excursiones@patagoniaplanet.com) |
 | BUS03 | Bus Puerto Natales - El Calafate | a mano en Plataforma10; si no hay lugar, Patagonia planet (excursiones@patagoniaplanet.com) |
@@ -149,10 +149,7 @@ Van solo dentro de un paquete. Su código es interno: Journaway no lo pone en la
 
 ## Falta el proveedor
 
-Mientras falte, la app los muestra como pendientes y no se les puede armar el pedido.
-
-- **Agregar en el Excel de proveedores una fila «Cuenca del Plata, mail general»** con el mail reservas8@cuencadelplata.com, para: IGRE03 (Ruinas de San Ignacio and Minas de Wanda full day), IGRP02 (Package 2: Transfers & Excursions in Small Groups), IGRT01 (Transfers IGU - Puerto Iguazu Hotels (regular 7 AM - 9 PM; privado de noche)).
-  Es una sola fila para los tres: dijiste que se piden al mail general de Cuenca del Plata, sin filas propias. Ojo con el nombre: si la fila se llamara solo «Cuenca del Plata», los paquetes de Iguazú de Kilroy y TourRadar dejarían de pedirse hotel por hotel. Otra opción es que vayan a una fila de Cuenca del Plata que ya existe (todas usan el mismo mail): avisá cuál y se cambia.
+Ninguno: todos los productos saben a quién se le piden.
 
 ## Lo que se hace a mano
 

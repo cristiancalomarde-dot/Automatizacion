@@ -20,9 +20,7 @@ const leer = (ruta: string) => readFileSync(resolve(RAIZ, ruta), "utf-8");
 
 (HAY ? describe : describe.skip)("el catálogo de Journaway con la planilla real y data/", () => {
   const proveedores = parsearProveedoresJournaway(leer(ARCHIVOS_JOURNAWAY.proveedores));
-  const nombresDirectorio = [...new Set(proveedores.filter((p) => p.modo === "alias").map((p) => p.proveedor))].filter(
-    (n) => n !== "Cuenca del Plata, mail general",
-  );
+  const nombresDirectorio = [...new Set(proveedores.filter((p) => p.modo === "alias").map((p) => p.proveedor))];
   const indice = crearIndiceProveedores(nombresDirectorio.map((n) => ({ id: `id:${n}`, nombre_normalizado: normalizarNombre(n) })));
   const plan = planificarJournaway({
     planilla: leerPlanillaJournaway(abrirPlanillaJournaway(resolve(RAIZ, RUTA_PLANILLA_JOURNAWAY))),
@@ -66,11 +64,14 @@ const leer = (ruta: string) => readFileSync(resolve(RAIZ, ruta), "utf-8");
     expect(p("SPAT01").servicios[0]).toMatchObject({ reserva_manual: true, proveedor_sin_resolver: false });
   });
 
-  it("IGRP02, IGRT01 e IGRE03 van al mail general de Cuenca del Plata, que no está en el directorio", () => {
-    for (const c of ["IGRP02", "IGRT01", "IGRE03"]) {
-      expect(p(c).servicios[0], c).toMatchObject({ booking_supplier_nombre: "Cuenca del Plata, mail general", proveedor_sin_resolver: true });
-    }
-    expect(plan.productos.flatMap((x) => x.servicios).filter((s) => s.proveedor_sin_resolver)).toHaveLength(3);
+  it("Cuenca del Plata: cada producto de Iguazú va a su fila (owner, 2026-10-17); ninguno queda sin proveedor", () => {
+    expect(bs("IGRE01")).toEqual(["Excursion Lado Argentino Premium IGRE01"]);
+    expect(bs("IGRE02")).toEqual(["Excursion Lado Brasilero Premium IGRE02"]);
+    expect(bs("IGRE03")).toEqual(["Ruinas de San Ignacio and Minas de Wanda full day IGRE03"]);
+    expect(bs("IGRT01")).toEqual(["Transfers IGU - Puerto Iguazu Hotels (regular 7 AM - 9 PM; privado de noche) IGRT01"]);
+    expect(bs("IGRP01")).toEqual(["Paquete 105 Premium desde Foz: Transfer in+out en Foz/Igu, Lado Arg, Lado Bra IGRP01"]);
+    expect(bs("IGRP02")).toEqual(["PKT 101 x Foz: Transfer in + UN lado (argentino o brasileño) + transfer out IGRP02"]);
+    expect(plan.productos.flatMap((x) => x.servicios).filter((s) => s.proveedor_sin_resolver)).toEqual([]);
   });
 
   it("SPAP01 tiene 5 partes en orden con sus días; SPAP03 termina con el shuttle solo de salida", () => {

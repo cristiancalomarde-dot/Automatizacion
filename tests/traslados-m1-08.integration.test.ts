@@ -223,7 +223,7 @@ interface FilaServicio {
     expect(await pedidoA("OD010D", /Cuenca del Pla/)).toEqual([
       "El Pueblito → El Pueblito, proveedor Cuenca del Plata",
       "La Aldea → La Aldea de la Selva, proveedor Cuenca del Plata",
-      "Paquete Receptvo 105 Premium x Foz → Paquete 105 Premium desde Foz: Transfer in+out en Foz/Igu, Lado Arg, Lado Bra",
+      "Paquete Receptvo 105 Premium x Foz → Paquete 105 Premium desde Foz: Transfer in+out en Foz/Igu, Lado Arg, Lado Bra IGRP01",
     ]);
     // ningún servicio apunta a la fila suelta "Hosteria Fitz roy" (la duplicada que el owner pidió borrar)
     const { data: sueltas } = await admin.from("proveedor").select("id").eq("nombre", "Hosteria Fitz roy");

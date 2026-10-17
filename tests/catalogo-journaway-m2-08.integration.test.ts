@@ -168,11 +168,16 @@ interface Servicio {
     expect((await servicios("IGRP01"))[0].bs!.nombre).toMatch(/^Paquete 105 Premium desde Foz/);
   });
 
-  it("#3 IGRP02, IGRT01 e IGRE03 quedan sin proveedor (el mail general de Cuenca del Plata no está en el directorio)", async () => {
-    for (const c of ["IGRP02", "IGRT01", "IGRE03"]) {
+  it("#3 Cuenca del Plata: IGRP02, IGRT01 e IGRE03 resueltos, cada uno a su fila nueva con reservas8@ (owner, 2026-10-17)", async () => {
+    const filas: Record<string, RegExp> = { IGRP02: /^PKT 101 x Foz/, IGRT01: /^Transfers IGU - Puerto Iguazu Hotels/, IGRE03: /^Ruinas de San Ignacio and Minas de Wanda/ };
+    for (const [c, fila] of Object.entries(filas)) {
       const [s] = await servicios(c);
-      expect(s, c).toMatchObject({ booking_supplier_id: null, proveedor_sin_resolver: true, booking_supplier_nombre: "Cuenca del Plata, mail general" });
+      expect(s.proveedor_sin_resolver, c).toBe(false);
+      expect(s.bs!.nombre, c).toMatch(fila);
+      expect(s.bs!.mails, c).toEqual(["reservas8@cuencadelplata.com"]);
     }
+    expect((await servicios("IGRE01"))[0].bs!.nombre).toBe("Excursion Lado Argentino Premium IGRE01");
+    expect((await servicios("IGRE02"))[0].bs!.nombre).toBe("Excursion Lado Brasilero Premium IGRE02");
   });
 
   it("#4 los datos del owner (a)-(h)", async () => {

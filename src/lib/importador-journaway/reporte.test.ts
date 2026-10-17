@@ -13,9 +13,7 @@ const RAIZ = resolve(__dirname, "..", "..", "..");
 
 (hayPlanillaJournaway(RAIZ) ? describe : describe.skip)("reporteJournawayMarkdown", () => {
   const insumos = leerInsumosJournaway(RAIZ);
-  const nombres = [...new Set(insumos.proveedores.filter((p) => p.modo === "alias").map((p) => p.proveedor))].filter(
-    (n) => n !== "Cuenca del Plata, mail general",
-  );
+  const nombres = [...new Set(insumos.proveedores.filter((p) => p.modo === "alias").map((p) => p.proveedor))];
   const directorio = nombres.map((n) => ({ id: `id:${n}`, nombre: n, nombre_normalizado: normalizarNombre(n), mails: [`${n.split(" ")[0].toLowerCase()}@mail.com`], canal: "mail" }));
   const plan = planificarJournaway({ ...insumos, indice: crearIndiceProveedores(directorio) });
   const md = reporteJournawayMarkdown({
@@ -44,11 +42,20 @@ const RAIZ = resolve(__dirname, "..", "..", "..");
     expect(s).toMatch(/BUS02.*a mano en Plataforma10.*si no hay lugar.*Patagonia planet/i);
   });
 
-  it("IGRP02, IGRT01 e IGRE03 sin proveedor, con el pedido concreto de qué fila agregar", () => {
-    const s = seccion("Falta el proveedor");
-    for (const c of ["IGRP02", "IGRT01", "IGRE03"]) expect(s).toContain(c);
-    expect(s).toMatch(/Agregar .*fila .*«Cuenca del Plata, mail general»/);
-    expect(s).toContain("reservas8@cuencadelplata.com");
+  it("con todo resuelto, dice que no falta ninguno; IGRP02 va a su fila de Cuenca del Plata", () => {
+    expect(seccion("Falta el proveedor")).toContain("Ninguno");
+    expect(seccion("A quién se le pide cada uno")).toMatch(/IGRP02.*PKT 101 x Foz/);
+  });
+
+  it("un proveedor que no está en el directorio: el pedido concreto de qué fila agregar, con el mail si la nota lo trae", () => {
+    const filas = insumos.proveedores.map((f) =>
+      ["IGRE03", "IGRT01"].includes(f.codigo) ? { ...f, proveedor: "Proveedor Fantasma", nota: "Mail: fantasma@ejemplo.com" } : f,
+    );
+    const otro = planificarJournaway({ ...insumos, proveedores: filas, indice: crearIndiceProveedores(directorio) });
+    const s = reporteJournawayMarkdown({ fecha: "2026-10-17", plan: otro, proveedores: new Map(directorio.map((d) => [d.id, d])), filasProveedores: filas })
+      .split("\n## ")
+      .find((x) => x.startsWith("Falta el proveedor"))!;
+    expect(s).toMatch(/Agregar en el Excel de proveedores una fila «Proveedor Fantasma»\*\* con el mail fantasma@ejemplo\.com, para: IGRE03 .*IGRT01/);
   });
 
   it("lista los manuales (Plataforma10 y Transvip) y los nombres por producto, con los que no tienen nombre de mail", () => {

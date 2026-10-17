@@ -155,14 +155,6 @@ export function reporteJournawayMarkdown(datos: {
       l.push(
         `- **Agregar en el Excel de proveedores una fila «${nombre}»**${mails.length ? ` con el mail ${mails.join(", ")}` : " con su mail"}, para: ${items}.`,
       );
-      if (/cuenca del plata/i.test(nombre)) {
-        l.push(
-          "  Es una sola fila para los tres: dijiste que se piden al mail general de Cuenca del Plata, sin filas propias. " +
-            "Ojo con el nombre: si la fila se llamara solo «Cuenca del Plata», los paquetes de Iguazú de Kilroy y TourRadar " +
-            "dejarían de pedirse hotel por hotel. Otra opción es que vayan a una fila de Cuenca del Plata que ya existe " +
-            "(todas usan el mismo mail): avisá cuál y se cambia.",
-        );
-      }
     }
   }
 
