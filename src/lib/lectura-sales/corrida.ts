@@ -31,9 +31,9 @@ import { DIAS_VENTANA, desdeCuandoLeer } from "./ventana";
  *    Message-ID / huella o carpeta + UID) no se vuelve a mirar (#12).
  * 4. El filtro de entrada de M2-06 (`filtro-entrada.ts`) decide con el sobre:
  *    leer con IA, registrar sin IA (Jysk, cotizaciones, TourRadar que no es
- *    statement) o saltear sin rastro (respuestas que no esperan un vuelo,
- *    Journaway hasta M2-09). Solo se baja el cuerpo de lo que se lee o se
- *    registra.
+ *    statement, lo de Journaway que no es un pedido de reserva) o saltear sin
+ *    rastro (respuestas que no esperan un vuelo). Journaway se lee desde M2-09.
+ *    Solo se baja el cuerpo de lo que se lee o se registra.
  * 5. El circuito de M2-06 (`procesarMail`), con las reservas SIN la marca de
  *    prueba (#11). Un mail que falla queda "pendiente" y se reintenta; a los 3
  *    intentos, "no se pudo leer" (#13). El techo de gasto corta la IA y deja lo
@@ -119,7 +119,7 @@ interface Candidato {
   uidValidity: number;
   huella: string;
   agencia: string;
-  /** Null: Kilroy sin asunto, se decide con el cuerpo. */
+  /** Null: Kilroy o Journaway sin asunto, se decide con el cuerpo. */
   decision: DecisionEntrada | null;
   visto: Visto | null;
   fuente?: Buffer;
@@ -269,7 +269,8 @@ async function juntarCandidatos(
         }
         huellasVistas.add(huella);
         let decision: DecisionEntrada | null = null;
-        if (!(agencia === "Kilroy" && !sobre.asunto)) {
+        // Kilroy y Journaway sin asunto: el pedido de reserva se reconoce por el cuerpo (no está en el sobre).
+        if (!((agencia === "Kilroy" || agencia === "Journaway") && !sobre.asunto)) {
           decision = await decidirEntrada(
             { remitente: sobre.remitente, asunto: sobre.asunto, cuerpoTexto: null },
             { dePrueba: false, buscarReservas: (asunto, ag) => cargarReservasDelAsunto(o.admin, asunto, ag, false, o.alcance?.() ?? null) },
@@ -280,7 +281,7 @@ async function juntarCandidatos(
           }
         }
         if (visto) item("reintentar", `Quedó pendiente (${visto.intentos} intentos fallidos)`);
-        else if (!decision) item("leer", "Kilroy sin asunto: se decide con el cuerpo");
+        else if (!decision) item("leer", `${agencia} sin asunto: se decide con el cuerpo`);
         else if (decision.leer) item("leer", decision.motivo === "espera_vuelo" ? "Respuesta con el vuelo que espera una reserva" : "Mail original de reserva");
         else item("registrar", TEXTO_SALTEO[decision.motivo]);
         elegidos.push({ sobre, tipo, uidValidity, huella, agencia, decision, visto });

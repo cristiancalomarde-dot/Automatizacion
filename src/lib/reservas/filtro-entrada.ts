@@ -10,7 +10,12 @@ import { numerosDelAsunto, respuestaMereceLectura, type ReservaParaRespuesta } f
  *    es un mail de agencia.
  * 2. Jysk no se lee (owner, 2026-10-13: el 95% son viajes a medida). El mail se
  *    registra, sin IA, para no volver a mirarlo.
- * 3. Journaway entra con M2-09.
+ * 3. Journaway (M2-09): un original es un pedido de reserva si el asunto dice
+ *    "Booking" ("Program Booking / Client … / ID …", "de-DE Activity Booking",
+ *    "de-DE Transfer + Activity Booking") o, sin asunto, si el cuerpo dice
+ *    "please book as follows" / "please book the following" (así escribe
+ *    siempre). Un original que nombra una reserva ya cargada (su ID de 11
+ *    dígitos) sigue por M2-04. Lo demás (novedades, facturas) se registra sin IA.
  * 3a. TourRadar: se lee solo el estado de cuenta en PDF que manda
  *    system@sent-via.netsuite.com (owner, 2026-10-16). Trae habitación, precio
  *    neto, cancelaciones y cargos; llega casi junto con el mail "BOOKING
@@ -31,13 +36,13 @@ import { numerosDelAsunto, respuestaMereceLectura, type ReservaParaRespuesta } f
  * Solo decide: no guarda nada ni llama a la IA.
  */
 
-/** Las agencias cuyos mails se leen hoy. Journaway se suma con M2-09. */
-export const AGENCIAS_QUE_SE_LEEN: ReadonlySet<string> = new Set(["Kilroy", "TourRadar"]);
+/** Las agencias cuyos mails se leen hoy. Journaway desde M2-09. */
+export const AGENCIAS_QUE_SE_LEEN: ReadonlySet<string> = new Set(["Kilroy", "TourRadar", "Journaway"]);
 
 export type MotivoSalteo =
   | "no_es_agencia"
   | "jysk_no_se_lee"
-  | "journaway_m2_09"
+  | "journaway_no_es_reserva"
   | "agencia_no_se_lee"
   | "respuesta_sin_reserva"
   | "respuesta_no_espera_vuelo"
@@ -49,7 +54,8 @@ export type MotivoSalteo =
 export const TEXTO_SALTEO: Readonly<Record<MotivoSalteo, string>> = {
   no_es_agencia: "No es un mail de agencia",
   jysk_no_se_lee: "Jysk no se lee: sus reservas son viajes a medida (decisión del owner)",
-  journaway_m2_09: "Journaway entra con M2-09",
+  journaway_no_es_reserva:
+    'De Journaway se leen solo los pedidos de reserva ("… Booking / Client … / ID …"); este mail se registra sin leer',
   agencia_no_se_lee: "Esa agencia todavía no se lee",
   respuesta_sin_reserva: "Es una respuesta o un reenvío, y su número no es de una reserva cargada",
   respuesta_no_espera_vuelo: "Es una respuesta o un reenvío, y la reserva no está esperando un vuelo",
@@ -68,6 +74,10 @@ export const REMITENTE_STATEMENT_TOURRADAR = "system@sent-via.netsuite.com";
  * frases: por ahora se registran sin IA y sin reserva.
  */
 const RESERVA_KILROY = /new booking|kilroy booking request/i;
+
+/** Journaway (M2-09): los pedidos de reserva dicen "Booking" en el asunto y piden reservar en el cuerpo. */
+const RESERVA_JOURNAWAY_ASUNTO = /\bbooking\b/i;
+const RESERVA_JOURNAWAY_CUERPO = /please book (as follows|the following)/i;
 
 export type DecisionEntrada =
   | { leer: true; agencia: string; motivo: "original" | "espera_vuelo"; reservaIds: string[] }
@@ -88,7 +98,7 @@ export async function decidirEntrada(
   if (agencia === AGENCIA_DESCONOCIDA) return { leer: false, agencia: null, motivo: "no_es_agencia", registrar: false };
   if (agencia === "Jysk") return { leer: false, agencia, motivo: "jysk_no_se_lee", registrar: true };
   if (!(opciones.agenciasQueSeLeen ?? AGENCIAS_QUE_SE_LEEN).has(agencia)) {
-    return { leer: false, agencia, motivo: agencia === "Journaway" ? "journaway_m2_09" : "agencia_no_se_lee", registrar: false };
+    return { leer: false, agencia, motivo: "agencia_no_se_lee", registrar: false };
   }
 
   const sinBase = respuestaMereceLectura(mail.asunto, agencia, [], { dePrueba: opciones.dePrueba });
@@ -99,12 +109,16 @@ export async function decidirEntrada(
       }
       return { leer: false, agencia, motivo: "tourradar_solo_statement", registrar: true };
     }
-    if (agencia !== "Kilroy") return { leer: true, agencia, motivo: "original", reservaIds: [] };
+    if (agencia !== "Kilroy" && agencia !== "Journaway") return { leer: true, agencia, motivo: "original", reservaIds: [] };
     // Sin asunto (una copia .docx sin encabezado), se mira el cuerpo.
     const asunto = mail.asunto?.trim();
-    if (asunto ? RESERVA_KILROY.test(asunto) : RESERVA_KILROY.test(mail.cuerpoTexto ?? "")) {
-      return { leer: true, agencia, motivo: "original", reservaIds: [] };
-    }
+    const esPedido =
+      agencia === "Kilroy"
+        ? asunto
+          ? RESERVA_KILROY.test(asunto)
+          : RESERVA_KILROY.test(mail.cuerpoTexto ?? "")
+        : (!!asunto && RESERVA_JOURNAWAY_ASUNTO.test(asunto)) || RESERVA_JOURNAWAY_CUERPO.test(mail.cuerpoTexto ?? "");
+    if (esPedido) return { leer: true, agencia, motivo: "original", reservaIds: [] };
     // Un original que nombra una reserva ya cargada (cambio, cancelación, vuelo) sigue por M2-04.
     const numeros = new Set(numerosDelAsunto(mail.asunto, agencia));
     const conocidas = numeros.size
@@ -113,7 +127,7 @@ export async function decidirEntrada(
         )
       : [];
     if (conocidas.length) return { leer: true, agencia, motivo: "original", reservaIds: [] };
-    return { leer: false, agencia, motivo: "pedido_cotizacion", registrar: true };
+    return { leer: false, agencia, motivo: agencia === "Journaway" ? "journaway_no_es_reserva" : "pedido_cotizacion", registrar: true };
   }
 
   // Una respuesta de TourRadar (no del statement) no se lee buscando vuelos: van a mano (owner, 2026-10-16).

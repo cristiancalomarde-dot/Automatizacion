@@ -22,8 +22,8 @@ const reserva = (c: Partial<ReservaParaRespuesta> = {}): ReservaParaRespuesta =>
 const sinReservas = () => vi.fn(async () => [] as ReservaParaRespuesta[]);
 
 describe("decidirEntrada", () => {
-  it("las agencias que se leen hoy: Kilroy y TourRadar", () => {
-    expect([...AGENCIAS_QUE_SE_LEEN].sort()).toEqual(["Kilroy", "TourRadar"]);
+  it("las agencias que se leen hoy: Kilroy, TourRadar y Journaway (M2-09)", () => {
+    expect([...AGENCIAS_QUE_SE_LEEN].sort()).toEqual(["Journaway", "Kilroy", "TourRadar"]);
   });
 
   it("un mail original de Kilroy o TourRadar se lee, sin consultar la base", async () => {
@@ -127,10 +127,59 @@ describe("decidirEntrada", () => {
     expect(TEXTO_SALTEO.no_es_agencia).toBe("No es un mail de agencia");
   });
 
-  it("Journaway entra con M2-09", async () => {
-    const d = await decidirEntrada({ remitente: "de@journaway.com", asunto: null }, { buscarReservas: sinReservas(), dePrueba: true });
-    expect(d).toMatchObject({ leer: false, agencia: "Journaway", motivo: "journaway_m2_09" });
-    expect(TEXTO_SALTEO.journaway_m2_09).toBe("Journaway entra con M2-09");
+  describe("Journaway (M2-09)", () => {
+    it("un pedido de reserva original se lee: 'Program Booking', 'Activity Booking', 'Transfer + Activity Booking'", async () => {
+      const buscar = sinReservas();
+      for (const [remitente, asunto] of [
+        ["operations@journaway.com", "Program Booking / Client Inventado / ID 65600000001"],
+        ["Lea von journaway <de@journaway.com>", "de-DE Activity Booking / Client Inventado / ID 65600000002"],
+        ["de@journaway.com", "de-DE Transfer + Activity Booking / Client Inventado / ID 65600000003"],
+        ["otra@journaway.com", "program booking / client inventado / id 65600000004"],
+      ]) {
+        expect(await decidirEntrada({ remitente, asunto }, { buscarReservas: buscar, dePrueba: false })).toEqual({
+          leer: true,
+          agencia: "Journaway",
+          motivo: "original",
+          reservaIds: [],
+        });
+      }
+      expect(buscar).not.toHaveBeenCalled();
+    });
+
+    it("sin asunto (una copia .docx del modo prueba), se mira el cuerpo: 'please book as follows'", async () => {
+      const d = await decidirEntrada(
+        { remitente: "de@journaway.com", asunto: null, cuerpoTexto: "Dear Team,\n\nplease book as follows and as per agreed rates" },
+        { buscarReservas: sinReservas(), dePrueba: true },
+      );
+      expect(d).toMatchObject({ leer: true, agencia: "Journaway", motivo: "original" });
+    });
+
+    it("un original que no es un pedido de reserva se registra sin IA y sin reserva", async () => {
+      const d = await decidirEntrada(
+        { remitente: "newsletter@journaway.com", asunto: "Unsere Reiseideen für den Herbst", cuerpoTexto: "Hallo!" },
+        { buscarReservas: sinReservas(), dePrueba: false },
+      );
+      expect(d).toEqual({ leer: false, agencia: "Journaway", motivo: "journaway_no_es_reserva", registrar: true });
+      expect(TEXTO_SALTEO.journaway_no_es_reserva).toMatch(/De Journaway se leen solo los pedidos de reserva/);
+    });
+
+    it("un original que nombra una reserva ya cargada (cambio, cancelación) sigue por M2-04", async () => {
+      const buscar = vi.fn(async () => [reserva({ agencia: "Journaway", booking_id: "65600000001", de_prueba: false, motivos_revision: [], estado: "recibida" })]);
+      const d = await decidirEntrada(
+        { remitente: "operations@journaway.com", asunto: "Cancellation / Client Inventado / ID 65600000001" },
+        { buscarReservas: buscar, dePrueba: false },
+      );
+      expect(d).toMatchObject({ leer: true, agencia: "Journaway", motivo: "original" });
+    });
+
+    it("una respuesta ('RE: …') no se lee si la reserva no espera un vuelo, como en las demás agencias", async () => {
+      const buscar = vi.fn(async () => [reserva({ agencia: "Journaway", booking_id: "65600000001", estado: "recibida", motivos_revision: [] })]);
+      const d = await decidirEntrada(
+        { remitente: "operations@journaway.com", asunto: "RE: Program Booking / Client Inventado / ID 65600000001" },
+        { buscarReservas: buscar, dePrueba: true },
+      );
+      expect(d).toMatchObject({ leer: false, agencia: "Journaway", motivo: "respuesta_no_espera_vuelo" });
+    });
   });
 
   it("Jysk no se lee, ni siquiera un original; el mail se registra (sin IA)", async () => {
