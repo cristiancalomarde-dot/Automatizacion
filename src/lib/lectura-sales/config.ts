@@ -30,3 +30,15 @@ export function configCasilla(env: Entorno = process.env): ConfigCasilla | null 
 export function lecturaActiva(env: Entorno = process.env): boolean {
   return env.LECTURA_SALES_ACTIVA?.trim().toLowerCase() === "si";
 }
+
+/**
+ * La fecha de arranque (`LECTURA_SALES_DESDE`, ISO): nada anterior se lee. Si
+ * no se entiende, frena: es mejor no leer que traer lo que ya está en gestión.
+ */
+export function arranqueLectura(env: Entorno = process.env): Date | null {
+  const v = env.LECTURA_SALES_DESDE?.trim();
+  if (!v) return null;
+  const d = new Date(v);
+  if (Number.isNaN(d.getTime())) throw new Error("LECTURA_SALES_DESDE no es una fecha válida (formato 2026-10-17T16:00:00Z).");
+  return d;
+}

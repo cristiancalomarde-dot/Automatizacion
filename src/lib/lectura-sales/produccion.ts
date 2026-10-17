@@ -8,7 +8,7 @@ import { cargarDependenciasReservas } from "@/lib/reservas/emparejar/reservas-de
 import { leerMailConIA } from "@/lib/reservas/extraer";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { abrirCasillaImap } from "./casilla";
-import { configCasilla } from "./config";
+import { arranqueLectura, configCasilla } from "./config";
 import { leerSales, type OpcionesLectura, type ResumenCorrida } from "./corrida";
 import { filaVacia, registrarCorrida, type OrigenCorrida } from "./registro";
 
@@ -32,6 +32,7 @@ export function opcionesDeProduccion(origen: OrigenCorrida, extra: Partial<Opcio
   return {
     admin,
     origen,
+    arranque: arranqueLectura(),
     casilla: config ? () => abrirCasillaImap(config) : null,
     registroUso: crearRegistroUsoIASupabase(admin),
     llamadas,

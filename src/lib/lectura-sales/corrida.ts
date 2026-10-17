@@ -16,7 +16,7 @@ import { TEXTOS } from "@/lib/textos";
 import { carpetaInbox, carpetaSpam } from "./carpetas";
 import { ErrorCasilla, type Casilla, type CasillaAbierta, type SobreMail } from "./casilla";
 import { filaVacia, registrarCorrida, terminarCorrida, tomarCandado, type FilaCorrida, type OrigenCorrida } from "./registro";
-import { DIAS_VENTANA, inicioDeLaVentana } from "./ventana";
+import { DIAS_VENTANA, desdeCuandoLeer } from "./ventana";
 
 /**
  * Una corrida de la lectura de sales@ (spec M2-07). La ruta del cron y el
@@ -80,6 +80,8 @@ export interface OpcionesLectura {
   /** Solo lista qué haría: sin IA, sin escribir en la base, sin registro (#6). */
   soloListar?: boolean;
   dias?: number;
+  /** Nada anterior a esta fecha se lee (LECTURA_SALES_DESDE). */
+  arranque?: Date | null;
   ahora?: () => Date;
   /** Reloj para el límite de tiempo (por defecto, Date.now). */
   reloj?: () => number;
@@ -235,7 +237,7 @@ async function juntarCandidatos(
     const carpetas: Array<[string, "inbox" | "spam"]> = [[inbox, "inbox"]];
     if (spam) carpetas.push([spam, "spam"]);
     else fila.avisos.push(T.avisos.sinSpam);
-    const desde = inicioDeLaVentana(ahora, o.dias ?? DIAS_VENTANA);
+    const desde = desdeCuandoLeer(ahora, o.dias ?? DIAS_VENTANA, o.arranque ?? null);
 
     for (const [carpeta, tipo] of carpetas) {
       const { uidValidity, sobres } = await abierta.sobres(carpeta, desde);

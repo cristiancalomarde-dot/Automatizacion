@@ -13,3 +13,13 @@ export function inicioDeLaVentana(ahora: Date, dias: number = DIAS_VENTANA): Dat
 export function dentroDeLaVentana(fecha: Date, ahora: Date, dias: number = DIAS_VENTANA): boolean {
   return fecha.getTime() >= inicioDeLaVentana(ahora, dias).getTime();
 }
+
+/**
+ * Desde cuándo se lee: la ventana, pero nunca antes de la fecha de arranque
+ * (`LECTURA_SALES_DESDE`). Así lo que llegó antes de prender la lectura, que el
+ * equipo ya está gestionando, no entra (owner, 2026-10-17).
+ */
+export function desdeCuandoLeer(ahora: Date, dias: number = DIAS_VENTANA, arranque: Date | null = null): Date {
+  const ventana = inicioDeLaVentana(ahora, dias);
+  return arranque && arranque.getTime() > ventana.getTime() ? arranque : ventana;
+}
