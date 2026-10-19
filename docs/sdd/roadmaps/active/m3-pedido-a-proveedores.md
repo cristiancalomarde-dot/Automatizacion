@@ -11,6 +11,11 @@ tarea pendiente dentro de la reserva. Es el milestone M3 de [`docs/prd.md`](../.
 ## 2. Qué queda afuera
 - **Leer las respuestas de los proveedores.** Llegan a operations@ como siempre y el equipo las
   registra a mano. Registrar la respuesta (confirmada / con cambios / rechazada) es M4.
+- **Para M4 (pedido del owner, 2026-10-19): cambios que afectan a otros pedidos.** Cuando se registre que
+  un alojamiento confirmó otra opción (ej. San Pedro Backpackers sin lugar → Aji Verde), la app actualiza
+  el pick up de los pedidos que todavía no salieron y, para los que ya salieron con el dato viejo, deja
+  una tarea con el mail "Cambio de pick up" ya armado para cada proveedor afectado (Horizonte, Imperio
+  Inca), para aprobar y enviar. La tarea no se cierra hasta que se manda: así no se olvida avisar.
 - **Emitir boletos de bus o mandar WhatsApp.** La app solo deja la tarea anotada; la hace una
   persona en su sistema de siempre (PRD §5).
 - **Mandar algo sin aprobación humana.** Nunca: cada envío lo aprueba una persona (#4).
