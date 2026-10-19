@@ -49,6 +49,12 @@ tarea pendiente dentro de la reserva. Es el milestone M3 de [`docs/prd.md`](../.
 - **Días fijos de excursiones (owner, reconfirmado 2026-10-19), siempre salvo cambio manual:** los
   geysers del Tatio van el día 3 del OD030 (San Pedro Explorer) y Tiwanaco el día 2 del OD031 (La
   Paz Starter). Viven en `data/dias-servicio.csv`; ahí se agregan las que vengan.
+- **Habitación (owner, 2026-10-19):** se pide la que manda la agencia. En el Overland de Imperio Inca
+  (tour regular) se aclara: dorm compartido, DBL o SGL con baño compartido. En los hostels de otros
+  paquetes no se aclara el baño (depende del hostel): "doble" o "single" a secas; el dorm, "dorm compartido".
+- **Pick up y entradas (owner, 2026-10-19):** cada excursión dice dónde se aloja el pax para el pick up.
+  Solo en Journaway, y solo en San Pedro de Atacama con Horizonte, las excursiones se piden con entradas
+  (lista editable en `data/excursiones-con-entrada.csv`).
 - **Lo que reserva la agencia** (los hoteles "booked by us" de Journaway) **no se pide**.
 
 **Formato del pedido (de los ejemplos en `Insumos/Mails/Pedido Proveedor - *.docx`):** en español;
