@@ -68,7 +68,8 @@ export const guardarEnEnviadosImap: GuardarEnEnviados = async (config, crudos) =
     const carpeta = carpetaDeEnviados(lista.map((c) => ({ path: c.path, flags: c.flags, specialUse: c.specialUse })));
     if (!carpeta) return { ok: false, motivo: T.sinCarpetaEnviados };
     for (const crudo of crudos) {
-      const r = await cliente.append(carpeta, crudo, ["\\Seen"]);
+      // Como Uint8Array del entorno: imapflow valida el contenido con instanceof (con jsdom en los tests, un Buffer no pasa).
+      const r = await cliente.append(carpeta, new Uint8Array(crudo), ["\\Seen"]);
       if (!r) return { ok: false, motivo: T.copiaNoResponde };
     }
     return { ok: true, carpeta };
