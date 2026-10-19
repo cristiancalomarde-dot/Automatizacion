@@ -195,3 +195,19 @@ describe("señales rotas (data/journaway-senales.csv con un código que no exist
     ).rejects.toThrow(error);
   });
 });
+
+describe("fechas del viaje dudosas (corrida real del 2026-10-18)", () => {
+  it("si la IA duda solo del inicio y fin del viaje (lo saca de los vuelos) pero cada tour tiene su fecha clara, no va a revisión", async () => {
+    const v = original("C");
+    const ficha = { ...v.ficha, fecha_inicio: { valor: "2027-03-16", confianza: 0.7 }, fecha_fin: { valor: "2027-03-23", confianza: 0.7 } };
+    const { armadas } = await armar({ texto: v.texto, ficha });
+    expect(armadas[0].entrada.estado).toBe("recibida");
+  });
+
+  it("si duda de la fecha de un tour, sí va a revisión", async () => {
+    const v = original("C");
+    const ficha = { ...v.ficha, productos: v.ficha.productos.map((p, i) => (i === 2 ? { ...p, confianza: 0.5 } : p)) };
+    const { armadas } = await armar({ texto: v.texto, ficha });
+    expect(armadas[0].entrada.estado).toBe("para_revision");
+  });
+});

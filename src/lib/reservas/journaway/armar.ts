@@ -6,6 +6,7 @@ import { MOTIVOS_EMPAREJADO } from "../emparejar/motivos";
 import type { FichaLectura, ProductoIA } from "../esquema-ficha";
 import type { MailParaLeer } from "../preparar-mail";
 import { cuerpoDelMail } from "../preparar-mail";
+import { UMBRAL_CONFIANZA } from "../limpiar-ficha";
 import type { ComponenteEntrada, ContactoDelCliente, HotelDeLaAgencia, OrigenEmparejado } from "../tipos";
 import { leerCuerpoJournaway } from "./cuerpo";
 import { MOTIVOS_JOURNAWAY as M, NOTAS_JOURNAWAY as N } from "./motivos";
@@ -175,7 +176,13 @@ export async function armarJournaway(
     .filter((t) => !/booked by us/i.test(t) && !hoteles.some((h) => normal(t).includes(h)));
   const pax = ficha.pax.valor;
   const paxDistinto = pax !== null && pax > 0 && ficha.pasajeros.length > 0 && pax !== ficha.pasajeros.length;
-  const dudosos = ficha.datos_dudosos.filter((d) => !(d === "pax" && paxDistinto));
+  // Las fechas de la reserva salen de cada tour, no del inicio y fin del viaje (que la IA deduce de
+  // los vuelos): si cada tour tiene su fecha clara y ninguna fecha quedó en duda, "fechas" no es una duda.
+  const toursConFechaClara =
+    ficha.productos.length > 0 &&
+    ficha.productos.every((p) => p.fecha_inicio && p.confianza >= UMBRAL_CONFIANZA) &&
+    !ficha.notas.some((n) => /fecha/i.test(n));
+  const dudosos = ficha.datos_dudosos.filter((d) => !(d === "pax" && paxDistinto) && !(d === "fechas" && toursConFechaClara));
 
   const piezas: PiezaJournaway[] = [];
   for (const r of resultado.reservas) {
