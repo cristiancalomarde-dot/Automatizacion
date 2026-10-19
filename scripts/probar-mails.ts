@@ -9,6 +9,7 @@
  *   npm run probar:mails -- --borrar                       # borra TODO lo de prueba (solo si se pide)
  *   npm run probar:mails -- --journaway                    # los 4 mails de Journaway + docs/sdd/diagnosticos/M2-09-journaway.md
  *   npm run probar:mails -- --journaway --base-de-pruebas  # lo mismo contra la base de pruebas (.env.pruebas.local)
+ *   npm run probar:mails -- --journaway --borrar           # borra SOLO lo de prueba de Journaway (mails, reservas, marcas)
  *
  * Cada .docx, .pdf y .eml pasa por el circuito real (filtro de entrada →
  * M2-02 → M2-03 → M2-04) con todo marcado "de prueba". Deja un reporte por
@@ -41,7 +42,7 @@ import { MODELOS, preciosDelModelo } from "@/lib/ia/modelos";
 import { crearRegistroLlamadasSupabase } from "@/lib/ia/registro-llamadas-supabase";
 import { crearRegistroUsoIASupabase } from "@/lib/ia/registro-uso-ia-supabase";
 import { mesActual } from "@/lib/ia/techo-gasto";
-import { borrarTodoLoDePrueba } from "@/lib/modo-prueba/borrar";
+import { borrarPruebaDeJournaway, borrarTodoLoDePrueba } from "@/lib/modo-prueba/borrar";
 import { correrModoPrueba, type ResultadoArchivo } from "@/lib/modo-prueba/corrida";
 import { listarArchivos } from "@/lib/modo-prueba/leer-archivo";
 import { armarReporteMail, nombreDelReporte, nombreVisible } from "@/lib/modo-prueba/reporte";
@@ -298,6 +299,11 @@ async function main() {
   }
   const admin = conectar();
 
+  if (opciones.borrar && opciones.journaway) {
+    const r = await borrarPruebaDeJournaway(admin);
+    console.log(`Se borró lo de prueba de Journaway: ${r.mails} mails, ${r.reservas} reservas (con sus partes, historial, llamadas a la IA y marcas) y ${r.archivosBorrados} PDF. Las reales y lo de prueba de Kilroy y TourRadar no se tocaron.`);
+    return;
+  }
   if (opciones.borrar) {
     const { archivosBorrados } = await borrarTodoLoDePrueba(admin);
     console.log(`Se borró todo lo de prueba (reservas, partes, historial, mails, llamadas a la IA y marcas) y ${archivosBorrados} PDF. Las reales y el gasto en uso_ia no se tocaron.`);

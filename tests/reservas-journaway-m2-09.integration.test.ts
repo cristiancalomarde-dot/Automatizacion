@@ -20,6 +20,8 @@ import type { FichaIA } from "@/lib/reservas/esquema-ficha";
 import { leerMailConIA, type ClienteMensajesIA } from "@/lib/reservas/extraer";
 import { parsearMailDeTexto } from "@/lib/reservas/mail-de-texto";
 import { procesarMail } from "@/lib/reservas/procesar-mail";
+import { guardarMailRecibido } from "@/lib/reservas/guardar";
+import { borrarPruebaDeJournaway } from "@/lib/modo-prueba/borrar";
 import type { MailEntrada } from "@/lib/reservas/tipos";
 import { fichaIAJournaway, original, sinVuelo, textoJournaway } from "./fixtures/journaway/fichas";
 import { tomarBloqueoDatosDePrueba } from "./helpers/bloqueo-datos-de-prueba";
@@ -361,6 +363,40 @@ function entrada(texto: string): MailEntrada {
       const reserva = (await reservasDe(mails!.find((m) => m.remitente === "de@journaway.com")!.id))[0];
       expect(reserva).toMatchObject({ agencia: "Journaway", booking_id: ID_SALES, estado: "recibida", de_prueba: false });
       expect(reserva.producto?.codigo).toBe("IGRE02");
+    });
+
+    it("--journaway --borrar: borra SOLO lo de prueba de Journaway; lo de prueba de otra agencia y lo real quedan", async () => {
+      const e = escenario();
+      const r = await e.procesar(textoJournaway("B"));
+      const kilroy = await guardarMailRecibido(
+        {
+          origen: "archivo",
+          messageId: `<m2-09-kilroy-${randomUUID()}@prueba.test>`,
+          remitente: "testtown@kilroy.dk",
+          agencia: "Kilroy",
+          asunto: "KILROY booking request",
+          cuerpoTexto: "x",
+          dePrueba: true,
+        },
+        admin,
+      );
+      registro.mail(kilroy.mail.id);
+      const { count: reales } = await admin.from("reserva").select("id", { count: "exact", head: true }).eq("de_prueba", false);
+
+      const borrado = await borrarPruebaDeJournaway(admin);
+      expect(borrado.mails).toBeGreaterThanOrEqual(1);
+      expect(borrado.reservas).toBeGreaterThanOrEqual(1);
+      const { count: quedanJw } = await admin
+        .from("mail_recibido")
+        .select("id", { count: "exact", head: true })
+        .eq("de_prueba", true)
+        .eq("agencia", "Journaway");
+      expect(quedanJw).toBe(0);
+      expect(await reservasDe(r.mailRecibidoId)).toEqual([]);
+      const { data: sigue } = await admin.from("mail_recibido").select("id").eq("id", kilroy.mail.id);
+      expect(sigue).toHaveLength(1);
+      const { count: realesDespues } = await admin.from("reserva").select("id", { count: "exact", head: true }).eq("de_prueba", false);
+      expect(realesDespues).toBe(reales);
     });
   },
 );
