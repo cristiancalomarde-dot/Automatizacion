@@ -95,8 +95,14 @@ separación por usuario.
   instrucciones, tokens, costo y resultado (`ok`, `cortada`, `invalida`, `error`,
   `sin_presupuesto`), con el mail y la reserva asociados. **No guarda el contenido del mail.** Ver
   [`integraciones-ia.md`](integraciones-ia.md).
-- **reserva_pedido** — un pedido a un proveedor para una reserva. Proveedor, mail enviado (asunto
-  + cuerpo), cuándo se envió, quién lo aprobó, resultado.
+- **reserva_pedido** — un pedido a un proveedor para una reserva (M3-01, migración 0018): **un
+  borrador por casilla de proveedor y por reserva**. Casilla (los mails normalizados, o
+  `sin-mail:<proveedor>`), destinatarios, proveedores, las partes que cubre, asunto, cuerpo y la
+  firma con el lugar del nombre de quien envía. El envío (cuándo, quién lo aprobó, resultado) lo
+  suma M3-03. Ver "Pedidos a proveedores" más abajo.
+- **reserva_tarea** — lo que no va por mail (M3-01, 0018): emitir un boleto de bus, reservar a mano
+  (Kupos, Plataforma10, Transvip), contactar por WhatsApp o revisar a mano lo que el catálogo no
+  resuelve.
 - **evento_reserva** — el historial: cada cambio de estado, edición de campo y envío, con autor y
   fecha.
 - **importacion** — cada corrida del importador: qué archivo, cuándo, qué se cargó, qué quedó
@@ -367,6 +373,43 @@ dice así (no "Excel de paquetes").
   Un tour suelto o lo que va a revisión: un renglón por tour, con `texto_agencia`.
 - Pasajeros: `Anrede` mr/mrs se guarda como `tratamiento` (Sr./Sra.) en cada pasajero.
 - Los adjuntos de Journaway (pasaportes) no se mandan a la IA: se lee el cuerpo.
+
+### Pedidos a proveedores (M3-01, migración 0018)
+
+- **El armado es código, sin IA** (`src/lib/pedidos/armar.ts`, `armarPedidos(reserva, catalogo,
+  plantilla)`): lee la reserva, sus partes y el detalle de cada producto (`cargarProducto`, con los
+  ajustes de M1-08). Por paquete: un servicio por orden (la primera opción; el pedido avisa las
+  otras), el alojamiento del nivel que dice la habitación (si no se sabe y hay varios, tarea
+  "Elegir el hotel"), los traslados con sus lados después de los ajustes del tour y sin el lado de
+  `sin_traslado_de`, sin lo opcional ni lo "a pedido" (quedan como aviso) y sin los hoteles que
+  reserva la agencia (`hoteles_agencia`). Las excursiones van con su día si la parte es de un día
+  (Journaway), si está en `data/dias-servicio.csv` (el Tatio el día 3 de OD030) o por sus noches;
+  si no, "a coordinar" con aviso. El 105 de Cuenca del Plata ("Includes: Transfer in + Out, …") se
+  desglosa: traslado de llegada el día 1, cada lado los días siguientes, salida el último día.
+- **Agrupado:** los servicios van al Booking Supplier; los proveedores que comparten algún mail
+  (normalizado) van en el mismo pedido, en orden de fecha. Proveedor `whatsapp` → tarea; sin mail →
+  borrador sin destinatario con el motivo; `reserva_manual` → tarea (bus: "emitir boleto");
+  `tramo_bus` con `es_tarea` → "emitir boleto: ruta, fecha".
+- **El texto** sale de `data/plantillas/pedido-proveedor.md` (asunto, cuerpo y firma; se edita sin
+  tocar código). La firma lleva `{{nombre_de_quien_envia}}`: la base rechaza una firma sin él y el
+  nombre lo pone M3-03 con quien aprueba (`textoParaEnviar`).
+- **`reserva_pedido`:** `casilla` única por reserva, `destinatarios[]`, `proveedor_ids[]`,
+  `proveedores[]` (nombres), `partes` (jsonb: parte, servicio, producto, fecha), `asunto`, `cuerpo`,
+  `firma`, `sin_destinatario` (motivo; check: sin destinatarios ⇔ con motivo), `avisos[]`, `estado`
+  (`borrador`; M3-03 suma los del envío), `editado` / `editado_por` / `editado_en` (los marca la
+  pantalla de M3-02), `de_prueba` (copia de la reserva, trigger de 0014).
+- **`reserva_tarea`:** `tipo` (`emitir_boleto | reservar_a_mano | whatsapp | revisar`), `texto`,
+  `detalle` (jsonb), `orden`, `de_prueba`.
+- **Guardar y rearmar:** `guardar_pedidos_armados(reserva, pedidos, tareas)` (security invoker, en
+  una transacción con candado por reserva): solo con la reserva `recibida` ("Resolvé primero lo que
+  está para revisión"); borra los borradores sin editar, inserta los nuevos sin pisar la casilla de
+  uno editado y rehace las tareas. Armar dos veces no duplica.
+- Las dos tablas cuelgan de la reserva con `on delete cascade` (solo se van con una reserva de
+  prueba: una real no se borra). RLS del equipo: select/insert/update; delete solo de borradores
+  sin editar y de tareas.
+- `npm run armar:pedidos -- --reserva <id> | --ejemplos` (solo base de pruebas) arma y guarda; con
+  `--ejemplos` escribe `docs/sdd/diagnosticos/M3-01-ejemplos-pedidos.md` con los pasajeros
+  enmascarados.
 
 ## Abierto
 
