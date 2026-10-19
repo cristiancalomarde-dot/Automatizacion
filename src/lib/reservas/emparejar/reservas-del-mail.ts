@@ -75,7 +75,8 @@ export interface ReservaArmada {
   productoIA: ProductoIA | null;
 }
 
-const textoAgencia = (p: Pick<ProductoIA, "nombre" | "codigo">) =>
+/** El producto como lo mandó la agencia ("nombre (código)"): lo que queda en `producto_texto_agencia`. */
+export const textoAgencia = (p: Pick<ProductoIA, "nombre" | "codigo">) =>
   p.codigo && p.nombre ? `${p.nombre} (${p.codigo})` : (p.codigo ?? p.nombre);
 
 function base(ficha: FichaLectura | null, agencia: string): Omit<EntradaArmada, "estado"> {
