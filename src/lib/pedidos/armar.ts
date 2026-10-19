@@ -644,9 +644,16 @@ function asuntoYReferencia(reserva: ReservaParaPedidos, catalogo: CatalogoParaPe
   };
 }
 
+/** Por qué no se arman pedidos para una reserva en ese estado (fila 10); null si se puede. */
+export function porQueNoSeArma(estado: ReservaParaPedidos["estado"]): string | null {
+  if (estado === "para_revision") return MENSAJES.paraRevision;
+  if (estado !== "recibida") return MENSAJES.noRecibida;
+  return null;
+}
+
 export function armarPedidos(reserva: ReservaParaPedidos, catalogo: CatalogoParaPedidos, plantilla: Plantilla): ResultadoArmado {
-  if (reserva.estado === "para_revision") return { ok: false, error: MENSAJES.paraRevision };
-  if (reserva.estado !== "recibida") return { ok: false, error: MENSAJES.noRecibida };
+  const noSeArma = porQueNoSeArma(reserva.estado);
+  if (noSeArma) return { ok: false, error: noSeArma };
 
   const armado = new Armado(reserva, catalogo);
   armado.recorrer();
