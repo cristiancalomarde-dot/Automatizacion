@@ -14,7 +14,7 @@ import { MOTIVOS_EMPAREJADO as M } from "./motivos";
  */
 
 /** Aeropuertos de los traslados del catálogo: código → ciudad. */
-const AEROPUERTOS: Record<string, string> = {
+export const AEROPUERTOS: Record<string, string> = {
   CJC: "Calama",
   FTE: "El Calafate",
   PNT: "Puerto Natales",
@@ -38,12 +38,12 @@ const POR_NOMBRE: Array<[RegExp, string]> = [
   [/puerto natales airport|aeropuerto de puerto natales/i, "PNT"],
 ];
 
-interface Lugar {
+export interface Lugar {
   ciudad: string;
   codigos: string[];
 }
 
-function lugarDelTraslado(texto: string, destino: string | null): Lugar | null {
+export function lugarDelTraslado(texto: string, destino: string | null): Lugar | null {
   const codigos = [...new Set((texto.toUpperCase().match(/\b[A-Z]{3}\b/g) ?? []).filter((c) => c in AEROPUERTOS))];
   if (codigos.length === 0) for (const [re, c] of POR_NOMBRE) if (re.test(texto)) codigos.push(c);
   if (codigos.length === 0 && destino && destino in AEROPUERTOS) codigos.push(destino);
