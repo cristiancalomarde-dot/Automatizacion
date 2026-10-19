@@ -164,6 +164,7 @@ function TablaReservas({ filas }: { filas: FilaReserva[] }) {
                       dePrueba={fila.dePrueba}
                       avisosLlegada={avisosLlegada}
                       cancelacion={fila.cancelacion}
+                      pedidoIncompleto={fila.pedidoIncompleto}
                     />
                   </span>
                 </td>

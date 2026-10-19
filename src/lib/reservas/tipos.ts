@@ -307,6 +307,32 @@ export interface FilaReserva {
    * `esCancelacion` + el historial). Se dice de forma evidente en la lista y el detalle.
    */
   cancelacion: boolean;
+  /** Spec M3-03 fila 8: ya pedida, con algún pedido sin enviar (sin mail, falló o no se incluyó). */
+  pedidoIncompleto?: boolean;
+}
+
+/** Spec M3-03 fila 9: un pedido a proveedor como lo muestra el detalle. */
+export interface PedidoDeReservaVista {
+  id: string;
+  proveedores: string[];
+  destinatarios: string[];
+  estado: "borrador" | "enviando" | "enviado" | "fallo";
+  enviadoEn: string | null;
+  enviadoPor: string | null;
+  motivoFallo: string | null;
+  sinDestinatario: string | null;
+  reenvios: number;
+}
+
+/** Spec M3-03 filas 8 y 9: una entrada del historial de envíos ("<persona> envió N pedidos a: …"). */
+export interface EnvioDeReserva {
+  tipo: "pedidos_enviados" | "envio_de_prueba";
+  fecha: string;
+  persona: string;
+  cantidad: number;
+  proveedores: string[];
+  destino: string | null;
+  reenvio: boolean;
 }
 
 /** Un vuelo como lo dice el mail: fechas y horas del aeropuerto, sin convertir. */
@@ -369,6 +395,9 @@ export interface DetalleReserva extends FilaReserva {
   hotelesAgencia?: HotelDeLaAgencia[];
   contactoCliente?: ContactoDelCliente | null;
   notas?: string[];
+  /** M3-03: los pedidos a proveedores y el historial de envíos. */
+  pedidos?: PedidoDeReservaVista[];
+  envios?: EnvioDeReserva[];
 }
 
 /** La marca del owner sobre una reserva de prueba (spec M2-06 fila 13, tabla `revision_prueba`). */

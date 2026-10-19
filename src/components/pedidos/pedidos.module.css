@@ -163,3 +163,41 @@ textarea.editor {
   font-size: 14px;
   font-weight: 600;
 }
+
+/* M3-03: la franja fija mientras el envío real está apagado (spec M3-03 §4). */
+.franjaPrueba {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  margin: 0 0 12px;
+  padding: 8px 12px;
+  border: 1px solid var(--color-aviso-texto);
+  border-radius: 4px;
+  background: var(--color-aviso-fondo);
+  color: var(--color-aviso-texto);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* El estado del envío de cada tarjeta: escrito, con el color como refuerzo. */
+.estadoFila {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.estadoEnvio {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-texto-secundario);
+}
+
+.estadoOk {
+  color: var(--color-exito-texto);
+}
+
+.estadoMal {
+  color: var(--color-error-texto);
+}

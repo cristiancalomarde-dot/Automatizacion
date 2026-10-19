@@ -6,7 +6,7 @@ import { formatearFecha, formatearFechaHora, formatearHora, formatearRango } fro
 import { avisosDeLlegada } from "@/lib/reservas/avisos-vuelo";
 import { cargarReserva } from "@/lib/reservas/consultas";
 import { esIdDeReserva, frasesDeMotivos } from "@/lib/reservas/reglas";
-import type { DetalleReserva, HotelDeLaAgencia, ParteDeReserva, VueloDeReserva } from "@/lib/reservas/tipos";
+import type { DetalleReserva, EnvioDeReserva, HotelDeLaAgencia, ParteDeReserva, PedidoDeReservaVista, VueloDeReserva } from "@/lib/reservas/tipos";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { TEXTOS } from "@/lib/textos";
 import { Aviso, Chip, EsqueletoDetalle, EstadoError, EstadoVacio } from "@/components/ui/estados";
@@ -98,6 +98,7 @@ function Detalle({ reserva }: { reserva: DetalleReserva }) {
               dePrueba={reserva.dePrueba}
               avisosLlegada={avisosLlegada}
               cancelacion={reserva.cancelacion}
+              pedidoIncompleto={reserva.pedidoIncompleto}
             />
           </span>
           <h1 className={ui.titulo} title={T.numero}>
@@ -145,6 +146,7 @@ function Detalle({ reserva }: { reserva: DetalleReserva }) {
       ) : null}
 
       <ArmarPedidos reserva={reserva} />
+      <PedidosDeLaReserva reserva={reserva} />
 
       {notas.length > 0 ? (
         <Aviso tono="info">
@@ -177,8 +179,17 @@ function Detalle({ reserva }: { reserva: DetalleReserva }) {
   );
 }
 
-/** Spec M3-02 fila 1: a los pedidos a proveedores, solo con la reserva recibida. */
+/** Spec M3-02 fila 1: a los pedidos a proveedores, solo con la reserva recibida (M3-03: o ya pedida, para ver y completar). */
 function ArmarPedidos({ reserva }: { reserva: DetalleReserva }) {
+  if (reserva.estado === "pedido_a_proveedor") {
+    return (
+      <div className={ui.acciones}>
+        <Link href={`/reservas/${reserva.id}/pedidos`} className={`${ui.botonSecundario} ${estilos.botonEnlace}`}>
+          {T.verPedidos}
+        </Link>
+      </div>
+    );
+  }
   if (reserva.estado === "recibida") {
     return (
       <div className={ui.acciones}>
@@ -198,6 +209,60 @@ function ArmarPedidos({ reserva }: { reserva: DetalleReserva }) {
         {T.resolverPrimero}
       </span>
     </div>
+  );
+}
+
+function estadoDelPedido(p: PedidoDeReservaVista): string {
+  const E = T.pedidoEstado;
+  if (p.estado === "enviado") return E.enviado(formatearFechaHora(p.enviadoEn ?? "") || SIN_DATO, p.enviadoPor ?? SIN_DATO);
+  if (p.estado === "fallo") return E.fallo(p.motivoFallo ?? SIN_DATO);
+  if (p.estado === "enviando") return E.enviando;
+  return p.destinatarios.length === 0 ? E.sinMail : E.sinEnviar;
+}
+
+function lineaDeEnvio(e: EnvioDeReserva): string {
+  const proveedores = e.proveedores.join(", ") || SIN_DATO;
+  return e.tipo === "envio_de_prueba"
+    ? T.envioDePrueba(e.persona || SIN_DATO, e.cantidad, proveedores, e.destino ?? SIN_DATO)
+    : T.envioRegistrado(e.persona || SIN_DATO, e.cantidad, proveedores);
+}
+
+/** Spec M3-03 fila 9: a qué proveedores se les escribió, cuándo y quién (y el historial de envíos). */
+function PedidosDeLaReserva({ reserva }: { reserva: DetalleReserva }) {
+  const pedidos = reserva.pedidos ?? [];
+  const envios = reserva.envios ?? [];
+  if (pedidos.length === 0 && envios.length === 0) return null;
+  return (
+    <section className={ui.seccion} data-testid="pedidos-reserva">
+      <h2 className={ui.subtitulo}>{T.pedidosTitulo}</h2>
+      {pedidos.length > 0 ? (
+        <div className={ui.panel}>
+          <table className={ui.tabla} aria-label={T.pedidosTitulo}>
+            <tbody>
+              {pedidos.map((p) => (
+                <tr key={p.id} className={p.estado === "enviado" ? undefined : ui.filaAtencion}>
+                  <td>{p.proveedores.join(" y ") || SIN_DATO}</td>
+                  <td>{p.destinatarios.join(", ") || SIN_DATO}</td>
+                  <td>{estadoDelPedido(p)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : null}
+      {envios.length > 0 ? (
+        <div>
+          <p className={estilos.avisoTitulo}>{T.historialEnvios}</p>
+          <ul className={estilos.motivos} data-testid="historial-envios">
+            {envios.map((e) => (
+              <li key={`${e.fecha}-${e.tipo}`}>
+                <span className={ui.meta}>{formatearFechaHora(e.fecha)}</span> {lineaDeEnvio(e)}
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+    </section>
   );
 }
 

@@ -296,7 +296,7 @@ describe("Volver a armar (fila 7)", () => {
 
 describe("el diálogo 'Enviar N pedidos' (fila 8)", () => {
   it("modo prueba: lista destinatarios, CC y quién firma, y lo dice bien visible", async () => {
-    acciones.enviarPedidos.mockResolvedValue({ ok: false, error: T.faltaConectar });
+    acciones.enviarPedidos.mockResolvedValue({ ok: false, error: T.envio.faltaConfigurar });
     acciones.armarPedidosDeLaReserva.mockResolvedValueOnce(pantalla({ pedidos: [cuenca, hotel, transfer, sinMail] }));
     abrir(PRUEBA);
     await screen.findByRole("article", { name: "Cuenca del Plata" });
@@ -312,10 +312,10 @@ describe("el diálogo 'Enviar N pedidos' (fila 8)", () => {
     expect(within(dialogo).getByText("Leticia Gómez")).toBeInTheDocument();
     expect(within(dialogo).getByText(/Aventura Sur/)).toBeInTheDocument();
 
-    // Confirmar todavía no manda nada (M3-03).
+    // M3-03: confirmar manda los incluidos, con la confirmación; si el envío no se puede hacer, lo dice en el diálogo.
     fireEvent.click(within(dialogo).getByRole("button", { name: T.dialogo.confirmar }));
-    expect(await within(dialogo).findByText(T.faltaConectar)).toBeInTheDocument();
-    expect(acciones.enviarPedidos).toHaveBeenCalledWith({ reservaId: RESERVA, pedidoIds: [cuenca.id, hotel.id] });
+    expect(await within(dialogo).findByText(T.envio.faltaConfigurar)).toBeInTheDocument();
+    expect(acciones.enviarPedidos).toHaveBeenCalledWith({ reservaId: RESERVA, pedidoIds: [cuenca.id, hotel.id], confirmado: true });
   });
 
   it("envío real prendido: no muestra el modo prueba", async () => {

@@ -7,6 +7,7 @@ import {
   prepararPedidos,
   type PedidoDeEnvio,
   type ResultadoEdicion,
+  type ResultadoEnvio,
   type ResultadoPantalla,
 } from "@/lib/pedidos/revision";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -42,11 +43,15 @@ export async function guardarBorradorDePedido(entrada: EdicionPedido): Promise<R
   }
 }
 
-/** Confirmación del diálogo "Enviar N pedidos". Todavía no manda nada: lo conecta M3-03. */
-export async function enviarPedidos(entrada: PedidoDeEnvio): Promise<{ ok: false; error: string }> {
+/**
+ * Confirmación del diálogo "Enviar N pedidos" (spec M3-03): manda por
+ * operations@ (en modo prueba, solo a la casilla de prueba) con la sesión de
+ * quien aprueba. El resultado viene por pedido.
+ */
+export async function enviarPedidos(entrada: PedidoDeEnvio): Promise<ResultadoEnvio> {
   try {
     return await pedirEnvioDePedidos(await createSupabaseServerClient(), entrada);
-  } catch {
-    return { ok: false, error: "No se pudo pedir el envío." };
+  } catch (e) {
+    return { ok: false, error: motivo(e, "No se pudo hacer el envío. Mirá el estado de cada pedido antes de reintentar.") };
   }
 }

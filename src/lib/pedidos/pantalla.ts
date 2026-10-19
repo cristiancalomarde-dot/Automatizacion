@@ -11,12 +11,45 @@ import { TEXTOS } from "@/lib/textos";
 import type { PedidoGuardado } from "./guardar";
 import { MARCA_NOMBRE } from "./tipos";
 
+/** Lo que se puede mandar con "Enviar N" (M3-03): un borrador o uno que falló. Lo enviado se manda solo con "Reenviar". */
+export const sePuedeEnviar = (p: PedidoGuardado): boolean => p.destinatarios.length > 0 && (p.estado === "borrador" || p.estado === "fallo");
+
 /** Lo que sale y lo que queda pendiente. Excluidos por casilla: sobrevive a "Volver a armar". */
 export function conteoEnvio(pedidos: readonly PedidoGuardado[], excluidos: ReadonlySet<string>) {
   return {
-    aEnviar: pedidos.filter((p) => p.destinatarios.length > 0 && !excluidos.has(p.casilla)),
+    aEnviar: pedidos.filter((p) => sePuedeEnviar(p) && !excluidos.has(p.casilla)),
     pendientes: pedidos.filter((p) => p.destinatarios.length === 0),
   };
+}
+
+/** Minutos "enviando" a partir de los cuales se ofrece reenviar (igual que `envio/enviar.ts`). */
+const MINUTOS_TRABADO = 10;
+
+export type EstadoDeEnvio =
+  | { tipo: "borrador" }
+  | { tipo: "prueba"; en: string }
+  | { tipo: "enviando" }
+  | { tipo: "trabado" }
+  | { tipo: "enviado"; en: string; quien: string }
+  | { tipo: "fallo"; motivo: string };
+
+/** Qué muestra la tarjeta sobre el envío (spec M3-03 filas 7 y 9). */
+export function estadoDeEnvio(p: PedidoGuardado, ahora: Date = new Date()): EstadoDeEnvio {
+  if (p.estado === "enviado") return { tipo: "enviado", en: p.enviado_en ?? "", quien: p.enviado_por_nombre ?? "" };
+  if (p.estado === "fallo") return { tipo: "fallo", motivo: p.motivo_fallo ?? TEXTOS.pedidos.envio.error };
+  if (p.estado === "enviando") {
+    const desde = p.enviando_desde ? Date.parse(p.enviando_desde) : NaN;
+    return !Number.isNaN(desde) && desde < ahora.getTime() - MINUTOS_TRABADO * 60_000 ? { tipo: "trabado" } : { tipo: "enviando" };
+  }
+  if (p.envio_prueba_en) return { tipo: "prueba", en: p.envio_prueba_en };
+  return { tipo: "borrador" };
+}
+
+/** "14:32" (hora local de quien mira). */
+export function horaCorta(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
 }
 
 const VUELO_PENDIENTE = /vuelo pendiente/i;

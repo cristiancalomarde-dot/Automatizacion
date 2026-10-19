@@ -16,6 +16,8 @@ import {
   BUCKET_ADJUNTOS,
   type ContactoDelCliente,
   type DetalleReserva,
+  type EnvioDeReserva,
+  type PedidoDeReservaVista,
   type HotelDeLaAgencia,
   type EstadoReserva,
   type FilaReserva,
@@ -63,7 +65,13 @@ async function otrosProductosDe(cliente: SupabaseClient, filas: any[]): Promise<
   return new Map(productos.map((p) => [p.id as string, aProducto(p)!]));
 }
 
-function aFila(r: any, avisosVuelo: string[] = [], canceladaEnHistorial = false, otros: Map<string, ProductoDeReserva> = new Map()): FilaReserva {
+function aFila(
+  r: any,
+  avisosVuelo: string[] = [],
+  canceladaEnHistorial = false,
+  otros: Map<string, ProductoDeReserva> = new Map(),
+  conPedidoSinEnviar = false,
+): FilaReserva {
   const motivos: string[] = Array.isArray(r.motivos_revision) ? r.motivos_revision : [];
   return {
     id: r.id,
@@ -89,6 +97,44 @@ function aFila(r: any, avisosVuelo: string[] = [], canceladaEnHistorial = false,
     }),
     avisosVuelo,
     cancelacion: canceladaEnHistorial || esCancelacion(motivos),
+    pedidoIncompleto: r.estado === "pedido_a_proveedor" && conPedidoSinEnviar,
+  };
+}
+
+/** Spec M3-03 fila 8: las reservas con algún pedido que no está enviado (la marca "pedido incompleto"). */
+async function conPedidosSinEnviar(cliente: SupabaseClient, ids?: string[]): Promise<Set<string>> {
+  let consulta = cliente.from("reserva_pedido").select("reserva_id").neq("estado", "enviado");
+  if (ids) consulta = consulta.in("reserva_id", ids);
+  const filas = verificar(await consulta) as any[];
+  return new Set(filas.map((p) => p.reserva_id as string));
+}
+
+const CAMPOS_PEDIDO = "id,proveedores,destinatarios,estado,enviado_en,enviado_por_nombre,motivo_fallo,sin_destinatario,reenvios,created_at";
+
+function aPedidoVista(p: any): PedidoDeReservaVista {
+  return {
+    id: p.id,
+    proveedores: Array.isArray(p.proveedores) ? p.proveedores : [],
+    destinatarios: Array.isArray(p.destinatarios) ? p.destinatarios : [],
+    estado: p.estado,
+    enviadoEn: p.enviado_en ?? null,
+    enviadoPor: texto(p.enviado_por_nombre),
+    motivoFallo: texto(p.motivo_fallo),
+    sinDestinatario: texto(p.sin_destinatario),
+    reenvios: typeof p.reenvios === "number" ? p.reenvios : 0,
+  };
+}
+
+function aEnvio(e: any): EnvioDeReserva {
+  const d = e.detalle ?? {};
+  return {
+    tipo: e.tipo,
+    fecha: e.created_at,
+    persona: texto(d.persona) ?? "",
+    cantidad: typeof d.cantidad === "number" ? d.cantidad : 0,
+    proveedores: Array.isArray(d.proveedores) ? d.proveedores.filter((x: unknown) => typeof x === "string") : [],
+    destino: texto(d.destino),
+    reenvio: d.reenvio === true,
   };
 }
 
@@ -131,8 +177,13 @@ export async function cargarReservas(cliente: SupabaseClient): Promise<FilaReser
   const filas = verificar(
     await cliente.from("reserva").select(CAMPOS_FILA).order("created_at", { ascending: false }),
   ) as any[];
-  const [avisos, canceladas, otros] = await Promise.all([avisosDe(cliente, filas), canceladasEnHistorial(cliente), otrosProductosDe(cliente, filas)]);
-  return filas.map((r) => aFila(r, avisos.get(r.id), canceladas.has(r.id), otros));
+  const [avisos, canceladas, otros, sinEnviar] = await Promise.all([
+    avisosDe(cliente, filas),
+    canceladasEnHistorial(cliente),
+    otrosProductosDe(cliente, filas),
+    conPedidosSinEnviar(cliente),
+  ]);
+  return filas.map((r) => aFila(r, avisos.get(r.id), canceladas.has(r.id), otros, sinEnviar.has(r.id)));
 }
 
 function aPasajeros(lista: unknown): string[] {
@@ -211,7 +262,7 @@ export async function cargarReserva(cliente: SupabaseClient, id: string): Promis
   const r = verificar(await cliente.from("reserva").select(CAMPOS_DETALLE).eq("id", id).maybeSingle()) as any;
   if (!r) return null;
 
-  const [partes, eventos, avisos, canceladas, otros] = await Promise.all([
+  const [partes, eventos, avisos, canceladas, otros, pedidos, envios] = await Promise.all([
     cliente
       .from("reserva_componente")
       .select(`orden,tipo,descripcion_ruta,texto_agencia,fecha_inicio,fecha_fin,es_tarea,pick_up,${PRODUCTO}`)
@@ -221,7 +272,15 @@ export async function cargarReserva(cliente: SupabaseClient, id: string): Promis
     avisosDe(cliente, [r]),
     canceladasEnHistorial(cliente, [id]),
     otrosProductosDe(cliente, [r]),
+    cliente.from("reserva_pedido").select(CAMPOS_PEDIDO).eq("reserva_id", id).order("created_at"),
+    cliente
+      .from("evento_reserva")
+      .select("tipo,detalle,created_at")
+      .eq("reserva_id", id)
+      .in("tipo", ["pedidos_enviados", "envio_de_prueba"])
+      .order("created_at"),
   ]);
+  const filasPedidos = (verificar(pedidos) as any[]).map(aPedidoVista);
   const filasPartes = verificar(partes) as any[];
   const idsSumados = (verificar(eventos) as any[]).map((e) => e.mail_recibido_id as string);
   const ids = [...new Set([r.mail_recibido_id as string, ...idsSumados])];
@@ -232,7 +291,7 @@ export async function cargarReserva(cliente: SupabaseClient, id: string): Promis
   const sumados = filasMails.filter((m) => m.id !== r.mail_recibido_id).sort((a, b) => llegada(a) - llegada(b));
 
   return {
-    ...aFila(r, avisos.get(r.id), canceladas.has(r.id), otros),
+    ...aFila(r, avisos.get(r.id), canceladas.has(r.id), otros, filasPedidos.some((p) => p.estado !== "enviado")),
     productoTextoAgencia: texto(r.producto_texto_agencia),
     duplicadaDeId: r.duplicada_de_id ?? null,
     habitacion: texto(r.habitacion),
@@ -244,6 +303,8 @@ export async function cargarReserva(cliente: SupabaseClient, id: string): Promis
     hotelesAgencia: aHoteles(r.hoteles_agencia),
     contactoCliente: aContacto(r.contacto_cliente),
     notas: Array.isArray(r.notas) ? r.notas.filter((n: unknown): n is string => typeof n === "string" && !!n.trim()) : [],
+    pedidos: filasPedidos,
+    envios: (verificar(envios) as any[]).map(aEnvio),
   };
 }
 
