@@ -3,6 +3,12 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
 
 # Dónde retomar
 
+- **M3-03 terminada y publicada (2026-10-19).** Migración 0019 aplicada a la real con OK. Variables PEDIDOS_SMTP_*, PEDIDOS_CC
+  y PEDIDOS_DESTINO_PRUEBA en Vercel y .env.local; login SMTP e IMAP de operations@ probado OK (enviados = INBOX.Sent Items).
+  PEDIDOS_ENVIO_REAL sigue apagado (modo prueba). Primera reserva real de Kilroy (UK1595157: CHB31 + OD031, La Paz confirmada
+  por el owner y cargada en codigos-kilroy). Journaway ya manda a sales@. Siguiente: M3-04 (primer envío de prueba real a la
+  casilla del owner y revisión de 8-10 pedidos reales). Pieza chica propuesta: botón para resolver "para revisión" en el detalle.
+
 - **M3-01 y M3-02 terminadas (2026-10-19).** Migración 0018 (reserva_pedido, reserva_tarea) aplicada a la real con OK
   del owner. M3-01: borradores por casilla con plantilla editable `data/plantillas/pedido-proveedor.md` (el owner revisa
   el tono con `docs/sdd/diagnosticos/M3-01-ejemplos-pedidos.md` y 7 preguntas). M3-02: pantalla `/reservas/<id>/pedidos`
