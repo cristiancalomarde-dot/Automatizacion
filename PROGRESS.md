@@ -3,6 +3,14 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
 
 # Dónde retomar
 
+- **M2-09 publicada, esperando la revisión del owner (2026-10-18).** Reservas de Journaway: migraciones 0016 y 0017
+  aplicadas a la real con OK. Journaway entra a la lectura diaria de sales@ (asunto con book/booking/cancel/Stornierung o
+  cuerpo "please book"). Un mail = una reserva (SPAP01 + SPAP03 en `otros_productos`); mismo ID de 11 dígitos = misma
+  reserva (suma tours). Modo prueba en la real: 4 reservas de Journaway de prueba, 4/4 coinciden. Gasto del mes US$ 3,04.
+  Al recibir la revisión: marcar M2-09 ✅, "probalo vos" de M2 y archivar el plan con OK del owner. Pendientes chicos:
+  techo con mails "en espera" más allá de 7 días; tests que fallan por carga en la corrida completa (pasan aislados).
+  Para el owner: Journaway hoy manda a operaciones3@ (pedir sales@ o reenvío en Ferozo).
+
 - **M2-08 terminada y cargada en la real (2026-10-17).** Catálogo de Journaway: 53 productos (44 celestes, 8 solo
   dentro de paquete, Overland interno UYUO01), 6 paquetes SPAP; `npm run importar:journaway`. El owner agregó una fila por
   producto de Cuenca del Plata (IGRP01/02, IGRE01/02/03, IGRT01, reservas8@): ninguno sin proveedor. Recarga del directorio:
