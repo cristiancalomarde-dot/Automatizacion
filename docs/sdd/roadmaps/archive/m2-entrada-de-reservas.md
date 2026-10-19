@@ -266,7 +266,7 @@ diga cada ficha.
 | M2-06 | **Modo prueba con mails reales.** Procesa los mails de `Insumos/Mails` (.docx, .pdf y .eml) por el circuito completo, con las reservas marcadas "de prueba". Entrega un reporte por mail para el owner (qué entendió y qué no) y mide el % que necesita corrección | ✅ terminada | M2-04, M2-05 | `docs/sdd/specs/M2-06-modo-prueba.md` |
 | M2-07 | **Lectura automática de sales@.** Por IMAP en Ferozo, Inbox y Spam, **una vez por día a las 12 (hora Argentina)**. Solo los remitentes de las agencias. No marca, mueve ni borra nada, y no reprocesa. Se activa con el OK del owner sobre el modo prueba | ✅ | M2-06 | `docs/sdd/specs/M2-07-lectura-automatica.md` |
 | M2-08 | **Catálogo de Journaway.** Carga la planilla completada por el owner: productos simples, paquetes SPAP como combinaciones de excursiones, SPAP05 y SPAP06 con el Overland de Imperio Inca, y los nombres de Journaway como `codigo_externo`. Recarga el directorio (Patagonia Profunda) | ✅ | M2-01 | `docs/sdd/specs/M2-08-catalogo-journaway.md` |
-| M2-09 | **Reservas de Journaway.** Reconoce el paquete a partir de la lista de tours sueltos con fecha, los hoteles Tayka o el título. Lee los vuelos en alemán. Separa los hoteles que reserva Journaway ("booked by us") de lo que pide a HI Travel. Pasa por el modo prueba con los mails de ejemplo | 🔵 en curso | M2-06, M2-08 | `docs/sdd/specs/M2-09-reservas-journaway.md` |
+| M2-09 | **Reservas de Journaway.** Reconoce el paquete a partir de la lista de tours sueltos con fecha, los hoteles Tayka o el título. Lee los vuelos en alemán. Separa los hoteles que reserva Journaway ("booked by us") de lo que pide a HI Travel. Pasa por el modo prueba con los mails de ejemplo | ✅ | M2-06, M2-08 | `docs/sdd/specs/M2-09-reservas-journaway.md` |
 
 **Cobertura de las condiciones de M2 en el PRD:**
 - Un mail entra y queda como reserva: M2-01, M2-02, M2-07.
@@ -279,8 +279,8 @@ diga cada ficha.
 - Estado inicial visible: M2-05.
 
 ## 6. Cuándo está terminado el milestone
-- [ ] Todas las filas de la tabla en ✅ (cada una con sus 3 verificaciones en verde, regla #5).
-- [ ] Las condiciones del milestone en `docs/prd.md` se cumplen y se pueden demostrar.
-- [ ] **El owner lo probó con sus ojos:** entra una reserva real de cada agencia a `sales@` y la
+- [x] Todas las filas de la tabla en ✅ (cada una con sus 3 verificaciones en verde, regla #5).
+- [x] Las condiciones del milestone en `docs/prd.md` se cumplen y se pueden demostrar.
+- [ ] *(Seguimiento, owner 2026-10-19: revisó las reservas de prueba de las 3 agencias; la primera reserva real de cada una llega desde el lunes 2026-10-19 con la lectura diaria.)* **El owner lo probó con sus ojos:** entra una reserva real de cada agencia a `sales@` y la
       ve en la app con su producto, o en "para revisión" con un motivo que entiende.
-- [ ] Este plan movido a `docs/sdd/roadmaps/archive/`.
+- [x] Este plan movido a `docs/sdd/roadmaps/archive/` (owner, 2026-10-19: "cerremos M2-09").
