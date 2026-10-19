@@ -1,0 +1,165 @@
+/* Revisión de pedidos a proveedores (spec M3-02, user-flow.md §5.4). Paleta y densidad: marca.md. */
+
+.tarjetas {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.tarjeta {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid var(--color-borde);
+  border-radius: 6px;
+  background: var(--color-superficie);
+}
+
+/* Excluida o sin mail: atenuada, además del estado escrito. */
+.tarjetaApagada {
+  background: var(--color-superficie-alterna);
+}
+
+.tarjetaApagada .editor {
+  color: var(--color-texto-secundario);
+}
+
+.cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.proveedor {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.incluir {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.etiqueta {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-texto-secundario);
+}
+
+.editor {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid var(--color-borde-control);
+  border-radius: 4px;
+  background: var(--color-superficie);
+  color: var(--color-texto);
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.editor:focus-visible {
+  outline: 2px solid var(--color-foco);
+  outline-offset: 1px;
+}
+
+.editor:disabled {
+  cursor: not-allowed;
+}
+
+textarea.editor {
+  resize: vertical;
+  min-height: 180px;
+}
+
+.firma {
+  margin: 0;
+  white-space: pre-wrap;
+  font-size: 13px;
+  color: var(--color-texto-secundario);
+}
+
+.estadoGuardado {
+  font-size: 12px;
+  color: var(--color-texto-secundario);
+}
+
+.lista {
+  margin: 4px 0 0;
+  padding-left: 18px;
+}
+
+.lista li + li {
+  margin-top: 2px;
+}
+
+.avisoTitulo {
+  margin: 0;
+  font-weight: 600;
+}
+
+/* La barra de acciones queda a la vista al final de la página. */
+.barraEnvio {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 12px 0;
+  background: var(--color-fondo);
+  border-top: 1px solid var(--color-borde);
+}
+
+.fondoDialogo {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(16, 24, 40, 0.4);
+}
+
+.dialogo {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: min(560px, calc(100vw - 32px));
+  max-height: calc(100vh - 64px);
+  overflow: auto;
+  padding: 20px;
+  border-radius: 8px;
+  background: var(--color-superficie);
+  box-shadow: var(--sombra-flotante);
+}
+
+.dialogo h2 {
+  margin: 0;
+  font-size: 16px;
+}
+
+/* "Modo prueba": bien visible, no un pie de página. */
+.modoPrueba {
+  padding: 10px 12px;
+  border: 1px solid var(--color-aviso-texto);
+  border-radius: 4px;
+  background: var(--color-aviso-fondo);
+  color: var(--color-aviso-texto);
+  font-size: 14px;
+  font-weight: 600;
+}

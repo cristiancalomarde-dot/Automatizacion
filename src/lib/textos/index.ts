@@ -239,6 +239,9 @@ export const TEXTOS = {
     error: "No pudimos abrir esta reserva.",
     noExiste: "Esta reserva no existe.",
     volver: "Volver a las reservas",
+    /** Spec M3-02 fila 1: el acceso a los pedidos desde el detalle. */
+    armarPedidos: "Armar pedidos a proveedores",
+    resolverPrimero: "Resolvé primero lo que está para revisión",
     /** Owner 2026-10-14: Iguazú (OD010A–D) sin vuelo ni bus de llegada; una línea del aviso de llegada. */
     avisoLlegada: "Falta el vuelo o bus de llegada a Iguazú: pasárselo a Cuenca del Plata cuando llegue.",
     /** Owner 2026-10-16: encabezado del aviso "falta dato de llegada" (abajo va cada línea concreta). */
@@ -410,5 +413,61 @@ export const TEXTOS = {
       ayer: (hora: string) => `ayer ${hora}`,
       dia: (dia: string, hora: string) => `el ${dia} ${hora}`,
     },
+  },
+  /** Revisión y envío de los pedidos a proveedores (spec M3-02, user-flow.md §5.4). */
+  pedidos: {
+    titulo: "Pedidos a proveedores",
+    volver: "Volver a la reserva",
+    armando: "Armando los pedidos…",
+    error: "No se pudieron armar los pedidos.",
+    vacio: "Esta reserva no tiene pedidos por mail; quedan estas tareas:",
+    vacioSinTareas: "Esta reserva no tiene pedidos por mail ni tareas a mano.",
+    avisosTitulo: "Antes de enviar",
+    faltaLlegada: "Falta dato de llegada: el pedido igual sale con \"vuelo pendiente\" y el dato se pasa cuando llegue.",
+    hotelesAgencia: (agencia: string, hoteles: string) => `${agencia} reserva estos hoteles: ${hoteles}; no se piden.`,
+    para: "Para",
+    cc: "CC",
+    asunto: "Asunto",
+    texto: "Texto",
+    firma: "Firma",
+    cubre: "Cubre",
+    incluir: "Incluir este pedido",
+    editado: "Editado",
+    sinMail: "Sin mail",
+    completarDirectorio: "Completar en el directorio",
+    destinatarioAyuda: "El destinatario se cambia en el directorio de proveedores.",
+    guardando: "Guardando…",
+    guardado: "Cambios guardados.",
+    errorGuardar: "No se pudo guardar. Probá de nuevo: lo que escribiste sigue acá.",
+    tareas: "Tareas a mano (no se envían)",
+    volverAArmar: "Volver a armar",
+    rearmando: "Armando de nuevo…",
+    errorRearmar: "No se pudieron volver a armar los pedidos. Los borradores quedaron como estaban.",
+    rearmar: {
+      titulo: "Volver a armar los pedidos",
+      editados: (n: number) =>
+        n === 1
+          ? "Hay 1 pedido que alguien editó a mano. ¿Lo conservamos o lo reemplazamos por el armado nuevo?"
+          : `Hay ${n} pedidos que alguien editó a mano. ¿Los conservamos o los reemplazamos por el armado nuevo?`,
+      conservar: "Rearmar y conservar los editados",
+      reemplazar: "Rearmar todo (se pierden los cambios)",
+      cancelar: "Cancelar",
+    },
+    enviar: (n: number, pendientes: number) =>
+      `Enviar ${n === 1 ? "1 pedido" : `${n} pedidos`}${
+        pendientes > 0 ? ` (${pendientes === 1 ? "1 queda pendiente" : `${pendientes} quedan pendientes`})` : ""
+      }`,
+    dialogo: {
+      intro: "Se les va a escribir a:",
+      cc: "Con copia a",
+      firma: "Firma",
+      pendientes: "Quedan pendientes (sin mail):",
+      modoPrueba: (destino: string) => `Modo prueba: todo llega solo a ${destino}`,
+      confirmar: "Confirmar y enviar",
+      cancelar: "Cancelar",
+      enviando: "Enviando…",
+    },
+    faltaConectar: "Falta conectar el envío (llega en M3-03).",
+    sinSesion: "Tu sesión venció. Volvé a ingresar.",
   },
 } as const;

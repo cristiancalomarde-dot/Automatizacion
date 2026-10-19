@@ -144,6 +144,8 @@ function Detalle({ reserva }: { reserva: DetalleReserva }) {
         </Aviso>
       ) : null}
 
+      <ArmarPedidos reserva={reserva} />
+
       {notas.length > 0 ? (
         <Aviso tono="info">
           <div data-testid="notas-reserva">
@@ -172,6 +174,30 @@ function Detalle({ reserva }: { reserva: DetalleReserva }) {
         </div>
       </div>
     </>
+  );
+}
+
+/** Spec M3-02 fila 1: a los pedidos a proveedores, solo con la reserva recibida. */
+function ArmarPedidos({ reserva }: { reserva: DetalleReserva }) {
+  if (reserva.estado === "recibida") {
+    return (
+      <div className={ui.acciones}>
+        <Link href={`/reservas/${reserva.id}/pedidos`} className={`${ui.botonPrimario} ${estilos.botonEnlace}`}>
+          {T.armarPedidos}
+        </Link>
+      </div>
+    );
+  }
+  if (reserva.estado !== "para_revision") return null;
+  return (
+    <div className={ui.acciones}>
+      <button type="button" className={ui.botonPrimario} disabled aria-describedby="armar-pedidos-ayuda">
+        {T.armarPedidos}
+      </button>
+      <span id="armar-pedidos-ayuda" className={ui.ayuda}>
+        {T.resolverPrimero}
+      </span>
+    </div>
   );
 }
 

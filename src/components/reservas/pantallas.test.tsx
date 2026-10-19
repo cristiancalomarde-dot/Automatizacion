@@ -44,13 +44,16 @@ import { ListaReservasPantalla } from "./lista-reservas-pantalla";
 import { DetalleReservaPantalla } from "./detalle-reserva-pantalla";
 
 const nunca = () => new Promise(() => {});
-const BOTONES_PERMITIDOS = /^(Reintentar|Ver mail|Abrir el PDF|(Estado|Agencia|Número de la agencia|Producto|Fechas del viaje|Pasajeros|Llegó)( [↑↓])?)$/;
+// M3-02 fila 1: "Armar pedidos a proveedores" lleva a otra pantalla (deshabilitado en
+// "para revisión"); el detalle en sí sigue sin editar nada.
+const BOTONES_PERMITIDOS =
+  /^(Reintentar|Ver mail|Abrir el PDF|Armar pedidos a proveedores|(Estado|Agencia|Número de la agencia|Producto|Fechas del viaje|Pasajeros|Llegó)( [↑↓])?)$/;
 
 function sinControlesDeEdicion() {
   // La caja de búsqueda (owner 2026-10-16) filtra la lista: no edita nada.
   expect(document.querySelectorAll("input:not([type=search]), textarea, select")).toHaveLength(0);
   for (const b of screen.queryAllByRole("button")) expect(b.textContent?.trim()).toMatch(BOTONES_PERMITIDOS);
-  expect(screen.queryByText(/Editar|Guardar|Resolver revisión|Armar pedidos|Descartar|Reprocesar/)).toBeNull();
+  expect(screen.queryByText(/Editar|Guardar|Resolver revisión|Descartar|Reprocesar/)).toBeNull();
 }
 
 beforeEach(() => {

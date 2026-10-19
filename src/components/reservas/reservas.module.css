@@ -225,3 +225,10 @@
 .lineaLecturaDetalle {
   color: var(--color-texto-secundario);
 }
+
+/* Spec M3-02: "Armar pedidos a proveedores" es un enlace con forma de botón. */
+.botonEnlace {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+}
