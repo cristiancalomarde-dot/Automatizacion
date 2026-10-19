@@ -55,15 +55,20 @@ cada servicio con su fecha (alojamiento con IN/OUT, tipo de habitación y régim
 idioma y regular/privado; traslados con vuelo o "vuelo pendiente"); cantidad de pax; datos de los
 pasajeros si la agencia los mandó; "Quedo atenta, saludos" y la firma de HI Travel.
 
+**Respondidas por el owner (2026-10-19), después del plan:**
+- **Copia en "Enviados" de operations@: sí.** Cada pedido enviado se guarda también en la carpeta de
+  enviados de operations@ (solo agrega, nunca borra ni mueve nada), así el equipo lo ve donde siempre.
+- **Firma con el nombre de quien envía: obligatoria.** El proveedor tiene que saber qué operativo le
+  escribe. La firma lleva el nombre de la persona que aprobó el envío y después la firma de HI Travel.
+- **Tono "buena onda pero profesional".** Los pedidos de hoy son un poco secos; el owner quiere uno
+  más amistoso y cercano, sin perder lo profesional. M3-01 propone el texto con ejemplos armados
+  desde reservas reales y el owner lo revisa antes de seguir. El texto vive en un solo archivo
+  editable, para poder ajustarlo sin tocar código.
+
 **Abiertas, no bloquean:**
-- **Copia en "Enviados" de operations@.** Un mail enviado por SMTP no queda solo en la carpeta de
-  enviados. Sugerencia: guardar una copia en "Enviados" de operations@ (solo agrega, nunca borra ni
-  mueve nada), así el equipo ve lo enviado donde siempre. Se confirma con el owner en la spec de envío.
 - **Datos de la casilla operations@:** servidor y puerto SMTP de Ferozo (probablemente el mismo
   servidor que el IMAP de sales@). Tarea del owner: cargar la clave en el archivo de variables, nunca
   en el chat.
-- **Firma:** la de los ejemplos ("Hi Travel South America · On duty phone …"). ¿Va el nombre de quien
-  aprueba o una firma general? Se decide en la spec del borrador.
 
 **Riesgos y su límite aceptado:**
 - **Un pedido sale a un proveedor por error.** Límite: mientras dura la prueba, la app no puede
@@ -90,15 +95,15 @@ pasajeros si la agencia los mandó; "Quedo atenta, saludos" y la firma de HI Tra
 
 | ID | Pieza | Estado | Depende de | Ficha |
 |---|---|---|---|---|
-| M3-01 | **Armar los borradores de pedido.** Para una reserva recibida, agrupa sus partes por casilla de proveedor y arma un borrador por casilla (asunto, cuerpo en español con fechas, servicios, pax, vuelos o "vuelo pendiente"), con un pedido por paquete-componente en los tours compuestos. Lo que va a mano (buses que emite HI Travel, Plataforma10/Kupos/Transvip, WhatsApp) queda como tarea en la reserva; el proveedor sin mail, como pendiente. Sin IA. Los borradores se guardan en la reserva | ⬜ pendiente | M2 | `docs/sdd/specs/M3-01-borradores-de-pedido.md` |
+| M3-01 | **Armar los borradores de pedido.** Para una reserva recibida, agrupa sus partes por casilla de proveedor y arma un borrador por casilla (asunto, cuerpo en español con fechas, servicios, pax, vuelos o "vuelo pendiente"), con un pedido por paquete-componente en los tours compuestos. Lo que va a mano (buses que emite HI Travel, Plataforma10/Kupos/Transvip, WhatsApp) queda como tarea en la reserva; el proveedor sin mail, como pendiente. Sin IA. Los borradores se guardan en la reserva | 🔵 en curso | M2 | `docs/sdd/specs/M3-01-borradores-de-pedido.md` |
 | M3-02 | **Pantalla de revisión y envío.** Desde el detalle de una reserva recibida, "Armar pedidos a proveedores": una tarjeta por pedido con destinatario, asunto y texto editables, "Incluir este pedido", tareas manuales a la vista y aviso de proveedor sin mail. Lo editado queda guardado. El botón "Enviar N pedidos" abre el diálogo que lista a quién se le escribe | ⬜ pendiente | M3-01 | `docs/sdd/specs/M3-02-revision-y-envio.md` |
 | M3-03 | **Envío por operations@ con modo prueba.** Manda los pedidos aprobados por el SMTP de Ferozo, con CC configurable (hoy ccalomarde@). Mientras el envío real está apagado, todo va solo a la casilla del owner con el proveedor real escrito arriba. Registra a quién, cuándo y quién aprobó; nunca manda dos veces sin "Reenviar"; muestra enviado / falló con "Reintentar". La reserva pasa a "pedido a proveedor" (con "pedido incompleto" si faltó alguno) | ⬜ pendiente | M3-02 | `docs/sdd/specs/M3-03-envio-operations.md` |
 | M3-04 | **Prueba con reservas reales y OK del owner.** Se arman y "envían" (a la casilla del owner) los pedidos de reservas reales de las tres agencias. El owner marca cada uno "está bien" o "hay que corregir", se ajusta lo que falle y, con su OK, se habilita el envío a los proveedores de verdad | ⬜ pendiente | M3-03 | `docs/sdd/specs/M3-04-prueba-y-activacion.md` |
 
 **Tareas del owner (no bloquean el plan; sí la pieza que las usa):**
 - **Cargar la clave de operations@** en el archivo de variables (como hizo con la base de pruebas),
-  nunca en el chat. Hace falta desde M3-03.
-- **Confirmar la firma** de los pedidos y si quiere copia en "Enviados" de operations@.
+  nunca en el chat. La busca (2026-10-20). Hace falta desde M3-03.
+- **Revisar el tono** de los ejemplos de pedido que deja M3-01.
 
 ## 6. Cuándo está terminado el milestone
 - [ ] Todas las filas de la tabla en ✅ (cada una con sus 3 verificaciones en verde, regla #5).
