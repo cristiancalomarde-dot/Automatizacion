@@ -35,7 +35,8 @@ const CAMPOS_FILA =
   "id,estado,agencia,booking_id,booking_id_original,fecha_inicio,fecha_fin,pax,motivos_revision," +
   "posible_duplicada,de_prueba,created_at,vuelos,pedidos_especiales,producto_texto_agencia,pasajeros," +
   // M2-09 (0016): el lado del traslado que lleva otra reserva del mismo pedido (para los avisos de vuelo).
-  `sin_traslado_de,${PRODUCTO},mail:mail_recibido_id(fecha_mail)`;
+  // 0017: los demás productos de la misma reserva (Journaway: SPAP01 + SPAP03).
+  `sin_traslado_de,otros_productos,${PRODUCTO},mail:mail_recibido_id(fecha_mail)`;
 const CAMPOS_DETALLE = `${CAMPOS_FILA},mail_recibido_id,duplicada_de_id,habitacion,trip_number,hoteles_agencia,contacto_cliente,notas`;
 const CAMPOS_MAIL = "id,remitente,remitente_nombre,asunto,fecha_mail,carpeta,cuerpo_texto,cuerpo_html,adjuntos,created_at";
 
@@ -52,7 +53,17 @@ function aProducto(fila: any): ProductoDeReserva | null {
   return fila?.id ? { id: fila.id, codigo: fila.codigo, nombre: fila.nombre } : null;
 }
 
-function aFila(r: any, avisosVuelo: string[] = [], canceladaEnHistorial = false): FilaReserva {
+const otrosIds = (r: any): string[] => (Array.isArray(r.otros_productos) ? r.otros_productos : []);
+
+/** Owner 2026-10-17: código y nombre de los demás productos de las reservas (una sola consulta). */
+async function otrosProductosDe(cliente: SupabaseClient, filas: any[]): Promise<Map<string, ProductoDeReserva>> {
+  const ids = [...new Set(filas.flatMap(otrosIds))];
+  if (ids.length === 0) return new Map();
+  const productos = verificar(await cliente.from("producto").select("id,codigo,nombre").in("id", ids)) as any[];
+  return new Map(productos.map((p) => [p.id as string, aProducto(p)!]));
+}
+
+function aFila(r: any, avisosVuelo: string[] = [], canceladaEnHistorial = false, otros: Map<string, ProductoDeReserva> = new Map()): FilaReserva {
   const motivos: string[] = Array.isArray(r.motivos_revision) ? r.motivos_revision : [];
   return {
     id: r.id,
@@ -60,6 +71,9 @@ function aFila(r: any, avisosVuelo: string[] = [], canceladaEnHistorial = false)
     agencia: r.agencia,
     numero: texto(r.booking_id_original) ?? texto(r.booking_id),
     producto: aProducto(r.producto),
+    otrosProductos: otrosIds(r)
+      .map((id) => otros.get(id))
+      .filter((p): p is ProductoDeReserva => !!p),
     fechaInicio: r.fecha_inicio ?? null,
     fechaFin: r.fecha_fin ?? null,
     pax: typeof r.pax === "number" ? r.pax : null,
@@ -107,6 +121,7 @@ async function avisosDe(cliente: SupabaseClient, filas: any[]): Promise<Map<stri
       vuelos: Array.isArray(r.vuelos) ? r.vuelos : [],
       pedidos: r.pedidos_especiales ?? null,
       sinTrasladoDe: r.sin_traslado_de ?? null,
+      otrosProductos: otrosIds(r),
     })),
   );
 }
@@ -116,8 +131,8 @@ export async function cargarReservas(cliente: SupabaseClient): Promise<FilaReser
   const filas = verificar(
     await cliente.from("reserva").select(CAMPOS_FILA).order("created_at", { ascending: false }),
   ) as any[];
-  const [avisos, canceladas] = await Promise.all([avisosDe(cliente, filas), canceladasEnHistorial(cliente)]);
-  return filas.map((r) => aFila(r, avisos.get(r.id), canceladas.has(r.id)));
+  const [avisos, canceladas, otros] = await Promise.all([avisosDe(cliente, filas), canceladasEnHistorial(cliente), otrosProductosDe(cliente, filas)]);
+  return filas.map((r) => aFila(r, avisos.get(r.id), canceladas.has(r.id), otros));
 }
 
 function aPasajeros(lista: unknown): string[] {
@@ -196,7 +211,7 @@ export async function cargarReserva(cliente: SupabaseClient, id: string): Promis
   const r = verificar(await cliente.from("reserva").select(CAMPOS_DETALLE).eq("id", id).maybeSingle()) as any;
   if (!r) return null;
 
-  const [partes, eventos, avisos, canceladas] = await Promise.all([
+  const [partes, eventos, avisos, canceladas, otros] = await Promise.all([
     cliente
       .from("reserva_componente")
       .select(`orden,tipo,descripcion_ruta,texto_agencia,fecha_inicio,fecha_fin,es_tarea,pick_up,${PRODUCTO}`)
@@ -205,6 +220,7 @@ export async function cargarReserva(cliente: SupabaseClient, id: string): Promis
     cliente.from("evento_reserva").select("mail_recibido_id").eq("reserva_id", id).not("mail_recibido_id", "is", null),
     avisosDe(cliente, [r]),
     canceladasEnHistorial(cliente, [id]),
+    otrosProductosDe(cliente, [r]),
   ]);
   const filasPartes = verificar(partes) as any[];
   const idsSumados = (verificar(eventos) as any[]).map((e) => e.mail_recibido_id as string);
@@ -216,7 +232,7 @@ export async function cargarReserva(cliente: SupabaseClient, id: string): Promis
   const sumados = filasMails.filter((m) => m.id !== r.mail_recibido_id).sort((a, b) => llegada(a) - llegada(b));
 
   return {
-    ...aFila(r, avisos.get(r.id), canceladas.has(r.id)),
+    ...aFila(r, avisos.get(r.id), canceladas.has(r.id), otros),
     productoTextoAgencia: texto(r.producto_texto_agencia),
     duplicadaDeId: r.duplicada_de_id ?? null,
     habitacion: texto(r.habitacion),

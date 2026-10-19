@@ -25,6 +25,7 @@ vi.mock("next/navigation", () => ({
 import { IDS, reservaKilroy } from "@/lib/reservas/fixtures.test-utils";
 import type { DetalleReserva } from "@/lib/reservas/tipos";
 import { DetalleReservaPantalla } from "./detalle-reserva-pantalla";
+import { ListaReservasPantalla } from "./lista-reservas-pantalla";
 
 const producto = (codigo: string, nombre: string) => ({ id: `id-${codigo}`, codigo, nombre });
 
@@ -131,5 +132,26 @@ describe("detalle de una reserva de Journaway (spec M2-09 §4)", () => {
     render(<DetalleReservaPantalla id={IDS.kilroy} />);
     await screen.findByTestId("encabezado-reserva");
     expect(screen.queryByTestId("hoteles-agencia")).toBeNull();
+  });
+});
+
+describe("una reserva de Journaway con varios productos (owner 2026-10-17)", () => {
+  it("el detalle nombra todos: SPAP01 + SPAP03", async () => {
+    consultas.cargarReserva.mockResolvedValue({ ...spap05, producto: producto("SPAP01", "Trip A"), otrosProductos: [producto("SPAP03", "Trip C")] });
+    render(<DetalleReservaPantalla id={IDS.kilroy} />);
+    const seccion = await screen.findByTestId("producto-reserva");
+    expect(seccion.textContent).toContain("SPAP01");
+    expect(seccion.textContent).toContain("+ SPAP03");
+  });
+
+  it("la lista también: SPAP01 + SPAP03", async () => {
+    consultas.cargarReservas.mockResolvedValue([
+      { ...spap05, id: IDS.kilroy, producto: producto("SPAP01", "Trip A"), otrosProductos: [producto("SPAP03", "Trip C")] },
+    ]);
+    render(<ListaReservasPantalla />);
+    const tabla = await screen.findByRole("table");
+    const fila = tabla.querySelector(`tr[data-id="${IDS.kilroy}"]`) as HTMLElement;
+    expect(fila.textContent).toContain("SPAP01");
+    expect(fila.textContent).toContain("+ SPAP03");
   });
 });

@@ -185,6 +185,16 @@ function Producto({ reserva }: { reserva: DetalleReserva }) {
             {reserva.producto.codigo}
           </Link>{" "}
           <span>{reserva.producto.nombre}</span>
+          {/* Owner 2026-10-17: un pedido de Journaway es una reserva aunque traiga varios productos. */}
+          {(reserva.otrosProductos ?? []).map((p) => (
+            <span key={p.id}>
+              {" + "}
+              <Link href={`/catalogo/${p.id}`} className={`${ui.enlace} ${ui.mono}`}>
+                {p.codigo}
+              </Link>{" "}
+              <span>{p.nombre}</span>
+            </span>
+          ))}
         </p>
       ) : (
         <div>

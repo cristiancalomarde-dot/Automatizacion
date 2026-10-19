@@ -31,7 +31,7 @@ const VALOR: Record<Columna, (f: FilaReserva) => string | number> = {
   estado: (f) => T.estados[f.estado],
   agencia: (f) => f.agencia,
   numero: (f) => f.numero ?? "",
-  producto: (f) => (f.producto ? `${f.producto.codigo} ${f.producto.nombre}` : "~"),
+  producto: (f) => (f.producto ? `${[f.producto, ...(f.otrosProductos ?? [])].map((p) => p.codigo).join(" + ")} ${f.producto.nombre}` : "~"),
   fechas: (f) => f.fechaInicio ?? "9999",
   // Por el nombre del pasajero principal; sin nombre, al final.
   pasajeros: (f) => f.pasajeros[0] ?? "￿",
@@ -172,7 +172,15 @@ function TablaReservas({ filas }: { filas: FilaReserva[] }) {
                 <td className={ui.celdaNombre}>
                   {fila.producto ? (
                     <>
-                      <span className={ui.mono}>{fila.producto.codigo}</span> {fila.producto.nombre}
+                      <span className={ui.mono}>{fila.producto.codigo}</span>
+                      {/* Owner 2026-10-17: una reserva de Journaway puede tener varios productos (SPAP01 + SPAP03). */}
+                      {(fila.otrosProductos ?? []).map((p) => (
+                        <span key={p.id} className={ui.mono}>
+                          {" "}
+                          + {p.codigo}
+                        </span>
+                      ))}{" "}
+                      {fila.producto.nombre}
                     </>
                   ) : (
                     <span className={ui.secundario}>{T.sinProducto}</span>

@@ -71,6 +71,8 @@ const ESTADOS_CON_AVISO: ReadonlySet<EstadoReserva> = new Set(["recibida", "para
 export interface FilaParaAvisos extends DatosParaAvisos {
   id: string;
   productoId: string | null;
+  /** Owner 2026-10-17: los demás productos de la misma reserva (Journaway: SPAP03 en SPAP01 + SPAP03). */
+  otrosProductos?: readonly string[];
   estado: EstadoReserva;
 }
 
@@ -84,9 +86,16 @@ export async function cargarAvisosDeVuelo(
   filas: readonly FilaParaAvisos[],
 ): Promise<Map<string, string[]>> {
   const conAviso = filas.filter((f) => f.productoId && ESTADOS_CON_AVISO.has(f.estado));
-  const ids = [...new Set(conAviso.map((f) => f.productoId!))];
+  const ids = [...new Set(conAviso.flatMap((f) => [f.productoId!, ...(f.otrosProductos ?? [])]))];
   const detalles = new Map(await Promise.all(ids.map(async (id) => [id, await detalle(id)] as const)));
   const avisos = new Map<string, string[]>(filas.map((f) => [f.id, []]));
-  for (const f of conAviso) avisos.set(f.id, avisosDeVuelo(detalles.get(f.productoId!) ?? null, f));
+  for (const f of conAviso) {
+    // El lado que lleva otro producto de la misma reserva (sinTrasladoDe) se omite solo en el principal.
+    const todos = [
+      ...avisosDeVuelo(detalles.get(f.productoId!) ?? null, f),
+      ...(f.otrosProductos ?? []).flatMap((id) => avisosDeVuelo(detalles.get(id) ?? null, { ...f, sinTrasladoDe: null })),
+    ];
+    avisos.set(f.id, [...new Set(todos)]);
+  }
   return avisos;
 }
