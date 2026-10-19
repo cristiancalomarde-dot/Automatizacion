@@ -6,6 +6,12 @@ Formato mínimo por entrada: qué decisión, por qué, alternativa rechazada, co
 
 # Decisiones de diseño
 
+## 2026-10-19: Pedidos a proveedores por el SMTP de Ferozo (operations@), aprobados por cualquiera del equipo, primero solo a la casilla del owner
+- **Decisión:** los pedidos salen desde `operations@hitravel.com.ar` por el SMTP de Ferozo, con la clave solo en variables de entorno. Cualquier persona del equipo con cuenta @hitravel.com.ar puede aprobar y enviar; queda registrado quién y cuándo. CC configurable, al principio a ccalomarde@. Mientras dura la prueba, todo va solo a la casilla del owner; el envío real se habilita con su OK.
+- **Razón:** desde M2 la app lee sales@ por IMAP y ya no pasa por el Gmail, así que el "Enviar como" desde Gmail dejó de tener sentido. Con el SMTP de la propia casilla el proveedor ve un mail igual a uno escrito a mano y las respuestas llegan a operations@, que la ven todos los operativos. No hay que tocar el DNS.
+- **Alternativa rechazada:** Resend con registros SPF/DKIM: más confiable contra el spam, pero exige que Hostmar toque el DNS de hitravel.com.ar y un error afecta el mail de toda la empresa. Se evalúa solo si los mails de Ferozo caen en spam.
+- **Constraint:** #2 (clave solo en variables de entorno), #4 (cada envío con aprobación explícita y primero en modo prueba).
+
 ## 2026-10-14: Base de datos de pruebas separada antes de M2-07; no tres ambientes completos
 - **Decisión:** mantener dos ambientes (desarrollo local y producción en Vercel) y, antes de activar M2-07 (lectura automática de sales@), separar la base de datos: un segundo proyecto de Supabase (gratis) para las pruebas automáticas y el desarrollo, y la base actual queda solo para producción.
 - **Razón:** hoy las pruebas escriben en la base real y limpian lo suyo (marca `de_prueba`). Era tolerable con solo el catálogo, pero desde M2-07 entran reservas reales solas y en M3 se mandan mails a proveedores: una prueba no puede tocar eso.

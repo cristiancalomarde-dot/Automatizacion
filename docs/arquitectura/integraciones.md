@@ -98,7 +98,7 @@ Overland): ese sí genera un pedido a proveedor por mail, como cualquier otro se
 - ~~Casilla: cuenta Gmail común nueva vs. dirección del dominio `hitravel.com.ar`~~ — **resuelto:**
   se usa el Gmail existente al que Ferozo reenvía `sales@hitravel.com.ar`. Confirmar antes de M2
   que ese reenvío es una regla de servidor (ver arriba).
-- **Cómo se manda desde `operations@hitravel.com.ar`:** a decidir antes de M3. Opciones (2026-10-06):
+- ~~**Cómo se manda desde `operations@hitravel.com.ar`**~~ — **resuelto (owner, 2026-10-19):** por el SMTP de Ferozo con la clave en variables de entorno (opción B), CC a ccalomarde@ al principio y primero en modo prueba a la casilla del owner. Ver `DECISIONS.md` y el plan de M3. Las opciones evaluadas el 2026-10-06 fueron: Opciones (2026-10-06):
   - **(A) "Enviar como" operations@ configurado en el Gmail dedicado**, con el SMTP de Ferozo cargado dentro de Google. La app envía por la Gmail API con ese alias. No toca el DNS y no guarda la clave de Ferozo en la app. **Es la recomendada para arrancar.**
   - **(B) SMTP de Ferozo directo**, con la clave en las variables de Vercel.
   - **(C) Resend con registros DNS (SPF/DKIM)** del dominio: la más confiable, pero exige tocar el DNS con cuidado (un solo SPF combinado). Se evalúa si con A los mails caen en spam.
