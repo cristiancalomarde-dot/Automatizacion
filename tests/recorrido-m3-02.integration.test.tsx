@@ -9,8 +9,8 @@
 // tarjetas, tareas y avisos → edita el texto (queda guardado) → vuelve a
 // entrar y lo ve → "Volver a armar" pregunta y conserva lo editado →
 // destilda un pedido → "Enviar N pedidos" → el diálogo con destinatarios, CC,
-// quién firma y "Modo prueba" → confirmar responde que falta conectar el
-// envío y nada cambia. Lo que crea se borra al final (solo eso).
+// quién firma y "Modo prueba" → confirmar responde que falta configurar la
+// casilla operations@ (M3-03, sin conexión) y nada cambia. Lo que crea se borra al final.
 import { randomUUID } from "node:crypto";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
@@ -101,6 +101,10 @@ const botonEnviar = () => screen.getByRole("button", { name: /^Enviar \d+ pedido
     vi.stubEnv("PEDIDOS_ENVIO_REAL", "");
     vi.stubEnv("PEDIDOS_DESTINO_PRUEBA", "");
     vi.stubEnv("PEDIDOS_CC", "");
+    // M3-03: sin la casilla configurada, confirmar no abre ninguna conexión (nunca el correo real en un test).
+    vi.stubEnv("PEDIDOS_SMTP_HOST", "");
+    vi.stubEnv("PEDIDOS_SMTP_USER", "");
+    vi.stubEnv("PEDIDOS_SMTP_PASSWORD", "");
     admin = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!, {
       auth: { autoRefreshToken: false, persistSession: false },
     });
@@ -220,9 +224,9 @@ const botonEnviar = () => screen.getByRole("button", { name: /^Enviar \d+ pedido
     expect(within(dialogo).getByText(firmante)).toBeInTheDocument();
     expect(within(dialogo).getAllByRole("listitem").length).toBeGreaterThanOrEqual(n - 1);
 
-    // Confirmar todavía no manda nada (M3-03).
+    // M3-03: sin la casilla configurada, confirmar no manda nada y lo dice en llano.
     fireEvent.click(within(dialogo).getByRole("button", { name: T.dialogo.confirmar }));
-    expect(await within(dialogo).findByText(T.faltaConectar, {}, ESPERA)).toBeInTheDocument();
+    expect(await within(dialogo).findByText(T.envio.faltaConfigurar, {}, ESPERA)).toBeInTheDocument();
     const despues = await cargarPedidos(admin, id);
     expect(despues.pedidos).toEqual(antes.pedidos);
     const reserva = await admin.from("reserva").select("estado").eq("id", id).single();

@@ -205,6 +205,9 @@ export async function enviarPedidosAprobados(cliente: SupabaseClient, entrada: P
         const crudo = await componerMail(mail);
         transporte ??= (deps.abrirTransporte ?? abrirTransporteSmtp)(config.smtp);
         const r = await transporte.enviar({ sobre: mail.sobre, crudo });
+        // Si ninguno de los mails del PROVEEDOR lo aceptó (aunque la copia sí), el pedido no llegó: falló.
+        const delProveedor = modoPrueba ? mail.sobre.para : p.destinatarios.map((m) => m.toLowerCase());
+        if (!r.aceptados.some((m) => delProveedor.includes(m))) throw new ErrorSmtp("rechazado", r.rechazados.filter((m) => delProveedor.includes(m)));
         rechazados = r.rechazados;
         if (!modoPrueba) salieron.push({ pedido: p, crudo });
       } catch (e) {

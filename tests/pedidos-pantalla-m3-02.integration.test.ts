@@ -178,11 +178,11 @@ function ok<T extends { ok: boolean }>(r: T): Extract<T, { ok: true }> {
     expect(tareas).toHaveLength(0);
   });
 
-  it("confirmar el envío no manda nada ni cambia los borradores (fila 8)", async () => {
+  it("pedir el envío sin la confirmación del diálogo no manda nada ni cambia los borradores (fila 8; M3-03 fila 10)", async () => {
     const id = await reservaDePrueba({ productoId: ids.get("OD010D"), fechaInicio: "2026-11-07", fechaFin: "2026-11-10" });
     const r = ok(await prepararPedidos(equipo, id));
     const antes = await cargarPedidos(admin, id);
-    expect(await pedirEnvioDePedidos(equipo, { reservaId: id, pedidoIds: r.pedidos.map((p) => p.id) })).toEqual({ ok: false, error: T.faltaConectar });
+    expect(await pedirEnvioDePedidos(equipo, { reservaId: id, pedidoIds: r.pedidos.map((p) => p.id) })).toEqual({ ok: false, error: T.envio.sinConfirmar });
     const despues = await cargarPedidos(admin, id);
     expect(despues.pedidos).toEqual(antes.pedidos);
     expect(despues.pedidos.every((p) => p.estado === "borrador")).toBe(true);
