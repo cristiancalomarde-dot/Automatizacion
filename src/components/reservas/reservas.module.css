@@ -232,3 +232,66 @@
   align-items: center;
   text-decoration: none;
 }
+
+/* Spec M3-05: el recuadro "Producto sin confirmar", su buscador y el OK corto. */
+.confirmarProducto {
+  padding: 12px 16px;
+  border: 1px solid var(--color-aviso-texto);
+  border-radius: 8px;
+  background: var(--color-aviso-fondo);
+}
+
+.elegirProducto {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.resultadosProducto {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.resultadosProducto button {
+  width: 100%;
+  justify-content: flex-start;
+  text-align: left;
+}
+
+.fondoDialogo {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(16, 24, 40, 0.4);
+}
+
+.dialogo {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: min(560px, calc(100vw - 32px));
+  max-height: calc(100vh - 64px);
+  overflow: auto;
+  padding: 20px;
+  border-radius: 8px;
+  background: var(--color-superficie);
+  box-shadow: var(--sombra-flotante);
+}
+
+.dialogo h2 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.historialProducto {
+  margin: 4px 0 0;
+  padding-left: 18px;
+}

@@ -115,6 +115,7 @@ describe("M3-05 — cuándo no se puede confirmar", () => {
   });
   it("una reserva sin motivo de producto", () => {
     expect(porQueNoSeConfirma(reserva({ motivos: [M.dudosos(["pax"])] }))).toMatch(/no tiene el producto por confirmar/);
+    expect(porQueNoSeConfirma(reserva({ productoId: idDe("OD030") }))).toMatch(/no tiene el producto por confirmar/);
   });
   it("Journaway (sus paquetes los arma otro reconocedor)", () => {
     expect(porQueNoSeConfirma(reserva({ agencia: "Journaway" }))).toMatch(/Journaway/);

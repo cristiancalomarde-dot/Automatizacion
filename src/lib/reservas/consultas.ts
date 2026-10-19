@@ -14,6 +14,7 @@ import { sinDatoDeLlegada } from "./llegada-iguazu";
 import { cuerpoComoTexto, esCancelacion } from "./reglas";
 import {
   BUCKET_ADJUNTOS,
+  type ConfirmacionDeProducto,
   type ContactoDelCliente,
   type DetalleReserva,
   type EnvioDeReserva,
@@ -39,7 +40,8 @@ const CAMPOS_FILA =
   // M2-09 (0016): el lado del traslado que lleva otra reserva del mismo pedido (para los avisos de vuelo).
   // 0017: los demás productos de la misma reserva (Journaway: SPAP01 + SPAP03).
   `sin_traslado_de,otros_productos,${PRODUCTO},mail:mail_recibido_id(fecha_mail)`;
-const CAMPOS_DETALLE = `${CAMPOS_FILA},mail_recibido_id,duplicada_de_id,habitacion,trip_number,hoteles_agencia,contacto_cliente,notas`;
+// M3-05: lo que sugirió la IA y no se aceptó, para confirmarlo desde el detalle.
+const CAMPOS_DETALLE = `${CAMPOS_FILA},mail_recibido_id,duplicada_de_id,habitacion,trip_number,hoteles_agencia,contacto_cliente,notas,sugerencia:sugerencia_producto_id(id,codigo,nombre)`;
 const CAMPOS_MAIL = "id,remitente,remitente_nombre,asunto,fecha_mail,carpeta,cuerpo_texto,cuerpo_html,adjuntos,created_at";
 
 /* eslint-disable @typescript-eslint/no-explicit-any -- filas crudas de PostgREST, se tipan al mapear */
@@ -136,6 +138,12 @@ function aEnvio(e: any): EnvioDeReserva {
     destino: texto(d.destino),
     reenvio: d.reenvio === true,
   };
+}
+
+/** M3-05: "<persona> confirmó el producto OD031 (sugerido por la IA)" o "<persona> eligió OD031". */
+function aConfirmacion(e: any): ConfirmacionDeProducto {
+  const d = e.detalle ?? {};
+  return { fecha: e.created_at, persona: texto(d.persona) ?? "", codigo: texto(d.codigo) ?? "", sugerida: d.sugerida === true };
 }
 
 /**
@@ -277,10 +285,11 @@ export async function cargarReserva(cliente: SupabaseClient, id: string): Promis
       .from("evento_reserva")
       .select("tipo,detalle,created_at")
       .eq("reserva_id", id)
-      .in("tipo", ["pedidos_enviados", "envio_de_prueba"])
+      .in("tipo", ["pedidos_enviados", "envio_de_prueba", "producto_confirmado"])
       .order("created_at"),
   ]);
   const filasPedidos = (verificar(pedidos) as any[]).map(aPedidoVista);
+  const historial = verificar(envios) as any[];
   const filasPartes = verificar(partes) as any[];
   const idsSumados = (verificar(eventos) as any[]).map((e) => e.mail_recibido_id as string);
   const ids = [...new Set([r.mail_recibido_id as string, ...idsSumados])];
@@ -304,7 +313,9 @@ export async function cargarReserva(cliente: SupabaseClient, id: string): Promis
     contactoCliente: aContacto(r.contacto_cliente),
     notas: Array.isArray(r.notas) ? r.notas.filter((n: unknown): n is string => typeof n === "string" && !!n.trim()) : [],
     pedidos: filasPedidos,
-    envios: (verificar(envios) as any[]).map(aEnvio),
+    envios: historial.filter((e) => e.tipo !== "producto_confirmado").map(aEnvio),
+    sugerencia: aProducto(r.sugerencia),
+    confirmacionesProducto: historial.filter((e) => e.tipo === "producto_confirmado").map(aConfirmacion),
   };
 }
 

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import { useConsulta } from "@/lib/catalogo/use-consulta";
 import { formatearFecha, formatearFechaHora, formatearHora, formatearRango } from "@/lib/formato";
 import { avisosDeLlegada } from "@/lib/reservas/avisos-vuelo";
@@ -11,6 +12,7 @@ import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { TEXTOS } from "@/lib/textos";
 import { Aviso, Chip, EsqueletoDetalle, EstadoError, EstadoVacio } from "@/components/ui/estados";
 import ui from "@/components/ui/ui.module.css";
+import { ConfirmarProducto, puedeConfirmarProducto } from "./confirmar-producto";
 import { ChipEstado, MarcasReserva } from "./marcas";
 import { MailOriginal } from "./mail-original";
 import { RevisionPrueba } from "./revision-prueba";
@@ -27,6 +29,12 @@ export function DetalleReservaPantalla({ id }: { id: string }) {
   const { estado, reintentar } = useConsulta(() =>
     esIdDeReserva(id) ? cargarReserva(createSupabaseBrowserClient(), id) : Promise.resolve(null),
   );
+  // Spec M3-05 fila 9: después de confirmar el producto, el "Listo" queda arriba y la reserva se vuelve a leer.
+  const [listo, setListo] = useState<string | null>(null);
+  const confirmado = (mensaje: string) => {
+    setListo(mensaje);
+    reintentar();
+  };
 
   return (
     <div className={ui.pagina}>
@@ -35,6 +43,11 @@ export function DetalleReservaPantalla({ id }: { id: string }) {
           {T.volver}
         </Link>
       </nav>
+      {listo ? (
+        <Aviso tono="info">
+          <span data-testid="producto-confirmado">{listo}</span>
+        </Aviso>
+      ) : null}
       {estado.tipo === "cargando" ? (
         <div className={estilos.columnas}>
           <EsqueletoDetalle etiqueta={T.cargando} />
@@ -43,7 +56,7 @@ export function DetalleReservaPantalla({ id }: { id: string }) {
       ) : null}
       {estado.tipo === "error" ? <EstadoError mensaje={T.error} onReintentar={reintentar} volver={VOLVER} /> : null}
       {estado.tipo === "listo" && estado.datos === null ? <NoExiste /> : null}
-      {estado.tipo === "listo" && estado.datos ? <Detalle reserva={estado.datos} /> : null}
+      {estado.tipo === "listo" && estado.datos ? <Detalle reserva={estado.datos} onConfirmado={confirmado} /> : null}
     </div>
   );
 }
@@ -68,7 +81,7 @@ function tituloDe(reserva: DetalleReserva): string {
   return J.referencia(reserva.pasajeros[0] ?? null, reserva.fechaInicio ? formatearFecha(reserva.fechaInicio) : "") || SIN_DATO;
 }
 
-function Detalle({ reserva }: { reserva: DetalleReserva }) {
+function Detalle({ reserva, onConfirmado }: { reserva: DetalleReserva; onConfirmado: (mensaje: string) => void }) {
   const frases = reserva.estado === "para_revision" || reserva.posibleDuplicada ? frasesDeMotivos(reserva.motivos) : [];
   const avisosLlegada = avisosDeLlegada(reserva);
   const notas = reserva.notas ?? [];
@@ -145,6 +158,7 @@ function Detalle({ reserva }: { reserva: DetalleReserva }) {
         </Aviso>
       ) : null}
 
+      {puedeConfirmarProducto(reserva) ? <ConfirmarProducto reserva={reserva} onConfirmado={onConfirmado} /> : null}
       <ArmarPedidos reserva={reserva} />
       <PedidosDeLaReserva reserva={reserva} />
 
@@ -293,6 +307,21 @@ function Producto({ reserva }: { reserva: DetalleReserva }) {
           {reserva.productoTextoAgencia ? <p className={ui.meta}>{T.enElMail(reserva.productoTextoAgencia)}</p> : null}
         </div>
       )}
+      {/* Spec M3-05 fila 7: quién confirmó o eligió el producto. */}
+      {reserva.confirmacionesProducto?.length ? (
+        <ul className={estilos.historialProducto} data-testid="historial-producto">
+          {reserva.confirmacionesProducto.map((c) => (
+            <li key={c.fecha + c.codigo}>
+              <span className={ui.meta}>{formatearFechaHora(c.fecha)}</span>{" "}
+              <span>
+                {c.sugerida
+                  ? TEXTOS.reserva.confirmarProducto.historialSugerido(c.persona || SIN_DATO, c.codigo)
+                  : TEXTOS.reserva.confirmarProducto.historialElegido(c.persona || SIN_DATO, c.codigo)}
+              </span>
+            </li>
+          ))}
+        </ul>
+      ) : null}
     </section>
   );
 }

@@ -1,3 +1,4 @@
+import { AGENCIA_JOURNAWAY } from "@/lib/catalogo/reglas";
 import type { DetalleProducto } from "@/lib/catalogo/tipos";
 import { TEXTOS } from "@/lib/textos";
 import { separarAvisosDeVuelo } from "../avisos-vuelo";
@@ -23,8 +24,6 @@ import type { ComponenteEntrada, EstadoReserva } from "../tipos";
  */
 
 const R = TEXTOS.reserva.confirmarProducto.motivos;
-
-export const AGENCIA_SIN_CONFIRMAR = "Journaway";
 
 export interface ReservaParaConfirmar {
   id: string;
@@ -54,9 +53,9 @@ export interface ProductoElegido {
 /** Por qué esta reserva no se puede confirmar desde la pantalla (null = se puede). */
 export function porQueNoSeConfirma(r: ReservaParaConfirmar): string | null {
   if (r.estado !== "para_revision") return R.noEnRevision;
-  if (!r.motivos.some(esMotivoDeProducto)) return R.sinMotivoDeProducto;
+  if (r.productoId || !r.motivos.some(esMotivoDeProducto)) return R.sinMotivoDeProducto;
   // Journaway arma sus paquetes con su propio reconocedor (M2-09) y una reserva puede tener varios.
-  if (r.agencia === AGENCIA_SIN_CONFIRMAR) return R.journaway;
+  if (r.agencia === AGENCIA_JOURNAWAY) return R.journaway;
   if (r.cantidadPartes > 0) return R.conPartes;
   return null;
 }

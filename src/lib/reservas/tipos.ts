@@ -398,6 +398,18 @@ export interface DetalleReserva extends FilaReserva {
   /** M3-03: los pedidos a proveedores y el historial de envíos. */
   pedidos?: PedidoDeReservaVista[];
   envios?: EnvioDeReserva[];
+  /** M3-05: lo que sugirió la IA y no se aceptó (para confirmarlo). */
+  sugerencia?: ProductoDeReserva | null;
+  /** M3-05: quién confirmó o eligió el producto, del historial. */
+  confirmacionesProducto?: ConfirmacionDeProducto[];
+}
+
+/** M3-05: una entrada "producto_confirmado" del historial (sin datos de pasajeros). */
+export interface ConfirmacionDeProducto {
+  fecha: string;
+  persona: string;
+  codigo: string;
+  sugerida: boolean;
 }
 
 /** La marca del owner sobre una reserva de prueba (spec M2-06 fila 13, tabla `revision_prueba`). */
