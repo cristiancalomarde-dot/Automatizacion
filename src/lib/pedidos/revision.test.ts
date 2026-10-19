@@ -1,8 +1,8 @@
 // @vitest-environment node
 //
 // Spec M3-02 fila 9: sin una sesión del equipo, ninguna acción de la pantalla
-// de pedidos lee ni escribe nada. Fila 8: confirmar el envío no manda nada
-// todavía (M3-03). Con un cliente falso: la integración real está en
+// de pedidos lee ni escribe nada. M3-03: sin la confirmación o sin la
+// casilla configurada, el envío no abre ninguna conexión. Con un cliente falso: la integración real está en
 // tests/pedidos-pantalla-m3-02.integration.test.ts.
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -44,12 +44,31 @@ describe("acciones de pedidos: solo el equipo (fila 9)", () => {
   });
 });
 
-describe("confirmar el envío (fila 8)", () => {
-  it("con sesión del equipo responde que falta conectar el envío y no toca nada", async () => {
+describe("confirmar el envío", () => {
+  it("M3-03 fila 10: sin la confirmación del diálogo no envía ni toca la base", async () => {
     const { cliente, from, rpc } = clienteFalso({ id: ID, email: "ccalomarde@hitravel.com.ar" });
-    expect(await pedirEnvioDePedidos(cliente, { reservaId: ID, pedidoIds: [ID] })).toEqual({ ok: false, error: TEXTOS.pedidos.faltaConectar });
+    const abrirTransporte = vi.fn();
+    expect(await pedirEnvioDePedidos(cliente, { reservaId: ID, pedidoIds: [ID] }, { env: {}, abrirTransporte })).toEqual({
+      ok: false,
+      error: TEXTOS.pedidos.envio.sinConfirmar,
+    });
+    expect(abrirTransporte).not.toHaveBeenCalled();
     expect(from).not.toHaveBeenCalled();
     expect(rpc).not.toHaveBeenCalled();
+  });
+
+  it("M3-03 fila 1: sin la clave de operations@ responde qué falta y no abre ninguna conexión", async () => {
+    const { cliente, from } = clienteFalso({ id: ID, email: "ccalomarde@hitravel.com.ar" });
+    const abrirTransporte = vi.fn();
+    const guardarEnEnviados = vi.fn();
+    const env = { PEDIDOS_SMTP_HOST: "127.0.0.1", PEDIDOS_SMTP_USER: "operations@hitravel.com.ar", PEDIDOS_SMTP_PASSWORD: "" };
+    expect(await pedirEnvioDePedidos(cliente, { reservaId: ID, pedidoIds: [ID], confirmado: true }, { env, abrirTransporte, guardarEnEnviados })).toEqual({
+      ok: false,
+      error: TEXTOS.pedidos.envio.faltaConfigurar,
+    });
+    expect(abrirTransporte).not.toHaveBeenCalled();
+    expect(guardarEnEnviados).not.toHaveBeenCalled();
+    expect(from).not.toHaveBeenCalled();
   });
 
   it("un id de reserva inválido no se acepta", async () => {

@@ -13,6 +13,8 @@ import { createServer, type AddressInfo, type Server, type Socket } from "node:n
  *   alguna vez se pidiera así, la marca `\Seen` lo delataría.
  * - El LOGIN se registra sin la contraseña (`LOGIN "usuario" ***`).
  * - Sin TLS: solo escucha en 127.0.0.1.
+ * - M3-03: con `permitirAppend`, APPEND agrega el mail a la carpeta (la copia
+ *   en Enviados de operations@). Sin esa opción se rechaza como siempre.
  */
 
 export interface MensajeFalso {
@@ -162,6 +164,11 @@ export async function crearImapFalso(opciones: {
   usuario: string;
   clave: string;
   carpetas: Array<{ path: string; atributos?: string[] }>;
+  /**
+   * M3-03: acepta APPEND (la copia en Enviados de operations@). Por defecto no:
+   * para la lectura de sales@ (M2-07) un APPEND sigue siendo una escritura prohibida.
+   */
+  permitirAppend?: boolean;
 }): Promise<ImapFalso> {
   const carpetas = new Map<string, CarpetaFalsa>();
   // Como un servidor real: cada casilla nueva con su propio UIDVALIDITY (si no, dos falsos parecerían el mismo mail).
@@ -211,16 +218,30 @@ export async function crearImapFalso(opciones: {
     if (falso.mudo) return;
     let autenticado = false;
     let abierta: CarpetaFalsa | null = null;
-    let resto = "";
+    let resto = Buffer.alloc(0);
+    // M3-03: un APPEND trae el mail como literal ({n} y después n bytes).
+    let literal: { bytes: number; alTerminar: (datos: Buffer) => void } | null = null;
     const enviar = (s: string) => socket.write(`${s}\r\n`);
     enviar("* OK Servidor IMAP falso listo");
 
-    socket.on("data", (datos) => {
-      resto += datos.toString("utf8");
-      let fin: number;
-      while ((fin = resto.indexOf("\r\n")) !== -1) {
-        const linea = resto.slice(0, fin);
-        resto = resto.slice(fin + 2);
+    socket.on("data", (datos: Buffer) => {
+      resto = Buffer.concat([resto, datos]);
+      for (;;) {
+        if (literal) {
+          if (resto.length < literal.bytes) return;
+          const contenido = resto.subarray(0, literal.bytes);
+          resto = resto.subarray(literal.bytes);
+          const l = literal;
+          literal = null;
+          l.alTerminar(Buffer.from(contenido));
+          continue;
+        }
+        const fin = resto.indexOf("\r\n");
+        if (fin === -1) return;
+        const linea = resto.subarray(0, fin).toString("utf8");
+        resto = resto.subarray(fin + 2);
+        // El CRLF que cierra un APPEND después del literal.
+        if (!linea) continue;
         responder(linea);
       }
     });
@@ -258,6 +279,25 @@ export async function crearImapFalso(opciones: {
       if (!autenticado) return enviar(`${tag} NO Primero LOGIN`);
 
       switch (cmd) {
+        case "APPEND": {
+          const tamano = /^\{(\d+)\}$/.exec(args[args.length - 1] ?? "");
+          if (!opciones.permitirAppend || !tamano) return enviar(`${tag} BAD Comando no soportado por el falso`);
+          const destino = carpetas.get(args[0]);
+          if (!destino) return enviar(`${tag} NO [TRYCREATE] No existe la carpeta`);
+          const flags = args.slice(1, -1).find((a) => a.startsWith("("));
+          literal = {
+            bytes: Number(tamano[1]),
+            alTerminar: (contenido) => {
+              const uid = falso.agregar(destino.path, {
+                fuente: contenido.toString("utf8"),
+                fecha: new Date(),
+                flags: flags ? flags.slice(1, -1).split(" ").filter(Boolean) : [],
+              });
+              enviar(`${tag} OK [APPENDUID ${destino.uidValidity} ${uid}] APPEND completed`);
+            },
+          };
+          return enviar("+ Listo para el mail");
+        }
         case "LIST": {
           if (args[1] === "") {
             enviar('* LIST (\\Noselect) "." ""');

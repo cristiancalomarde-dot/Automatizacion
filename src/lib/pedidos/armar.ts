@@ -670,7 +670,8 @@ function asuntoYReferencia(reserva: ReservaParaPedidos, catalogo: CatalogoParaPe
 /** Por qué no se arman pedidos para una reserva en ese estado (fila 10); null si se puede. */
 export function porQueNoSeArma(estado: ReservaParaPedidos["estado"]): string | null {
   if (estado === "para_revision") return MENSAJES.paraRevision;
-  if (estado !== "recibida") return MENSAJES.noRecibida;
+  // M3-03: una reserva ya pedida se vuelve a armar para completar lo que quedó sin enviar (lo enviado se conserva).
+  if (estado !== "recibida" && estado !== "pedido_a_proveedor") return MENSAJES.noRecibida;
   return null;
 }
 

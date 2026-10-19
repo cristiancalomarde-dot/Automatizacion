@@ -7,8 +7,7 @@ import "server-only";
  *
  * Cada una exige primero una sesión del equipo (@hitravel.com.ar): sin ella no
  * lee ni escribe nada (fila 9). El armado lo hace `armarPedidos` (M3-01); acá
- * no hay lógica de armado. Pedir el envío todavía no manda nada (#4): lo
- * conecta M3-03.
+ * no hay lógica de armado. El envío (M3-03) vive en `envio/enviar.ts`.
  */
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { esCorreoDelDominioPermitido, obtenerDominioPermitido } from "@/lib/auth/dominio";
@@ -20,6 +19,7 @@ import { cargarPedidos, guardarPedidosArmados, type PedidoGuardado, type TareaGu
 import { avisosDeLaPantalla, validarEdicion, type EdicionPedido } from "./pantalla";
 import { cargarPlantilla } from "./plantilla";
 import type { DiaDeServicio, Plantilla } from "./tipos";
+import { enviarPedidosAprobados, type DependenciasEnvio, type PedidoDeEnvio, type ResultadoEnvio } from "./envio/enviar";
 
 type Rechazo = { ok: false; error: string; sinSesion?: true };
 
@@ -117,16 +117,13 @@ export async function guardarEdicionDePedido(cliente: SupabaseClient, entrada: E
   return { ok: true, pedido: data as PedidoGuardado };
 }
 
-export interface PedidoDeEnvio {
-  reservaId: string;
-  pedidoIds: string[];
-}
+export type { EnvioHecho, PedidoDeEnvio, ResultadoEnvio, ResultadoPedido } from "./envio/enviar";
 
-/** El envío lo conecta M3-03: por ahora no manda nada ni toca la base (#4). */
-export async function pedirEnvioDePedidos(cliente: SupabaseClient, entrada: PedidoDeEnvio): Promise<Rechazo> {
-  if (!(await usuarioDelEquipo(cliente))) return SIN_SESION;
-  if (!esIdDeReserva(entrada?.reservaId ?? "") || !Array.isArray(entrada.pedidoIds) || !entrada.pedidoIds.every(esIdDeReserva)) {
-    return { ok: false, error: "Los pedidos no son válidos." };
-  }
-  return { ok: false, error: TEXTOS.pedidos.faltaConectar };
+/**
+ * Confirmación del diálogo "Enviar N pedidos" (M3-03): manda los pedidos por
+ * operations@ (en modo prueba, solo a la casilla de prueba). Toda la lógica
+ * está en `envio/enviar.ts`.
+ */
+export async function pedirEnvioDePedidos(cliente: SupabaseClient, entrada: PedidoDeEnvio, deps?: DependenciasEnvio): Promise<ResultadoEnvio> {
+  return enviarPedidosAprobados(cliente, entrada, deps);
 }

@@ -208,6 +208,8 @@ export const TEXTOS = {
     sinProducto: "Sin producto reconocido",
     dePrueba: "De prueba",
     posibleDuplicada: "posible duplicada",
+    /** Spec M3-03 fila 8: ya se pidió, pero quedó algún pedido sin enviar (sin mail, falló o no se incluyó). */
+    pedidoIncompleto: "pedido incompleto",
     /**
      * Owner 2026-10-16: una sola marca para lo que espera el dato de llegada
      * (un vuelo para un traslado, o Iguazú sin vuelo ni bus). Aviso, no revisión.
@@ -242,6 +244,21 @@ export const TEXTOS = {
     /** Spec M3-02 fila 1: el acceso a los pedidos desde el detalle. */
     armarPedidos: "Armar pedidos a proveedores",
     resolverPrimero: "Resolvé primero lo que está para revisión",
+    /** Spec M3-03 fila 9: a quién se le escribió, cuándo y quién. */
+    verPedidos: "Ver los pedidos a proveedores",
+    pedidosTitulo: "Pedidos a proveedores",
+    pedidoEstado: {
+      enviado: (cuando: string, quien: string) => `Enviado ${cuando} · ${quien}`,
+      fallo: (motivo: string) => `No se pudo enviar: ${motivo}`,
+      sinMail: "Sin mail: no se envió",
+      sinEnviar: "Sin enviar",
+      enviando: "Enviándose",
+    },
+    historialEnvios: "Envíos",
+    envioRegistrado: (persona: string, n: number, proveedores: string) =>
+      `${persona} envió ${n === 1 ? "1 pedido" : `${n} pedidos`} a: ${proveedores}`,
+    envioDePrueba: (persona: string, n: number, proveedores: string, destino: string) =>
+      `${persona} hizo un envío de prueba (${n === 1 ? "1 pedido" : `${n} pedidos`}: ${proveedores}). Llegó solo a ${destino}.`,
     /** Owner 2026-10-14: Iguazú (OD010A–D) sin vuelo ni bus de llegada; una línea del aviso de llegada. */
     avisoLlegada: "Falta el vuelo o bus de llegada a Iguazú: pasárselo a Cuenca del Plata cuando llegue.",
     /** Owner 2026-10-16: encabezado del aviso "falta dato de llegada" (abajo va cada línea concreta). */
@@ -466,6 +483,45 @@ export const TEXTOS = {
       confirmar: "Confirmar y enviar",
       cancelar: "Cancelar",
       enviando: "Enviando…",
+    },
+    /** Spec M3-03 §4: la franja fija mientras el envío real está apagado. */
+    franjaPrueba: (destino: string) => `Modo prueba: los pedidos llegan solo a ${destino}`,
+    envio: {
+      faltaConfigurar: "Falta configurar la casilla operations@: avisale a Cristian",
+      configMal: (variable: string) => `La configuración del envío tiene un dato mal (${variable}): avisale a Cristian`,
+      sinConfirmar: "Falta confirmar el envío en el diálogo.",
+      invalido: "Los pedidos no son válidos.",
+      reservaNoLista: "Esta reserva no está para enviar pedidos.",
+      noEsta: "Ese pedido ya no está: volvé a armar los pedidos.",
+      sinMail: "No tiene mail: completalo en el directorio de proveedores.",
+      yaEnviado: 'Ya se había enviado. Para mandarlo de nuevo, usá "Reenviar".',
+      enCurso: "Ya se está enviando.",
+      claveInvalida: "La clave de operations@ no es válida: avisale a Cristian.",
+      noResponde: "El correo de operations@ no respondió. Probá de nuevo en un rato.",
+      rechazado: (mails: string) => `El correo rechazó ${mails}: revisá la dirección en el directorio de proveedores.`,
+      noLlego: (mails: string) => `No le llegó a ${mails}: revisá la dirección en el directorio de proveedores.`,
+      error: "No se pudo enviar el mail.",
+      sinCopia: (motivo: string) => `Los pedidos salieron, pero no se pudo guardar la copia en Enviados de operations@ (${motivo}).`,
+      sinCarpetaEnviados: "no encontramos la carpeta de Enviados",
+      copiaNoResponde: "la casilla no respondió",
+      copiaClave: "la clave no es válida",
+      enviando: "Enviando…",
+      enviado: (hora: string, quien: string) => `Enviado ✓ ${hora} · ${quien}`,
+      pruebaEnviada: (hora: string, destino: string) => `Prueba enviada ✓ ${hora} (llegó solo a ${destino})`,
+      fallo: (motivo: string) => `No se pudo enviar ✗: ${motivo}`,
+      reintentar: "Reintentar",
+      reenviar: "Reenviar",
+      trabado: "No sabemos si salió: mirá Enviados de operations@ antes de reenviarlo.",
+      tituloReintentar: "Reintentar 1 pedido",
+      tituloReenviar: "Reenviar 1 pedido",
+      avisoReenviar: "Este pedido ya se envió. Se va a mandar de nuevo y queda registrado como reenvío.",
+      resumen: (enviados: number, fallaron: number, prueba: boolean) =>
+        `${prueba ? "Envío de prueba: " : ""}${enviados === 1 ? "salió 1 pedido" : `salieron ${enviados} pedidos`}${
+          fallaron > 0 ? `; ${fallaron === 1 ? "1 no se pudo enviar" : `${fallaron} no se pudieron enviar`}` : ""
+        }.`,
+      prefijoPrueba: "[PRUEBA] ",
+      ibaPara: (proveedor: string, mails: string) => `Este pedido iba para: ${proveedor} <${mails}>`,
+      remitente: "HI Travel",
     },
     faltaConectar: "Falta conectar el envío (llega en M3-03).",
     sinSesion: "Tu sesión venció. Volvé a ingresar.",

@@ -42,6 +42,17 @@ export interface PedidoGuardado {
   de_prueba: boolean;
   created_at: string;
   updated_at: string;
+  /** M3-03 (0019): los datos del envío. Opcionales para las filas armadas a mano en los tests. */
+  enviando_desde?: string | null;
+  enviado_en?: string | null;
+  enviado_por?: string | null;
+  enviado_por_nombre?: string | null;
+  message_id?: string | null;
+  motivo_fallo?: string | null;
+  reenvios?: number;
+  copia_en_enviados?: boolean | null;
+  envio_prueba_en?: string | null;
+  envio_prueba_por_nombre?: string | null;
 }
 
 export interface TareaGuardada {
