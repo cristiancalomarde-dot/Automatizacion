@@ -1,6 +1,6 @@
 # M2-09: los 4 mails de Journaway en el modo prueba
 
-Generado el 2026-10-19 con `npm run probar:mails -- --journaway --base-de-pruebas`, contra la base de pruebas. Modelo de la lectura: claude-sonnet-5-5. Gasto de IA de la corrida: US$ 0,0951.
+Generado el 2026-10-19 con `npm run probar:mails -- --journaway`, contra la base real (reservas marcadas de prueba). Modelo de la lectura: claude-sonnet-5-5. Gasto de IA de la corrida: US$ 0,0953.
 
 Se compara cada mail con lo que pide la spec (tabla de §3): producto, estado, número de viaje, pax, pasajeros, cada tour con su fecha y su pick up, vuelos, traslados y los hoteles que reserva Journaway (no se piden).
 
@@ -51,4 +51,4 @@ Coincide con lo esperado.
   - Vuelos: IB1314, LA5404, LA148, LA2277, LA2484, IB1315
   - Lo que reserva Journaway (no se pide): Hub Providencia, Fauna Hotel, Our Habitas Atacama, MET Hotel, Sonesta Posadas del Inca Lake Titicaca - Puno, Night Bus Peru, Hotel Viza, Saska Boutique
   - Notas: Trae adjuntos: pasaportes (no se leen)
-- Gasto de este mail: US$ 0,0376
+- Gasto de este mail: US$ 0,0377

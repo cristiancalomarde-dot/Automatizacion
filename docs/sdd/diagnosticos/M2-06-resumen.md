@@ -1,10 +1,10 @@
 # Modo prueba (M2-06): resumen
 
-Generado el 2026-10-17 con `npm run probar:mails -- --resumen`.
+Generado el 2026-10-19 con `npm run probar:mails -- --resumen`.
 
 ## La medición
 
-**Revisadas 4 de 27 · 0 mal (0%) · faltan 23 por revisar**
+**Revisadas 4 de 26 · 0 mal (0%) · faltan 22 por revisar**
 
 Producto mal: 0 de 4 revisadas (0%). Es el número del PRD (riesgo #1).
 
@@ -12,7 +12,7 @@ Si más del 20% de las reservas revisadas está mal, se frena y no se activa la 
 
 ## Gasto y modelo
 
-- Gasto de IA de las reservas de prueba: **US$ 0,5140** (24 lecturas de mails y 2 propuestas de producto).
+- Gasto de IA de las reservas de prueba: **US$ 0,5137** (24 lecturas de mails y 2 propuestas de producto).
 - Modelo usado: claude-sonnet-5-5. Instrucciones: lectura-mail.v3.
 
 ## Sonnet contra Opus (`npm run eval:lectura`)
@@ -35,7 +35,7 @@ El mismo set de evaluación (las fichas que validó el owner), leído por cada m
 
 El modelo se fija en `src/lib/ia/modelos.ts` con el OK del owner (y se anota en `DECISIONS.md`).
 
-## Las reservas de prueba (27)
+## Las reservas de prueba (26)
 
 | Archivo | Agencia | Número | Producto | Estado | Marca del owner |
 |---|---|---|---|---|---|
@@ -63,7 +63,6 @@ El modelo se fija en `src/lib/ia/modelos.ts` con el OK del owner (y se anota en 
 | Kilroy-INBOX-15963.eml | Kilroy | DK1593111/mhee | OD030 | Recibida | sin marcar |
 | Reserva de Cliente Journaway - Iguazu Fall Argentina Side.docx | Journaway | sin número | IGRE01 | Recibida | sin marcar |
 | Reserva de Cliente Journaway - All San Pedro 4 days mas San Pedro Extension.docx | Journaway | Trip 62992 | SPAP01 | Recibida | sin marcar |
-| Reserva de Cliente Journaway - All San Pedro 4 days mas San Pedro Extension.docx | Journaway | Trip 62992 | SPAP03 | Recibida | sin marcar |
 | Reserva de Cliente Journaway - Iguazu Falls Brazilian Side.docx | Journaway | sin número | IGRE02 | Recibida | sin marcar |
 | Reserva de Cliente Journaway - San Pedro de Atacama and Uyuni Salt Flats in Tayka Hotels 7N8D SPAP05.docx | Journaway | sin número | SPAP05 | Recibida | sin marcar |
 
@@ -133,7 +132,7 @@ Cada uno tiene su reporte en `docs/sdd/diagnosticos/M2-06-mails/`.
 | Pedido Proveedor - La Bicicleta Naranja OD018.docx | No es un mail de agencia | 0 | [Pedido Proveedor - La Bicicleta Naranja OD018.md](M2-06-mails/Pedido%20Proveedor%20-%20La%20Bicicleta%20Naranja%20OD018.md) |
 | Pedido Proveedor - Milhouse Hostel OD018.docx | No es un mail de agencia | 0 | [Pedido Proveedor - Milhouse Hostel OD018.md](M2-06-mails/Pedido%20Proveedor%20-%20Milhouse%20Hostel%20OD018.md) |
 | Pedido Proveedor - Rancho Grande y Chalten Travel OD033.docx | No es un mail de agencia | 0 | [Pedido Proveedor - Rancho Grande y Chalten Travel OD033.md](M2-06-mails/Pedido%20Proveedor%20-%20Rancho%20Grande%20y%20Chalten%20Travel%20OD033.md) |
-| Reserva de Cliente Journaway - All San Pedro 4 days mas San Pedro Extension.docx | Leído con IA | 2 | [Reserva de Cliente Journaway - All San Pedro 4 days mas San Pedro Extension.md](M2-06-mails/Reserva%20de%20Cliente%20Journaway%20-%20All%20San%20Pedro%204%20days%20mas%20San%20Pedro%20Extension.md) |
+| Reserva de Cliente Journaway - All San Pedro 4 days mas San Pedro Extension.docx | Leído con IA | 1 | [Reserva de Cliente Journaway - All San Pedro 4 days mas San Pedro Extension.md](M2-06-mails/Reserva%20de%20Cliente%20Journaway%20-%20All%20San%20Pedro%204%20days%20mas%20San%20Pedro%20Extension.md) |
 | Reserva de Cliente Journaway - Iguazu Fall Argentina Side.docx | Leído con IA | 1 | [Reserva de Cliente Journaway - Iguazu Fall Argentina Side.md](M2-06-mails/Reserva%20de%20Cliente%20Journaway%20-%20Iguazu%20Fall%20Argentina%20Side.md) |
 | Reserva de Cliente Journaway - Iguazu Falls Brazilian Side.docx | Leído con IA | 1 | [Reserva de Cliente Journaway - Iguazu Falls Brazilian Side.md](M2-06-mails/Reserva%20de%20Cliente%20Journaway%20-%20Iguazu%20Falls%20Brazilian%20Side.md) |
 | Reserva de Cliente Journaway - San Pedro de Atacama and Uyuni Salt Flats in Tayka Hotels 7N8D SPAP05.docx | Leído con IA | 1 | [Reserva de Cliente Journaway - San Pedro de Atacama and Uyuni Salt Flats in Tayka Hotels 7N8D SPAP05.md](M2-06-mails/Reserva%20de%20Cliente%20Journaway%20-%20San%20Pedro%20de%20Atacama%20and%20Uyuni%20Salt%20Flats%20in%20Tayka%20Hotels%207N8D%20SPAP05.md) |

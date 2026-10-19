@@ -1,7 +1,7 @@
 # Reserva de Cliente Journaway - Iguazu Falls Brazilian Side.docx
 
 - **Agencia:** Journaway
-- **Gasto de IA de este mail:** US$ 0,0159
+- **Gasto de IA de este mail:** US$ 0,0160
 
 ## Qué entendió la IA
 
