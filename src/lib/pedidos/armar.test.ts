@@ -154,6 +154,13 @@ describe("armarPedidos — qué lleva cada servicio (fila 3)", () => {
     expect(p.cuerpo).toContain("Lado brasileño, regular en inglés: 5 oct 2026");
     expect(p.cuerpo).toContain("TRF OUT, regular: 6 oct 2026 · Bus o vuelo pendiente");
   });
+
+  it("Combined que empieza en Brasil (OD010D): lado brasileño el día 2 y argentino el día 3, el del cruce", () => {
+    const od010d = { ...od010b, id: "prod-od010d", codigo: "OD010D", servicios: od010b.servicios.map((s) => ({ ...s, productoId: "prod-od010d" })) };
+    const p = ok(armarPedidos({ ...reservaOd010b, productoId: od010d.id }, catalogoCon([od010d]), plantilla)).pedidos[0];
+    expect(p.cuerpo).toContain("Lado brasileño, regular en inglés: 4 oct 2026");
+    expect(p.cuerpo).toContain("Lado argentino, regular en inglés: 5 oct 2026");
+  });
 });
 
 describe("armarPedidos — los pasajeros (fila 4)", () => {
