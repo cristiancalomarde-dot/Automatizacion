@@ -3,6 +3,12 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
 
 # Dónde retomar
 
+- **M3-05 terminada y publicada (2026-10-19).** Botón "Confirmar producto" en reservas "para revisión" (sugerencia de la IA o
+  buscador), la app aprende la equivalencia (codigo_externo.origen = aprendido; los importadores no la borran). Migración 0020
+  aplicada a la real con OK. Reglas nuevas del owner: Tiwanaco día 2 del OD031; Combined de Iguazú: OD010D primero lado
+  brasileño, aviso del cruce (drop off en el otro hotel, equipaje a los lockers). Siguiente: M3-04 (el owner prueba los
+  pedidos de UK1595157 en modo prueba) y el tono de la plantilla.
+
 - **M3-03 terminada y publicada (2026-10-19).** Migración 0019 aplicada a la real con OK. Variables PEDIDOS_SMTP_*, PEDIDOS_CC
   y PEDIDOS_DESTINO_PRUEBA en Vercel y .env.local; login SMTP e IMAP de operations@ probado OK (enviados = INBOX.Sent Items).
   PEDIDOS_ENVIO_REAL sigue apagado (modo prueba). Primera reserva real de Kilroy (UK1595157: CHB31 + OD031, La Paz confirmada
