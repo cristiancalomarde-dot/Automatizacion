@@ -225,6 +225,12 @@ diga cada ficha.
   "Stornierung"), o si el cuerpo dice "please book…". Ejemplos de asunto: "Activity Booking / Client Huber / ID 62073917770",
   "Program Booking / Client Hasler / ID 53210552707", "de-DE Transfer + Activity Booking / Client Senkyr / ID 51727479110".
   Sin esas palabras y sin nombrar una reserva ya cargada, no se lee. SPAP05/06 con noches que no coinciden: nota, no revisión.
+- **Journaway: un pedido = una reserva; mismo ID = misma reserva (owner, 2026-10-17).** Un mail es UNA reserva aunque
+  traiga dos paquetes ("All San Pedro 8 Days" = SPAP01 + SPAP03): todas las partes en orden de fecha, la llegada al
+  principio y la salida al final, y la lista muestra "SPAP01 + SPAP03". El ID de 11 dígitos es del pasajero: un mail de
+  pedido con un ID ya cargado suma sus tours a esa reserva (no crea otra ni la marca "posible duplicada"; un tour que ya
+  estaba no se repite). Una cancelación con ese ID va a revisión. El Trip Number no junta: con otro ID es otra reserva.
+  Las copias .docx no traen asunto ni ID: en el modo prueba A y B siguen separadas.
 - **TourRadar sin statements en sales@ (owner, 2026-10-17):** es normal, las reservas de
   TourRadar son esporádicas; en esa semana no hubo nuevas. No hay que cambiar nada.
 

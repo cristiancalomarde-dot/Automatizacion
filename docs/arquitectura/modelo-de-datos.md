@@ -342,9 +342,15 @@ dice así (no "Excel de paquetes").
   primer tour hasta el día 1 del Overland) deciden SPAP05 (4) o SPAP06 (5); el título N/D es la
   tercera señal y, si no coincide, queda una nota. Las señales viven en `data/journaway-senales.csv`
   (editable por el owner; un código que no existe frena antes de procesar).
-- **Una reserva por paquete o tour suelto**, con el mismo `booking_id`: el ID de 11 dígitos del
-  asunto (owner, 2026-10-13). Sin ID, el `booking_id` queda vacío (no se arma con nombres ni
-  fechas) y M2-04 compara por producto + fecha + pax ("posible duplicada").
+- **Un mail = una reserva** (owner, 2026-10-17), aunque traiga dos paquetes (SPAP01 + SPAP03) o un
+  tour suelto además del paquete: `producto_id` es el del primer tour y los demás van en
+  `reserva.otros_productos` (migración 0017), con las partes de todos en orden de fecha.
+- **El `booking_id` es el ID de 11 dígitos del asunto** (owner, 2026-10-13), y es del pasajero:
+  **mismo ID = misma reserva** (owner, 2026-10-17). Un pedido nuevo con un ID ya cargado suma sus
+  tours a esa reserva (acción "sumada"; no repite el mismo producto en la misma fecha; amplía las
+  fechas del viaje), sin marca de posible duplicada. Otro ID es otro pasajero aunque coincida el
+  Trip Number. Una cancelación con ese ID va a revisión. Sin ID (las copias .docx), el
+  `booking_id` queda vacío y M2-04 compara por producto + fecha + pax ("posible duplicada").
 - `reserva.trip_number`: el "Trip Number" del cuerpo, referencia secundaria. El detalle dice
   "Journaway no mandó número de viaje" si no vino.
 - `reserva.hoteles_agencia` (`[{nombre, desde, hasta}]`): lo que reserva Journaway ("booked by
