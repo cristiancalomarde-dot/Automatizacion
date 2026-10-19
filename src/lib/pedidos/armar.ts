@@ -41,6 +41,7 @@ import {
   rangoCorto,
   renglonDelPasajero,
   sumarDias,
+  habitacionDelOverland,
   tipoDeHabitacion,
 } from "./formato";
 import type {
@@ -343,7 +344,8 @@ class Armado {
     }
     if (proveedor.canal === "whatsapp") {
       const previo = this.whatsapp.get(proveedor.id) ?? { proveedor, cosas: [], fecha: a.fecha, seq: this.seq++ };
-      previo.cosas.push(`${nombre}${cuando ? `, ${cuando}` : ""}`);
+      // Con la habitación en el alojamiento (owner, 2026-10-19): "San Pedro Backpackers (dorm compartido)".
+      previo.cosas.push(`${s.tipo === "alojamiento" ? a.queParaTarea : nombre}${cuando ? `, ${cuando}` : ""}`);
       this.whatsapp.set(proveedor.id, previo);
       return;
     }
@@ -399,7 +401,7 @@ class Armado {
     }
     const hab = tipoDeHabitacion(this.reserva.habitacion);
     if (hab) renglones.push(`Habitación: ${hab}`);
-    return { renglones, fecha: desde, resumen: desde && hasta ? `IN ${fechaCorta(desde)}, OUT ${fechaCorta(hasta)}` : "", queParaTarea: hotel, datosPax: true, avisos, pendientes: [] };
+    return { renglones, fecha: desde, resumen: desde && hasta ? `IN ${fechaCorta(desde)}, OUT ${fechaCorta(hasta)}` : "", queParaTarea: hab ? `${hotel} (${hab})` : hotel, datosPax: true, avisos, pendientes: [] };
   }
 
   private fechaDeExcursion(b: Bloque, s: Servicio, desde: string | null, hasta: string | null): string | null {
@@ -552,6 +554,12 @@ class Armado {
     const renglones = [nombre];
     if (desde && hasta && desde !== hasta) renglones.push(`Desde: ${fechaCorta(desde)} · Hasta: ${fechaCorta(hasta)}`);
     else renglones.push(`Fecha: ${desde ? fechaCorta(desde) : "a confirmar"}`);
+    if (/overland/i.test(nombre)) {
+      // El Overland de Imperio Inca que vendemos es tour regular, no el privado de Journaway (owner, 2026-10-19).
+      renglones.push("Servicio: tour regular");
+      const hab = habitacionDelOverland(this.reserva.habitacion);
+      if (hab) renglones.push(`Habitación: ${hab}`);
+    }
     return { renglones, fecha: desde, resumen: desde && hasta ? rangoCorto(desde, hasta) : desde ? fechaCorta(desde) : "", queParaTarea: nombre, datosPax: true, avisos: [], pendientes: [] };
   }
 

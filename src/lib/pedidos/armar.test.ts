@@ -84,6 +84,19 @@ describe("armarPedidos — tour compuesto (fila 2)", () => {
     expect(imperio.cuerpo).not.toContain("Tatio");
   });
 
+  it("el Overland es tour regular y lleva la habitación (dorm, DBL o SGL con baño compartido); la tarea de WhatsApp también", () => {
+    const conDorm = ok(armarPedidos({ ...reservaChb31, habitacion: "Dormitory - Hostel" }, catalogoChb31, plantilla));
+    const imperio = pedidoA(conDorm, "reservas@imperioinca.test")!.cuerpo;
+    expect(imperio).toMatch(/Overland San Pedro de Atacama to Uyuni\nDesde: .*\nServicio: tour regular\nHabitación: dorm compartido/);
+    const dbl = ok(armarPedidos({ ...reservaChb31, habitacion: "Double Room - Hostel" }, catalogoChb31, plantilla));
+    expect(pedidoA(dbl, "reservas@imperioinca.test")!.cuerpo).toContain("Habitación: DBL con baño compartido");
+    const sgl = ok(armarPedidos({ ...reservaChb31, habitacion: "Single Room - Hostel" }, catalogoChb31, plantilla));
+    expect(pedidoA(sgl, "reservas@imperioinca.test")!.cuerpo).toContain("Habitación: SGL con baño compartido");
+    const whatsapp = conDorm.tareas.filter((t) => t.tipo === "whatsapp");
+    expect(whatsapp.length).toBeGreaterThan(0);
+    for (const t of whatsapp) expect(t.texto).toContain("(dorm compartido)");
+  });
+
   it("las fechas salen del inicio de la reserva: el Tatio el día 3, el Overland del 21 al 23, el bus el 23", () => {
     expect(pedidoA(r, "reservas@horizonte.test")!.cuerpo).toContain("Fecha: 20 ene 2027");
     const imperio = pedidoA(r, "reservas@imperioinca.test")!.cuerpo;

@@ -54,12 +54,25 @@ export function nivelDeLaHabitacion(habitacion: string | null): string | null {
   return null;
 }
 
+/**
+ * La habitación en el Overland (owner, 2026-10-19): dorm a compartir, DBL o SGL con baño compartido.
+ * Null si no vino.
+ */
+export function habitacionDelOverland(habitacion: string | null): string | null {
+  if (!habitacion?.trim()) return null;
+  const h = normalizarTexto(habitacion.split(/\s+-\s+/)[0]);
+  if (/dorm/.test(h)) return "dorm compartido";
+  if (/\b(double|doble|dbl|matrimonial|twin)\b/.test(h)) return "DBL con baño compartido";
+  if (/\b(single|sgl|individual|simple)\b/.test(h)) return "SGL con baño compartido";
+  return tipoDeHabitacion(habitacion);
+}
+
 /** El tipo de habitación en español ("Double Room - Hostel" → "doble"). Null si no vino. */
 export function tipoDeHabitacion(habitacion: string | null): string | null {
   if (!habitacion?.trim()) return null;
   const base = habitacion.split(/\s+-\s+/)[0].trim();
   const h = normalizarTexto(base);
-  if (/dorm/.test(h)) return /travel+ing together|juntos/.test(h) ? "cama en habitación compartida (viajan juntos)" : "cama en habitación compartida";
+  if (/dorm/.test(h)) return /travel+ing together|juntos/.test(h) ? "dorm compartido (viajan juntos)" : "dorm compartido";
   if (/\b(double|doble|dbl|matrimonial)\b/.test(h)) return "doble";
   if (/\btwin\b/.test(h)) return "twin";
   if (/\b(single|sgl|individual|simple)\b/.test(h)) return "single";
