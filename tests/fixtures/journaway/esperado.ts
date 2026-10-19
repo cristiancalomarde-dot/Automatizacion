@@ -54,9 +54,11 @@ export const ESPERADO_JOURNAWAY: MailEsperado[] = [
     letra: "C",
     titulo: "All San Pedro 4 days mas San Pedro Extension",
     archivo: "All San Pedro 4 days mas San Pedro Extension",
+    // Owner 2026-10-17: un mail = una reserva, aunque traiga dos paquetes.
     reservas: [
       {
         producto: "SPAP01",
+        otrosProductos: ["SPAP03"],
         estado: "recibida",
         tripNumber: "62992",
         pax: 2,
@@ -64,27 +66,16 @@ export const ESPERADO_JOURNAWAY: MailEsperado[] = [
         partes: [
           { codigo: "SPAT01", fecha: "2027-03-16", pickUp: null },
           { codigo: "SPAE01", fecha: "2027-03-16", pickUp: null },
-          { codigo: "SPAE02", fecha: "2027-03-19", pickUp: null },
           { codigo: "SPAE03", fecha: "2027-03-17", pickUp: null },
           { codigo: "SPAE04", fecha: "2027-03-17", pickUp: null },
-        ],
-        vuelos: ["LA156", "LA377"],
-        trasladoLlegada: { vuelo: "LA156", fecha: "2027-03-16", hora: "17:41" },
-        hoteles: 0,
-      },
-      {
-        producto: "SPAP03",
-        estado: "recibida",
-        tripNumber: "62992",
-        pax: 2,
-        pasajeros: C_PAX,
-        partes: [
-          { codigo: "SPAE07", fecha: "2027-03-21", pickUp: null },
-          { codigo: "SPAE06", fecha: "2027-03-20", pickUp: null },
           { codigo: "SPAE05", fecha: "2027-03-18", pickUp: null },
+          { codigo: "SPAE02", fecha: "2027-03-19", pickUp: null },
+          { codigo: "SPAE06", fecha: "2027-03-20", pickUp: null },
+          { codigo: "SPAE07", fecha: "2027-03-21", pickUp: null },
           { codigo: "SPAT01", fecha: "2027-03-23", pickUp: null },
         ],
         vuelos: ["LA156", "LA377"],
+        trasladoLlegada: { vuelo: "LA156", fecha: "2027-03-16", hora: "17:41" },
         trasladoSalida: { vuelo: "LA377", fecha: "2027-03-23", hora: "20:39" },
         hoteles: 0,
       },

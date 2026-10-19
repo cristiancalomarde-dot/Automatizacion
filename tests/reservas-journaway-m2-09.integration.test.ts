@@ -34,9 +34,27 @@ const CLAVE = `clave-falsa-${randomUUID()}`;
 /** Un ID de Journaway (11 dígitos) único por corrida del test. */
 const ID_SALES = `656${String(Date.now()).slice(-8)}`;
 
+/** IDs únicos por corrida: dos mails con el mismo ID (IGRE01 e IGRE02) y dos con el mismo Trip Number y distinto ID. */
+const base = String(Date.now()).slice(-7);
+const ID_MISMO = `6571${base}`;
+const ID_TRIP_1 = `6572${base}`;
+const ID_TRIP_2 = `6573${base}`;
+
+/** El mail de ejemplo con un asunto (las copias .docx no lo traen). */
+const conAsunto = (texto: string, asunto: string) => texto.replace(/^(Remitente: .*)$/m, (linea) => `${linea}\nAsunto: ${asunto}`);
+
+const conNumero = (f: FichaIA, id: string, tipo?: FichaIA["tipo_mail"]["valor"]): FichaIA => ({
+  ...f,
+  numero_reserva: { valor: f.numero_reserva.valor?.startsWith("Trip") ? `ID ${id} · ${f.numero_reserva.valor}` : `ID ${id}`, confianza: 1 },
+  ...(tipo ? { tipo_mail: { valor: tipo, confianza: 1 } } : {}),
+});
+
 /** La ficha que "devuelve la IA" según el mail (los textos de tests/fixtures/journaway). */
 function fichaPara(texto: string): FichaIA {
   if (texto.includes(ID_SALES)) return { ...fichaIAJournaway("B"), numero_reserva: { valor: `ID ${ID_SALES}`, confianza: 1 } };
+  if (texto.includes(`Cancellation / Client Ejemplo / ID ${ID_MISMO}`)) return conNumero(fichaIAJournaway("B"), ID_MISMO, "cancelacion");
+  if (texto.includes(ID_MISMO)) return conNumero(fichaIAJournaway(texto.includes("Argentinean side") ? "A" : "B"), ID_MISMO);
+  for (const id of [ID_TRIP_1, ID_TRIP_2]) if (texto.includes(id)) return conNumero(fichaIAJournaway("C"), id);
   if (texto.includes("Trip Number")) return texto.includes("LA377") ? fichaIAJournaway("C") : sinVuelo(original("C"), "LA377").ficha;
   if (texto.includes("Tayka")) return fichaIAJournaway("D");
   if (texto.includes("Argentinean side")) return fichaIAJournaway("A");
@@ -196,36 +214,85 @@ function entrada(texto: string): MailEntrada {
       expect(detalle!.vuelos.find((v) => v.destino === "CJC")).toMatchObject({ numero: "LA148", fechaLlegada: "2026-10-11", horaLlegada: "16:11" });
     });
 
-    it("filas 4, 12 y 15: el mail C da SPAP01 + SPAP03 con el número de viaje 62992, un solo traslado de llegada y uno de salida", async () => {
+    it("filas 4, 12 y 15: el mail C es UNA reserva SPAP01 + SPAP03 (owner 2026-10-17), con las partes en orden de fecha", async () => {
       const e = escenario();
       const r = await e.procesar(textoJournaway("C"));
       const reservas = await reservasDe(r.mailRecibidoId);
-      expect(reservas.map((x) => x.producto?.codigo)).toEqual(["SPAP01", "SPAP03"]);
-      for (const x of reservas) {
-        expect(x).toMatchObject({ estado: "recibida", trip_number: "62992", booking_id: null, pax: 2, posible_duplicada: false });
-        expect(x.hoteles_agencia).toEqual([]);
-      }
-      const [a, c] = reservas;
-      expect(a.sin_traslado_de).toBe("salida");
-      const partesA = await partesDe(a.id);
-      const partesC = await partesDe(c.id);
-      const traslados = [...partesA, ...partesC].filter((p) => p.producto?.codigo === "SPAT01");
-      expect(traslados.map((p) => [p.fecha_inicio, p.descripcion_ruta])).toEqual([
-        ["2027-03-16", "Solo la llegada: la salida va con SPAP03"],
-        ["2027-03-23", null],
+      expect(reservas).toHaveLength(1);
+      const [x] = reservas;
+      expect(x.producto?.codigo).toBe("SPAP01");
+      expect(x).toMatchObject({ estado: "recibida", trip_number: "62992", booking_id: null, pax: 2, posible_duplicada: false, sin_traslado_de: "salida" });
+      expect(x.fecha_inicio).toBe("2027-03-16");
+      expect(x.fecha_fin).toBe("2027-03-23");
+      expect(x.hoteles_agencia).toEqual([]);
+      const partes = await partesDe(x.id);
+      expect(partes.map((p) => [p.producto?.codigo, p.fecha_inicio])).toEqual([
+        ["SPAT01", "2027-03-16"],
+        ["SPAE01", "2027-03-16"],
+        ["SPAE03", "2027-03-17"],
+        ["SPAE04", "2027-03-17"],
+        ["SPAE05", "2027-03-18"],
+        ["SPAE02", "2027-03-19"],
+        ["SPAE06", "2027-03-20"],
+        ["SPAE07", "2027-03-21"],
+        ["SPAT01", "2027-03-23"],
       ]);
-      expect(partesC.find((p) => p.producto?.codigo === "SPAE07")?.fecha_inicio).toBe("2027-03-21");
-      for (const x of reservas) expect((await cargarReserva(admin, x.id))!.avisosVuelo).toEqual([]);
+      expect(partes[0].descripcion_ruta).toBe("Solo la llegada: la salida va con SPAP03");
+      const detalle = (await cargarReserva(admin, x.id))!;
+      expect(detalle.otrosProductos?.map((p) => p.codigo)).toEqual(["SPAP03"]);
+      expect(detalle.avisosVuelo).toEqual([]);
     });
 
-    it("fila 15 (con la regla del owner 2026-10-16): sin el vuelo LA377, SPAP03 queda recibida con el aviso de la salida de Calama; SPAP01 sin aviso", async () => {
+    it("fila 15 (con la regla del owner 2026-10-16): sin el vuelo LA377 queda recibida con un solo aviso, el de la salida de Calama", async () => {
       const e = escenario();
       const r = await e.procesar(sinVuelo(original("C"), "LA377").texto);
-      const [a, c] = await reservasDe(r.mailRecibidoId);
-      expect([a.producto?.codigo, c.producto?.codigo]).toEqual(["SPAP01", "SPAP03"]);
-      expect([a.estado, c.estado]).toEqual(["recibida", "recibida"]);
-      expect((await cargarReserva(admin, a.id))!.avisosVuelo).toEqual([]);
-      expect((await cargarReserva(admin, c.id))!.avisosVuelo).toEqual([expect.stringMatching(/^Falta el vuelo de salida de Calama \(CJC\)/)]);
+      const reservas = await reservasDe(r.mailRecibidoId);
+      expect(reservas).toHaveLength(1);
+      expect(reservas[0].estado).toBe("recibida");
+      expect((await cargarReserva(admin, reservas[0].id))!.avisosVuelo).toEqual([expect.stringMatching(/^Falta el vuelo de salida de Calama \(CJC\)/)]);
+    });
+
+    it("owner 2026-10-17: dos mails con el mismo ID de Journaway son UNA reserva con IGRE01 + IGRE02; repetir uno no duplica; una cancelación va a revisión", async () => {
+      const e = escenario();
+      const asunto = `de-DE Activity Booking / Client Ejemplo / ID ${ID_MISMO}`;
+      const a = await e.procesar(conAsunto(textoJournaway("A"), asunto));
+      const b = await e.procesar(conAsunto(textoJournaway("B"), asunto));
+      expect(a.pedidos[0].accion).toBe("nueva");
+      expect(b.pedidos[0]).toMatchObject({ accion: "sumada", reservaId: a.pedidos[0].reservaId });
+      expect(await reservasDe(b.mailRecibidoId)).toEqual([]);
+      const [r] = await reservasDe(a.mailRecibidoId);
+      expect(r).toMatchObject({ booking_id: ID_MISMO, estado: "recibida", posible_duplicada: false, fecha_inicio: "2027-06-13", fecha_fin: "2027-06-14" });
+      expect(r.producto?.codigo).toBe("IGRE01");
+      expect((await partesDe(r.id)).map((p) => [p.producto?.codigo, p.fecha_inicio, p.pick_up])).toEqual([
+        ["IGRE02", "2027-06-13", "Hotel Rafain Centro"],
+        ["IGRE01", "2027-06-14", "Hotel Rafain Centro"],
+      ]);
+      const detalle = (await cargarReserva(admin, r.id))!;
+      expect(detalle.otrosProductos?.map((p) => p.codigo)).toEqual(["IGRE02"]);
+      expect(detalle.mails).toHaveLength(2);
+
+      // El mismo pedido otra vez (otro mail): se suma, sin partes repetidas.
+      const otra = await e.procesar(conAsunto(textoJournaway("B"), asunto));
+      expect(otra.pedidos[0].accion).toBe("sumada");
+      expect(await partesDe(r.id)).toHaveLength(2);
+
+      // Una cancelación con ese ID: a revisión, como siempre.
+      const cancela = await e.procesar(conAsunto(textoJournaway("B"), `Cancellation / Client Ejemplo / ID ${ID_MISMO}`));
+      expect(cancela.pedidos[0]).toMatchObject({ accion: "sumada", reservaId: r.id });
+      const [despues] = await reservasDe(a.mailRecibidoId);
+      expect(despues.estado).toBe("para_revision");
+      expect(await partesDe(r.id)).toHaveLength(2);
+    });
+
+    it("owner 2026-10-17: el mismo Trip Number con distinto ID no se junta (manda el ID)", async () => {
+      const e = escenario();
+      const uno = await e.procesar(conAsunto(textoJournaway("C"), `Program Booking / Client Probe / ID ${ID_TRIP_1}`));
+      const dos = await e.procesar(conAsunto(textoJournaway("C"), `Program Booking / Client Muster / ID ${ID_TRIP_2}`));
+      expect([uno.pedidos[0].accion, dos.pedidos[0].accion]).toEqual(["nueva", "nueva"]);
+      const [r1] = await reservasDe(uno.mailRecibidoId);
+      const [r2] = await reservasDe(dos.mailRecibidoId);
+      expect([r1.booking_id, r2.booking_id]).toEqual([ID_TRIP_1, ID_TRIP_2]);
+      expect([r1.trip_number, r2.trip_number]).toEqual(["62992", "62992"]);
     });
 
     it("fila 12: A y B son dos reservas aparte; el mail A otra vez queda como 'posible duplicada', sin crear otra en silencio", async () => {

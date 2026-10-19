@@ -6,8 +6,9 @@
 // ficha de cada mail): la corrida con la IA real es `npm run probar:mails --
 // --journaway`, que deja el reporte en docs/sdd/diagnosticos/M2-09-journaway.md.
 //
-// El recorrido del owner: abre la lista y ve cinco reservas "de prueba"
-// (IGRE01, IGRE02, SPAP01 y SPAP03 con el mismo número de viaje, y SPAP05);
+// El recorrido del owner: abre la lista y ve cuatro reservas "de prueba"
+// (IGRE01, IGRE02, SPAP01 + SPAP03 en una sola con el número de viaje, y
+// SPAP05: un mail = una reserva, owner 2026-10-17);
 // abre SPAP05 y ve los 8 hoteles en la sección informativa, los tours con su
 // pick up y el vuelo LA148. Lo que crea se borra al final (solo eso).
 import { existsSync } from "node:fs";
@@ -118,8 +119,8 @@ const registroMes = (): RegistroUsoIA => ({ gastoDelMes: async () => 0, sumar: a
     }
   }, 120_000);
 
-  it("1. la lista muestra las cinco reservas de prueba: IGRE01, IGRE02, SPAP01 y SPAP03 (Trip 62992) y SPAP05", async () => {
-    expect([...porCodigo.keys()].sort()).toEqual(["IGRE01", "IGRE02", "SPAP01", "SPAP03", "SPAP05"]);
+  it("1. la lista muestra las cuatro reservas de prueba: IGRE01, IGRE02, SPAP01 + SPAP03 (Trip 62992) y SPAP05", async () => {
+    expect([...porCodigo.keys()].sort()).toEqual(["IGRE01", "IGRE02", "SPAP01", "SPAP05"]);
     render(<ListaReservasPantalla />);
     const tabla = await screen.findByRole("table", {}, ESPERA);
     for (const [codigo, [id]] of porCodigo) {
@@ -128,10 +129,9 @@ const registroMes = (): RegistroUsoIA => ({ gastoDelMes: async () => 0, sumar: a
       expect(within(fila).getByText(codigo)).toBeInTheDocument();
       expect(within(fila).getByText("recibida")).toBeInTheDocument();
     }
-    for (const codigo of ["SPAP01", "SPAP03"]) {
-      const fila = tabla.querySelector(`tr[data-id="${porCodigo.get(codigo)![0]}"]`) as HTMLElement;
-      expect(fila.textContent).toContain("Trip 62992");
-    }
+    const spap01 = tabla.querySelector(`tr[data-id="${porCodigo.get("SPAP01")![0]}"]`) as HTMLElement;
+    expect(spap01.textContent).toContain("Trip 62992");
+    expect(spap01.textContent).toContain("+ SPAP03");
   }, 120_000);
 
   it("2. SPAP05: los 8 hoteles en la sección informativa, los tours con su pick up y el vuelo LA148 del traslado de llegada", async () => {

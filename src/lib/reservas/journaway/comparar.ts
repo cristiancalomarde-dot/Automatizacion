@@ -24,6 +24,8 @@ export interface TrasladoEsperado {
 
 export interface ReservaEsperada {
   producto: string;
+  /** Owner 2026-10-17: los demás productos de la misma reserva (SPAP01 + SPAP03). */
+  otrosProductos?: string[];
   estado: EstadoReserva;
   tripNumber: string | null;
   pax: number;
@@ -44,6 +46,7 @@ export interface MailEsperado {
   reservas: ReservaEsperada[];
 }
 
+const conOtros = (codigo: string, otros: string[] = []) => [codigo, ...otros].join(" + ");
 const ESTADO: Partial<Record<EstadoReserva, string>> = { recibida: "recibida", para_revision: "para revisión" };
 const normal = (s: string) => s.normalize("NFD").replace(/\p{M}/gu, "").toLowerCase().replace(/\s+/g, " ").trim();
 const o = (v: string | null | undefined) => (v === null || v === undefined || v === "" ? "vacío" : v);
@@ -52,10 +55,10 @@ const AEROPUERTO = "CJC";
 export function compararJournaway(esperado: MailEsperado, obtenidas: DetalleReserva[]): { ok: boolean; diferencias: string[] } {
   const d: string[] = [];
   if (obtenidas.length !== esperado.reservas.length) {
-    const salieron = obtenidas.map((r) => r.producto?.codigo ?? "sin producto");
+    const salieron = obtenidas.map((r) => (r.producto ? conOtros(r.producto.codigo, (r.otrosProductos ?? []).map((o) => o.codigo)) : "sin producto"));
     d.push(
-      `Reservas: esperado ${esperado.reservas.length} (${esperado.reservas.map((r) => r.producto).join(" + ")}), ` +
-        `salieron ${obtenidas.length}${salieron.length ? ` (${salieron.join(" + ")})` : ""}.`,
+      `Reservas: esperado ${esperado.reservas.length} (${esperado.reservas.map((r) => conOtros(r.producto, r.otrosProductos)).join("; ")}), ` +
+        `salieron ${obtenidas.length}${salieron.length ? ` (${salieron.join("; ")})` : ""}.`,
     );
     return { ok: false, diferencias: d };
   }
@@ -63,6 +66,10 @@ export function compararJournaway(esperado: MailEsperado, obtenidas: DetalleRese
     const r = obtenidas.find((x) => x.producto?.codigo === e.producto) ?? obtenidas[i];
     const p = (texto: string) => d.push(`${e.producto} · ${texto}`);
     if (r.producto?.codigo !== e.producto) p(`Producto: esperado ${e.producto}, salió ${r.producto?.codigo ?? "sin producto"}.`);
+    const otros = (r.otrosProductos ?? []).map((x) => x.codigo);
+    if (otros.join(" + ") !== (e.otrosProductos ?? []).join(" + ")) {
+      p(`Otros productos: esperado ${(e.otrosProductos ?? []).join(" + ") || "ninguno"}, salió ${otros.join(" + ") || "ninguno"}.`);
+    }
     if (r.estado !== e.estado) {
       p(`Estado: esperado ${ESTADO[e.estado] ?? e.estado}, salió ${ESTADO[r.estado] ?? r.estado}${r.motivos.length ? ` (${r.motivos.join("; ")})` : ""}.`);
     }
@@ -135,8 +142,9 @@ export function reporteJournaway(datos: DatosReporte): string {
   l.push(`**${bien} de ${datos.mails.length} mails coinciden con lo esperado.**`, "");
   l.push("| Mail | Esperado | Salió | Resultado |", "|---|---|---|---|");
   for (const r of resultados) {
-    const salio = r.reservas.map((x) => `${x.producto?.codigo ?? "sin producto"} (${ESTADO[x.estado] ?? x.estado})`).join(" + ") || "nada";
-    const esperado = r.esperado.reservas.map((x) => `${x.producto} (${ESTADO[x.estado]})`).join(" + ");
+    const salio =
+      r.reservas.map((x) => `${x.producto ? conOtros(x.producto.codigo, (x.otrosProductos ?? []).map((o) => o.codigo)) : "sin producto"} (${ESTADO[x.estado] ?? x.estado})`).join("; ") || "nada";
+    const esperado = r.esperado.reservas.map((x) => `${conOtros(x.producto, x.otrosProductos)} (${ESTADO[x.estado]})`).join("; ");
     l.push(`| ${r.esperado.letra} · ${r.esperado.titulo} | ${esperado} | ${salio} | ${r.error ? "Error" : r.comparacion!.ok ? "Coincide" : "Hay diferencias"} |`);
   }
   l.push("");
@@ -151,7 +159,7 @@ export function reporteJournaway(datos: DatosReporte): string {
     if (!r.comparacion!.ok) l.push("");
     for (const x of r.reservas) {
       const partes = x.partes.map((p) => `${p.producto?.codigo ?? "?"} ${p.fechaInicio ?? "—"}${p.pickUp ? ` (pick up: ${p.pickUp})` : ""}`).join(" · ");
-      l.push(`- **${x.producto?.codigo ?? "sin producto"}** · ${ESTADO[x.estado] ?? x.estado} · número de viaje: ${x.tripNumber ?? "no vino"} · ${x.pax ?? "?"} pax`);
+      l.push(`- **${x.producto ? conOtros(x.producto.codigo, (x.otrosProductos ?? []).map((o) => o.codigo)) : "sin producto"}** · ${ESTADO[x.estado] ?? x.estado} · número de viaje: ${x.tripNumber ?? "no vino"} · ${x.pax ?? "?"} pax`);
       if (x.motivos.length) l.push(`  - Motivos: ${x.motivos.join("; ")}`);
       l.push(`  - Partes: ${partes || "ninguna"}`);
       l.push(`  - Vuelos: ${x.vuelos.map((v) => v.numero ?? "?").join(", ") || "ninguno"}`);
