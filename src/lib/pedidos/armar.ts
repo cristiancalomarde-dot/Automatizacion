@@ -68,6 +68,8 @@ const IGUAZU = new Set(["IGR", "IGU"]);
  * el día 2 y el otro el día 3, el del cruce. El resto (OD010A/B/C, OD011) hace primero el argentino.
  */
 const IGUAZU_EMPIEZA_EN_BRASIL = new Set(["OD010D"]);
+/** Combined de Iguazú: el día del cruce la excursión incluye el cambio de hotel (owner, 2026-10-19). */
+const IGUAZU_COMBINED = new Set(["OD010C", "OD010D"]);
 const PRIVADO = /\b(privad[oa]|private)\b/i;
 /** El servicio se hace en español (el Overland de Imperio Inca: "chofer de habla hispana, sin guía en inglés"). */
 const EN_ESPANOL = /habla hispana|spanish[- ]speaking|sin gu[ií]a en ingl[eé]s/i;
@@ -458,6 +460,12 @@ class Armado {
       const lado = /argentin/i.test(e) ? "Lado argentino" : /brasil/i.test(e) ? "Lado brasileño" : e;
       const fecha = b.inicio ? sumarDias(b.inicio, i + 1) : null;
       renglones.push(`${lado}, ${regular} en inglés: ${fecha ? fechaCorta(fecha) : "a coordinar"}`);
+      if (IGUAZU_COMBINED.has(b.codigo ?? "") && i === 1 && excursiones.length > 1) {
+        const destino = /brasil/i.test(e) ? "Brasil" : "Argentina";
+        renglones.push(
+          `Ese día cruzan: el drop off es en el hotel de ${destino}. Los pasajeros hacen check out y llevan el equipaje a la excursión (lo dejan en los lockers del parque nacional).`,
+        );
+      }
     });
     const salida = this.traslado("out", "", b.fin, codigos, IGUAZU.has(b.destino ?? ""));
     if (!b.omitir.includes("out")) {
