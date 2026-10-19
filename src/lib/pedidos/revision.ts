@@ -14,11 +14,11 @@ import { esCorreoDelDominioPermitido, obtenerDominioPermitido } from "@/lib/auth
 import { esIdDeReserva } from "@/lib/reservas/reglas";
 import { TEXTOS } from "@/lib/textos";
 import { armarPedidos, porQueNoSeArma } from "./armar";
-import { cargarCatalogoParaPedidos, cargarDiasServicio, cargarReservaParaPedidos } from "./cargar";
+import { cargarCatalogoParaPedidos, cargarDiasServicio, cargarExcursionesConEntrada, cargarReservaParaPedidos } from "./cargar";
 import { cargarPedidos, guardarPedidosArmados, type PedidoGuardado, type TareaGuardada } from "./guardar";
 import { avisosDeLaPantalla, validarEdicion, type EdicionPedido } from "./pantalla";
 import { cargarPlantilla } from "./plantilla";
-import type { DiaDeServicio, Plantilla } from "./tipos";
+import type { DiaDeServicio, ExcursionConEntrada, Plantilla } from "./tipos";
 import { enviarPedidosAprobados, type DependenciasEnvio, type PedidoDeEnvio, type ResultadoEnvio } from "./envio/enviar";
 
 type Rechazo = { ok: false; error: string; sinSesion?: true };
@@ -53,6 +53,7 @@ export interface OpcionesPreparar {
   reemplazarEditados?: boolean;
   plantilla?: Plantilla;
   dias?: readonly DiaDeServicio[];
+  entradas?: readonly ExcursionConEntrada[];
 }
 
 /**
@@ -71,7 +72,7 @@ export async function prepararPedidos(cliente: SupabaseClient, reservaId: string
 
   const plantilla = opciones.plantilla ?? cargarPlantilla();
   const dias = opciones.dias ?? cargarDiasServicio();
-  const catalogo = await cargarCatalogoParaPedidos(cliente, reserva, dias);
+  const catalogo = await cargarCatalogoParaPedidos(cliente, reserva, dias, opciones.entradas ?? cargarExcursionesConEntrada());
   const armado = armarPedidos(reserva, catalogo, plantilla);
   if (!armado.ok) return armado;
 

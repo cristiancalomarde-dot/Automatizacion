@@ -16,7 +16,7 @@ import { join } from "node:path";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { asegurarBaseDePruebas, cargarEntornoDePruebas } from "@/lib/entorno/base-de-pruebas";
 import { armarPedidos } from "@/lib/pedidos/armar";
-import { cargarCatalogoParaPedidos, cargarDiasServicio, cargarReservaParaPedidos } from "@/lib/pedidos/cargar";
+import { cargarCatalogoParaPedidos, cargarDiasServicio, cargarExcursionesConEntrada, cargarReservaParaPedidos } from "@/lib/pedidos/cargar";
 import { documentoDeEjemplos, enmascararReserva, type EjemploDePedido } from "@/lib/pedidos/ejemplos";
 import { armarYGuardarPedidos } from "@/lib/pedidos/guardar";
 import { cargarPlantilla } from "@/lib/pedidos/plantilla";
@@ -113,6 +113,7 @@ async function ejemplos(admin: SupabaseClient) {
   if (error) throw new Error(`No se pudieron leer las reservas de prueba: ${error.message}`);
   const plantilla = cargarPlantilla();
   const dias = cargarDiasServicio();
+  const entradas = cargarExcursionesConEntrada();
   const salida: EjemploDePedido[] = [];
   for (const e of EJEMPLOS) {
     const fila = (data as any[]).find((r) => r.agencia === e.agencia && r.producto?.codigo === e.codigo);
@@ -121,12 +122,12 @@ async function ejemplos(admin: SupabaseClient) {
       continue;
     }
     // El recorrido de verdad: arma y guarda los borradores en la base de pruebas.
-    const guardado = await armarYGuardarPedidos(admin, fila.id, { plantilla, dias });
+    const guardado = await armarYGuardarPedidos(admin, fila.id, { plantilla, dias, entradas });
     const resumen = guardado.ok ? `${guardado.pedidos.length} pedidos, ${guardado.tareas.length} tareas` : guardado.error;
     console.log(`- ${e.titulo}: ${resumen}`);
     // El documento, con los pasajeros enmascarados (mismo armado, otros nombres).
     const reserva = await cargarReservaParaPedidos(admin, fila.id);
-    const catalogo = await cargarCatalogoParaPedidos(admin, reserva!, dias);
+    const catalogo = await cargarCatalogoParaPedidos(admin, reserva!, dias, entradas);
     salida.push({ titulo: e.titulo, porQue: e.porQue, resultado: armarPedidos(enmascararReserva(reserva!), catalogo, plantilla) });
   }
   writeFileSync(DOCUMENTO, documentoDeEjemplos({ fecha: new Date().toISOString().slice(0, 10), ejemplos: salida, preguntas: PREGUNTAS }));

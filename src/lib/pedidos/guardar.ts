@@ -10,9 +10,9 @@
  */
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { armarPedidos, porQueNoSeArma } from "./armar";
-import { cargarCatalogoParaPedidos, cargarDiasServicio, cargarReservaParaPedidos } from "./cargar";
+import { cargarCatalogoParaPedidos, cargarDiasServicio, cargarExcursionesConEntrada, cargarReservaParaPedidos } from "./cargar";
 import { cargarPlantilla } from "./plantilla";
-import type { DiaDeServicio, PedidoArmado, Plantilla, ResultadoArmado, TareaArmada, TipoTarea } from "./tipos";
+import type { DiaDeServicio, ExcursionConEntrada, PedidoArmado, Plantilla, ResultadoArmado, TareaArmada, TipoTarea } from "./tipos";
 
 export interface ConteoGuardado {
   insertados: number;
@@ -98,6 +98,7 @@ export async function guardarPedidosArmados(
 export interface OpcionesArmado {
   plantilla?: Plantilla;
   dias?: readonly DiaDeServicio[];
+  entradas?: readonly ExcursionConEntrada[];
 }
 
 /** Lee la reserva y el catálogo, arma los borradores y los guarda. Una reserva que no está recibida no guarda nada. */
@@ -109,7 +110,7 @@ export async function armarYGuardarPedidos(cliente: SupabaseClient, reservaId: s
   // Para revisión o ya pedida: no se lee el catálogo ni se guarda nada.
   const noSeArma = porQueNoSeArma(reserva.estado);
   if (noSeArma) return { ok: false, error: noSeArma };
-  const catalogo = await cargarCatalogoParaPedidos(cliente, reserva, dias);
+  const catalogo = await cargarCatalogoParaPedidos(cliente, reserva, dias, opciones.entradas ?? cargarExcursionesConEntrada());
   const armado = armarPedidos(reserva, catalogo, plantilla);
   if (!armado.ok) return armado;
   const guardado = await guardarPedidosArmados(cliente, reservaId, armado);

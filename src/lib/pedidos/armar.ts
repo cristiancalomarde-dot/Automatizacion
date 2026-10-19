@@ -19,6 +19,7 @@
  * reserva la agencia (fila 7).
  */
 import {
+  AGENCIA_JOURNAWAY,
   agruparPorOrden,
   esDeJournaway,
   estadoServicio,
@@ -30,8 +31,10 @@ import {
   type PasoConLlegada,
 } from "@/lib/catalogo/reglas";
 import type { DetalleProducto, ProveedorResumen, Servicio, TipoServicio } from "@/lib/catalogo/tipos";
+import { NOMBRE_DESTINO } from "@/lib/importador-tours/ciudades";
 import { TRANSFER_PNT } from "@/lib/reservas/emparejar/componentes";
 import { lugarDelTraslado } from "@/lib/reservas/emparejar/vuelos-requeridos";
+import { llevaEntradas } from "./entradas";
 import { completar } from "./plantilla";
 import {
   diasEntre,
@@ -111,7 +114,20 @@ interface Bloque {
   omitir: Lado[];
 }
 
+/**
+ * Dónde duerme el pasajero, para el pick up de las excursiones (owner, 2026-10-19): el hotel del
+ * catálogo que la app pide (a confirmar: se pide en esta misma reserva) o el que reserva la agencia.
+ */
+interface Estadia {
+  hotel: string;
+  ciudad: string | null;
+  desde: string;
+  hasta: string;
+  aConfirmar: boolean;
+}
+
 const PENDIENTE = {
+  alojamiento: "Les pasamos el alojamiento para el pick up apenas lo tengamos.",
   vuelo: "El vuelo todavía no lo tenemos: se lo pasamos apenas nos llegue.",
   busOVuelo: "Todavía no sabemos si llegan en bus o en vuelo: se lo pasamos apenas nos llegue.",
 };
@@ -122,6 +138,7 @@ class Armado {
   readonly avisos: string[] = [];
   private readonly whatsapp = new Map<string, { proveedor: ProveedorResumen; cosas: string[]; fecha: string | null; seq: number }>();
   private seq = 0;
+  private estadias: Estadia[] = [];
 
   constructor(
     private readonly reserva: ReservaParaPedidos,
@@ -142,7 +159,7 @@ class Armado {
         this.tarea("revisar", `Revisar a mano: la reserva de ${principal.codigo} no tiene sus partes, no se pueden armar los pedidos.`, {}, null);
         return;
       }
-      this.bloque({
+      const b: Bloque = {
         codigo: principal.codigo,
         destino: principal.destino,
         servicios: principal.servicios,
@@ -153,10 +170,15 @@ class Armado {
         llegaEnBus: false,
         saleEnBus: false,
         omitir: this.omitir(),
-      });
+      };
+      this.estadias = this.estadiasDe([b]);
+      this.bloque(b);
       return;
     }
-    for (const parte of [...r.partes].sort((a, b) => a.orden - b.orden)) this.parte(parte);
+    const partes = [...r.partes].sort((a, b) => a.orden - b.orden);
+    // Primero dónde duerme en toda la reserva (el pick up de una excursión puede depender de otro paquete).
+    this.estadias = this.estadiasDe(partes.map((p) => this.bloqueDeParte(p)).filter((b): b is Bloque => !!b));
+    for (const parte of partes) this.parte(parte);
   }
 
   private omitir(): Lado[] {
@@ -179,12 +201,20 @@ class Armado {
       this.tarea("revisar", `Pedir a mano: "${que}" no se reconoció en el catálogo.`, { parteId: parte.id }, parte.fechaInicio);
       return;
     }
-    const ubicado = this.ubicar(parte);
-    if (!ubicado) {
+    const b = this.bloqueDeParte(parte);
+    if (!b) {
       this.tarea("revisar", `Revisar a mano: no se encontró en el catálogo el producto de la parte ${parte.orden}.`, { parteId: parte.id }, parte.fechaInicio);
       return;
     }
-    this.bloque({
+    this.bloque(b);
+  }
+
+  /** El paquete de una parte con producto del catálogo; null si la parte no es eso o no se encuentra. */
+  private bloqueDeParte(parte: ParteParaPedidos): Bloque | null {
+    if (parte.esTarea || parte.tipo === "servicio" || parte.tipo === "tramo_bus" || !parte.productoId) return null;
+    const ubicado = this.ubicar(parte);
+    if (!ubicado) return null;
+    return {
       codigo: ubicado.producto.codigo,
       destino: ubicado.producto.destino,
       servicios: ubicado.servicios,
@@ -195,7 +225,7 @@ class Armado {
       llegaEnBus: ubicado.llegaEnBus,
       saleEnBus: ubicado.saleEnBus,
       omitir: ubicado.dePrincipal ? this.omitir() : [],
-    });
+    };
   }
 
   /** Dónde está el producto de una parte: dentro del tour (con sus ajustes) o suelto. */
@@ -257,15 +287,45 @@ class Armado {
 
   // --- Un paquete -------------------------------------------------------------------------
 
-  private bloque(b: Bloque): void {
+  /** El nivel de alojamiento que se pide del paquete; undefined si no se puede elegir. */
+  private nivelElegido(b: Bloque): { nivel: string | null | undefined; niveles: Set<string | null>; hayAlojamiento: boolean } {
     const nivel = nivelDeLaHabitacion(this.reserva.habitacion);
-    const grupos = agruparPorOrden(b.servicios);
-    const alojamientos = grupos.filter((g) => g[0].tipo === "alojamiento" && g[0].ajusteTour?.accion !== "anular");
+    const alojamientos = agruparPorOrden(b.servicios).filter((g) => g[0].tipo === "alojamiento" && g[0].ajusteTour?.accion !== "anular");
     const niveles = new Set(alojamientos.map((g) => g[0].nivel));
-    let nivelElegido: string | null | undefined = undefined;
-    if (niveles.size === 1) nivelElegido = [...niveles][0];
-    else if (nivel && niveles.has(nivel)) nivelElegido = nivel;
-    else if (alojamientos.length > 0) {
+    const elegido = niveles.size === 1 ? [...niveles][0] : nivel && niveles.has(nivel) ? nivel : undefined;
+    return { nivel: elegido, niveles, hayAlojamiento: alojamientos.length > 0 };
+  }
+
+  /**
+   * Las noches de la reserva con su hotel: el que reserva la agencia (confirmado) y la primera
+   * opción del catálogo que pide la app (a confirmar), aunque vaya por WhatsApp o a otro proveedor.
+   */
+  private estadiasDe(bloques: Bloque[]): Estadia[] {
+    const estadias: Estadia[] = this.reserva.hotelesAgencia
+      .filter((h) => h.desde && h.hasta)
+      .map((h) => ({ hotel: h.nombre, ciudad: null, desde: h.desde!, hasta: h.hasta!, aConfirmar: false }));
+    for (const b of bloques) {
+      const { nivel } = this.nivelElegido(b);
+      if (nivel === undefined) continue;
+      for (const [s] of agruparPorOrden(b.servicios)) {
+        if (s.tipo !== "alojamiento" || s.ajusteTour?.accion === "anular" || s.nivel !== nivel) continue;
+        if (s.opcional || s.aPedido === "a_pedido" || this.loReservaLaAgencia(s)) continue;
+        for (const tramo of s.tramosNoches?.length ? s.tramosNoches : [null]) {
+          const desde = b.inicio && tramo ? sumarDias(b.inicio, tramo.nocheDesde - 1) : b.inicio;
+          const hasta = b.inicio && tramo ? sumarDias(b.inicio, tramo.nocheDesde - 1 + tramo.noches) : b.fin;
+          if (!desde || !hasta) continue;
+          const ciudad = b.destino ? (NOMBRE_DESTINO[b.destino] ?? null) : null;
+          estadias.push({ hotel: s.serviceProviderNombre ?? queEs(s), ciudad, desde, hasta, aConfirmar: true });
+        }
+      }
+    }
+    return estadias;
+  }
+
+  private bloque(b: Bloque): void {
+    const grupos = agruparPorOrden(b.servicios);
+    const { nivel: nivelElegido, niveles, hayAlojamiento } = this.nivelElegido(b);
+    if (nivelElegido === undefined && hayAlojamiento) {
       const hab = this.reserva.habitacion ? `la habitación "${this.reserva.habitacion}"` : "la reserva";
       this.tarea(
         "revisar",
@@ -384,7 +444,7 @@ class Armado {
       case "bus":
         return [this.bus(b, s, nombre)];
       default:
-        return [this.otro(nombre, desde, hasta)];
+        return [this.otro(b, nombre, desde, hasta)];
     }
   }
 
@@ -429,10 +489,32 @@ class Armado {
       renglones.push(desde && hasta ? `Fecha: a coordinar (estadía ${rangoCorto(desde, hasta)})` : "Fecha: a coordinar");
       avisos.push(`Falta la fecha de ${nombre}: completala antes de enviar.`);
     }
-    renglones.push(`Servicio: ${regular} · Idioma: ${idioma}`);
-    if (b.pickUp) renglones.push(`Pick up: ${b.pickUp}`);
+    // Solo Journaway: las excursiones de la lista van con las entradas a los parques (owner, 2026-10-19).
+    const entradas = this.esDeJournaway() && llevaEntradas(this.catalogo.entradas ?? [], b.codigo, `${nombre} ${s.descripcion ?? ""}`);
+    renglones.push(`Servicio: ${regular} · Idioma: ${idioma}${entradas ? " · Con entradas" : ""}`);
+    const pickUp = this.pickUp(b, variosDias ? desde : (fecha ?? desde));
+    renglones.push(pickUp.renglon);
     const resumen = variosDias ? rangoCorto(desde!, hasta!) : fecha ? fechaCorta(fecha) : "fecha a coordinar";
-    return { renglones, fecha: fecha ?? desde, resumen, queParaTarea: nombre, datosPax: true, avisos, pendientes: [] };
+    return { renglones, fecha: fecha ?? desde, resumen, queParaTarea: nombre, datosPax: true, avisos, pendientes: pickUp.pendientes };
+  }
+
+  private esDeJournaway(): boolean {
+    return normalizarTexto(this.reserva.agencia ?? "") === normalizarTexto(AGENCIA_JOURNAWAY);
+  }
+
+  /**
+   * Dónde buscan al pasajero (owner, 2026-10-19): el pick up que manda la agencia; si no, el hotel
+   * de la reserva de esa noche o, si ese día es el OUT, el de la noche anterior ("· hotel a
+   * confirmar" si se pide en esta misma reserva); si no se sabe, "alojamiento a confirmar" y se le
+   * avisa al proveedor que se lo pasamos. Nunca se inventa.
+   */
+  private pickUp(b: Bloque, fecha: string | null): { renglon: string; pendientes: string[] } {
+    if (b.pickUp) return { renglon: `Pick up: ${b.pickUp}`, pendientes: [] };
+    const e = fecha
+      ? (this.estadias.find((x) => x.desde <= fecha && fecha < x.hasta) ?? this.estadias.find((x) => x.hasta === fecha))
+      : undefined;
+    if (!e) return { renglon: "Pick up: alojamiento a confirmar", pendientes: [PENDIENTE.alojamiento] };
+    return { renglon: `Pick up: ${e.hotel}${e.ciudad ? ` (${e.ciudad})` : ""}${e.aConfirmar ? " · hotel a confirmar" : ""}`, pendientes: [] };
   }
 
   /**
@@ -550,8 +632,9 @@ class Armado {
     return { renglones, fecha, resumen: fecha ? fechaCorta(fecha) : "", queParaTarea: nombre, datosPax: false, avisos: [], pendientes: [] };
   }
 
-  private otro(nombre: string, desde: string | null, hasta: string | null): Renglones {
+  private otro(b: Bloque, nombre: string, desde: string | null, hasta: string | null): Renglones {
     const renglones = [nombre];
+    const pendientes: string[] = [];
     if (desde && hasta && desde !== hasta) renglones.push(`Desde: ${fechaCorta(desde)} · Hasta: ${fechaCorta(hasta)}`);
     else renglones.push(`Fecha: ${desde ? fechaCorta(desde) : "a confirmar"}`);
     if (/overland/i.test(nombre)) {
@@ -559,8 +642,12 @@ class Armado {
       renglones.push("Servicio: tour regular");
       const hab = habitacionDelOverland(this.reserva.habitacion);
       if (hab) renglones.push(`Habitación: ${hab}`);
+      // Lo buscan donde durmió la noche anterior al inicio, como a las excursiones (owner, 2026-10-19).
+      const pickUp = this.pickUp(b, desde);
+      renglones.push(pickUp.renglon);
+      pendientes.push(...pickUp.pendientes);
     }
-    return { renglones, fecha: desde, resumen: desde && hasta ? rangoCorto(desde, hasta) : desde ? fechaCorta(desde) : "", queParaTarea: nombre, datosPax: true, avisos: [], pendientes: [] };
+    return { renglones, fecha: desde, resumen: desde && hasta ? rangoCorto(desde, hasta) : desde ? fechaCorta(desde) : "", queParaTarea: nombre, datosPax: true, avisos: [], pendientes };
   }
 
   // --- Salida -------------------------------------------------------------------------------

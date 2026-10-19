@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { armarPedidos } from "./armar";
+import { cargarExcursionesConEntrada } from "./cargar";
 import { cargarPlantilla, leerPlantilla } from "./plantilla";
 import {
   P,
@@ -431,5 +432,127 @@ describe("armarPedidos — detalles", () => {
     const p = ok(armarPedidos(reserva({ productoId: prod.id, fechaInicio: "2027-01-24", fechaFin: "2027-01-28" }), catalogoCon([prod]), plantilla)).pedidos[0];
     expect(p.cuerpo).toContain("Fecha: a coordinar (estadía del 24 al 28 ene 2027)");
     expect(p.avisos.join("\n")).toMatch(/Falta la fecha de Perito Moreno Glaciar Excursion/);
+  });
+});
+
+describe("armarPedidos — pick up de las excursiones (owner, 2026-10-19)", () => {
+  const tatio = (r: ReturnType<typeof ok>) => r.pedidos.find((p) => p.cuerpo.includes("Geisers del Tatio"))!;
+
+  it("CHB31: el Tatio dice el hostel del OD030 de esas fechas, a confirmar porque se pide en esta reserva", () => {
+    const p = tatio(ok(armarPedidos(reservaChb31, catalogoChb31, plantilla)));
+    expect(p.cuerpo).toMatch(
+      /Excursión: Geisers del Tatio\nFecha: 20 ene 2027\nServicio: regular · Idioma: inglés\nPick up: San Pedro Backpackers \(San Pedro de Atacama\) · hotel a confirmar/,
+    );
+    expect(p.cuerpo).not.toContain("Les pasamos el alojamiento");
+  });
+
+  it("con el pick up que manda la agencia (Journaway) se usa ese, como antes", () => {
+    const r = ok(
+      armarPedidos(
+        {
+          ...reservaChb31,
+          agencia: "Journaway",
+          hotelesAgencia: [{ nombre: "Hotel Cumbres", desde: "2027-01-18", hasta: "2027-01-21" }],
+          partes: reservaChb31.partes.map((x) => (x.id === "p1" ? { ...x, pickUp: "Hotel Kimal" } : x)),
+        },
+        catalogoChb31,
+        plantilla,
+      ),
+    );
+    const p = tatio(r);
+    expect(p.cuerpo).toContain("Pick up: Hotel Kimal\n");
+    expect(p.cuerpo).not.toContain("Cumbres");
+    expect(p.cuerpo).not.toContain("a confirmar");
+  });
+
+  it("el hotel que reserva la agencia esa noche, sin 'a confirmar'", () => {
+    const spae04 = producto("prod-spae04", "SPAE04", [
+      servicio({ productoId: "prod-spae04", tipo: "excursion", descripcion: "El Tatio Geisers Tour (entrance fee)", bookingSupplier: P.horizonte }),
+    ], { destino: "SPA" });
+    const r = ok(
+      armarPedidos(
+        reserva({
+          agencia: "Journaway",
+          habitacion: null,
+          productoId: spae04.id,
+          hotelesAgencia: [
+            { nombre: "Hotel Altiplánico", desde: "2027-03-01", hasta: "2027-03-03" },
+            { nombre: "Hotel Cumbres", desde: "2027-03-03", hasta: "2027-03-06" },
+          ],
+          partes: [parte({ id: "e", orden: 1, tipo: "paquete", productoId: spae04.id, fechaInicio: "2027-03-04", fechaFin: "2027-03-04" })],
+        }),
+        catalogoCon([spae04]),
+        plantilla,
+      ),
+    );
+    expect(r.pedidos[0].cuerpo).toContain("Pick up: Hotel Cumbres\n");
+    expect(r.pedidos[0].cuerpo).not.toContain("a confirmar");
+  });
+
+  it("sin alojamiento en la reserva: 'alojamiento a confirmar' y el pendiente para el proveedor", () => {
+    const city = producto("prod-city", "SCLE01", [
+      servicio({ productoId: "prod-city", tipo: "excursion", descripcion: "Excursion: City Tour. Booking Supplier: Chalten Travel", bookingSupplier: P.chalten }),
+    ]);
+    const p = ok(armarPedidos(reserva({ productoId: city.id, fechaInicio: "2027-02-01", fechaFin: "2027-02-01" }), catalogoCon([city]), plantilla)).pedidos[0];
+    expect(p.cuerpo).toContain("Pick up: alojamiento a confirmar");
+    expect(p.cuerpo).toContain("Les pasamos el alojamiento para el pick up apenas lo tengamos.");
+  });
+
+  it("el Overland de Imperio Inca (CHB31) lleva el pick up en el hostel de OD030, el del OUT del día que arranca", () => {
+    const imperio = ok(armarPedidos(reservaChb31, catalogoChb31, plantilla)).pedidos.find((p) => p.cuerpo.includes("Overland"))!;
+    expect(imperio.cuerpo).toMatch(
+      /Overland San Pedro de Atacama to Uyuni\nDesde: 21 ene 2027 · Hasta: 23 ene 2027\nServicio: tour regular\nHabitación: [^\n]+\nPick up: San Pedro Backpackers \(San Pedro de Atacama\) · hotel a confirmar/,
+    );
+  });
+
+  it("el Overland sin alojamiento antes: 'alojamiento a confirmar' y el pendiente", () => {
+    const solo = { ...reservaChb31, partes: reservaChb31.partes.filter((x) => x.id !== "p1") };
+    const imperio = ok(armarPedidos(solo, catalogoChb31, plantilla)).pedidos.find((p) => p.cuerpo.includes("Overland"))!;
+    expect(imperio.cuerpo).toContain("Servicio: tour regular");
+    expect(imperio.cuerpo).toContain("Pick up: alojamiento a confirmar");
+    expect(imperio.cuerpo).toContain("Les pasamos el alojamiento para el pick up apenas lo tengamos.");
+  });
+});
+
+describe("armarPedidos — Journaway: excursiones con entrada (owner, 2026-10-19)", () => {
+  const entradas = cargarExcursionesConEntrada();
+  const conEntradas = (c: ReturnType<typeof catalogoCon>) => ({ ...c, entradas });
+  const excursionSuelta = (codigo: string, descripcion: string, destino: string) =>
+    producto(`prod-${codigo}`, codigo, [servicio({ productoId: `prod-${codigo}`, tipo: "excursion", descripcion, bookingSupplier: P.horizonte })], { destino });
+  const journaway = (prod: ReturnType<typeof producto>) =>
+    reserva({
+      agencia: "Journaway",
+      habitacion: null,
+      productoId: prod.id,
+      partes: [parte({ id: "e", orden: 1, tipo: "paquete", productoId: prod.id, fechaInicio: "2027-03-04", fechaFin: "2027-03-04", pickUp: "Hotel Cumbres" })],
+    });
+
+  it("un Journaway con el Tatio (SPAE04) se pide con entradas", () => {
+    const spae04 = excursionSuelta("SPAE04", "El Tatio Geisers Tour (entrance fee)", "SPA");
+    const p = ok(armarPedidos(journaway(spae04), conEntradas(catalogoCon([spae04])), plantilla)).pedidos[0];
+    expect(p.cuerpo).toContain("Servicio: regular · Idioma: inglés · Con entradas\n");
+  });
+
+  it("el Tatio de OD030 dentro de un Journaway también (por el nombre del servicio)", () => {
+    const r = ok(armarPedidos({ ...reservaChb31, agencia: "Journaway" }, conEntradas(catalogoChb31), plantilla));
+    expect(r.pedidos.find((p) => p.cuerpo.includes("Tatio"))!.cuerpo).toContain("Idioma: inglés · Con entradas");
+  });
+
+  it("el mismo Tatio en una reserva de Kilroy NO", () => {
+    const r = ok(armarPedidos(reservaChb31, conEntradas(catalogoChb31), plantilla));
+    expect(r.pedidos.some((p) => /entradas/i.test(p.cuerpo))).toBe(false);
+  });
+
+  it("una excursión de Journaway que no está en la lista (Astrophotography) NO", () => {
+    const spae01 = excursionSuelta("SPAE01", "Astrophotography Tour", "SPA");
+    const p = ok(armarPedidos(journaway(spae01), conEntradas(catalogoCon([spae01])), plantilla)).pedidos[0];
+    expect(p.cuerpo).toContain("Servicio: regular · Idioma: inglés\n");
+    expect(p.cuerpo).not.toMatch(/entradas/i);
+  });
+
+  it("una excursión de Journaway en otro destino con parque (Cataratas, IGRE01) NO", () => {
+    const igre01 = excursionSuelta("IGRE01", "Argentina Side of the Falls, full day, Premium small groups", "IGR");
+    const p = ok(armarPedidos(journaway(igre01), conEntradas(catalogoCon([igre01])), plantilla)).pedidos[0];
+    expect(p.cuerpo).not.toMatch(/entradas/i);
   });
 });

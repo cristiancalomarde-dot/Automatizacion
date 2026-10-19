@@ -11,9 +11,19 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { cargarProducto } from "@/lib/catalogo/consultas";
 import type { Canal, DetalleProducto, ProveedorResumen } from "@/lib/catalogo/tipos";
 import type { EstadoReserva, HotelDeLaAgencia, TipoComponenteReserva } from "@/lib/reservas/tipos";
-import type { CatalogoParaPedidos, DiaDeServicio, ParteParaPedidos, PasajeroDeReserva, ReservaParaPedidos, VueloDeReserva } from "./tipos";
+import { leerCsv } from "@/lib/importador-productos/csv";
+import type {
+  CatalogoParaPedidos,
+  DiaDeServicio,
+  ExcursionConEntrada,
+  ParteParaPedidos,
+  PasajeroDeReserva,
+  ReservaParaPedidos,
+  VueloDeReserva,
+} from "./tipos";
 
 export const ARCHIVO_DIAS = join("data", "dias-servicio.csv");
+export const ARCHIVO_ENTRADAS = join("data", "excursiones-con-entrada.csv");
 
 /* eslint-disable @typescript-eslint/no-explicit-any -- filas crudas de PostgREST, se tipan al mapear */
 
@@ -97,6 +107,31 @@ export function cargarDiasServicio(raiz: string = process.cwd()): DiaDeServicio[
 }
 
 /**
+ * `data/excursiones-con-entrada.csv`: codigo,patron,estado,nota (owner, 2026-10-19). Cada fila
+ * nombra una excursión por su código de producto o por una parte de su nombre; estado "si" se
+ * aplica (en las reservas de Journaway se pide con entradas) y "revisar" queda para confirmar.
+ */
+export function leerExcursionesConEntrada(contenido: string): ExcursionConEntrada[] {
+  const cabecera = contenido.replace(/^﻿/, "").split(/\r?\n/)[0]?.trim() ?? "";
+  if (!/^codigo,patron,estado\b/.test(cabecera)) {
+    throw new Error(`${ARCHIVO_ENTRADAS}: la primera fila tiene que ser "codigo,patron,estado,nota".`);
+  }
+  return leerCsv(contenido).map((f, i) => {
+    const codigo = f.codigo?.trim() || null;
+    const patron = f.patron?.trim() || null;
+    const estado = f.estado?.trim().toLowerCase();
+    if ((!codigo && !patron) || (estado !== "si" && estado !== "revisar")) {
+      throw new Error(`${ARCHIVO_ENTRADAS}, fila ${i + 2}: hace falta un código o un patrón, y el estado "si" o "revisar".`);
+    }
+    return { codigo, patron, estado };
+  });
+}
+
+export function cargarExcursionesConEntrada(raiz: string = process.cwd()): ExcursionConEntrada[] {
+  return leerExcursionesConEntrada(readFileSync(join(raiz, ARCHIVO_ENTRADAS), "utf-8"));
+}
+
+/**
  * El catálogo que necesita una reserva: el detalle del producto, de los otros
  * productos y de cada parte (una vez cada uno), y los proveedores de las partes
  * de tipo servicio. Si algo no se puede leer, falla: nunca se arma a medias.
@@ -105,6 +140,7 @@ export async function cargarCatalogoParaPedidos(
   cliente: SupabaseClient,
   reserva: ReservaParaPedidos,
   dias: readonly DiaDeServicio[],
+  entradas: readonly ExcursionConEntrada[] = [],
 ): Promise<CatalogoParaPedidos> {
   const ids = [...new Set([reserva.productoId, ...reserva.otrosProductos, ...reserva.partes.map((p) => p.productoId)].filter((x): x is string => !!x))];
   const detalles = new Map<string, DetalleProducto>(await Promise.all(ids.map(async (id) => [id, await cargarProducto(cliente, id)] as const)));
@@ -116,5 +152,5 @@ export async function cargarCatalogoParaPedidos(
       proveedores.set(f.id, { id: f.id, nombre: f.nombre, mails: f.mails ?? [], canal: (f.canal ?? null) as Canal, telefono: f.telefono ?? null });
     }
   }
-  return { detalles, proveedores, dias };
+  return { detalles, proveedores, dias, entradas };
 }

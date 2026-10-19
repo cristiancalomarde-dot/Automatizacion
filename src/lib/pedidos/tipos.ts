@@ -78,12 +78,25 @@ export interface DiaDeServicio {
   dia: number;
 }
 
+/**
+ * Una fila de `data/excursiones-con-entrada.csv`: la excursión (por código de producto
+ * o por una parte del nombre) que en las reservas de Journaway se pide con entradas.
+ * "revisar" no se aplica hasta que el owner la pase a "si".
+ */
+export interface ExcursionConEntrada {
+  codigo: string | null;
+  patron: string | null;
+  estado: "si" | "revisar";
+}
+
 export interface CatalogoParaPedidos {
   /** El detalle (`cargarProducto`) del producto de la reserva, de los otros productos y de cada parte. */
   detalles: ReadonlyMap<string, DetalleProducto>;
   /** Los proveedores de las partes de tipo servicio (el bus de Imperio Inca, el transfer a PNT). */
   proveedores: ReadonlyMap<string, ProveedorResumen>;
   dias: readonly DiaDeServicio[];
+  /** Las excursiones que en Journaway se piden con entradas (sin la lista, ninguna). */
+  entradas?: readonly ExcursionConEntrada[];
 }
 
 /** La plantilla del mail (`data/plantillas/pedido-proveedor.md`), ya separada en sus partes. */
