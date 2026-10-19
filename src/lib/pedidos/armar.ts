@@ -64,6 +64,10 @@ export const MENSAJES = {
 /** Destinos que conservan sus traslados aunque estén en el medio del tour (M1-08). */
 const IGUAZU = new Set(["IGR", "IGU"]);
 const PRIVADO = /\b(privad[oa]|private)\b/i;
+/** El servicio se hace en español (el Overland de Imperio Inca: "chofer de habla hispana, sin guía en inglés"). */
+const EN_ESPANOL = /habla hispana|spanish[- ]speaking|sin gu[ií]a en ingl[eé]s/i;
+/** Una excursión de varios días ("3 días en jeep", "3 days"). */
+const VARIOS_DIAS = /\b([2-9])\s*(d[ií]as|days)\b/i;
 const PIDE_TRASLADO = /transfer|traslado|pick ?up/i;
 const CON_TRASLADOS = /\b(with|con|incl\.?|including)\s+(the\s+)?(transfers?|traslados?)\b/i;
 const SIN_TRASLADOS = /\b(without|sin|no)\s+(the\s+)?(transfers?|traslados?)\b/i;
@@ -288,7 +292,7 @@ class Armado {
 
   private nombre(s: Servicio): string {
     if (s.ajusteTour?.accion === "reemplazar" && s.ajusteTour.texto) return s.ajusteTour.texto;
-    return queEs(s) || s.serviceProviderNombre || s.descripcion || "servicio";
+    return nombreLimpio(queEs(s)) || s.serviceProviderNombre || nombreLimpio(s.descripcion ?? "") || "servicio";
   }
 
   private loReservaLaAgencia(s: Servicio): boolean {
@@ -404,17 +408,22 @@ class Armado {
     const incluye = (s.descripcion ?? "").match(INCLUYE_TRASLADOS);
     if (incluye) return this.paqueteConTraslados(b, nombre, incluye[1], regular);
 
-    const fecha = this.fechaDeExcursion(b, s, desde, hasta);
+    const idioma = EN_ESPANOL.test(s.descripcion ?? "") ? "español" : "inglés";
     const renglones = [`Excursión: ${nombre}`];
     const avisos: string[] = [];
-    if (fecha) renglones.push(`Fecha: ${fechaCorta(fecha)}`);
+    // De varios días (el Overland de 3 días): va con sus fechas de punta a punta.
+    const variosDias = VARIOS_DIAS.test(s.descripcion ?? "") && !!desde && !!hasta && desde !== hasta;
+    const fecha = variosDias ? null : this.fechaDeExcursion(b, s, desde, hasta);
+    if (variosDias) renglones.push(`Desde: ${fechaCorta(desde!)} · Hasta: ${fechaCorta(hasta!)}`);
+    else if (fecha) renglones.push(`Fecha: ${fechaCorta(fecha)}`);
     else {
       renglones.push(desde && hasta ? `Fecha: a coordinar (estadía ${rangoCorto(desde, hasta)})` : "Fecha: a coordinar");
       avisos.push(`Falta la fecha de ${nombre}: completala antes de enviar.`);
     }
-    renglones.push(`Servicio: ${regular} · Idioma: inglés`);
+    renglones.push(`Servicio: ${regular} · Idioma: ${idioma}`);
     if (b.pickUp) renglones.push(`Pick up: ${b.pickUp}`);
-    return { renglones, fecha: fecha ?? desde, resumen: fecha ? fechaCorta(fecha) : "fecha a coordinar", queParaTarea: nombre, datosPax: true, avisos, pendientes: [] };
+    const resumen = variosDias ? rangoCorto(desde!, hasta!) : fecha ? fechaCorta(fecha) : "fecha a coordinar";
+    return { renglones, fecha: fecha ?? desde, resumen, queParaTarea: nombre, datosPax: true, avisos, pendientes: [] };
   }
 
   /**
@@ -570,6 +579,20 @@ export function buscarVuelo(vuelos: readonly VueloDeReserva[], lado: Lado, codig
   });
   const delDia = candidatos.find((v) => (lado === "in" ? v.fecha_llegada : v.fecha_salida) === fecha);
   return delDia ?? candidatos[0] ?? null;
+}
+
+/**
+ * El nombre de un servicio para el mail: sin "Booking Supplier: …" (con sus
+ * variantes mal escritas), sin el prefijo de tipo ni signos sueltos al final.
+ */
+export function nombreLimpio(texto: string): string {
+  return texto
+    .split("\n")[0]
+    .split(/[.:]?\s*Book\w*\s+Sup+lier\b/i)[0]
+    .replace(/^(Optional\s*:?\s*)?(Excursions?|Excursión)\s*[.:]\s*/i, "")
+    .replace(/^Optional\s*:?\s*/i, "")
+    .replace(/[\s/.:,;-]+$/, "")
+    .trim();
 }
 
 // --- Agrupar por casilla ------------------------------------------------------------------------

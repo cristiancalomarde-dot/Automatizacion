@@ -362,6 +362,45 @@ describe("armarPedidos — detalles", () => {
     expect(r.pedidos[0].cuerpo).not.toContain("Alojamiento:");
   });
 
+  it("los nombres salen limpios: sin 'Booking Supplier', prefijos ni signos sueltos", () => {
+    const prod = producto("prod-z", "OD097", [
+      servicio({ productoId: "prod-z", tipo: "excursion", orden: 1, descripcion: "Excursion. Torres del Paine Full Day from Puerto Natales: Booking Supplier: Patagonia Planet", bookingSupplier: P.chalten }),
+      servicio({ productoId: "prod-z", tipo: "excursion", orden: 2, descripcion: "Excursion: Tierra del Fuego National Park half Day. Bookind Supplier: Rumbo Sur", bookingSupplier: P.chalten }),
+      servicio({ productoId: "prod-z", tipo: "excursion", orden: 3, descripcion: "Excursion: Beagle Channel Boat Trip, 3 hours, no transfer to port /\nBooking Supplier: Rumbo Sur", bookingSupplier: P.chalten }),
+    ]);
+    const p = ok(armarPedidos(reserva({ productoId: prod.id, fechaInicio: "2027-01-24", fechaFin: "2027-01-24" }), catalogoCon([prod]), plantilla)).pedidos[0];
+    expect(p.cuerpo).toContain("Excursión: Torres del Paine Full Day from Puerto Natales\n");
+    expect(p.cuerpo).toContain("Excursión: Tierra del Fuego National Park half Day\n");
+    expect(p.cuerpo).toContain("Excursión: Beagle Channel Boat Trip, 3 hours, no transfer to port\n");
+  });
+
+  it("una excursión de varios días (el Overland) va con sus fechas y en español si el chofer es de habla hispana", () => {
+    const uyu = producto("prod-uyu", "UYUO01", [
+      servicio({ productoId: "prod-uyu", tipo: "excursion", descripcion: "Overland privado San Pedro – Uyuni, 3 días en jeep 4x4 desde Hito Cajón, con chofer de habla hispana (sin guía en inglés)", bookingSupplier: P.imperio }),
+    ]);
+    const r = ok(armarPedidos(reserva({ productoId: uyu.id, fechaInicio: "2026-10-15", fechaFin: "2026-10-17" }), catalogoCon([uyu]), plantilla));
+    expect(r.pedidos[0].cuerpo).toContain("Desde: 15 oct 2026 · Hasta: 17 oct 2026");
+    expect(r.pedidos[0].cuerpo).toContain("Servicio: privado · Idioma: español");
+    expect(r.pedidos[0].avisos).toEqual([]);
+  });
+
+  it("final de ARCH31 con vuelo desde Puerto Natales: el transfer al aeropuerto PNT va como traslado de salida", () => {
+    const planet = { id: "prov-planet", nombre: "Patagonia Planet", mails: ["excursiones@planet.test"], canal: "mail" as const, telefono: null };
+    const arch = producto("prod-arch", "ARCH31", [], { esTour: true });
+    const r = ok(
+      armarPedidos(
+        reserva({
+          productoId: arch.id,
+          vuelos: [{ numero: "JA1234", origen: "PNT", destino: "SCL", fecha_salida: "2027-03-09", hora_salida: "14:20" }],
+          partes: [parte({ id: "t", orden: 1, tipo: "servicio", descripcionRuta: "Transfer al aeropuerto de Puerto Natales (PNT)", proveedorId: planet.id, fechaInicio: "2027-03-09", fechaFin: "2027-03-09" })],
+        }),
+        catalogoCon([arch], [planet]),
+        plantilla,
+      ),
+    );
+    expect(r.pedidos[0].cuerpo).toContain("Traslado de salida: Transfer al aeropuerto de Puerto Natales (PNT)\nFecha: 9 mar 2027\nVuelo: JA1234 (PNT) salida 14:20 hs");
+  });
+
   it("una excursión sin día conocido queda 'a coordinar' con un aviso", () => {
     const prod = producto("prod-y", "OD098", [
       servicio({ productoId: "prod-y", tipo: "excursion", descripcion: "Excursion: Perito Moreno Glaciar Excursion. Booking Supplier: Chalten Travel", bookingSupplier: P.chalten }),
