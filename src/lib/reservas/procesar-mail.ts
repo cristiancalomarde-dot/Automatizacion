@@ -22,6 +22,7 @@ import {
 } from "./intercambio";
 import type { MailParaLeer } from "./preparar-mail";
 import { sinDatoDeLlegada } from "./llegada-iguazu";
+import { sumarTourJournaway } from "./journaway/sumar-en-base";
 import { numerosDelAsunto, type ReservaParaRespuesta } from "./respuestas";
 import type { MailEntrada } from "./tipos";
 
@@ -223,11 +224,14 @@ async function avisosDe(ctx: ContextoMail, existente: ReservaExistente): Promise
 /** Filas 3, 4, 5, 7, 9 y 12: el mail se suma al historial y completa lo vacío, sin pisar. */
 async function sumarA(ctx: ContextoMail, armada: ReservaArmada, existente: ReservaExistente): Promise<ResultadoPedido> {
   const e = armada.entrada;
+  // Owner 2026-10-17: en Journaway un pedido con un ID ya cargado suma sus tours a esa reserva. Las
+  // fechas de otro tour no son un "dato distinto": amplían el viaje (sumarTourJournaway).
+  const sumaTours = ctx.agencia === "Journaway" && !ctx.esCancelacion && ctx.ficha?.tipo_mail.valor === "reserva_nueva";
   const cambios = armarCambios(
     existente,
     {
-      fechaInicio: e.fechaInicio ?? null,
-      fechaFin: e.fechaFin ?? null,
+      fechaInicio: sumaTours ? null : (e.fechaInicio ?? null),
+      fechaFin: sumaTours ? null : (e.fechaFin ?? null),
       pax: e.pax ?? null,
       pasajeros: e.pasajeros ?? [],
       vuelos: ctx.ficha?.vuelos ?? [],
@@ -240,6 +244,13 @@ async function sumarA(ctx: ContextoMail, armada: ReservaArmada, existente: Reser
     { avisosVuelo: await avisosDe(ctx, existente), fechaMail: ctx.fechaMail },
   );
 
+  const tours = sumaTours ? await sumarTourJournaway(ctx.admin, existente.id, e) : null;
+  if (tours) {
+    // Lo que el mail nuevo no pudo reconocer manda la reserva a revisión, como al crearla.
+    for (const m of e.motivosRevision) if (!cambios.motivos.includes(m)) cambios.motivos.push(m);
+    if (cambios.motivos.length && ["recibida", "para_revision"].includes(existente.estado)) cambios.estado = "para_revision";
+  }
+
   await agregarEvento(
     existente.id,
     {
@@ -250,6 +261,7 @@ async function sumarA(ctx: ContextoMail, armada: ReservaArmada, existente: Reser
         cancelacion: ctx.esCancelacion,
         booking_id_original: ctx.bookingIdOriginal,
         ...(cambios.nota ? { nota: cambios.nota } : {}),
+        ...(tours ? { partes_sumadas: tours.partesSumadas, productos_sumados: tours.productosSumados } : {}),
       },
     },
     ctx.admin,
@@ -262,11 +274,13 @@ async function sumarA(ctx: ContextoMail, armada: ReservaArmada, existente: Reser
   }
 
   const motivosCambian = cambios.motivos.join("\n") !== existente.motivos_revision.join("\n");
-  if (cambios.completados.length || cambios.estado !== existente.estado || motivosCambian) {
+  const deJournaway = tours?.actualizar ?? {};
+  if (cambios.completados.length || cambios.estado !== existente.estado || motivosCambian || Object.keys(deJournaway).length) {
     const { error } = await ctx.admin
       .from("reserva")
       .update({
         ...cambios.completar,
+        ...deJournaway,
         estado: cambios.estado,
         motivos_revision: cambios.motivos,
         updated_at: new Date().toISOString(),

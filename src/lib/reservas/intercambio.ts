@@ -97,6 +97,13 @@ export function decidirPedido(
     .sort(porAntiguedad);
   const misma = pedido.bookingId ? mias.filter((r) => r.booking_id === pedido.bookingId) : [];
 
+  // Owner 2026-10-17: en Journaway el ID es del pasajero y no cambia. Otro tour con el mismo ID
+  // es la misma reserva: se suma (no hay "otro producto = otra reserva"). El Trip Number no cuenta.
+  if (pedido.agencia === "Journaway" && misma.length > 0) {
+    if (misma.length === 1) return { tipo: "sumar_a", reservaId: misma[0].id };
+    return { tipo: "revision_ambigua", reservaIds: misma.map((r) => r.id) };
+  }
+
   if (misma.length > 0) {
     const tienePedido = !!(pedido.productoId || pedido.claveAgencia);
     if (tienePedido) {
@@ -116,7 +123,9 @@ export function decidirPedido(
         Date.parse(r.created_at) >= desde &&
         r.fecha_inicio === pedido.fechaInicio &&
         r.pax === pedido.pax &&
-        mismoProducto(pedido, r),
+        mismoProducto(pedido, r) &&
+        // Journaway: el ID es del pasajero; otro ID es otro pasajero, aunque coincidan tour, fecha y pax (owner 2026-10-17).
+        !(pedido.agencia === "Journaway" && pedido.bookingId && r.booking_id && r.booking_id !== pedido.bookingId),
     );
     if (parecida) return { tipo: "nueva_posible_duplicada", duplicadaDe: parecida.id, mismaReferencia: [] };
   }

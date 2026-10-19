@@ -379,3 +379,35 @@ describe("cargoExtraDelMail: qué mail es un cargo extra de TourRadar", () => {
     expect(cargoExtraDelMail({ agencia: "TourRadar", tipoMail: null, esCancelacion: false })).toBeNull();
   });
 });
+
+describe("Journaway: el mismo ID es la misma reserva (owner 2026-10-17)", () => {
+  const jw = (c: Partial<ReservaExistente> = {}) =>
+    reserva({ agencia: "Journaway", booking_id: "65600000001", producto_id: "p-igre01", producto_clave_agencia: "igre01", ...c });
+  const pj = (c: Partial<PedidoIntercambio> = {}) =>
+    pedido({ agencia: "Journaway", bookingId: "65600000001", productoId: "p-igre02", claveAgencia: "igre02", fechaInicio: "2027-06-13", ...c });
+
+  it("otro tour con el mismo ID se suma a la reserva que ya existe, sin marca de posible duplicada", () => {
+    const r = jw();
+    expect(decidir(pj(), [r])).toEqual({ tipo: "sumar_a", reservaId: r.id });
+  });
+
+  it("si ya hay dos reservas con ese ID (de antes de la regla), queda para revisión por ambigua", () => {
+    const [a, b] = [jw(), jw({ producto_id: "p-spap05" })];
+    expect(decidir(pj(), [a, b])).toEqual({ tipo: "revision_ambigua", reservaIds: [a.id, b.id] });
+  });
+
+  it("otro ID con el mismo tour, fecha y pax es otro pasajero: reserva nueva, sin marca de posible duplicada", () => {
+    const r = jw({ booking_id: "65600000002", producto_id: "p-igre02", producto_clave_agencia: "igre02", fecha_inicio: "2027-06-13" });
+    expect(decidir(pj(), [r])).toEqual({ tipo: "nueva", mismaReferencia: [] });
+  });
+
+  it("sin ID (las copias .docx), nada cambia: otro producto es otra reserva", () => {
+    const r = jw({ booking_id: null });
+    expect(decidir(pj({ bookingId: null }), [r]).tipo).toBe("nueva");
+  });
+
+  it("en Kilroy, el mismo número con otro producto sigue siendo otra reserva", () => {
+    const r = reserva();
+    expect(decidir(pedido({ productoId: "p-otro", claveAgencia: "otro" }), [r])).toEqual({ tipo: "nueva", mismaReferencia: [r.id] });
+  });
+});
