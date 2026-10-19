@@ -6,6 +6,12 @@ Formato mínimo por entrada: qué decisión, por qué, alternativa rechazada, co
 
 # Decisiones de diseño
 
+## 2026-10-19: Envío de pedidos (M3-03): se toma cada pedido antes de mandarlo, la prueba no consume el pedido y "pedido incompleto" se calcula
+- **Decisión:** (1) cada pedido se toma con un UPDATE condicional (borrador/fallo → enviando) antes de abrir el SMTP; uno enviado solo sale de nuevo con "Reenviar" (suma `reenvios` y queda en el historial). (2) En modo prueba el pedido vuelve a borrador con la marca del envío de prueba: después se puede mandar de verdad sin "Reenviar". (3) Si el SMTP acepta solo la copia (CC) y rechaza los mails del proveedor, el pedido cuenta como fallido. (4) "Pedido incompleto" no se guarda: es "reserva en pedido a proveedor con algún pedido que no está enviado" (sin mail, falló o no se incluyó). (5) Una reserva ya pedida se puede volver a armar: lo enviado y lo editado se conservan, y así se completa un proveedor al que se le cargó el mail. (6) Al terminar, la pantalla se queda con el resultado de cada pedido y un enlace a la reserva (no vuelve sola al detalle, para que se vean los fallos).
+- **Razón:** "nunca dos veces" tiene que valer aunque dos personas aprieten a la vez, y eso lo garantiza la base, no la pantalla. La prueba no debería obligar a "Reenviar" el envío real.
+- **Alternativa rechazada:** guardar la marca "pedido incompleto" en la reserva (otra columna que mantener al día); mandar primero al proveedor y después la copia en dos envíos (dos Message-ID para el mismo pedido).
+- **Constraint:** un pedido que quedó "enviando" más de 10 minutos (algo se cortó) solo se manda con "Reenviar", después de mirar Enviados. Con el proveedor rechazado, la copia al CC puede llegar igual.
+
 ## 2026-10-19: Pantalla de pedidos (M3-02): se rearma al entrar, "incluir" vive en la pantalla, edición al salir del campo
 - **Decisión:** cada vez que se entra a `/reservas/<id>/pedidos` se vuelven a armar los borradores conservando los editados; "Incluir este pedido" no se guarda en la base (se pasa a la acción de envío); la edición se guarda al salir del campo; "Volver a armar" con editados ofrece conservarlos o rearmar todo.
 - **Razón:** lo no editado queda siempre al día con la reserva y los avisos generales se calculan sin guardarlos; evita una migración más.
