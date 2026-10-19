@@ -29,8 +29,10 @@ const cliente = vi.hoisted(() => ({ actual: null as unknown }));
 vi.mock("@/lib/supabase/client", () => ({ createSupabaseBrowserClient: () => cliente.actual }));
 vi.mock("@/lib/supabase/server", () => ({ createSupabaseServerClient: async () => cliente.actual }));
 vi.mock("@/app/(app)/reservas/[id]/acciones", () => ({ marcarReservaDePrueba: vi.fn() }));
+// Estable, como el de Next: si no, cada render de la pantalla volvería a armar los pedidos.
+const router = vi.hoisted(() => ({ push: vi.fn(), replace: vi.fn() }));
 vi.mock("next/navigation", () => ({
-  useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
+  useRouter: () => router,
   usePathname: () => "/reservas",
   useSearchParams: () => new URLSearchParams(),
   redirect: (destino: string) => {
