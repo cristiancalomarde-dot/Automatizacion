@@ -46,7 +46,9 @@ tarea pendiente dentro de la reserva. Es el milestone M3 de [`docs/prd.md`](../.
 - **Sin vuelo igual se pide.** Como en los pedidos de hoy ("vuelo pendiente aún"): el pedido sale
   con "vuelo pendiente" y se completa después. Lo que no se hace sin vuelo (o bus, si es Iguazú) es
   **confirmar** la reserva (M4).
-- **San Pedro Explorer:** los geysers del Tatio van el día 3.
+- **Días fijos de excursiones (owner, reconfirmado 2026-10-19), siempre salvo cambio manual:** los
+  geysers del Tatio van el día 3 del OD030 (San Pedro Explorer) y Tiwanaco el día 2 del OD031 (La
+  Paz Starter). Viven en `data/dias-servicio.csv`; ahí se agregan las que vengan.
 - **Lo que reserva la agencia** (los hoteles "booked by us" de Journaway) **no se pide**.
 
 **Formato del pedido (de los ejemplos en `Insumos/Mails/Pedido Proveedor - *.docx`):** en español;
