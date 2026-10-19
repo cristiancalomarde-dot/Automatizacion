@@ -6,6 +6,12 @@ Formato mínimo por entrada: qué decisión, por qué, alternativa rechazada, co
 
 # Decisiones de diseño
 
+## 2026-10-19: Pantalla de pedidos (M3-02): se rearma al entrar, "incluir" vive en la pantalla, edición al salir del campo
+- **Decisión:** cada vez que se entra a `/reservas/<id>/pedidos` se vuelven a armar los borradores conservando los editados; "Incluir este pedido" no se guarda en la base (se pasa a la acción de envío); la edición se guarda al salir del campo; "Volver a armar" con editados ofrece conservarlos o rearmar todo.
+- **Razón:** lo no editado queda siempre al día con la reserva y los avisos generales se calculan sin guardarlos; evita una migración más.
+- **Alternativa rechazada:** guardar "incluido" en `reserva_pedido` (migración 0019): se agrega en M3-03 solo si hace falta que sobreviva a salir y volver.
+- **Constraint:** "Rearmar todo" son dos pasos sin transacción única; si falla en el medio, los textos editados quedan pero sin la marca de editado.
+
 ## 2026-10-19: Pedidos a proveedores por el SMTP de Ferozo (operations@), aprobados por cualquiera del equipo, primero solo a la casilla del owner
 - **Decisión:** los pedidos salen desde `operations@hitravel.com.ar` por el SMTP de Ferozo, con la clave solo en variables de entorno. Cualquier persona del equipo con cuenta @hitravel.com.ar puede aprobar y enviar; queda registrado quién y cuándo. CC configurable, al principio a ccalomarde@. Mientras dura la prueba, todo va solo a la casilla del owner; el envío real se habilita con su OK.
 - **Razón:** desde M2 la app lee sales@ por IMAP y ya no pasa por el Gmail, así que el "Enviar como" desde Gmail dejó de tener sentido. Con el SMTP de la propia casilla el proveedor ve un mail igual a uno escrito a mano y las respuestas llegan a operations@, que la ven todos los operativos. No hay que tocar el DNS.

@@ -3,6 +3,12 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
 
 # Dónde retomar
 
+- **M3-01 y M3-02 terminadas (2026-10-19).** Migración 0018 (reserva_pedido, reserva_tarea) aplicada a la real con OK
+  del owner. M3-01: borradores por casilla con plantilla editable `data/plantillas/pedido-proveedor.md` (el owner revisa
+  el tono con `docs/sdd/diagnosticos/M3-01-ejemplos-pedidos.md` y 7 preguntas). M3-02: pantalla `/reservas/<id>/pedidos`
+  (tarjetas editables, incluir, tareas, avisos, "Volver a armar", diálogo de envío que todavía NO manda nada).
+  Siguiente: M3-03 (envío por operations@), necesita que el owner cargue la clave de operations@ en el archivo de variables.
+
 - **M2-09 publicada, esperando la revisión del owner (2026-10-18).** Reservas de Journaway: migraciones 0016 y 0017
   aplicadas a la real con OK. Journaway entra a la lectura diaria de sales@ (asunto con book/booking/cancel/Stornierung o
   cuerpo "please book"). Un mail = una reserva (SPAP01 + SPAP03 en `otros_productos`); mismo ID de 11 dígitos = misma
