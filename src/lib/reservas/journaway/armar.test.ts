@@ -73,58 +73,70 @@ describe("mail B (IGRE02)", () => {
   });
 });
 
-describe("mail C (SPAP01 + SPAP03)", () => {
-  it("dos reservas recibidas, con el número de viaje 62992 y sin booking_id (no viene el ID del asunto)", async () => {
+describe("mail C (SPAP01 + SPAP03): un mail = una reserva (owner 2026-10-17)", () => {
+  it("una sola reserva recibida: SPAP01 y SPAP03 como otro producto, con el número de viaje 62992 y sin booking_id", async () => {
     const { armadas } = await de("C");
-    expect(armadas.map((a) => codigoDe(a.entrada.productoId))).toEqual(["SPAP01", "SPAP03"]);
-    for (const a of armadas) {
-      expect(a.entrada.estado).toBe("recibida");
-      expect(a.entrada.tripNumber).toBe("62992");
-      expect(a.entrada.bookingId ?? null).toBeNull();
-      expect(a.entrada.pax).toBe(2);
-      expect(a.avisos).toEqual([]);
-    }
+    expect(armadas).toHaveLength(1);
+    const [a] = armadas;
+    expect(codigoDe(a.entrada.productoId)).toBe("SPAP01");
+    expect((a.entrada.otrosProductos ?? []).map(codigoDe)).toEqual(["SPAP03"]);
+    expect(a.entrada.estado).toBe("recibida");
+    expect(a.entrada.tripNumber).toBe("62992");
+    expect(a.entrada.bookingId ?? null).toBeNull();
+    expect(a.entrada.pax).toBe(2);
+    expect(a.entrada.fechaInicio).toBe("2027-03-16");
+    expect(a.entrada.fechaFin).toBe("2027-03-23");
+    expect(a.avisos).toEqual([]);
   });
 
-  it("cada tour conserva su fecha; fila 11: sin pick up en el mail, queda vacío y no va a revisión", async () => {
+  it("todas las partes en orden de fecha, cada tour con la suya; fila 11: sin pick up, vacío y sin revisión", async () => {
     const { armadas } = await de("C");
-    const [a, c] = armadas.map((x) => x.entrada.componentes.map((p) => [codigoDe(p.productoId), p.fechaInicio, p.pickUp ?? null]));
-    expect(a).toEqual([
+    expect(armadas[0].entrada.componentes.map((p) => [codigoDe(p.productoId), p.fechaInicio, p.pickUp ?? null])).toEqual([
       ["SPAT01", "2027-03-16", null],
       ["SPAE01", "2027-03-16", null],
-      ["SPAE02", "2027-03-19", null],
       ["SPAE03", "2027-03-17", null],
       ["SPAE04", "2027-03-17", null],
-    ]);
-    expect(c).toEqual([
-      ["SPAE07", "2027-03-21", null],
-      ["SPAE06", "2027-03-20", null],
       ["SPAE05", "2027-03-18", null],
+      ["SPAE02", "2027-03-19", null],
+      ["SPAE06", "2027-03-20", null],
+      ["SPAE07", "2027-03-21", null],
       ["SPAT01", "2027-03-23", null],
     ]);
   });
 
-  it("fila 15: un solo traslado de llegada (SPAP01, LA156) y uno solo de salida (SPAP03, LA377)", async () => {
+  it("fila 15: el traslado de llegada al principio y el de salida al final, sin duplicar", async () => {
     const { armadas } = await de("C");
-    const [a, c] = armadas.map((x) => x.entrada);
-    expect(a.sinTrasladoDe).toBe("salida");
-    expect(a.componentes[0].descripcionRuta).toBe("Solo la llegada: la salida va con SPAP03");
-    expect(c.sinTrasladoDe ?? null).toBeNull();
+    const e = armadas[0].entrada;
+    expect(e.sinTrasladoDe).toBe("salida");
+    expect(e.componentes[0].descripcionRuta).toBe("Solo la llegada: la salida va con SPAP03");
+    expect(e.componentes.filter((c) => codigoDe(c.productoId) === "SPAT01")).toHaveLength(2);
   });
 
-  it("fila 15 con la regla del owner (2026-10-16): sin LA377 la reserva sigue recibida con el aviso de la salida de Calama, una sola vez", async () => {
+  it("fila 15 con la regla del owner (2026-10-16): sin LA377 sigue recibida con el aviso de la salida de Calama, una sola vez", async () => {
     const { armadas } = await armar(sinVuelo(original("C"), "LA377"));
-    expect(armadas.map((a) => a.entrada.estado)).toEqual(["recibida", "recibida"]);
-    expect(armadas[0].avisos).toEqual([]);
-    expect(armadas[1].avisos).toEqual([expect.stringMatching(/^Falta el vuelo de salida de Calama \(CJC\)/)]);
+    expect(armadas).toHaveLength(1);
+    expect(armadas[0].entrada.estado).toBe("recibida");
+    expect(armadas[0].avisos).toEqual([expect.stringMatching(/^Falta el vuelo de salida de Calama \(CJC\)/)]);
   });
 
   it("fila 10: con 'All Hotels are booked by us' no hay hoteles a pedir", async () => {
     const { armadas } = await de("C");
-    for (const a of armadas) {
-      expect(a.entrada.hotelesAgencia).toEqual([]);
-      expect(a.entrada.notas).toContain("Todos los hoteles los reserva Journaway");
-    }
+    expect(armadas[0].entrada.hotelesAgencia).toEqual([]);
+    expect(armadas[0].entrada.notas).toContain("Todos los hoteles los reserva Journaway");
+  });
+
+  it("un tour suelto junto a los paquetes: igual una sola reserva, con los tres productos", async () => {
+    const v = original("C");
+    const conIguazu = {
+      texto: v.texto.replace("San Pedro de Atacama: Tour to Laguna Cejar - 21.03.2027", "San Pedro de Atacama: Tour to Laguna Cejar - 21.03.2027\nHalf-day tour to the Brazilian Iguazú Falls - 24.03.2027"),
+      ficha: {
+        ...v.ficha,
+        productos: [...v.ficha.productos, { ...v.ficha.productos[0], nombre: "Half-day tour to the Brazilian Iguazú Falls", fecha_inicio: "2027-03-24" }],
+      },
+    };
+    const { armadas } = await armar(conIguazu);
+    expect(armadas).toHaveLength(1);
+    expect((armadas[0].entrada.otrosProductos ?? []).map(codigoDe)).toEqual(["SPAP03", "IGRE02"]);
   });
 });
 

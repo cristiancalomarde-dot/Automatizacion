@@ -158,6 +158,7 @@ export async function guardarMailRecibido(
 function columnasJournaway(e: ReservaEntrada): Record<string, unknown> {
   const c: Record<string, unknown> = {};
   if (e.tripNumber) c.trip_number = e.tripNumber;
+  if (e.otrosProductos?.length) c.otros_productos = e.otrosProductos;
   if (e.hotelesAgencia?.length) c.hoteles_agencia = e.hotelesAgencia;
   if (e.contactoCliente) c.contacto_cliente = e.contactoCliente;
   if (e.notas?.length) c.notas = e.notas;

@@ -9,6 +9,7 @@ import type { FichaLectura, ProductoIA } from "../esquema-ficha";
 import type { ResultadoLectura } from "../extraer";
 import { armarJournaway, type DependenciasJournaway } from "../journaway/armar";
 import { cargarCatalogoJournaway } from "../journaway/catalogo";
+import { ordenarPorFecha } from "../journaway/sumar";
 import { ARCHIVO_SENALES_JOURNAWAY, leerSenalesJournaway, verificarSenales } from "../journaway/senales";
 import type { MailParaLeer } from "../preparar-mail";
 import { crearReserva } from "../guardar";
@@ -136,8 +137,15 @@ function textoDeExtra(p: ProductoIA): string {
 
 /**
  * M2-09: Journaway manda una lista de tours sueltos. El reconocedor de
- * `journaway/` arma los paquetes y `armarJournaway` las reservas; acá se
+ * `journaway/` arma los paquetes y `armarJournaway` sus piezas; acá se
  * cierran con los mismos campos que las demás agencias.
+ *
+ * Owner 2026-10-17: **un mail = una reserva.** Aunque el pedido traiga dos
+ * paquetes (SPAP01 + SPAP03) o un tour suelto además del paquete, sale una
+ * sola reserva: el producto es el del primer tour, los demás van en
+ * `otrosProductos`, y las partes de todos en orden de fecha (la llegada al
+ * principio, la salida al final). Con un solo motivo de revisión, toda la
+ * reserva va a revisión.
  */
 async function armarDeJournaway(ficha: FichaLectura, deps: DependenciasReservas, mail: MailParaLeer | null): Promise<ReservaArmada[]> {
   const { piezas, llamadas, costo } = await armarJournaway(
@@ -145,29 +153,45 @@ async function armarDeJournaway(ficha: FichaLectura, deps: DependenciasReservas,
     { catalogo: deps.catalogo, journaway: deps.journaway!, detalle: deps.detalle, proponer: deps.proponer },
     mail,
   );
-  return piezas.map((p, i) => {
-    const entrada = base(ficha, "Journaway");
-    Object.assign(entrada, {
-      productoId: p.productoId,
-      origenEmparejado: p.origenEmparejado,
-      confianzaEmparejado: p.confianzaEmparejado,
-      sugerenciaProductoId: p.sugerenciaProductoId,
-      productoTextoAgencia: p.productoTextoAgencia,
-      fechaInicio: p.fechaInicio,
-      fechaFin: p.fechaFin,
-      pasajeros: p.pasajeros,
-      pedidosEspeciales: p.pedidosEspeciales,
-      componentes: p.componentes,
-      motivosRevision: p.motivos,
-      tripNumber: p.tripNumber,
-      hotelesAgencia: p.hotelesAgencia,
-      contactoCliente: p.contactoCliente,
-      notas: p.notas,
-      sinTrasladoDe: p.sinTrasladoDe,
-    });
-    // Las llamadas a la IA (propuesta de un tour) son del mail: van con la primera reserva.
-    return { entrada: cerrar(entrada), llamadas: i === 0 ? llamadas : [], costo: i === 0 ? costo : 0, avisos: p.avisos, productoIA: p.productoIA };
+  if (piezas.length === 0) return [];
+  const unicos = <T>(xs: T[]) => [...new Set(xs)];
+  const principal = piezas.find((p) => p.productoId) ?? piezas[0];
+  const otrosProductos = unicos(piezas.map((p) => p.productoId).filter((id): id is string => !!id && id !== principal.productoId));
+  const componentes = ordenarPorFecha(
+    piezas.flatMap((p) => p.componentes),
+    (c) => c.fechaInicio,
+  );
+  const fechas = piezas.flatMap((p) => [p.fechaInicio, p.fechaFin]).filter((x): x is string => !!x).sort();
+  const textos = unicos(piezas.map((p) => p.productoTextoAgencia).filter((t): t is string => !!t));
+  const entrada = base(ficha, "Journaway");
+  Object.assign(entrada, {
+    productoId: principal.productoId,
+    otrosProductos,
+    origenEmparejado: principal.origenEmparejado,
+    confianzaEmparejado: principal.confianzaEmparejado,
+    sugerenciaProductoId: principal.productoId ? null : (piezas.find((p) => p.sugerenciaProductoId)?.sugerenciaProductoId ?? null),
+    productoTextoAgencia: ficha.titulo_paquete.valor ?? (textos.join(" · ") || null),
+    fechaInicio: fechas[0] ?? null,
+    fechaFin: fechas[fechas.length - 1] ?? null,
+    pasajeros: principal.pasajeros,
+    pedidosEspeciales: principal.pedidosEspeciales,
+    componentes,
+    motivosRevision: unicos(piezas.flatMap((p) => p.motivos)),
+    tripNumber: principal.tripNumber,
+    hotelesAgencia: principal.hotelesAgencia,
+    contactoCliente: principal.contactoCliente,
+    notas: unicos(piezas.flatMap((p) => p.notas)),
+    sinTrasladoDe: principal.sinTrasladoDe,
   });
+  return [
+    {
+      entrada: cerrar(entrada),
+      llamadas,
+      costo,
+      avisos: unicos(piezas.flatMap((p) => p.avisos)),
+      productoIA: { ...principal.productoIA, nombre: entrada.productoTextoAgencia ?? principal.productoIA.nombre },
+    },
+  ];
 }
 
 export async function armarReservas(

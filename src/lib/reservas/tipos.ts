@@ -182,6 +182,8 @@ export interface ReservaEntrada {
   /** En el orden del tour (o de la lista de Journaway). */
   componentes?: ComponenteEntrada[];
   // M2-09 (migración 0016): solo Journaway; en las demás agencias no viajan.
+  /** Owner 2026-10-17 (0017): los demás productos de la misma reserva (SPAP03 en SPAP01 + SPAP03). */
+  otrosProductos?: string[];
   /** El "Trip Number" del cuerpo (referencia secundaria; el booking_id es el ID del asunto). */
   tripNumber?: string | null;
   hotelesAgencia?: HotelDeLaAgencia[];
@@ -239,6 +241,8 @@ export interface Reserva {
   sugerencia_producto_id: string | null;
   // M2-09 (migración 0016).
   trip_number?: string | null;
+  /** 0017: los demás productos de la misma reserva. */
+  otros_productos?: string[];
   hoteles_agencia?: HotelDeLaAgencia[];
   contacto_cliente?: ContactoDelCliente | null;
   notas?: string[];
@@ -280,6 +284,8 @@ export interface FilaReserva {
   fechaInicio: string | null;
   fechaFin: string | null;
   pax: number | null;
+  /** Owner 2026-10-17: los demás productos de la misma reserva (Journaway: SPAP01 + SPAP03). */
+  otrosProductos?: ProductoDeReserva[];
   /** Nombres de los pasajeros, si el mail los trae; el primero es el principal (owner 2026-10-16: columna y búsqueda). */
   pasajeros: string[];
   /** Fecha y hora del primer mail (o de la carga, si el mail no la trae). ISO. */
