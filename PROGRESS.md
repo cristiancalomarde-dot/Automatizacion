@@ -3,6 +3,21 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
 
 # Dónde retomar
 
+- **2026-10-20: M3-06 y M3-07 publicadas; migraciones 0021 y 0022 aplicadas a la real con OK.** Firma por operativo
+  (/mi-firma), responsable de la reserva (tomar/pasar, por defecto quien envía) y filtro por operativo; "Corregir vuelos"
+  y datos dudosos desde el detalle; al corregir fechas de un tour con partes se corren si la duración no cambia (si
+  cambia, aviso); la pantalla de pedidos muestra lo que pidió la agencia. Reglas nuevas en pedidos: drop off en excursiones
+  de un día, "Pasaporte: pendiente", cierre "¡Muchas gracias!", ficha completa para Horizonte, entradas solo Journaway +
+  San Pedro (lista confirmada por el owner). Usuarios reales: solo operations@ ("Damian"); el owner les pasa a los
+  operativos cómo crear su cuenta de Google con su mail @hitravel.com.ar.
+  - **Pendientes del owner:** Journaway sigue mandando a operaciones3@ (insiste para que copien a sales@; alternativa:
+    reenvío automático en Ferozo, que conserva el remitente). DK1592913 ARCH31: pide noche extra en PUQ y pasar el día
+    libre de Calafate a Chaltén (pedidos a editar a mano; la noche de PUQ va por fuera).
+  - **Siguiente:** (1) orden y filtros de la lista: "Ordenar por" llegada/inicio/fin del viaje, filtros por agencia,
+    rango de fechas y ocultar terminadas; falta que el owner diga el orden por defecto (sugerido: inicio, próximas primero,
+    sin terminadas). (2) Propuestos: "Agregar un pedido a mano" y aceptar reenvíos del equipo a sales@. (3) M3-04: 8-10
+    pedidos revisados en modo prueba y OK para PEDIDOS_ENVIO_REAL=si.
+
 - **M3-05 terminada y publicada (2026-10-19).** Botón "Confirmar producto" en reservas "para revisión" (sugerencia de la IA o
   buscador), la app aprende la equivalencia (codigo_externo.origen = aprendido; los importadores no la borran). Migración 0020
   aplicada a la real con OK. Reglas nuevas del owner: Tiwanaco día 2 del OD031; Combined de Iguazú: OD010D primero lado
