@@ -309,6 +309,9 @@ export interface FilaReserva {
   cancelacion: boolean;
   /** Spec M3-03 fila 8: ya pedida, con algún pedido sin enviar (sin mail, falló o no se incluyó). */
   pedidoIncompleto?: boolean;
+  /** Spec M3-06 fila 6: quién lleva la reserva (id de `usuario`; null = sin responsable) y su nombre para mostrar. */
+  responsableId?: string | null;
+  responsable?: string | null;
 }
 
 /** Spec M3-03 fila 9: un pedido a proveedor como lo muestra el detalle. */
@@ -402,6 +405,18 @@ export interface DetalleReserva extends FilaReserva {
   sugerencia?: ProductoDeReserva | null;
   /** M3-05: quién confirmó o eligió el producto, del historial. */
   confirmacionesProducto?: ConfirmacionDeProducto[];
+  /** M3-06 fila 8: quién la tomó, a quién se la pasaron y quién quedó al enviar los primeros pedidos. */
+  responsables?: CambioDeResponsable[];
+}
+
+/** M3-06 fila 8: una entrada del historial del responsable (los nombres, como quedaron en ese momento). */
+export interface CambioDeResponsable {
+  tipo: "tomada" | "pasada" | "envio";
+  fecha: string;
+  /** Quién lo hizo. */
+  persona: string;
+  /** Quién quedó como responsable. */
+  responsable: string;
 }
 
 /** M3-05: una entrada "producto_confirmado" del historial (sin datos de pasajeros). */

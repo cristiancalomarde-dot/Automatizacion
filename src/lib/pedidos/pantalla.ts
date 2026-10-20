@@ -75,8 +75,16 @@ export function avisosDeLaPantalla(
   return avisos;
 }
 
-/** El nombre de la cuenta de Google; si no hay, la parte del mail antes de la @. */
-export function nombreDeQuienFirma(usuario: { email?: string | null; user_metadata?: Record<string, unknown> | null }): string {
+/**
+ * M3-06: el nombre para la firma que eligió la persona, si lo guardó; si no
+ * (M3-03), el nombre de la cuenta de Google y, si no hay, la parte del mail
+ * antes de la @.
+ */
+export function nombreDeQuienFirma(
+  usuario: { email?: string | null; user_metadata?: Record<string, unknown> | null },
+  nombreFirma?: string | null,
+): string {
+  if (typeof nombreFirma === "string" && nombreFirma.trim()) return nombreFirma.trim();
   const meta = usuario.user_metadata ?? {};
   for (const clave of ["full_name", "name"]) {
     const v = meta[clave];

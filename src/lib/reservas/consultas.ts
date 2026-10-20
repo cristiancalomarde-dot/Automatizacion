@@ -11,9 +11,11 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { cargarProducto } from "@/lib/catalogo/consultas";
 import { cargarAvisosDeVuelo } from "./avisos-vuelo";
 import { sinDatoDeLlegada } from "./llegada-iguazu";
+import { nombreVisible } from "@/lib/usuarios/nombre";
 import { cuerpoComoTexto, esCancelacion } from "./reglas";
 import {
   BUCKET_ADJUNTOS,
+  type CambioDeResponsable,
   type ConfirmacionDeProducto,
   type ContactoDelCliente,
   type DetalleReserva,
@@ -39,7 +41,8 @@ const CAMPOS_FILA =
   "posible_duplicada,de_prueba,created_at,vuelos,pedidos_especiales,producto_texto_agencia,pasajeros," +
   // M2-09 (0016): el lado del traslado que lleva otra reserva del mismo pedido (para los avisos de vuelo).
   // 0017: los demás productos de la misma reserva (Journaway: SPAP01 + SPAP03).
-  `sin_traslado_de,otros_productos,${PRODUCTO},mail:mail_recibido_id(fecha_mail)`;
+  // M3-06 (0021): quién la lleva.
+  `sin_traslado_de,otros_productos,${PRODUCTO},mail:mail_recibido_id(fecha_mail),responsable_id,responsable:responsable_id(nombre,nombre_firma,email)`;
 // M3-05: lo que sugirió la IA y no se aceptó, para confirmarlo desde el detalle.
 const CAMPOS_DETALLE = `${CAMPOS_FILA},mail_recibido_id,duplicada_de_id,habitacion,trip_number,hoteles_agencia,contacto_cliente,notas,sugerencia:sugerencia_producto_id(id,codigo,nombre)`;
 const CAMPOS_MAIL = "id,remitente,remitente_nombre,asunto,fecha_mail,carpeta,cuerpo_texto,cuerpo_html,adjuntos,created_at";
@@ -100,6 +103,8 @@ function aFila(
     avisosVuelo,
     cancelacion: canceladaEnHistorial || esCancelacion(motivos),
     pedidoIncompleto: r.estado === "pedido_a_proveedor" && conPedidoSinEnviar,
+    responsableId: r.responsable_id ?? null,
+    responsable: nombreVisible(r.responsable),
   };
 }
 
@@ -144,6 +149,19 @@ function aEnvio(e: any): EnvioDeReserva {
 function aConfirmacion(e: any): ConfirmacionDeProducto {
   const d = e.detalle ?? {};
   return { fecha: e.created_at, persona: texto(d.persona) ?? "", codigo: texto(d.codigo) ?? "", sugerida: d.sugerida === true };
+}
+
+const TIPO_CAMBIO: Record<string, CambioDeResponsable["tipo"]> = {
+  reserva_tomada: "tomada",
+  reserva_pasada: "pasada",
+  responsable_por_envio: "envio",
+};
+
+/** M3-06 fila 8: "<persona> tomó la reserva", "<persona> se la pasó a <otra>" o "Responsable: <persona> (envió los primeros pedidos)". */
+function aCambioDeResponsable(e: any): CambioDeResponsable {
+  const d = e.detalle ?? {};
+  const persona = texto(d.persona) ?? "";
+  return { tipo: TIPO_CAMBIO[e.tipo], fecha: e.created_at, persona, responsable: texto(d.responsable) ?? persona };
 }
 
 /**
@@ -285,7 +303,7 @@ export async function cargarReserva(cliente: SupabaseClient, id: string): Promis
       .from("evento_reserva")
       .select("tipo,detalle,created_at")
       .eq("reserva_id", id)
-      .in("tipo", ["pedidos_enviados", "envio_de_prueba", "producto_confirmado"])
+      .in("tipo", ["pedidos_enviados", "envio_de_prueba", "producto_confirmado", ...Object.keys(TIPO_CAMBIO)])
       .order("created_at"),
   ]);
   const filasPedidos = (verificar(pedidos) as any[]).map(aPedidoVista);
@@ -313,9 +331,10 @@ export async function cargarReserva(cliente: SupabaseClient, id: string): Promis
     contactoCliente: aContacto(r.contacto_cliente),
     notas: Array.isArray(r.notas) ? r.notas.filter((n: unknown): n is string => typeof n === "string" && !!n.trim()) : [],
     pedidos: filasPedidos,
-    envios: historial.filter((e) => e.tipo !== "producto_confirmado").map(aEnvio),
+    envios: historial.filter((e) => e.tipo === "pedidos_enviados" || e.tipo === "envio_de_prueba").map(aEnvio),
     sugerencia: aProducto(r.sugerencia),
     confirmacionesProducto: historial.filter((e) => e.tipo === "producto_confirmado").map(aConfirmacion),
+    responsables: historial.filter((e) => e.tipo in TIPO_CAMBIO).map(aCambioDeResponsable),
   };
 }
 

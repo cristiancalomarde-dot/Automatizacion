@@ -30,6 +30,7 @@ import { esIdDeReserva } from "@/lib/reservas/reglas";
 import type { EstadoReserva } from "@/lib/reservas/tipos";
 import { TEXTOS } from "@/lib/textos";
 import { cargarPedidos, type PedidoGuardado } from "../guardar";
+import { leerNombreParaLaFirma } from "@/lib/usuarios/firma";
 import { nombreDeQuienFirma } from "../pantalla";
 import { leerConfigEnvio, type ConfigEnvio } from "./config";
 import { guardarEnEnviadosImap, type GuardarEnEnviados } from "./enviados";
@@ -80,7 +81,7 @@ export interface DependenciasEnvio {
 export interface QuienEnvia {
   id: string;
   email: string;
-  /** El nombre de la cuenta de Google o lo previo a la @ (fila 4). */
+  /** El nombre para la firma (M3-06), si no el de la cuenta de Google o lo previo a la @ (fila 4). */
   nombre: string;
 }
 
@@ -96,7 +97,8 @@ export async function quienEnvia(cliente: SupabaseClient): Promise<QuienEnvia | 
     return null;
   }
   if (!esCorreoDelDominioPermitido(u.email, dominio)) return null;
-  return { id: u.id, email: u.email, nombre: nombreDeQuienFirma(u) };
+  // M3-06: el nombre para la firma que eligió la persona, si lo guardó.
+  return { id: u.id, email: u.email, nombre: nombreDeQuienFirma(u, await leerNombreParaLaFirma(cliente, u.id)) };
 }
 
 export const pedidoIncompleto = (estado: EstadoReserva, pedidos: ReadonlyArray<{ estado: string }>): boolean =>

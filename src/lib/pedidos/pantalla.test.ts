@@ -95,6 +95,13 @@ describe("quién firma (fila 8)", () => {
     expect(nombreDeQuienFirma({ email: "ccalomarde@hitravel.com.ar", user_metadata: { name: "Cristian" } })).toBe("Cristian");
   });
 
+  it("M3-06 fila 2: con nombre para la firma guardado, firma con él; vacío o sin guardar, como antes", () => {
+    const u = { email: "dperez@hitravel.com.ar", user_metadata: { full_name: "Damián Pérez" } };
+    expect(nombreDeQuienFirma(u, "Damián · Operaciones")).toBe("Damián · Operaciones");
+    expect(nombreDeQuienFirma(u, "  ")).toBe("Damián Pérez");
+    expect(nombreDeQuienFirma(u, null)).toBe("Damián Pérez");
+  });
+
   it("sin nombre, la parte del mail antes de la @", () => {
     expect(nombreDeQuienFirma({ email: "leticia@hitravel.com.ar", user_metadata: {} })).toBe("leticia");
     expect(nombreDeQuienFirma({ email: "leticia@hitravel.com.ar", user_metadata: { full_name: "  " } })).toBe("leticia");
