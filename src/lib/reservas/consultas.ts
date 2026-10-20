@@ -16,6 +16,7 @@ import { cuerpoComoTexto, esCancelacion } from "./reglas";
 import {
   BUCKET_ADJUNTOS,
   type CambioDeResponsable,
+  type CorreccionDeReserva,
   type ConfirmacionDeProducto,
   type ContactoDelCliente,
   type DetalleReserva,
@@ -164,6 +165,37 @@ function aCambioDeResponsable(e: any): CambioDeResponsable {
   return { tipo: TIPO_CAMBIO[e.tipo], fecha: e.created_at, persona, responsable: texto(d.responsable) ?? persona };
 }
 
+const TIPO_CORRECCION: Record<string, CorreccionDeReserva["tipo"]> = {
+  vuelos_corregidos: "vuelos",
+  dato_revisado: "revisado",
+  dato_corregido: "corregido",
+};
+
+/** M3-07 fila 7: "<persona> corrigió los vuelos: …", "<persona> marcó como revisado: pax" o "<persona> corrigió: fechas". */
+function aCorreccion(e: any): CorreccionDeReserva {
+  const d = e.detalle ?? {};
+  const vuelos = (Array.isArray(d.vuelos) ? d.vuelos : [])
+    .filter((v: any) => v && typeof v === "object")
+    .map((v: any) => ({
+      lado: v.lado === "salida" ? ("salida" as const) : ("llegada" as const),
+      numero: texto(v.numero) ?? "",
+      aeropuerto: texto(v.aeropuerto) ?? "",
+      fecha: texto(v.fecha),
+      hora: texto(v.hora),
+    }));
+  return { tipo: TIPO_CORRECCION[e.tipo], fecha: e.created_at, persona: texto(d.persona) ?? "", vuelos, dato: texto(d.dato), nota: d.nota === true };
+}
+
+/** M3-07 fila 6: a qué proveedores hay que avisarles que el vuelo cambió después de enviarles el pedido. */
+function proveedoresAAvisar(eventos: any[]): string[] {
+  const nombres = eventos
+    .filter((e) => e.tipo === "vuelos_corregidos")
+    .flatMap((e) => (Array.isArray(e.detalle?.avisar) ? e.detalle.avisar : []))
+    .flatMap((a: any) => (Array.isArray(a?.proveedores) ? a.proveedores : []))
+    .filter((n: unknown): n is string => typeof n === "string" && !!n.trim());
+  return [...new Set(nombres)] as string[];
+}
+
 /**
  * Owner 2026-10-16: las reservas a las que la agencia les mandó una
  * cancelación, según su historial (el mail sumado con `cancelacion: true`,
@@ -219,7 +251,8 @@ function aPasajeros(lista: unknown): string[] {
     .filter((n) => n.length > 0);
 }
 
-function aVuelos(lista: unknown): VueloDeReserva[] {
+/** Los vuelos guardados como los muestra la pantalla (M3-07 los usa también para la versión que vio). */
+export function aVuelos(lista: unknown): VueloDeReserva[] {
   if (!Array.isArray(lista)) return [];
   return lista
     .filter((v) => v && typeof v === "object")
@@ -303,7 +336,7 @@ export async function cargarReserva(cliente: SupabaseClient, id: string): Promis
       .from("evento_reserva")
       .select("tipo,detalle,created_at")
       .eq("reserva_id", id)
-      .in("tipo", ["pedidos_enviados", "envio_de_prueba", "producto_confirmado", ...Object.keys(TIPO_CAMBIO)])
+      .in("tipo", ["pedidos_enviados", "envio_de_prueba", "producto_confirmado", ...Object.keys(TIPO_CAMBIO), ...Object.keys(TIPO_CORRECCION)])
       .order("created_at"),
   ]);
   const filasPedidos = (verificar(pedidos) as any[]).map(aPedidoVista);
@@ -335,6 +368,8 @@ export async function cargarReserva(cliente: SupabaseClient, id: string): Promis
     sugerencia: aProducto(r.sugerencia),
     confirmacionesProducto: historial.filter((e) => e.tipo === "producto_confirmado").map(aConfirmacion),
     responsables: historial.filter((e) => e.tipo in TIPO_CAMBIO).map(aCambioDeResponsable),
+    correcciones: historial.filter((e) => e.tipo in TIPO_CORRECCION).map(aCorreccion),
+    avisarCambioDeVuelo: proveedoresAAvisar(historial),
   };
 }
 

@@ -407,6 +407,23 @@ export interface DetalleReserva extends FilaReserva {
   confirmacionesProducto?: ConfirmacionDeProducto[];
   /** M3-06 fila 8: quién la tomó, a quién se la pasaron y quién quedó al enviar los primeros pedidos. */
   responsables?: CambioDeResponsable[];
+  /** M3-07 fila 7: quién corrigió los vuelos o revisó un dato dudoso. */
+  correcciones?: CorreccionDeReserva[];
+  /** M3-07 fila 6: los proveedores con un pedido ya enviado cuyo vuelo cambió después ("avisale"). */
+  avisarCambioDeVuelo?: string[];
+}
+
+/** M3-07 fila 7: una corrección del historial (sin datos de pasajeros). */
+export interface CorreccionDeReserva {
+  tipo: "vuelos" | "revisado" | "corregido";
+  fecha: string;
+  persona: string;
+  /** Los vuelos como quedaron (solo en "vuelos"). */
+  vuelos: Array<{ lado: "llegada" | "salida"; numero: string; aeropuerto: string; fecha: string | null; hora: string | null }>;
+  /** El dato revisado o corregido ("pax", "fechas"…). */
+  dato: string | null;
+  /** Dejó una nota del operativo. */
+  nota: boolean;
 }
 
 /** M3-06 fila 8: una entrada del historial del responsable (los nombres, como quedaron en ese momento). */

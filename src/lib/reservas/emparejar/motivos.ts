@@ -8,7 +8,8 @@ import type { DatoClave, TipoMail } from "../esquema-ficha";
 
 const confianza = (c: number) => c.toFixed(2).replace(".", ",");
 
-const DATO: Record<DatoClave, string> = {
+/** Cómo se dice cada dato clave (los motivos "La IA no está segura de: …" y M3-07). */
+export const DATO: Record<DatoClave, string> = {
   agencia: "agencia",
   numero_reserva: "número de reserva",
   producto: "producto",
