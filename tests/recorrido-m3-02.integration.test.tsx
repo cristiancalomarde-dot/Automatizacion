@@ -234,4 +234,31 @@ const botonEnviar = () => screen.getByRole("button", { name: /^Enviar \d+ pedido
     const reserva = await admin.from("reserva").select("estado").eq("id", id).single();
     expect(reserva.data?.estado).toBe("recibida");
   });
+
+  it("3. DK1592913 (ARCH31 de Kilroy): lo que pidió la agencia, arriba y en el diálogo; no bloquea el envío", async () => {
+    const pidio =
+      "Please include post night in PUQ (hostel private). ALSO: remove the free day in El Calafate, and move it to an extra day in El Chalten.";
+    const arch31 = await cargarProducto(admin, ids.get("ARCH31")!);
+    const id = await reservaDePrueba({
+      productoId: ids.get("ARCH31"),
+      fechaInicio: "2027-01-10",
+      fechaFin: "2027-01-17",
+      pedidosEspeciales: pidio,
+      componentes: componentesDeLaReserva(arch31, "2027-01-10", { finalPuertoNatales: false, proveedorTransferPNT: null }),
+    });
+    await abrirPedidos(id);
+    const recuadro = await screen.findByTestId("pidio-agencia", {}, ESPERA);
+    expect(recuadro).toHaveTextContent(T.pidio.agencia(pidio));
+
+    fireEvent.click(botonEnviar());
+    const dialogo = screen.getByRole("dialog");
+    expect(within(dialogo).getByTestId("pidio-dialogo")).toHaveTextContent(/^La agencia pidió: «Please include post night in PUQ/);
+    expect(within(dialogo).getByRole("button", { name: T.dialogo.confirmar })).toBeEnabled();
+    cleanup();
+
+    // La reserva de ARCH31 sin pedidos especiales no muestra el recuadro.
+    await abrirPedidos(reservas.get("ARCH31")!);
+    await waitFor(() => expect(screen.getAllByRole("article").length).toBeGreaterThan(1), ESPERA);
+    expect(screen.queryByTestId("pidio-agencia")).not.toBeInTheDocument();
+  });
 });

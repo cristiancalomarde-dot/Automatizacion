@@ -16,6 +16,8 @@ import { randomUUID } from "node:crypto";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
+import { cargarProducto } from "@/lib/catalogo/consultas";
+import { componentesDeLaReserva } from "@/lib/reservas/emparejar/componentes";
 import { MOTIVOS_EMPAREJADO as M } from "@/lib/reservas/emparejar/motivos";
 import type { FichaLectura } from "@/lib/reservas/esquema-ficha";
 import { crearReserva, guardarMailRecibido as guardarMailRecibidoReal } from "@/lib/reservas/guardar";
@@ -219,5 +221,54 @@ const guardarMailRecibido = registro.conMail(guardarMailRecibidoReal);
     expect(guardada.vuelos).toEqual([
       { numero: "H2253", aerolinea: null, origen: "CJC", destino: null, fecha_salida: "2027-03-18", hora_salida: "08:44", fecha_llegada: null, hora_llegada: null, confianza: 1 },
     ]);
+  });
+
+  it("4. ARCH31 con las fechas dudosas: correr el tour corre las partes; agregar una noche avisa que hay que revisarlas", async () => {
+    const p = await admin.from("producto").select("id").eq("codigo", "ARCH31").single();
+    if (p.error) throw new Error(p.error.message);
+    const detalle = (await cargarProducto(admin, p.data.id))!;
+    const conPartes = () =>
+      reserva({
+        motivosRevision: [M.dudosos(["fechas"])],
+        productoId: p.data.id,
+        productoTextoAgencia: "ARCH31",
+        fechaInicio: "2027-01-10",
+        fechaFin: "2027-01-17",
+        vuelos: [],
+        componentes: componentesDeLaReserva(detalle, "2027-01-10", { finalPuertoNatales: false, proveedorTransferPNT: null }),
+      });
+    const partes = async (id: string) =>
+      ((await admin.from("reserva_componente").select("orden,fecha_inicio,fecha_fin").eq("reserva_id", id).order("orden")).data ?? []).map(
+        (x) => [x.fecha_inicio, x.fecha_fin],
+      );
+    const corregirFechas = async (inicio: string, fin: string) => {
+      fireEvent.click(await screen.findByRole("button", { name: `${T.corregirDato}: fechas` }, ESPERA));
+      fireEvent.change(screen.getByLabelText(T.fechaInicio), { target: { value: inicio } });
+      fireEvent.change(screen.getByLabelText(T.fechaFin), { target: { value: fin } });
+      fireEvent.click(within(screen.getByTestId("dudoso-fechas")).getByRole("button", { name: T.guardar }));
+      return screen.findByTestId("producto-confirmado", {}, ESPERA);
+    };
+
+    // El vendedor corrió el comienzo del tour dos días: las partes van con él.
+    const corrida = await conPartes();
+    const antes = await partes(corrida);
+    render(<DetalleReservaPantalla id={corrida} />);
+    const listo = await corregirFechas("2027-01-12", "2027-01-19");
+    expect(listo).toHaveTextContent(T.listoRecibida);
+    expect(listo).not.toHaveTextContent(T.avisoDuracion(7, 8));
+    const mas2 = (f: string | null) => (f ? new Date(Date.parse(`${f}T00:00:00Z`) + 2 * 86_400_000).toISOString().slice(0, 10) : f);
+    expect(await partes(corrida)).toEqual(antes.map(([i, f]) => [mas2(i), mas2(f)]));
+    expect(await screen.findByTestId("historial-correcciones", {}, ESPERA)).toHaveTextContent(
+      `${T.historialCorregido("Test M3-07 recorrido", "fechas")} y ${T.historialCorrio(2)}`,
+    );
+    cleanup();
+
+    // La agencia agregó una noche: las partes no se mueven solas y lo avisa.
+    const extra = await conPartes();
+    const sinTocar = await partes(extra);
+    render(<DetalleReservaPantalla id={extra} />);
+    expect(await corregirFechas("2027-01-12", "2027-01-20")).toHaveTextContent(T.avisoDuracion(7, 8));
+    expect(await partes(extra)).toEqual(sinTocar);
+    expect((await leer(extra)).fecha_fin).toBe("2027-01-20");
   });
 });
