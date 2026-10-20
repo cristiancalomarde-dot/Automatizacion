@@ -10,6 +10,14 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
  * terminados aunque cambie un filtro. `ADMINS_EMAILS` se lee acá (#2).
  */
 export async function cargarLaListaDeReservas(): Promise<ListaDeReservas> {
-  const agencias = [...new Set(reglasDelArchivo().map((r) => r.agencia))].sort((a, b) => a.localeCompare(b, "es"));
-  return cargarListaDeReservas(await createSupabaseServerClient(), { admins: process.env.ADMINS_EMAILS, agencias });
+  return cargarListaDeReservas(await createSupabaseServerClient(), { admins: process.env.ADMINS_EMAILS, agencias: agenciasDelArchivo() });
+}
+
+/** Las agencias de `data/agencias.csv`, por nombre. Si el archivo no se puede leer, el filtro queda solo con "Todas". */
+function agenciasDelArchivo(): string[] {
+  try {
+    return [...new Set(reglasDelArchivo().map((r) => r.agencia))].sort((a, b) => a.localeCompare(b, "es"));
+  } catch {
+    return [];
+  }
 }

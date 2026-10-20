@@ -6,6 +6,8 @@ const nextConfig: NextConfig = {
   // junto con la función del cron.
   outputFileTracingIncludes: {
     "/api/cron/leer-sales": ["./data/*.csv", "./src/lib/reservas/instrucciones/*.md"],
+    // M3-08: el filtro por agencia de la lista lee data/agencias.csv en la server action.
+    "/reservas": ["./data/agencias.csv"],
   },
 };
 
