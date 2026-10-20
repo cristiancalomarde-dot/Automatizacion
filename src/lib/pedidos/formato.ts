@@ -94,7 +94,8 @@ export function renglonDelPasajero(p: PasajeroDeReserva, i: number): string | nu
     `PAX ${i + 1}: ${[texto(p.tratamiento), nombre].filter(Boolean).join(" ")}`,
     texto(p.nacionalidad) && `Nacionalidad: ${texto(p.nacionalidad)}`,
     texto(p.fecha_nacimiento) && `Fecha de nacimiento: ${fechaDeNacimiento(texto(p.fecha_nacimiento)!)}`,
-    texto(p.pasaporte) && `Pasaporte: ${texto(p.pasaporte)}`,
+    // Siempre con lugar para el pasaporte, aunque llegue después (owner, 2026-10-20).
+    `Pasaporte: ${texto(p.pasaporte) ?? "pendiente"}`,
     texto(p.telefono) && `Teléfono: ${texto(p.telefono)}`,
   ].filter(Boolean);
   return datos.join(" · ");

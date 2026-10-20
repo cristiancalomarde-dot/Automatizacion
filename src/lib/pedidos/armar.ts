@@ -496,7 +496,7 @@ class Armado {
     // Solo Journaway: las excursiones de la lista van con las entradas a los parques (owner, 2026-10-19).
     const entradas = this.esDeJournaway() && llevaEntradas(this.catalogo.entradas ?? [], b.codigo, `${nombre} ${s.descripcion ?? ""}`);
     renglones.push(`Servicio: ${regular} · Idioma: ${idioma}${entradas ? " · Con entradas" : ""}`);
-    const pickUp = this.pickUp(b, variosDias ? desde : (fecha ?? desde));
+    const pickUp = this.pickUp(b, variosDias ? desde : (fecha ?? desde), !variosDias);
     renglones.push(pickUp.renglon);
     const resumen = variosDias ? rangoCorto(desde!, hasta!) : fecha ? fechaCorta(fecha) : "fecha a coordinar";
     const tour: TourDeFicha = {
@@ -521,12 +521,14 @@ class Armado {
    * confirmar" si se pide en esta misma reserva); si no se sabe, "alojamiento a confirmar" y se le
    * avisa al proveedor que se lo pasamos. Nunca se inventa.
    */
-  private pickUp(b: Bloque, fecha: string | null): { renglon: string; pendientes: string[]; lugar: string | null } {
+  private pickUp(b: Bloque, fecha: string | null, dropOff = false): { renglon: string; pendientes: string[]; lugar: string | null } {
     if (b.pickUp) return { renglon: `Pick up: ${b.pickUp}`, pendientes: [], lugar: b.pickUp };
     const e = this.estadiaDe(fecha);
-    if (!e) return { renglon: "Pick up: alojamiento a confirmar", pendientes: [PENDIENTE.alojamiento], lugar: null };
+    // Excursión de un día: la dejan en el mismo alojamiento si esa noche sigue ahí (owner, 2026-10-20).
+    const sigueAhi = !!e && !!fecha && e.desde <= fecha && fecha < e.hasta;
+    if (!e) return { renglon: `${dropOff ? "Pick up y drop off" : "Pick up"}: alojamiento a confirmar`, pendientes: [PENDIENTE.alojamiento], lugar: null };
     return {
-      renglon: `Pick up: ${e.hotel}${e.ciudad ? ` (${e.ciudad})` : ""}${e.aConfirmar ? " · hotel a confirmar" : ""}`,
+      renglon: `${dropOff && sigueAhi ? "Pick up y drop off" : "Pick up"}: ${e.hotel}${e.ciudad ? ` (${e.ciudad})` : ""}${e.aConfirmar ? " · hotel a confirmar" : ""}`,
       pendientes: [],
       lugar: `${e.hotel}${e.aConfirmar ? " (a confirmar)" : ""}`,
     };

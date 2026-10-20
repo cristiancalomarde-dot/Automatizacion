@@ -32,7 +32,7 @@ Les escribimos desde HI Travel para pedirles la siguiente reserva:
 
 ¿Nos confirman cuando puedan? Si necesitan algún dato más, nos avisan y se lo pasamos enseguida.
 
-¡Muchas gracias, como siempre!
+¡Muchas gracias!
 Un abrazo,
 
 ## Firma

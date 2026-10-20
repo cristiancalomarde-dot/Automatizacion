@@ -441,7 +441,7 @@ describe("armarPedidos — pick up de las excursiones (owner, 2026-10-19)", () =
   it("CHB31: el Tatio dice el hostel del OD030 de esas fechas, a confirmar porque se pide en esta reserva", () => {
     const p = tatio(ok(armarPedidos(reservaChb31, catalogoChb31, plantilla)));
     expect(p.cuerpo).toMatch(
-      /Excursión: Geisers del Tatio\nFecha: 20 ene 2027\nServicio: regular · Idioma: inglés\nPick up: San Pedro Backpackers \(San Pedro de Atacama\) · hotel a confirmar/,
+      /Excursión: Geisers del Tatio\nFecha: 20 ene 2027\nServicio: regular · Idioma: inglés\nPick up y drop off: San Pedro Backpackers \(San Pedro de Atacama\) · hotel a confirmar/,
     );
     expect(p.cuerpo).not.toContain("Les pasamos el alojamiento");
   });
@@ -485,7 +485,7 @@ describe("armarPedidos — pick up de las excursiones (owner, 2026-10-19)", () =
         plantilla,
       ),
     );
-    expect(r.pedidos[0].cuerpo).toContain("Pick up: Hotel Cumbres\n");
+    expect(r.pedidos[0].cuerpo).toContain("Pick up y drop off: Hotel Cumbres\n");
     expect(r.pedidos[0].cuerpo).not.toContain("a confirmar");
   });
 
@@ -494,7 +494,7 @@ describe("armarPedidos — pick up de las excursiones (owner, 2026-10-19)", () =
       servicio({ productoId: "prod-city", tipo: "excursion", descripcion: "Excursion: City Tour. Booking Supplier: Chalten Travel", bookingSupplier: P.chalten }),
     ]);
     const p = ok(armarPedidos(reserva({ productoId: city.id, fechaInicio: "2027-02-01", fechaFin: "2027-02-01" }), catalogoCon([city]), plantilla)).pedidos[0];
-    expect(p.cuerpo).toContain("Pick up: alojamiento a confirmar");
+    expect(p.cuerpo).toContain("Pick up y drop off: alojamiento a confirmar");
     expect(p.cuerpo).toContain("Les pasamos el alojamiento para el pick up apenas lo tengamos.");
   });
 
