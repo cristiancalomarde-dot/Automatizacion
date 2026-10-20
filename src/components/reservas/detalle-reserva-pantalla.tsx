@@ -15,6 +15,7 @@ import ui from "@/components/ui/ui.module.css";
 import { ConfirmarProducto, puedeConfirmarProducto } from "./confirmar-producto";
 import { ChipEstado, MarcasReserva } from "./marcas";
 import { MailOriginal } from "./mail-original";
+import { ResponsableDeLaReserva } from "./responsable";
 import { RevisionPrueba } from "./revision-prueba";
 import estilos from "./reservas.module.css";
 
@@ -29,7 +30,7 @@ export function DetalleReservaPantalla({ id }: { id: string }) {
   const { estado, reintentar } = useConsulta(() =>
     esIdDeReserva(id) ? cargarReserva(createSupabaseBrowserClient(), id) : Promise.resolve(null),
   );
-  // Spec M3-05 fila 9: después de confirmar el producto, el "Listo" queda arriba y la reserva se vuelve a leer.
+  // Spec M3-05 fila 9 (y M3-06): después de confirmar el producto o cambiar el responsable, el "Listo" queda arriba y la reserva se vuelve a leer.
   const [listo, setListo] = useState<string | null>(null);
   const confirmado = (mensaje: string) => {
     setListo(mensaje);
@@ -132,6 +133,9 @@ function Detalle({ reserva, onConfirmado }: { reserva: DetalleReserva; onConfirm
           ) : null}
         </dl>
       </header>
+
+      {/* Spec M3-06: quién la lleva, tomarla y pasarla. */}
+      <ResponsableDeLaReserva reserva={reserva} onListo={onConfirmado} />
 
       {frases.length > 0 ? (
         <Aviso tono="aviso">

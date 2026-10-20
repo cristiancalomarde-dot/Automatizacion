@@ -223,8 +223,9 @@ const direcciones = (a: unknown): string[] => {
       expect(p.message_id).toBeNull();
     }
     const eventos = await admin.from("evento_reserva").select("tipo,detalle,autor_id").eq("reserva_id", id).order("created_at");
-    expect(eventos.data?.map((e) => e.tipo)).toEqual(["creada", "envio_de_prueba"]);
-    expect(eventos.data?.[1]).toMatchObject({ autor_id: usuarioId, detalle: { persona: firmaPorMail, cantidad: salen.length, destino: DESTINO_PRUEBA } });
+    // M3-06: sin responsable, queda quien envió (también en modo prueba).
+    expect(eventos.data?.map((e) => e.tipo)).toEqual(["creada", "responsable_por_envio", "envio_de_prueba"]);
+    expect(eventos.data?.[2]).toMatchObject({ autor_id: usuarioId, detalle: { persona: firmaPorMail, cantidad: salen.length, destino: DESTINO_PRUEBA } });
   });
 
   it("envío real: destinatarios, CC, remitente y firma; enviado con fecha, quién y Message-ID; copia en Enviados; reserva pedida (filas 3, 4, 5, 6, 8 y 9)", async () => {
@@ -267,9 +268,10 @@ const direcciones = (a: unknown): string[] => {
 
     // La reserva: pedido a proveedor, con el historial.
     const eventos = await admin.from("evento_reserva").select("tipo,estado_nuevo,detalle,autor_id").eq("reserva_id", id).order("created_at");
-    expect(eventos.data?.map((e) => e.tipo)).toEqual(["creada", "estado_cambiado", "pedidos_enviados"]);
-    expect(eventos.data?.[1]).toMatchObject({ estado_nuevo: "pedido_a_proveedor", autor_id: usuarioId });
-    expect(eventos.data?.[2]).toMatchObject({ autor_id: usuarioId, detalle: { persona: firmaPorMail, cantidad: salen.length, reenvio: false } });
+    // M3-06: sin responsable, queda quien envió los primeros pedidos.
+    expect(eventos.data?.map((e) => e.tipo)).toEqual(["creada", "responsable_por_envio", "estado_cambiado", "pedidos_enviados"]);
+    expect(eventos.data?.[2]).toMatchObject({ estado_nuevo: "pedido_a_proveedor", autor_id: usuarioId });
+    expect(eventos.data?.[3]).toMatchObject({ autor_id: usuarioId, detalle: { persona: firmaPorMail, cantidad: salen.length, reenvio: false } });
     expect(r.reserva).toEqual({ estado: "pedido_a_proveedor", pedidoIncompleto: despues.some((p) => p.estado !== "enviado") });
 
     // El detalle y la lista (con la sesión): a quién, cuándo y quién (fila 9).

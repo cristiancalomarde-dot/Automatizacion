@@ -33,6 +33,11 @@ describe("Header (spec M1-01 #8)", () => {
     expect(screen.getByText("ana@hitravel.com.ar")).toBeInTheDocument();
   });
 
+  it("M3-06 fila 1: junto al nombre, el enlace a 'Mi nombre para la firma'", () => {
+    render(<Header nombreVisible="ana@hitravel.com.ar" />);
+    expect(screen.getByRole("link", { name: "Mi nombre para la firma" }).getAttribute("href")).toBe("/mi-firma");
+  });
+
   it('"Salir" termina la sesión y vuelve a Login', async () => {
     signOut.mockResolvedValue({ error: null });
     render(<Header nombreVisible="ana@hitravel.com.ar" />);

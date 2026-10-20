@@ -8,10 +8,18 @@ import { formatearFechaHora, formatearRango } from "@/lib/formato";
 import { avisosDeLlegada } from "@/lib/reservas/avisos-vuelo";
 import { cargarReservas, cargarRevisiones } from "@/lib/reservas/consultas";
 import { medirRevision, textoMedicion } from "@/lib/reservas/medicion-prueba";
+import {
+  claveFiltroResponsable,
+  filtroGuardado,
+  opcionesFiltroResponsable,
+  pasaFiltroResponsable,
+  type FiltroResponsable,
+} from "@/lib/reservas/responsable/filtro";
 import { coincideBusqueda, contarReservas, ordenarParaTrabajar, pasajeroYCantidad } from "@/lib/reservas/reglas";
 import type { FilaReserva } from "@/lib/reservas/tipos";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { TEXTOS } from "@/lib/textos";
+import { cargarEquipo } from "@/lib/usuarios/equipo";
 import { Aviso, EsqueletoTabla, EstadoError, EstadoVacio } from "@/components/ui/estados";
 import { EncabezadoOrdenable, useOrden } from "@/components/ui/orden";
 import ui from "@/components/ui/ui.module.css";
@@ -22,9 +30,10 @@ import estilos from "./reservas.module.css";
 
 const T = TEXTOS.reservas;
 const SIN_DATO = TEXTOS.comunes.sinDato;
+const F = TEXTOS.reservas.responsable;
 
 /** "prioridad": el orden de trabajo por defecto (ordenarParaTrabajar), sin columna propia. */
-type Columna = "prioridad" | "estado" | "agencia" | "numero" | "producto" | "fechas" | "pasajeros" | "llego";
+type Columna = "prioridad" | "estado" | "agencia" | "numero" | "producto" | "fechas" | "pasajeros" | "responsable" | "llego";
 
 const VALOR: Record<Columna, (f: FilaReserva) => string | number> = {
   prioridad: () => 0,
@@ -35,8 +44,19 @@ const VALOR: Record<Columna, (f: FilaReserva) => string | number> = {
   fechas: (f) => f.fechaInicio ?? "9999",
   // Por el nombre del pasajero principal; sin nombre, al final.
   pasajeros: (f) => f.pasajeros[0] ?? "￿",
+  // M3-06: por el nombre del responsable; sin responsable, al final.
+  responsable: (f) => f.responsable ?? "￿",
   llego: (f) => Date.parse(f.llego) || 0,
 };
+
+/** El filtro que guardó esta persona en el navegador (null si no hay o no se puede leer). */
+function leerFiltroGuardado(yo: string | null): string | null {
+  try {
+    return window.localStorage.getItem(claveFiltroResponsable(yo));
+  } catch {
+    return null;
+  }
+}
 
 /**
  * Reservas: la pantalla de inicio (spec M2-05 #1 a #4, #16). Solo para mirar.
@@ -52,7 +72,24 @@ export function ListaReservasPantalla({ lineaLectura }: { lineaLectura?: LineaLe
   const dePrueba = conteo?.dePrueba ?? 0;
   const soloPrueba = conteo !== null && conteo.total > 0 && conteo.total === dePrueba;
   const [busqueda, setBusqueda] = useState("");
-  const encontradas = visibles.filter((f) => coincideBusqueda(f, busqueda));
+  // Spec M3-06 fila 7: el filtro por operativo, recordado por persona en el navegador.
+  const { estado: equipo } = useConsulta(() => cargarEquipo(createSupabaseBrowserClient()));
+  const yo = equipo.tipo === "listo" ? equipo.datos.yo : null;
+  const opciones = useMemo(() => opcionesFiltroResponsable(equipo.tipo === "listo" ? equipo.datos.personas : [], yo), [equipo, yo]);
+  // Lo elegido en esta visita; si no eligió nada, lo que quedó guardado para esta persona (se lee cuando se sabe quién es).
+  const [elegido, setElegido] = useState<string | null>(null);
+  const guardado = useMemo(() => (equipo.tipo === "listo" ? leerFiltroGuardado(yo) : null), [equipo, yo]);
+  const filtro: FiltroResponsable = filtroGuardado(elegido ?? guardado, opciones);
+  function elegirFiltro(valor: string) {
+    const nuevo = filtroGuardado(valor, opciones);
+    setElegido(nuevo);
+    try {
+      window.localStorage.setItem(claveFiltroResponsable(yo), nuevo);
+    } catch {
+      // Igual filtra; solo no se recuerda.
+    }
+  }
+  const encontradas = visibles.filter((f) => coincideBusqueda(f, busqueda) && pasaFiltroResponsable(f, filtro, yo));
 
   return (
     <div className={ui.pagina}>
@@ -62,7 +99,7 @@ export function ListaReservasPantalla({ lineaLectura }: { lineaLectura?: LineaLe
       </div>
 
       {lineaLectura ? <LineaLecturaSales linea={lineaLectura} /> : null}
-      {estado.tipo === "cargando" ? <EsqueletoTabla etiqueta={T.cargando} columnas={7} /> : null}
+      {estado.tipo === "cargando" ? <EsqueletoTabla etiqueta={T.cargando} columnas={8} /> : null}
       {estado.tipo === "error" ? <EstadoError mensaje={T.error} onReintentar={reintentar} /> : null}
       {estado.tipo === "listo" && estado.datos.length === 0 ? <EstadoVacio mensaje={T.vacio} /> : null}
       {estado.tipo === "listo" && soloPrueba && !verPrueba ? (
@@ -95,9 +132,21 @@ export function ListaReservasPantalla({ lineaLectura }: { lineaLectura?: LineaLe
               onChange={(e) => setBusqueda(e.target.value)}
             />
           </label>
+          <label className={ui.campo}>
+            {F.filtro}
+            <select className={ui.input} data-filtro="responsable" value={filtro} onChange={(e) => elegirFiltro(e.target.value)}>
+              {opciones.map((o) => (
+                <option key={o.valor} value={o.valor}>
+                  {o.texto}
+                </option>
+              ))}
+            </select>
+          </label>
         </div>
       ) : null}
-      {visibles.length > 0 && encontradas.length === 0 ? <EstadoVacio mensaje={T.sinCoincidencias(busqueda)} /> : null}
+      {visibles.length > 0 && encontradas.length === 0 ? (
+        <EstadoVacio mensaje={filtro === "todas" ? T.sinCoincidencias(busqueda) : F.sinCoincidencias} />
+      ) : null}
       {encontradas.length > 0 ? <TablaReservas filas={encontradas} /> : null}
     </div>
   );
@@ -139,6 +188,7 @@ function TablaReservas({ filas }: { filas: FilaReserva[] }) {
             <EncabezadoOrdenable orden={orden} columna="producto" texto={T.columnas.producto} />
             <EncabezadoOrdenable orden={orden} columna="fechas" texto={T.columnas.fechas} />
             <EncabezadoOrdenable orden={orden} columna="pasajeros" texto={T.columnas.pasajeros} />
+            <EncabezadoOrdenable orden={orden} columna="responsable" texto={F.columna} />
             <EncabezadoOrdenable orden={orden} columna="llego" texto={T.columnas.llego} />
           </tr>
         </thead>
@@ -194,6 +244,7 @@ function TablaReservas({ filas }: { filas: FilaReserva[] }) {
                 </td>
                 <td className={ui.nowrap}>{formatearRango(fila.fechaInicio, fila.fechaFin)}</td>
                 <td className={ui.nowrap}>{pasajeroYCantidad(fila) ?? SIN_DATO}</td>
+                <td className={fila.responsable ? ui.nowrap : `${ui.secundario} ${ui.nowrap}`}>{fila.responsable ?? F.sin}</td>
                 <td className={`${ui.secundario} ${ui.nowrap}`}>{formatearFechaHora(fila.llego) || SIN_DATO}</td>
               </tr>
             );

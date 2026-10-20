@@ -13,7 +13,7 @@ export const dynamic = "force-dynamic";
 export default async function ReservasPage() {
   const lineaLectura = await lineaDeLaLectura(await createSupabaseServerClient());
   return (
-    <Suspense fallback={<EsqueletoTabla etiqueta={TEXTOS.reservas.cargando} columnas={7} />}>
+    <Suspense fallback={<EsqueletoTabla etiqueta={TEXTOS.reservas.cargando} columnas={8} />}>
       <ListaReservasPantalla lineaLectura={lineaLectura} />
     </Suspense>
   );

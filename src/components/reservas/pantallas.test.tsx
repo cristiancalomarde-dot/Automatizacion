@@ -45,13 +45,14 @@ import { DetalleReservaPantalla } from "./detalle-reserva-pantalla";
 
 const nunca = () => new Promise(() => {});
 // M3-02 fila 1: "Armar pedidos a proveedores" lleva a otra pantalla (deshabilitado en
-// "para revisión"); el detalle en sí sigue sin editar nada.
+// "para revisión"); el detalle en sí sigue sin editar nada. M3-06: lo único que cambia
+// es quién lleva la reserva ("Tomar esta reserva", "Pasarla a otro"), no sus datos.
 const BOTONES_PERMITIDOS =
-  /^(Reintentar|Ver mail|Abrir el PDF|Armar pedidos a proveedores|(Estado|Agencia|Número de la agencia|Producto|Fechas del viaje|Pasajeros|Llegó)( [↑↓])?)$/;
+  /^(Reintentar|Ver mail|Abrir el PDF|Armar pedidos a proveedores|Tomar esta reserva|Pasarla a otro|(Estado|Agencia|Número de la agencia|Producto|Fechas del viaje|Pasajeros|Responsable|Llegó)( [↑↓])?)$/;
 
 function sinControlesDeEdicion() {
-  // La caja de búsqueda (owner 2026-10-16) filtra la lista: no edita nada.
-  expect(document.querySelectorAll("input:not([type=search]), textarea, select")).toHaveLength(0);
+  // La caja de búsqueda (owner 2026-10-16) y el filtro por responsable (M3-06) filtran la lista: no editan nada.
+  expect(document.querySelectorAll("input:not([type=search]), textarea, select:not([data-filtro])")).toHaveLength(0);
   for (const b of screen.queryAllByRole("button")) expect(b.textContent?.trim()).toMatch(BOTONES_PERMITIDOS);
   expect(screen.queryByText(/Editar|Guardar|Resolver revisión|Descartar|Reprocesar/)).toBeNull();
 }
@@ -92,12 +93,12 @@ describe("lista de reservas (#2, #3, #4, #16)", () => {
     expect(screen.queryByText("No pudimos cargar las reservas.")).toBeNull();
   });
 
-  it("las 7 columnas pobladas; primero las para revisión y el viaje más próximo arriba (owner 2026-10-15); fechas DD/MM/AAAA y pasajero principal con la cantidad (owner 2026-10-16)", async () => {
+  it("las 8 columnas pobladas (M3-06: el responsable); primero las para revisión y el viaje más próximo arriba (owner 2026-10-15); fechas DD/MM/AAAA y pasajero principal con la cantidad (owner 2026-10-16)", async () => {
     consultas.cargarReservas.mockResolvedValue(listaReservas);
     render(<ListaReservasPantalla />);
     const tabla = await screen.findByRole("table");
     const encabezados = within(tabla).getAllByRole("columnheader").map((h) => h.textContent?.replace(/ [↑↓]$/, ""));
-    expect(encabezados).toEqual(["Estado", "Agencia", "Número de la agencia", "Producto", "Fechas del viaje", "Pasajeros", "Llegó"]);
+    expect(encabezados).toEqual(["Estado", "Agencia", "Número de la agencia", "Producto", "Fechas del viaje", "Pasajeros", "Responsable", "Llegó"]);
 
     const filas = within(tabla).getAllByRole("row").slice(1);
     expect(filas.map((f) => f.getAttribute("data-id"))).toEqual([IDS.revision, IDS.sinProducto, IDS.kilroy, IDS.tour]);
@@ -109,7 +110,8 @@ describe("lista de reservas (#2, #3, #4, #16)", () => {
     expect(kilroy[3]).toBe("OD019 Iguazu Falls Combined");
     expect(kilroy[4]).toBe("12/03/2026 → 15/03/2026");
     expect(kilroy[5]).toBe("Ana Prueba x 2");
-    expect(kilroy[6]).toBe(formatearFechaHora("2026-10-10T09:00:00.000Z"));
+    expect(kilroy[6]).toBe("Sin responsable");
+    expect(kilroy[7]).toBe(formatearFechaHora("2026-10-10T09:00:00.000Z"));
 
     expect(within(filas[1]).getByText("Sin producto reconocido")).toBeInTheDocument();
   });

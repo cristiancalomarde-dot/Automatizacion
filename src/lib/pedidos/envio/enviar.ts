@@ -85,8 +85,11 @@ export interface QuienEnvia {
   nombre: string;
 }
 
-/** La persona de la sesión si es del equipo; null si no hay sesión o es de otro dominio. */
-export async function quienEnvia(cliente: SupabaseClient): Promise<QuienEnvia | null> {
+/**
+ * La persona de la sesión si es del equipo, con el nombre de su cuenta (sin
+ * leer la base); null si no hay sesión o es de otro dominio.
+ */
+async function personaDeLaSesion(cliente: SupabaseClient): Promise<QuienEnvia | null> {
   const { data } = await cliente.auth.getUser();
   const u = data?.user;
   if (!u?.email) return null;
@@ -97,8 +100,19 @@ export async function quienEnvia(cliente: SupabaseClient): Promise<QuienEnvia | 
     return null;
   }
   if (!esCorreoDelDominioPermitido(u.email, dominio)) return null;
-  // M3-06: el nombre para la firma que eligió la persona, si lo guardó.
-  return { id: u.id, email: u.email, nombre: nombreDeQuienFirma(u, await leerNombreParaLaFirma(cliente, u.id)) };
+  return { id: u.id, email: u.email, nombre: nombreDeQuienFirma(u) };
+}
+
+/** M3-06: con el nombre para la firma que eligió la persona, si lo guardó. */
+async function conNombreParaLaFirma(cliente: SupabaseClient, persona: QuienEnvia): Promise<QuienEnvia> {
+  const guardado = await leerNombreParaLaFirma(cliente, persona.id);
+  return guardado ? { ...persona, nombre: guardado } : persona;
+}
+
+/** La persona de la sesión si es del equipo (con su nombre para la firma); null si no hay sesión o es de otro dominio. */
+export async function quienEnvia(cliente: SupabaseClient): Promise<QuienEnvia | null> {
+  const persona = await personaDeLaSesion(cliente);
+  return persona ? conNombreParaLaFirma(cliente, persona) : null;
 }
 
 export const pedidoIncompleto = (estado: EstadoReserva, pedidos: ReadonlyArray<{ estado: string }>): boolean =>
@@ -143,8 +157,9 @@ async function actualizar(cliente: SupabaseClient, id: string, cambios: Record<s
 }
 
 export async function enviarPedidosAprobados(cliente: SupabaseClient, entrada: PedidoDeEnvio, deps: DependenciasEnvio = {}): Promise<ResultadoEnvio> {
-  const persona = await quienEnvia(cliente);
-  if (!persona) return { ok: false, error: TEXTOS.pedidos.sinSesion, sinSesion: true };
+  // Sin sesión, sin confirmación o sin configuración, no se lee nada de la base.
+  const deLaSesion = await personaDeLaSesion(cliente);
+  if (!deLaSesion) return { ok: false, error: TEXTOS.pedidos.sinSesion, sinSesion: true };
   if (
     !entrada ||
     !esIdDeReserva(entrada.reservaId ?? "") ||
@@ -162,6 +177,7 @@ export async function enviarPedidosAprobados(cliente: SupabaseClient, entrada: P
   const modoPrueba = !config.envioReal;
   const ahora = deps.ahora ?? (() => new Date());
   const reenviar = entrada.reenviar === true;
+  const persona = await conNombreParaLaFirma(cliente, deLaSesion);
 
   const { data: reserva, error: errorReserva } = await cliente.from("reserva").select("id,estado").eq("id", entrada.reservaId).maybeSingle();
   if (errorReserva) throw new Error(`No se pudo leer la reserva: ${errorReserva.message}`);

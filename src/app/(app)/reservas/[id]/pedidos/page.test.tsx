@@ -9,10 +9,16 @@ const redirect = vi.hoisted(() =>
     throw new Error(`redirect:${destino}`);
   }),
 );
-const sesion = vi.hoisted(() => ({ user: null as unknown }));
+const sesion = vi.hoisted(() => ({ user: null as unknown, nombreFirma: undefined as string | null | undefined }));
 vi.mock("next/navigation", () => ({ redirect }));
 vi.mock("@/lib/supabase/server", () => ({
-  createSupabaseServerClient: async () => ({ auth: { getUser: async () => ({ data: { user: sesion.user } }) } }),
+  createSupabaseServerClient: async () => ({
+    auth: { getUser: async () => ({ data: { user: sesion.user } }) },
+    // M3-06: el nombre para la firma guardado en `usuario` (sin definir = la lectura no está).
+    ...(sesion.nombreFirma === undefined
+      ? {}
+      : { from: () => ({ select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: { nombre_firma: sesion.nombreFirma }, error: null }) }) }) }) }),
+  }),
 }));
 vi.mock("@/components/pedidos/pedidos-pantalla", () => ({ PedidosPantalla: () => null }));
 
@@ -24,6 +30,7 @@ const params = Promise.resolve({ id: ID });
 
 beforeEach(() => {
   vi.clearAllMocks();
+  sesion.nombreFirma = undefined;
   vi.stubEnv("PEDIDOS_ENVIO_REAL", "");
   vi.stubEnv("PEDIDOS_DESTINO_PRUEBA", "");
   vi.stubEnv("PEDIDOS_CC", "");
@@ -48,6 +55,14 @@ describe("/reservas/<id>/pedidos (spec M3-02)", () => {
       firmante: "Leticia Gómez",
       envio: { modoPrueba: true, destinoPrueba: "ccalomarde@", cc: ["ccalomarde@hitravel.com.ar"] },
     });
+  });
+
+  it("M3-06 fila 2: con nombre para la firma guardado, el diálogo firma con él; sin guardar, con el de la cuenta", async () => {
+    sesion.user = { id: "u", email: "leticia@hitravel.com.ar", user_metadata: { full_name: "Leticia Gómez" } };
+    sesion.nombreFirma = "Leticia · Operaciones";
+    expect(((await PedidosPage({ params })) as { props: { firmante: string } }).props.firmante).toBe("Leticia · Operaciones");
+    sesion.nombreFirma = null;
+    expect(((await PedidosPage({ params })) as { props: { firmante: string } }).props.firmante).toBe("Leticia Gómez");
   });
 
   it("con PEDIDOS_ENVIO_REAL=si deja de estar en modo prueba", async () => {

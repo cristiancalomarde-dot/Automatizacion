@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { PedidosPantalla } from "@/components/pedidos/pedidos-pantalla";
 import { configuracionDeEnvio, nombreDeQuienFirma } from "@/lib/pedidos/pantalla";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { leerNombreParaLaFirma } from "@/lib/usuarios/firma";
 
 export const metadata = { title: "Pedidos a proveedores · HI Travel" };
 
@@ -11,7 +12,8 @@ export const maxDuration = 60;
 /**
  * Pedidos a proveedores de una reserva (spec M3-02). Con sesión del equipo
  * (el proxy y el layout ya lo exigen; acá se vuelve a mirar porque quien
- * firma sale de la sesión). El modo prueba y el CC se leen en el servidor.
+ * firma sale de la sesión; M3-06: con el nombre para la firma que guardó).
+ * El modo prueba y el CC se leen en el servidor.
  */
 export default async function PedidosPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -21,5 +23,5 @@ export default async function PedidosPage({ params }: { params: Promise<{ id: st
   } = await supabase.auth.getUser();
   if (!user) redirect("/login?error=sesion_vencida");
 
-  return <PedidosPantalla key={id} reservaId={id} firmante={nombreDeQuienFirma(user)} envio={configuracionDeEnvio(process.env)} />;
+  return <PedidosPantalla key={id} reservaId={id} firmante={nombreDeQuienFirma(user, await leerNombreParaLaFirma(supabase, user.id))} envio={configuracionDeEnvio(process.env)} />;
 }

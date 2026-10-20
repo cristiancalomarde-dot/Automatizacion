@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { TEXTOS } from "@/lib/textos";
@@ -29,6 +30,10 @@ export function Header({ nombreVisible }: { nombreVisible: string }) {
 
       <div className={styles.usuario}>
         <span className={styles.nombre}>{nombreVisible}</span>
+        {/* Spec M3-06 fila 1: cómo firma los pedidos. */}
+        <Link href="/mi-firma" className={styles.firma}>
+          {TEXTOS.miFirma.enlace}
+        </Link>
         <button type="button" className={styles.salir} onClick={handleSalir} disabled={saliendo}>
           {saliendo ? "Saliendo…" : "Salir"}
         </button>
