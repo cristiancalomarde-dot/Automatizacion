@@ -35,6 +35,7 @@ import { NOMBRE_DESTINO } from "@/lib/importador-tours/ciudades";
 import { TRANSFER_PNT } from "@/lib/reservas/emparejar/componentes";
 import { lugarDelTraslado } from "@/lib/reservas/emparejar/vuelos-requeridos";
 import { llevaEntradas } from "./entradas";
+import { HOTEL_A_CONFIRMAR, fichasDePasajeros, lineaDeTour, llevaFichaCompleta, restriccionAlimentaria, type TourDeFicha } from "./ficha";
 import { completar } from "./plantilla";
 import {
   diasEntre,
@@ -98,6 +99,8 @@ interface Item {
   avisos: string[];
   /** Lo que todavía falta y se le avisa al proveedor ("vuelo"). */
   pendientes: string[];
+  /** La excursión como la lista el proveedor con ficha completa ("FECHAS Y TOURS"). */
+  tour?: TourDeFicha;
 }
 
 /** Un paquete (o producto suelto) de la reserva, con sus fechas y su lugar en el tour. */
@@ -410,7 +413,7 @@ class Armado {
       return;
     }
     const cubre: ParteCubierta = { parteId: b.parteId, productoServicioId: s.id, producto: b.codigo, fecha: a.fecha };
-    this.agregar(proveedor, s.tipo, a.renglones, a.fecha, cubre, a.datosPax, [...avisos, ...a.avisos], a.pendientes);
+    this.agregar(proveedor, s.tipo, a.renglones, a.fecha, cubre, a.datosPax, [...avisos, ...a.avisos], a.pendientes, a.tour);
   }
 
   private agregar(
@@ -422,8 +425,9 @@ class Armado {
     datosPax: boolean,
     avisos: string[],
     pendientes: string[],
+    tour?: TourDeFicha,
   ): void {
-    this.items.push({ proveedor, tipo, renglones, fecha, seq: this.seq++, cubre, datosPax, avisos, pendientes });
+    this.items.push({ proveedor, tipo, renglones, fecha, seq: this.seq++, cubre, datosPax, avisos, pendientes, tour });
   }
 
   private tarea(tipo: TareaArmada["tipo"], texto: string, detalle: Record<string, unknown>, fecha: string | null): void {
@@ -495,7 +499,16 @@ class Armado {
     const pickUp = this.pickUp(b, variosDias ? desde : (fecha ?? desde));
     renglones.push(pickUp.renglon);
     const resumen = variosDias ? rangoCorto(desde!, hasta!) : fecha ? fechaCorta(fecha) : "fecha a coordinar";
-    return { renglones, fecha: fecha ?? desde, resumen, queParaTarea: nombre, datosPax: true, avisos, pendientes: pickUp.pendientes };
+    const tour: TourDeFicha = {
+      nombre,
+      fecha: variosDias ? desde : fecha,
+      hasta: variosDias ? hasta : null,
+      privado: regular === "privado",
+      entradas,
+      idioma,
+      lugar: pickUp.lugar,
+    };
+    return { renglones, fecha: fecha ?? desde, resumen, queParaTarea: nombre, datosPax: true, avisos, pendientes: pickUp.pendientes, tour };
   }
 
   private esDeJournaway(): boolean {
@@ -508,13 +521,22 @@ class Armado {
    * confirmar" si se pide en esta misma reserva); si no se sabe, "alojamiento a confirmar" y se le
    * avisa al proveedor que se lo pasamos. Nunca se inventa.
    */
-  private pickUp(b: Bloque, fecha: string | null): { renglon: string; pendientes: string[] } {
-    if (b.pickUp) return { renglon: `Pick up: ${b.pickUp}`, pendientes: [] };
-    const e = fecha
+  private pickUp(b: Bloque, fecha: string | null): { renglon: string; pendientes: string[]; lugar: string | null } {
+    if (b.pickUp) return { renglon: `Pick up: ${b.pickUp}`, pendientes: [], lugar: b.pickUp };
+    const e = this.estadiaDe(fecha);
+    if (!e) return { renglon: "Pick up: alojamiento a confirmar", pendientes: [PENDIENTE.alojamiento], lugar: null };
+    return {
+      renglon: `Pick up: ${e.hotel}${e.ciudad ? ` (${e.ciudad})` : ""}${e.aConfirmar ? " · hotel a confirmar" : ""}`,
+      pendientes: [],
+      lugar: `${e.hotel}${e.aConfirmar ? " (a confirmar)" : ""}`,
+    };
+  }
+
+  /** El alojamiento de esa noche o, si ese día es el OUT, el de la noche anterior. */
+  private estadiaDe(fecha: string | null): Estadia | undefined {
+    return fecha
       ? (this.estadias.find((x) => x.desde <= fecha && fecha < x.hasta) ?? this.estadias.find((x) => x.hasta === fecha))
       : undefined;
-    if (!e) return { renglon: "Pick up: alojamiento a confirmar", pendientes: [PENDIENTE.alojamiento] };
-    return { renglon: `Pick up: ${e.hotel}${e.ciudad ? ` (${e.ciudad})` : ""}${e.aConfirmar ? " · hotel a confirmar" : ""}`, pendientes: [] };
   }
 
   /**
@@ -678,6 +700,7 @@ interface Renglones {
   datosPax: boolean;
   avisos: string[];
   pendientes: string[];
+  tour?: TourDeFicha;
 }
 
 /** El vuelo que llega (o sale) de uno de esos aeropuertos, el del día del traslado primero. */
@@ -757,6 +780,38 @@ const porFecha = (a: Item, b: Item) => (a.fecha ?? "9999").localeCompare(b.fecha
 
 // --- El texto del pedido ------------------------------------------------------------------------
 
+/** Los servicios del pedido, numerados si son más de uno. */
+function textoDeServicios(items: Item[]): string {
+  const numerar = items.length > 1;
+  return items.map((it, i) => (numerar ? [`${i + 1}) ${it.renglones[0]}`, ...it.renglones.slice(1)] : it.renglones).join("\n")).join("\n\n");
+}
+
+/**
+ * El pedido a un proveedor de ficha completa (Horizonte Atacama, owner 2026-10-19), como lo
+ * mandaba el equipo a mano: un bloque por pasajero y después "FECHAS Y TOURS", una línea por
+ * excursión con "- CON ENTRADAS" en las que la llevan. El hotel va en cada pasajero; si los tours
+ * no salen todos del mismo lugar, cada línea dice su pick up. Lo que no es una excursión va
+ * después, como siempre. Los datos van en {{servicios}} y {{pasajeros}} queda vacío.
+ */
+function conFichaCompleta(reserva: ReservaParaPedidos, items: Item[]): { servicios: string; pasajeros: string } {
+  const tours = items.filter((it) => it.tour).map((it) => it.tour!);
+  const otros = items.filter((it) => !it.tour);
+  const lugares = [...new Set(tours.map((t) => t.lugar ?? HOTEL_A_CONFIRMAR))];
+  const idiomas = [...new Set(tours.map((t) => t.idioma.toUpperCase()))];
+  const fecha = tours.map((t) => t.fecha).find(Boolean) ?? items.map((it) => it.fecha).find(Boolean) ?? null;
+  const fichas = fichasDePasajeros(reserva.pasajeros, reserva.pax, {
+    hotel: lugares.join(" / ") || HOTEL_A_CONFIRMAR,
+    fecha,
+    idioma: idiomas.join(" / ") || "INGLÉS",
+    restriccion: restriccionAlimentaria([reserva.pedidosEspeciales, ...(reserva.notas ?? [])]),
+    telefonoDeContacto: reserva.contactoCliente?.telefono?.trim() || null,
+  });
+  const partes = [fichas];
+  if (tours.length) partes.push(["FECHAS Y TOURS:", ...tours.map((t) => lineaDeTour(t, lugares.length > 1))].join("\n"));
+  if (otros.length) partes.push(textoDeServicios(otros));
+  return { servicios: partes.filter(Boolean).join("\n\n"), pasajeros: "" };
+}
+
 function bloquePasajeros(reserva: ReservaParaPedidos, conDatos: boolean): string {
   const pax = reserva.pax ?? (reserva.pasajeros.length || null);
   const cantidad = `Pasajeros: ${pax ?? "a confirmar"}`;
@@ -801,8 +856,10 @@ export function armarPedidos(reserva: ReservaParaPedidos, catalogo: CatalogoPara
     .map((g) => ({ ...g, items: [...g.items].sort(porFecha) }))
     .sort((a, b) => porFecha(a.items[0], b.items[0]))
     .map((g) => {
-      const numerar = g.items.length > 1;
-      const servicios = g.items.map((it, i) => (numerar ? [`${i + 1}) ${it.renglones[0]}`, ...it.renglones.slice(1)] : it.renglones).join("\n")).join("\n\n");
+      const ficha = g.items.some((it) => llevaFichaCompleta(catalogo.fichaCompleta ?? [], it.proveedor));
+      const { servicios, pasajeros } = ficha
+        ? conFichaCompleta(reserva, g.items)
+        : { servicios: textoDeServicios(g.items), pasajeros: bloquePasajeros(reserva, g.items.some((it) => it.datosPax)) };
       const pendientes = [...new Set(g.items.flatMap((it) => it.pendientes))].join("\n");
       const proveedores = [...new Map(g.items.map((it) => [it.proveedor.id, { id: it.proveedor.id, nombre: it.proveedor.nombre }])).values()];
       return {
@@ -813,7 +870,7 @@ export function armarPedidos(reserva: ReservaParaPedidos, catalogo: CatalogoPara
         asunto: completar(plantilla.asunto, datosAsunto),
         cuerpo: completar(plantilla.cuerpo, {
           servicios,
-          pasajeros: bloquePasajeros(reserva, g.items.some((it) => it.datosPax)),
+          pasajeros,
           pendientes,
         }),
         firma: plantilla.firma,

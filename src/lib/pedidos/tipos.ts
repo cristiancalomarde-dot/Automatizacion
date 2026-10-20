@@ -64,6 +64,10 @@ export interface ReservaParaPedidos {
   vuelos: VueloDeReserva[];
   habitacion: string | null;
   pedidosEspeciales: string | null;
+  /** M2-09: avisos de la reserva que no mandan a revisión (se leen para la restricción alimentaria). */
+  notas?: string[];
+  /** M2-09: el contacto del pasajero principal; su teléfono completa la ficha del que no trae uno. */
+  contactoCliente?: { nombre?: string | null; email?: string | null; telefono?: string | null } | null;
   /** M2-09: lo que reserva la agencia ("booked by us"): no se pide. */
   hotelesAgencia: HotelDeLaAgencia[];
   /** M2-09: el lado del traslado que lleva otra reserva del mismo pedido. */
@@ -89,6 +93,11 @@ export interface ExcursionConEntrada {
   estado: "si" | "revisar";
 }
 
+/** Una fila de `data/proveedores-ficha-completa.csv`: el proveedor (por nombre) que pide la ficha completa por pasajero. */
+export interface ProveedorFichaCompleta {
+  proveedor: string;
+}
+
 export interface CatalogoParaPedidos {
   /** El detalle (`cargarProducto`) del producto de la reserva, de los otros productos y de cada parte. */
   detalles: ReadonlyMap<string, DetalleProducto>;
@@ -97,6 +106,8 @@ export interface CatalogoParaPedidos {
   dias: readonly DiaDeServicio[];
   /** Las excursiones que en Journaway se piden con entradas (sin la lista, ninguna). */
   entradas?: readonly ExcursionConEntrada[];
+  /** Los proveedores que piden la ficha completa por pasajero (sin la lista, ninguno). */
+  fichaCompleta?: readonly ProveedorFichaCompleta[];
 }
 
 /** La plantilla del mail (`data/plantillas/pedido-proveedor.md`), ya separada en sus partes. */

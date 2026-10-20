@@ -18,12 +18,14 @@ import type {
   ExcursionConEntrada,
   ParteParaPedidos,
   PasajeroDeReserva,
+  ProveedorFichaCompleta,
   ReservaParaPedidos,
   VueloDeReserva,
 } from "./tipos";
 
 export const ARCHIVO_DIAS = join("data", "dias-servicio.csv");
 export const ARCHIVO_ENTRADAS = join("data", "excursiones-con-entrada.csv");
+export const ARCHIVO_FICHA_COMPLETA = join("data", "proveedores-ficha-completa.csv");
 
 /* eslint-disable @typescript-eslint/no-explicit-any -- filas crudas de PostgREST, se tipan al mapear */
 
@@ -37,7 +39,7 @@ const lista = <T>(v: unknown): T[] => (Array.isArray(v) ? (v.filter((x) => x && 
 
 const CAMPOS_RESERVA =
   "id,estado,agencia,booking_id,booking_id_original,producto_id,otros_productos,fecha_inicio,fecha_fin,pax,pasajeros,vuelos," +
-  "habitacion,pedidos_especiales,hoteles_agencia,sin_traslado_de";
+  "habitacion,pedidos_especiales,hoteles_agencia,sin_traslado_de,contacto_cliente,notas";
 const CAMPOS_PARTE =
   "id,orden,tipo,producto_id,producto_componente_id,descripcion_ruta,texto_agencia,fecha_inicio,fecha_fin,es_tarea,producto_servicio_id,proveedor_id,pick_up";
 
@@ -78,6 +80,8 @@ export async function cargarReservaParaPedidos(cliente: SupabaseClient, id: stri
     vuelos: lista<VueloDeReserva>(r.vuelos),
     habitacion: texto(r.habitacion),
     pedidosEspeciales: texto(r.pedidos_especiales),
+    notas: Array.isArray(r.notas) ? r.notas.filter((n: unknown): n is string => typeof n === "string" && !!n.trim()) : [],
+    contactoCliente: r.contacto_cliente && typeof r.contacto_cliente === "object" ? { telefono: texto(r.contacto_cliente.telefono) } : null,
     hotelesAgencia: lista<HotelDeLaAgencia>(r.hoteles_agencia).filter((h) => texto(h.nombre)),
     sinTrasladoDe: r.sin_traslado_de ?? null,
     partes: partes.map(aParte),
@@ -132,6 +136,27 @@ export function cargarExcursionesConEntrada(raiz: string = process.cwd()): Excur
 }
 
 /**
+ * `data/proveedores-ficha-completa.csv`: proveedor,nota (owner, 2026-10-19). Cada fila nombra un
+ * proveedor del directorio (se compara sin mayúsculas ni acentos) que pide la ficha completa por
+ * pasajero (hoy Horizonte Atacama).
+ */
+export function leerProveedoresFichaCompleta(contenido: string): ProveedorFichaCompleta[] {
+  const cabecera = contenido.replace(/^﻿/, "").split(/\r?\n/)[0]?.trim() ?? "";
+  if (!/^proveedor,nota\b/.test(cabecera)) {
+    throw new Error(`${ARCHIVO_FICHA_COMPLETA}: la primera fila tiene que ser "proveedor,nota".`);
+  }
+  return leerCsv(contenido).map((f, i) => {
+    const proveedor = f.proveedor?.trim();
+    if (!proveedor) throw new Error(`${ARCHIVO_FICHA_COMPLETA}, fila ${i + 2}: falta el nombre del proveedor.`);
+    return { proveedor };
+  });
+}
+
+export function cargarProveedoresFichaCompleta(raiz: string = process.cwd()): ProveedorFichaCompleta[] {
+  return leerProveedoresFichaCompleta(readFileSync(join(raiz, ARCHIVO_FICHA_COMPLETA), "utf-8"));
+}
+
+/**
  * El catálogo que necesita una reserva: el detalle del producto, de los otros
  * productos y de cada parte (una vez cada uno), y los proveedores de las partes
  * de tipo servicio. Si algo no se puede leer, falla: nunca se arma a medias.
@@ -141,6 +166,7 @@ export async function cargarCatalogoParaPedidos(
   reserva: ReservaParaPedidos,
   dias: readonly DiaDeServicio[],
   entradas: readonly ExcursionConEntrada[] = [],
+  fichaCompleta: readonly ProveedorFichaCompleta[] = [],
 ): Promise<CatalogoParaPedidos> {
   const ids = [...new Set([reserva.productoId, ...reserva.otrosProductos, ...reserva.partes.map((p) => p.productoId)].filter((x): x is string => !!x))];
   const detalles = new Map<string, DetalleProducto>(await Promise.all(ids.map(async (id) => [id, await cargarProducto(cliente, id)] as const)));
@@ -152,5 +178,5 @@ export async function cargarCatalogoParaPedidos(
       proveedores.set(f.id, { id: f.id, nombre: f.nombre, mails: f.mails ?? [], canal: (f.canal ?? null) as Canal, telefono: f.telefono ?? null });
     }
   }
-  return { detalles, proveedores, dias, entradas };
+  return { detalles, proveedores, dias, entradas, fichaCompleta };
 }

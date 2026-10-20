@@ -14,11 +14,11 @@ import { esCorreoDelDominioPermitido, obtenerDominioPermitido } from "@/lib/auth
 import { esIdDeReserva } from "@/lib/reservas/reglas";
 import { TEXTOS } from "@/lib/textos";
 import { armarPedidos, porQueNoSeArma } from "./armar";
-import { cargarCatalogoParaPedidos, cargarDiasServicio, cargarExcursionesConEntrada, cargarReservaParaPedidos } from "./cargar";
+import { cargarCatalogoParaPedidos, cargarDiasServicio, cargarExcursionesConEntrada, cargarProveedoresFichaCompleta, cargarReservaParaPedidos } from "./cargar";
 import { cargarPedidos, guardarPedidosArmados, type PedidoGuardado, type TareaGuardada } from "./guardar";
 import { avisosDeLaPantalla, validarEdicion, type EdicionPedido } from "./pantalla";
 import { cargarPlantilla } from "./plantilla";
-import type { DiaDeServicio, ExcursionConEntrada, Plantilla } from "./tipos";
+import type { DiaDeServicio, ExcursionConEntrada, ProveedorFichaCompleta, Plantilla } from "./tipos";
 import { enviarPedidosAprobados, type DependenciasEnvio, type PedidoDeEnvio, type ResultadoEnvio } from "./envio/enviar";
 
 type Rechazo = { ok: false; error: string; sinSesion?: true };
@@ -54,6 +54,7 @@ export interface OpcionesPreparar {
   plantilla?: Plantilla;
   dias?: readonly DiaDeServicio[];
   entradas?: readonly ExcursionConEntrada[];
+  fichaCompleta?: readonly ProveedorFichaCompleta[];
 }
 
 /**
@@ -72,7 +73,13 @@ export async function prepararPedidos(cliente: SupabaseClient, reservaId: string
 
   const plantilla = opciones.plantilla ?? cargarPlantilla();
   const dias = opciones.dias ?? cargarDiasServicio();
-  const catalogo = await cargarCatalogoParaPedidos(cliente, reserva, dias, opciones.entradas ?? cargarExcursionesConEntrada());
+  const catalogo = await cargarCatalogoParaPedidos(
+    cliente,
+    reserva,
+    dias,
+    opciones.entradas ?? cargarExcursionesConEntrada(),
+    opciones.fichaCompleta ?? cargarProveedoresFichaCompleta(),
+  );
   const armado = armarPedidos(reserva, catalogo, plantilla);
   if (!armado.ok) return armado;
 
