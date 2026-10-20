@@ -146,7 +146,9 @@ const PASAJEROS = [
     const casillas = pedidos.map((p) => p.casilla);
     expect(new Set(casillas).size).toBe(casillas.length);
     const tatio = pedidos.find((p) => p.cuerpo.includes("Tatio"));
-    expect(tatio?.cuerpo).toContain("Fecha: 20 ene 2027");
+    // Horizonte Atacama va con la ficha completa por pasajero (owner, 2026-10-19): el Tatio en FECHAS Y TOURS.
+    expect(tatio?.cuerpo).toMatch(/FECHAS Y TOURS:\n(.+\n)*[^\n]*Tatio[^\n]* - 20\.01\.2027/);
+    expect(tatio?.cuerpo).toContain("NOMBRE COMPLETO:");
     // El traslado de Transvip (reserva manual) es tarea, nunca mail.
     expect(tareas.some((t) => t.tipo === "reservar_a_mano" && /Transvip/i.test(t.texto))).toBe(true);
     expect(tareas.every((t) => t.de_prueba)).toBe(true);
