@@ -55,6 +55,33 @@ export function horaCorta(iso: string): string {
 const VUELO_PENDIENTE = /vuelo pendiente/i;
 const LO_RESERVA_LA_AGENCIA = /: lo reserva la agencia\.$/;
 
+/** Owner 2026-10-20: lo que pidió la agencia (pedidos especiales, uno por renglón) y las notas de la reserva. */
+export interface LoQuePidio {
+  pedidos: string[];
+  notas: string[];
+}
+
+/**
+ * Los pedidos se arman del catálogo y no reflejan lo que la agencia pidió
+ * aparte (caso DK1592913: "post night in PUQ… move it to an extra day in El
+ * Chalten"). La pantalla lo muestra arriba para revisarlo antes de enviar; no
+ * bloquea el envío. null si no hay nada.
+ */
+export function loQuePidioLaAgencia(reserva: { pedidosEspeciales: string | null; notas?: readonly string[] }): LoQuePidio | null {
+  const pedidos = (reserva.pedidosEspeciales ?? "").split("\n").map((p) => p.trim()).filter(Boolean);
+  const notas = (reserva.notas ?? []).map((n) => (typeof n === "string" ? n.trim() : "")).filter(Boolean);
+  return pedidos.length || notas.length ? { pedidos, notas } : null;
+}
+
+/** Para el diálogo de envío: todo en un renglón, cortado en una palabra si es largo. */
+export function resumirLoQuePidio(textos: readonly string[], max = 140): string {
+  const todo = textos.join(" · ");
+  if (todo.length <= max) return todo;
+  const corte = todo.slice(0, max);
+  const espacio = corte.lastIndexOf(" ");
+  return `${(espacio > 0 ? corte.slice(0, espacio) : corte).trimEnd()}…`;
+}
+
 /**
  * Los avisos de arriba (fila 6): falta el dato de llegada (el pedido igual
  * sale con "vuelo pendiente"), lo que reserva la agencia en un solo renglón, y

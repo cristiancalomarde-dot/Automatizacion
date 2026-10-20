@@ -6,7 +6,16 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { armarPedidosDeLaReserva, enviarPedidos, guardarBorradorDePedido } from "@/app/(app)/reservas/[id]/pedidos/acciones";
 import { formatearFecha } from "@/lib/formato";
 import type { PedidoGuardado, TareaGuardada } from "@/lib/pedidos/guardar";
-import { conteoEnvio, estadoDeEnvio, firmaConNombre, horaCorta, sePuedeEnviar, type ConfiguracionEnvio } from "@/lib/pedidos/pantalla";
+import {
+  conteoEnvio,
+  estadoDeEnvio,
+  firmaConNombre,
+  horaCorta,
+  resumirLoQuePidio,
+  sePuedeEnviar,
+  type ConfiguracionEnvio,
+  type LoQuePidio,
+} from "@/lib/pedidos/pantalla";
 import type { EnvioHecho, PantallaPedidos, ResultadoPedido } from "@/lib/pedidos/revision";
 import { TEXTOS } from "@/lib/textos";
 import { Aviso, Chip, EsqueletoDetalle, EstadoError } from "@/components/ui/estados";
@@ -164,6 +173,7 @@ export function PedidosPantalla({ reservaId, firmante, envio }: { reservaId: str
           pendientes={dialogoEnvio.conPendientes ? conteoEnvio(estado.datos.pedidos, excluidos).pendientes : []}
           titulo={dialogoEnvio.titulo}
           reenviar={dialogoEnvio.reenviar}
+          pidio={estado.datos.pidio ?? null}
           firmante={firmante}
           envio={envio}
           onCerrar={() => setDialogoEnvio(null)}
@@ -222,6 +232,7 @@ function Revision({
 
   return (
     <>
+      {datos.pidio ? <LoQuePidioLaAgencia pidio={datos.pidio} /> : null}
       {datos.avisos.length > 0 ? (
         <Aviso tono="aviso">
           <div data-testid="avisos-pedidos">
@@ -289,6 +300,20 @@ function Revision({
         ) : null}
       </div>
     </>
+  );
+}
+
+/**
+ * Owner 2026-10-20: lo que pidió la agencia (y las notas de la reserva), bien
+ * visible arriba: los pedidos se arman del catálogo y no lo reflejan solos.
+ * No bloquea el envío.
+ */
+function LoQuePidioLaAgencia({ pidio }: { pidio: LoQuePidio }) {
+  return (
+    <div className={`${ui.aviso} ${ui.aviso_aviso} ${estilos.pidio}`} role="status" data-testid="pidio-agencia">
+      {pidio.pedidos.length ? <p className={estilos.pidioLinea}>{T.pidio.agencia(pidio.pedidos.join(" · "))}</p> : null}
+      {pidio.notas.length ? <p className={estilos.pidioLinea}>{T.pidio.notas(pidio.notas.join(" · "))}</p> : null}
+    </div>
   );
 }
 
@@ -591,6 +616,7 @@ function DialogoEnvio({
   pendientes,
   titulo,
   reenviar,
+  pidio,
   firmante,
   envio,
   onCerrar,
@@ -604,6 +630,7 @@ function DialogoEnvio({
   pendientes: PedidoGuardado[];
   titulo: string;
   reenviar: boolean;
+  pidio: LoQuePidio | null;
   firmante: string;
   envio: ConfiguracionEnvio;
   onCerrar: () => void;
@@ -629,6 +656,13 @@ function DialogoEnvio({
     <Dialogo titulo={titulo} onCerrar={respuesta.tipo === "enviando" ? () => undefined : onCerrar}>
       {envio.modoPrueba ? <p className={estilos.modoPrueba}>{T.dialogo.modoPrueba(envio.destinoPrueba)}</p> : null}
       {reenviar ? <Aviso tono="aviso">{T.envio.avisoReenviar}</Aviso> : null}
+      {pidio ? (
+        <Aviso tono="aviso">
+          <span data-testid="pidio-dialogo">
+            {pidio.pedidos.length ? T.pidio.dialogo(resumirLoQuePidio(pidio.pedidos)) : T.pidio.dialogoNotas(resumirLoQuePidio(pidio.notas))}
+          </span>
+        </Aviso>
+      ) : null}
       <div>
         <p className={estilos.etiqueta}>{T.dialogo.intro}</p>
         <ul className={estilos.lista}>

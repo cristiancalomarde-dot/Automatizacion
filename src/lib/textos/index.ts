@@ -635,6 +635,14 @@ export const TEXTOS = {
     avisosTitulo: "Antes de enviar",
     faltaLlegada: "Falta dato de llegada: el pedido igual sale con \"vuelo pendiente\" y el dato se pasa cuando llegue.",
     hotelesAgencia: (agencia: string, hoteles: string) => `${agencia} reserva estos hoteles: ${hoteles}; no se piden.`,
+    /** Owner 2026-10-20: lo que pidió la agencia (o anotó el equipo); los pedidos del catálogo no lo reflejan solos. */
+    pidio: {
+      agencia: (texto: string) =>
+        `La agencia pidió: «${texto}» — revisá que los pedidos lo reflejen antes de enviar (fechas, noches, servicios extra)`,
+      notas: (texto: string) => `Notas de la reserva: «${texto}» — revisá que los pedidos las tengan en cuenta antes de enviar`,
+      dialogo: (resumen: string) => `La agencia pidió: «${resumen}» — ¿los pedidos lo reflejan?`,
+      dialogoNotas: (resumen: string) => `Notas de la reserva: «${resumen}» — ¿los pedidos las tienen en cuenta?`,
+    },
     para: "Para",
     cc: "CC",
     asunto: "Asunto",

@@ -16,7 +16,7 @@ import { TEXTOS } from "@/lib/textos";
 import { armarPedidos, porQueNoSeArma } from "./armar";
 import { cargarCatalogoParaPedidos, cargarDiasServicio, cargarExcursionesConEntrada, cargarProveedoresFichaCompleta, cargarReservaParaPedidos } from "./cargar";
 import { cargarPedidos, guardarPedidosArmados, type PedidoGuardado, type TareaGuardada } from "./guardar";
-import { avisosDeLaPantalla, validarEdicion, type EdicionPedido } from "./pantalla";
+import { avisosDeLaPantalla, loQuePidioLaAgencia, validarEdicion, type EdicionPedido, type LoQuePidio } from "./pantalla";
 import { cargarPlantilla } from "./plantilla";
 import type { DiaDeServicio, ExcursionConEntrada, ProveedorFichaCompleta, Plantilla } from "./tipos";
 import { enviarPedidosAprobados, type DependenciasEnvio, type PedidoDeEnvio, type ResultadoEnvio } from "./envio/enviar";
@@ -44,6 +44,8 @@ export interface PantallaPedidos {
   pedidos: PedidoGuardado[];
   tareas: TareaGuardada[];
   avisos: string[];
+  /** Owner 2026-10-20: lo que pidió la agencia y las notas de la reserva, para revisar antes de enviar (null si nada). */
+  pidio?: LoQuePidio | null;
 }
 
 export type ResultadoPantalla = ({ ok: true } & PantallaPedidos) | Rechazo;
@@ -102,6 +104,7 @@ export async function prepararPedidos(cliente: SupabaseClient, reservaId: string
     pedidos: guardados.pedidos,
     tareas: guardados.tareas,
     avisos: avisosDeLaPantalla(reserva, armado),
+    pidio: loQuePidioLaAgencia(reserva),
   };
 }
 

@@ -329,3 +329,37 @@ describe("el diálogo 'Enviar N pedidos' (fila 8)", () => {
     expect(acciones.enviarPedidos).not.toHaveBeenCalled();
   });
 });
+
+describe("lo que pidió la agencia (owner 2026-10-20)", () => {
+  const KILROY =
+    "Please include post night in PUQ (hostel private). ALSO: remove the free day in El Calafate, and move it to an extra day in El Chalten.";
+
+  it("con pedidos especiales: el recuadro arriba, y resumido en el diálogo (no bloquea el envío)", async () => {
+    acciones.armarPedidosDeLaReserva.mockResolvedValueOnce(pantalla({ pidio: { pedidos: [KILROY], notas: ["Llegan por tierra"] } }));
+    abrir(REAL);
+    const recuadro = await screen.findByTestId("pidio-agencia");
+    expect(recuadro).toHaveTextContent(T.pidio.agencia(KILROY));
+    expect(recuadro).toHaveTextContent(T.pidio.notas("Llegan por tierra"));
+
+    fireEvent.click(botonEnviar());
+    const dialogo = screen.getByRole("dialog", { name: "Enviar 3 pedidos" });
+    expect(within(dialogo).getByTestId("pidio-dialogo")).toHaveTextContent(/^La agencia pidió: «Please include post night in PUQ/);
+    expect(within(dialogo).getByRole("button", { name: T.dialogo.confirmar })).toBeEnabled();
+  });
+
+  it("solo con notas de la reserva: el recuadro las muestra", async () => {
+    acciones.armarPedidosDeLaReserva.mockResolvedValueOnce(pantalla({ pidio: { pedidos: [], notas: ["Llegan por tierra"] } }));
+    abrir();
+    const recuadro = await screen.findByTestId("pidio-agencia");
+    expect(recuadro).toHaveTextContent(T.pidio.notas("Llegan por tierra"));
+    expect(recuadro).not.toHaveTextContent(/La agencia pidió/);
+  });
+
+  it("sin pedidos especiales ni notas: no hay recuadro ni línea en el diálogo", async () => {
+    abrir(REAL);
+    await screen.findByRole("article", { name: "Cuenca del Plata" });
+    expect(screen.queryByTestId("pidio-agencia")).not.toBeInTheDocument();
+    fireEvent.click(botonEnviar());
+    expect(within(screen.getByRole("dialog")).queryByTestId("pidio-dialogo")).not.toBeInTheDocument();
+  });
+});

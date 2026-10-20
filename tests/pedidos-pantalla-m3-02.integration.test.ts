@@ -137,6 +137,19 @@ function ok<T extends { ok: boolean }>(r: T): Extract<T, { ok: true }> {
     expect(todo.pedidos).toHaveLength(r.pedidos.length);
   });
 
+  it("owner 2026-10-20: lo que pidió la agencia viaja a la pantalla (DK1592913, ARCH31 de Kilroy)", async () => {
+    const pidio =
+      "Please include post night in PUQ (hostel private). ALSO: remove the free day in El Calafate, and move it to an extra day in El Chalten.";
+    const detalle = await cargarProducto(admin, ids.get("ARCH31")!);
+    const componentes = componentesDeLaReserva(detalle, "2027-01-10", { finalPuertoNatales: false, proveedorTransferPNT: null });
+    const id = await reservaDePrueba({ productoId: ids.get("ARCH31"), fechaInicio: "2027-01-10", fechaFin: "2027-01-17", componentes, pedidosEspeciales: pidio });
+    const r = ok(await prepararPedidos(equipo, id));
+    expect(r.pidio).toEqual({ pedidos: [pidio], notas: [] });
+
+    const sin = await reservaDePrueba({ productoId: ids.get("OD010D"), fechaInicio: "2026-11-07", fechaFin: "2026-11-10" });
+    expect(ok(await prepararPedidos(equipo, sin)).pidio).toBeNull();
+  });
+
   it("ARCH31: el bus a mano es tarea, no pedido (fila 5)", async () => {
     const detalle = await cargarProducto(admin, ids.get("ARCH31")!);
     const componentes = componentesDeLaReserva(detalle, "2027-01-10", { finalPuertoNatales: false, proveedorTransferPNT: null });

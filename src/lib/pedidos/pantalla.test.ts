@@ -4,6 +4,8 @@ import { catalogoCon, od010b, reservaOd010b } from "./fixtures.test-utils";
 import type { PedidoGuardado } from "./guardar";
 import {
   avisosDeLaPantalla,
+  loQuePidioLaAgencia,
+  resumirLoQuePidio,
   configuracionDeEnvio,
   conteoEnvio,
   firmaConNombre,
@@ -138,5 +140,31 @@ describe("validarEdicion (fila 2)", () => {
     expect(validarEdicion({ pedidoId: "8f7c6a2e-1b1a-4c3e-9a55-2a0f6d5b9c11", asunto: "A", cuerpo: "  " }).ok).toBe(false);
     expect(validarEdicion({ pedidoId: "x", asunto: "A", cuerpo: "B" }).ok).toBe(false);
     expect(validarEdicion({ pedidoId: "8f7c6a2e-1b1a-4c3e-9a55-2a0f6d5b9c11", asunto: "A", cuerpo: "x".repeat(20_001) }).ok).toBe(false);
+  });
+});
+
+describe("Owner 2026-10-20 — lo que pidió la agencia, arriba de los pedidos", () => {
+  // El caso real: DK1592913, ARCH31 de Kilroy.
+  const KILROY =
+    "Please include post night in PUQ (hostel private). ALSO: remove the free day in El Calafate, and move it to an extra day in El Chalten.";
+
+  it("los pedidos especiales (uno por renglón) y las notas de la reserva", () => {
+    expect(loQuePidioLaAgencia({ pedidosEspeciales: `${KILROY}\n  \nVegetarian`, notas: ["Llegan a La Paz por tierra", "  "] })).toEqual({
+      pedidos: [KILROY, "Vegetarian"],
+      notas: ["Llegan a La Paz por tierra"],
+    });
+  });
+
+  it("sin pedidos especiales ni notas → nada", () => {
+    expect(loQuePidioLaAgencia({ pedidosEspeciales: null, notas: [] })).toBeNull();
+    expect(loQuePidioLaAgencia({ pedidosEspeciales: "  \n ", notas: undefined })).toBeNull();
+  });
+
+  it("el resumen del diálogo corta en una palabra y agrega «…»", () => {
+    expect(resumirLoQuePidio(["Vegetarian"], 80)).toBe("Vegetarian");
+    const r = resumirLoQuePidio([KILROY], 60);
+    expect(r.length).toBeLessThanOrEqual(61);
+    expect(r).toBe("Please include post night in PUQ (hostel private). ALSO:…");
+    expect(resumirLoQuePidio(["Uno", "Dos"], 80)).toBe("Uno · Dos");
   });
 });

@@ -201,3 +201,18 @@ textarea.editor {
 .estadoMal {
   color: var(--color-error-texto);
 }
+
+/* Owner 2026-10-20: lo que pidió la agencia, arriba y bien visible (ámbar de marca, borde más marcado). */
+.pidio {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px 14px;
+  border-left: 4px solid var(--color-aviso-texto);
+  font-size: 14px;
+}
+
+.pidioLinea {
+  margin: 0;
+  font-weight: 500;
+}
