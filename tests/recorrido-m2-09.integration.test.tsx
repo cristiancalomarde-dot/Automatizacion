@@ -31,6 +31,13 @@ import { crearSesionDePrueba } from "./helpers/usuario-de-prueba";
 
 const cliente = vi.hoisted(() => ({ actual: null as unknown }));
 vi.mock("@/lib/supabase/client", () => ({ createSupabaseBrowserClient: () => cliente.actual }));
+// M3-08: la lista llega por una server action, con el cliente del servidor (la misma sesión de prueba).
+vi.mock("@/lib/supabase/server", () => ({ createSupabaseServerClient: async () => cliente.actual }));
+// M3-08: los viajes de estos mails reales son de octubre de 2026 en adelante; "hoy" queda antes, para que ninguno cuente como terminado.
+vi.mock("@/lib/reservas/lista/terminadas", async (original) => ({
+  ...(await original<typeof import("@/lib/reservas/lista/terminadas")>()),
+  hoyEnArgentina: () => "2026-01-01",
+}));
 vi.mock("@/app/(app)/reservas/[id]/acciones", () => ({ marcarReservaDePrueba: vi.fn() }));
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn() }),

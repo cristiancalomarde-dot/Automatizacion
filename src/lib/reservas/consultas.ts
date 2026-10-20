@@ -231,11 +231,24 @@ async function avisosDe(cliente: SupabaseClient, filas: any[]): Promise<Map<stri
   );
 }
 
-/** La lista de reservas (#2). El orden lo pone la pantalla (por llegada). */
-export async function cargarReservas(cliente: SupabaseClient): Promise<FilaReserva[]> {
-  const filas = verificar(
-    await cliente.from("reserva").select(CAMPOS_FILA).order("created_at", { ascending: false }),
-  ) as any[];
+const FECHA = /^\d{4}-\d{2}-\d{2}$/;
+
+/**
+ * La lista de reservas (#2). El orden lo pone la pantalla. Con
+ * `sinTerminadasAntesDe` (spec M3-08 fila 5, la lista de un operador) la base
+ * no devuelve los viajes cuyo fin es anterior a esa fecha; los sin fecha de
+ * fin, sí.
+ */
+export async function cargarReservas(
+  cliente: SupabaseClient,
+  opciones: { sinTerminadasAntesDe?: string } = {},
+): Promise<FilaReserva[]> {
+  let consulta = cliente.from("reserva").select(CAMPOS_FILA);
+  if (opciones.sinTerminadasAntesDe !== undefined) {
+    if (!FECHA.test(opciones.sinTerminadasAntesDe)) throw new Error("Fecha inválida para la lista de reservas.");
+    consulta = consulta.or(`fecha_fin.is.null,fecha_fin.gte.${opciones.sinTerminadasAntesDe}`);
+  }
+  const filas = verificar(await consulta.order("created_at", { ascending: false })) as any[];
   const [avisos, canceladas, otros, sinEnviar] = await Promise.all([
     avisosDe(cliente, filas),
     canceladasEnHistorial(cliente),

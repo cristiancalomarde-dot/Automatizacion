@@ -25,6 +25,13 @@ const guardarMailRecibido = registro.conMail(guardarMailRecibidoReal);
 
 const cliente = vi.hoisted(() => ({ actual: null as unknown }));
 vi.mock("@/lib/supabase/client", () => ({ createSupabaseBrowserClient: () => cliente.actual }));
+// M3-08: la lista llega por una server action, con el cliente del servidor (la misma sesión de prueba).
+vi.mock("@/lib/supabase/server", () => ({ createSupabaseServerClient: async () => cliente.actual }));
+// M3-08: estos viajes sintéticos son de marzo a junio de 2026; "hoy" queda antes, para que ninguno cuente como terminado.
+vi.mock("@/lib/reservas/lista/terminadas", async (original) => ({
+  ...(await original<typeof import("@/lib/reservas/lista/terminadas")>()),
+  hoyEnArgentina: () => "2026-01-01",
+}));
 // Con `?prueba=1` (M2-06): la lista muestra las de prueba.
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn() }),

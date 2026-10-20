@@ -7,6 +7,10 @@ import { render, screen } from "@testing-library/react";
 
 const consultas = vi.hoisted(() => ({ cargarReservas: vi.fn(), cargarRevisiones: vi.fn() }));
 vi.mock("@/lib/reservas/consultas", () => consultas);
+// M3-08: la lista llega del servidor (server action); acá, de la consulta reemplazada. "Hoy" antes de los viajes de los fixtures: ninguno terminó.
+vi.mock("@/app/(app)/reservas/acciones-lista", () => ({
+  cargarLaListaDeReservas: async () => ({ filas: await consultas.cargarReservas({}), esAdmin: false, hoy: "2026-01-01", agencias: [] }),
+}));
 vi.mock("@/lib/supabase/client", () => ({ createSupabaseBrowserClient: () => ({}) }));
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn() }),

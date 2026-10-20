@@ -70,10 +70,13 @@ export function EstadoVacio({
   mensaje,
   accion,
   ayuda,
+  onAccion,
 }: {
   mensaje: string;
   accion?: string;
   ayuda?: string;
+  /** M3-08: una acción que sí hace algo ("Limpiar filtros"); sin ella, el botón queda deshabilitado. */
+  onAccion?: () => void;
 }) {
   return (
     <div className={styles.estadoVacio}>
@@ -81,7 +84,13 @@ export function EstadoVacio({
       {accion ? (
         <div className={styles.acciones}>
           {/* Solo lectura (DECISIONS 2026-10-06): la carga la hace el importador. */}
-          <button type="button" className={styles.botonPrimario} disabled aria-describedby="ayuda-vacio">
+          <button
+            type="button"
+            className={styles.botonPrimario}
+            disabled={!onAccion}
+            onClick={onAccion}
+            aria-describedby="ayuda-vacio"
+          >
             {accion}
           </button>
           {ayuda ? (

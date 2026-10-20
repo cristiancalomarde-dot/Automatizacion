@@ -233,6 +233,33 @@ export const TEXTOS = {
       sin: "Sin responsable",
       sinCoincidencias: "Ninguna reserva coincide con el buscador y el responsable elegidos.",
     },
+    /** Spec M3-08: el orden y los filtros de la lista, y los viajes terminados solo para administradoras. */
+    lista: {
+      ordenar: "Ordenar por",
+      ordenes: {
+        inicio: "Inicio del viaje",
+        fin: "Fin del viaje",
+        llegada: "Llegada del mail (más nuevas)",
+      },
+      agencia: "Agencia",
+      todasAgencias: "Todas",
+      fechas: "Fechas del viaje",
+      opcionesFechas: {
+        todas: "Todas las fechas",
+        "7": "Arrancan en los próximos 7 días",
+        "30": "Arrancan en los próximos 30 días",
+        mes: "Viajan en un mes…",
+      },
+      mes: "Mes del viaje",
+      estado: "Estado",
+      todosEstados: "Todas las vigentes",
+      vista: "Viajes",
+      vigentes: "En curso y próximos",
+      terminadas: "Viajes terminados (para liquidaciones)",
+      mostrando: (n: number) => `Mostrando ${n === 1 ? "1 reserva" : `${n} reservas`}`,
+      vacio: "No hay reservas con estos filtros",
+      limpiar: "Limpiar filtros",
+    },
     /** Nombres fijos de user-flow.md §3. */
     estados: {
       recibida: "recibida",

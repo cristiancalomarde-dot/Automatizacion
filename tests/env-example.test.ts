@@ -14,6 +14,8 @@ const VARIABLES_ESPERADAS = [
   "SUPABASE_SERVICE_ROLE_KEY",
   "GOOGLE_OAUTH_CLIENT_ID",
   "GOOGLE_OAUTH_CLIENT_SECRET",
+  // M3-08: quién ve los viajes terminados.
+  "ADMINS_EMAILS",
 ];
 
 describe(".env.example", () => {
