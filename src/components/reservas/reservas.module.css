@@ -295,3 +295,79 @@
   margin: 4px 0 0;
   padding-left: 18px;
 }
+
+/* Spec M3-07: corregir vuelos y datos dudosos. */
+.corregirVuelos {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 8px;
+  padding: 12px 16px;
+  border: 1px solid var(--color-borde);
+  border-radius: 8px;
+  background: var(--color-superficie);
+}
+
+.filaVuelo {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 8px 12px;
+  align-items: start;
+  margin: 0;
+  padding: 8px 12px 12px;
+  border: 1px solid var(--color-borde);
+  border-radius: 6px;
+}
+
+.filaVuelo legend {
+  padding: 0 4px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.errorCampo {
+  color: var(--color-error-texto);
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.delMail {
+  margin: 0;
+  padding: 8px 12px;
+  border-left: 3px solid var(--color-borde-control);
+  background: var(--color-superficie-alterna);
+  font-size: 13px;
+}
+
+.delMail ul {
+  margin: 4px 0 0;
+  padding-left: 18px;
+}
+
+.datosDudosos {
+  padding: 12px 16px;
+  border: 1px solid var(--color-aviso-texto);
+  border-radius: 8px;
+  background: var(--color-aviso-fondo);
+}
+
+.listaDudosos {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.itemDudoso {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+}
+
+.itemDudoso > span:first-child {
+  min-width: 160px;
+  font-weight: 600;
+}

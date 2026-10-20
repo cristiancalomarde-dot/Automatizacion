@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { useConsulta } from "@/lib/catalogo/use-consulta";
 import { formatearFecha, formatearFechaHora, formatearHora, formatearRango } from "@/lib/formato";
 import { avisosDeLlegada } from "@/lib/reservas/avisos-vuelo";
@@ -13,6 +13,7 @@ import { TEXTOS } from "@/lib/textos";
 import { Aviso, Chip, EsqueletoDetalle, EstadoError, EstadoVacio } from "@/components/ui/estados";
 import ui from "@/components/ui/ui.module.css";
 import { ConfirmarProducto, puedeConfirmarProducto } from "./confirmar-producto";
+import { AvisoCambioDeVuelo, CorregirVuelos, DatosDudosos, HistorialDeCorrecciones, puedeCorregir } from "./corregir-vuelos";
 import { ChipEstado, MarcasReserva } from "./marcas";
 import { MailOriginal } from "./mail-original";
 import { ResponsableDeLaReserva } from "./responsable";
@@ -57,7 +58,7 @@ export function DetalleReservaPantalla({ id }: { id: string }) {
       ) : null}
       {estado.tipo === "error" ? <EstadoError mensaje={T.error} onReintentar={reintentar} volver={VOLVER} /> : null}
       {estado.tipo === "listo" && estado.datos === null ? <NoExiste /> : null}
-      {estado.tipo === "listo" && estado.datos ? <Detalle reserva={estado.datos} onConfirmado={confirmado} /> : null}
+      {estado.tipo === "listo" && estado.datos ? <Detalle reserva={estado.datos} onConfirmado={confirmado} onRecargar={reintentar} /> : null}
     </div>
   );
 }
@@ -82,7 +83,18 @@ function tituloDe(reserva: DetalleReserva): string {
   return J.referencia(reserva.pasajeros[0] ?? null, reserva.fechaInicio ? formatearFecha(reserva.fechaInicio) : "") || SIN_DATO;
 }
 
-function Detalle({ reserva, onConfirmado }: { reserva: DetalleReserva; onConfirmado: (mensaje: string) => void }) {
+function Detalle({
+  reserva,
+  onConfirmado,
+  onRecargar,
+}: {
+  reserva: DetalleReserva;
+  onConfirmado: (mensaje: string) => void;
+  onRecargar: () => void;
+}) {
+  // Spec M3-07: el formulario de vuelos se abre desde el recuadro de vuelos o desde "La IA no está segura de: vuelos".
+  const [corrigiendoVuelos, setCorrigiendoVuelos] = useState(false);
+  const corregible = puedeCorregir(reserva);
   const frases = reserva.estado === "para_revision" || reserva.posibleDuplicada ? frasesDeMotivos(reserva.motivos) : [];
   const avisosLlegada = avisosDeLlegada(reserva);
   const notas = reserva.notas ?? [];
@@ -102,6 +114,7 @@ function Detalle({ reserva, onConfirmado }: { reserva: DetalleReserva; onConfirm
           </div>
         </Aviso>
       ) : null}
+      <AvisoCambioDeVuelo proveedores={reserva.avisarCambioDeVuelo ?? []} />
 
       <header className={ui.seccion} data-testid="encabezado-reserva">
         <div className={ui.encabezado}>
@@ -162,6 +175,17 @@ function Detalle({ reserva, onConfirmado }: { reserva: DetalleReserva; onConfirm
         </Aviso>
       ) : null}
 
+      {corregible ? (
+        <DatosDudosos
+          reserva={reserva}
+          onCorregirVuelos={() => {
+            setCorrigiendoVuelos(true);
+            requestAnimationFrame(() => document.getElementById("vuelos-reserva")?.scrollIntoView?.({ block: "start" }));
+          }}
+          onListo={onConfirmado}
+          onRecargar={onRecargar}
+        />
+      ) : null}
       {puedeConfirmarProducto(reserva) ? <ConfirmarProducto reserva={reserva} onConfirmado={onConfirmado} /> : null}
       <ArmarPedidos reserva={reserva} />
       <PedidosDeLaReserva reserva={reserva} />
@@ -186,7 +210,12 @@ function Detalle({ reserva, onConfirmado }: { reserva: DetalleReserva; onConfirm
           <Producto reserva={reserva} />
           {reserva.partes.length > 0 ? <Partes partes={reserva.partes} /> : null}
           <Datos reserva={reserva} />
-          <Vuelos vuelos={reserva.vuelos} />
+          <Vuelos vuelos={reserva.vuelos}>
+            {corregible ? (
+              <CorregirVuelos reserva={reserva} abierto={corrigiendoVuelos} onAbrir={setCorrigiendoVuelos} onListo={onConfirmado} onRecargar={onRecargar} />
+            ) : null}
+            <HistorialDeCorrecciones correcciones={reserva.correcciones ?? []} />
+          </Vuelos>
           {reserva.hotelesAgencia?.length ? <HotelesDeLaAgencia hoteles={reserva.hotelesAgencia} /> : null}
         </div>
         <div className={estilos.columna}>
@@ -462,10 +491,10 @@ function HotelesDeLaAgencia({ hoteles }: { hoteles: HotelDeLaAgencia[] }) {
 }
 
 /** Los vuelos, con la fecha y la hora del aeropuerto tal como las dice el mail (#10). */
-function Vuelos({ vuelos }: { vuelos: VueloDeReserva[] }) {
+function Vuelos({ vuelos, children }: { vuelos: VueloDeReserva[]; children?: ReactNode }) {
   const C = T.columnasVuelo;
   return (
-    <section className={ui.seccion}>
+    <section className={ui.seccion} id="vuelos-reserva" data-testid="vuelos-reserva">
       <h2 className={ui.subtitulo}>{T.vuelos}</h2>
       {vuelos.length === 0 ? (
         <p className={ui.meta}>{T.sinVuelos}</p>
@@ -493,6 +522,7 @@ function Vuelos({ vuelos }: { vuelos: VueloDeReserva[] }) {
           </table>
         </div>
       )}
+      {children}
     </section>
   );
 }

@@ -46,9 +46,10 @@ import { DetalleReservaPantalla } from "./detalle-reserva-pantalla";
 const nunca = () => new Promise(() => {});
 // M3-02 fila 1: "Armar pedidos a proveedores" lleva a otra pantalla (deshabilitado en
 // "para revisión"); el detalle en sí sigue sin editar nada. M3-06: lo único que cambia
-// es quién lleva la reserva ("Tomar esta reserva", "Pasarla a otro"), no sus datos.
+// es quién lleva la reserva ("Tomar esta reserva", "Pasarla a otro"), no sus datos. M3-07:
+// "Corregir vuelos" abre un formulario aparte (cerrado, el detalle sigue sin campos).
 const BOTONES_PERMITIDOS =
-  /^(Reintentar|Ver mail|Abrir el PDF|Armar pedidos a proveedores|Tomar esta reserva|Pasarla a otro|(Estado|Agencia|Número de la agencia|Producto|Fechas del viaje|Pasajeros|Responsable|Llegó)( [↑↓])?)$/;
+  /^(Reintentar|Ver mail|Abrir el PDF|Armar pedidos a proveedores|Tomar esta reserva|Pasarla a otro|Corregir vuelos|(Estado|Agencia|Número de la agencia|Producto|Fechas del viaje|Pasajeros|Responsable|Llegó)( [↑↓])?)$/;
 
 function sinControlesDeEdicion() {
   // La caja de búsqueda (owner 2026-10-16) y el filtro por responsable (M3-06) filtran la lista: no editan nada.
