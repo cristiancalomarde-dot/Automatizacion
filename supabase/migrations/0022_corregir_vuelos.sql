@@ -19,6 +19,11 @@
 --   reserva está para revisión, le pone los motivos que decidió la app y el
 --   estado (recibida si no queda ninguno); en otro estado, el estado y los
 --   motivos no cambian. Agrega el evento.
+--   Owner 2026-10-20 (tour con partes): si cambian las dos fechas y se
+--   mueven la misma cantidad de días, las partes de `reserva_componente`
+--   (inicio y fin) se corren esos días, en la misma transacción, y el evento
+--   lleva `dias_corridos`. Si cambia la duración (noches extra), las partes
+--   no se tocan: la app avisa que hay que revisarlas.
 --   La lógica de qué motivos quedan la decide la app
 --   (`src/lib/reservas/corregir/`); acá solo se guarda.
 --
@@ -61,6 +66,8 @@ declare
   v_nota text := nullif(btrim(coalesce(v_cambios ->> 'nota', '')), '');
   v_motivos text[];
   v_estado public.estado_reserva;
+  v_dias integer := 0;
+  v_partes integer := 0;
 begin
   if v_yo is null then
     raise exception 'Sin sesión.' using errcode = 'HT401';
@@ -114,14 +121,29 @@ begin
          updated_at = now()
    where id = p_reserva;
 
+  -- Tour con partes: si inicio y fin se mueven lo mismo, las partes se corren con ellas.
+  if v_cambios ? 'fecha_inicio' and v_cambios ? 'fecha_fin' and r.fecha_inicio is not null and r.fecha_fin is not null then
+    v_dias := (v_cambios ->> 'fecha_inicio')::date - r.fecha_inicio;
+    if v_dias <> 0 and v_dias = (v_cambios ->> 'fecha_fin')::date - r.fecha_fin then
+      update public.reserva_componente
+         set fecha_inicio = fecha_inicio + v_dias,
+             fecha_fin = fecha_fin + v_dias,
+             updated_at = now()
+       where reserva_id = p_reserva;
+      get diagnostics v_partes = row_count;
+    end if;
+  end if;
+
   insert into public.evento_reserva (reserva_id, tipo, detalle)
   values (
     p_reserva,
     v_tipo::public.tipo_evento_reserva,
-    coalesce(p_evento -> 'detalle', '{}'::jsonb) || jsonb_build_object('persona', public.nombre_de_usuario(v_yo), 'nota', v_nota is not null)
+    coalesce(p_evento -> 'detalle', '{}'::jsonb)
+      || jsonb_build_object('persona', public.nombre_de_usuario(v_yo), 'nota', v_nota is not null)
+      || case when v_partes > 0 then jsonb_build_object('dias_corridos', v_dias) else '{}'::jsonb end
   );
 
-  return jsonb_build_object('estado', v_estado, 'motivos', to_jsonb(v_motivos));
+  return jsonb_build_object('estado', v_estado, 'motivos', to_jsonb(v_motivos), 'dias_corridos', case when v_partes > 0 then v_dias else 0 end);
 end;
 $$;
 

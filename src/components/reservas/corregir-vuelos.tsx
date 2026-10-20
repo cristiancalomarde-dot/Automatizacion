@@ -47,9 +47,14 @@ const versionDe = (r: DetalleReserva) =>
 
 /** "Listo: la reserva quedó recibida" o "sigue para revisión por: …" (§4). */
 function mensajeListo(antes: DetalleReserva, r: Extract<ResultadoCorregir, { ok: true }>): string {
-  if (antes.estado === "para_revision" && r.estado === "recibida") return T.listoRecibida;
-  if (r.estado === "para_revision") return T.listoSigue(frasesDeMotivos(r.motivos).map((f) => f.frase).join(" "));
-  return T.listo;
+  const listo =
+    antes.estado === "para_revision" && r.estado === "recibida"
+      ? T.listoRecibida
+      : r.estado === "para_revision"
+        ? T.listoSigue(frasesDeMotivos(r.motivos).map((f) => f.frase).join(" "))
+        : T.listo;
+  // Owner 2026-10-20: si cambió la duración del tour, las partes no se corrieron solas.
+  return r.aviso ? `${listo} ${r.aviso}` : listo;
 }
 
 type Estado =
@@ -460,7 +465,9 @@ function lineaDeCorreccion(c: CorreccionDeReserva): string {
     return T.historialVuelos(persona, vuelos, c.nota);
   }
   const dato = c.dato && c.dato in ETIQUETAS ? ETIQUETAS[c.dato as DatoClave] : (c.dato ?? SIN_DATO);
-  return c.tipo === "revisado" ? T.historialRevisado(persona, dato) : T.historialCorregido(persona, dato);
+  if (c.tipo === "revisado") return T.historialRevisado(persona, dato);
+  const corregido = T.historialCorregido(persona, dato);
+  return c.diasCorridos ? `${corregido} y ${T.historialCorrio(c.diasCorridos)}` : corregido;
 }
 
 const ETIQUETAS: Record<DatoClave, string> = {

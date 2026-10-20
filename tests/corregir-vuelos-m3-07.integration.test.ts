@@ -13,10 +13,12 @@
 import { randomUUID } from "node:crypto";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { cargarProducto } from "@/lib/catalogo/consultas";
 import { aVuelos } from "@/lib/reservas/consultas";
 import { corregirDato, corregirVuelos, revisarDato, type ResultadoCorregir } from "@/lib/reservas/corregir/corregir";
 import { versionParaCorregir } from "@/lib/reservas/corregir/decidir";
 import type { VueloCorregido } from "@/lib/reservas/corregir/vuelos";
+import { componentesDeLaReserva } from "@/lib/reservas/emparejar/componentes";
 import { MOTIVOS_EMPAREJADO as M } from "@/lib/reservas/emparejar/motivos";
 import type { FichaLectura } from "@/lib/reservas/esquema-ficha";
 import { crearReserva, guardarMailRecibido as guardarMailRecibidoReal } from "@/lib/reservas/guardar";
@@ -286,6 +288,70 @@ function ok(r: ResultadoCorregir): Extract<ResultadoCorregir, { ok: true }> {
     expect(await corregirVuelos(equipo, { reservaId: id, version: await version(id), vuelos: [SALIDA_CJC] })).toEqual({
       ok: false,
       error: T.error(T.motivos.cerrada),
+    });
+  });
+
+  describe("owner 2026-10-20: corregir las fechas de ARCH31 (tour con partes)", () => {
+    async function conPartes(): Promise<{ id: string; partes: () => Promise<Array<{ orden: number; fecha_inicio: string | null; fecha_fin: string | null }>> }> {
+      const p = await admin.from("producto").select("id").eq("codigo", "ARCH31").single();
+      if (p.error) throw new Error(p.error.message);
+      const detalle = (await cargarProducto(admin, p.data.id))!;
+      const componentes = componentesDeLaReserva(detalle, "2027-01-10", { finalPuertoNatales: false, proveedorTransferPNT: null });
+      expect(componentes.length).toBeGreaterThan(1);
+      const id = await reserva({
+        estado: "recibida",
+        motivosRevision: [],
+        productoId: p.data.id,
+        productoTextoAgencia: "ARCH31",
+        fechaInicio: "2027-01-10",
+        fechaFin: "2027-01-17",
+        vuelos: [],
+        componentes,
+      });
+      const partes = async () =>
+        ((await admin.from("reserva_componente").select("orden,fecha_inicio,fecha_fin").eq("reserva_id", id).order("orden")).data ?? []) as Array<{
+          orden: number;
+          fecha_inicio: string | null;
+          fecha_fin: string | null;
+        }>;
+      return { id, partes };
+    }
+
+    const correr = (fecha: string | null, dias: number) => {
+      if (!fecha) return fecha;
+      const d = new Date(`${fecha}T00:00:00Z`);
+      d.setUTCDate(d.getUTCDate() + dias);
+      return d.toISOString().slice(0, 10);
+    };
+
+    it("inicio +2 y fin +2 → todas las partes se corren 2 días, y queda en el historial", async () => {
+      const { id, partes } = await conPartes();
+      const antes = await partes();
+      expect(antes.some((p) => p.fecha_inicio)).toBe(true);
+      const r = ok(await corregirDato(equipo, { reservaId: id, version: await version(id), dato: "fechas", fechaInicio: "2027-01-12", fechaFin: "2027-01-19" }));
+      expect(r.aviso).toBeUndefined();
+      expect(await partes()).toEqual(antes.map((p) => ({ ...p, fecha_inicio: correr(p.fecha_inicio, 2), fecha_fin: correr(p.fecha_fin, 2) })));
+      const [ev] = await eventos(id, "dato_corregido");
+      expect(ev.detalle).toMatchObject({ dato: "fechas", dias_corridos: 2 });
+      expect(ev.autor_id).toBe(usuarioId);
+    });
+
+    it("inicio +2 y fin +3 (una noche extra) → las partes no se tocan y avisa que cambió la duración", async () => {
+      const { id, partes } = await conPartes();
+      const antes = await partes();
+      const r = ok(await corregirDato(equipo, { reservaId: id, version: await version(id), dato: "fechas", fechaInicio: "2027-01-12", fechaFin: "2027-01-20" }));
+      expect(r.aviso).toBe(T.avisoDuracion(7, 8));
+      expect(await partes()).toEqual(antes);
+      const fila = await leer(id);
+      expect([fila.fecha_inicio, fila.fecha_fin]).toEqual(["2027-01-12", "2027-01-20"]);
+      const [ev] = await eventos(id, "dato_corregido");
+      expect(ev.detalle.dias_corridos).toBeUndefined();
+    });
+
+    it("sin partes, cambiar la duración no avisa nada", async () => {
+      const id = await reserva({ estado: "recibida", motivosRevision: [] });
+      const r = ok(await corregirDato(equipo, { reservaId: id, version: await version(id), dato: "fechas", fechaInicio: "2027-03-10", fechaFin: "2027-03-20" }));
+      expect(r.aviso).toBeUndefined();
     });
   });
 });

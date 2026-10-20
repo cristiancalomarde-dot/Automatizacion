@@ -195,3 +195,28 @@ export function versionParaCorregir(d: DatosDeVersion): string {
     [...d.notas],
   ]);
 }
+
+// --- Owner 2026-10-20: las fechas de un tour con partes ------------------------------------------
+
+export type CambioDeFechas = { tipo: "nada" } | { tipo: "correr"; dias: number } | { tipo: "duracion"; nochesAntes: number; nochesDespues: number };
+
+const DIA_MS = 86_400_000;
+const diasEntre = (desde: string, hasta: string) => Math.round((Date.parse(`${hasta}T00:00:00Z`) - Date.parse(`${desde}T00:00:00Z`)) / DIA_MS);
+
+/**
+ * Regla del owner (2026-10-20): "si el vendedor cambia la fecha de comienzo
+ * del tour, sí; si está agregando noches extra, ojo". Si inicio y fin se
+ * mueven los mismos días, las partes del tour se corren esos días (lo hace la
+ * base en la misma transacción, 0022); si cambia la duración, no se corren y
+ * se avisa. Sin las dos fechas de antes no hay con qué comparar.
+ */
+export function comoCambianLasFechas(
+  antes: { fechaInicio: string | null; fechaFin: string | null },
+  despues: { fechaInicio: string; fechaFin: string },
+): CambioDeFechas {
+  if (!antes.fechaInicio || !antes.fechaFin) return { tipo: "nada" };
+  const corrioInicio = diasEntre(antes.fechaInicio, despues.fechaInicio);
+  const corrioFin = diasEntre(antes.fechaFin, despues.fechaFin);
+  if (corrioInicio === corrioFin) return corrioInicio === 0 ? { tipo: "nada" } : { tipo: "correr", dias: corrioInicio };
+  return { tipo: "duracion", nochesAntes: diasEntre(antes.fechaInicio, antes.fechaFin), nochesDespues: diasEntre(despues.fechaInicio, despues.fechaFin) };
+}

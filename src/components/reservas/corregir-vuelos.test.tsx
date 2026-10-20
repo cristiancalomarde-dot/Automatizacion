@@ -292,3 +292,26 @@ describe("M3-07 fila 8 y §4 — errores", () => {
     expect(acciones.corregirVuelosDeReserva).toHaveBeenCalledTimes(2);
   });
 });
+
+describe("Owner 2026-10-20 — corregir las fechas de un tour con partes", () => {
+  it("si cambió la duración, el 'Listo' lleva el aviso de revisar las partes", async () => {
+    const aviso = T.avisoDuracion(7, 8);
+    acciones.corregirDatoDeReserva.mockResolvedValue({ ...okRecibida, aviso });
+    await abrir(reserva({ estado: "para_revision", motivos: [M.dudosos(["fechas"])] }));
+    fireEvent.click(screen.getByRole("button", { name: `${T.corregirDato}: fechas` }));
+    fireEvent.change(screen.getByLabelText(T.fechaFin), { target: { value: "2027-03-19" } });
+    fireEvent.click(within(screen.getByTestId("dudoso-fechas")).getByRole("button", { name: T.guardar }));
+    const listo = await screen.findByTestId("producto-confirmado");
+    expect(listo).toHaveTextContent(T.listoRecibida);
+    expect(listo).toHaveTextContent(aviso);
+  });
+
+  it("el historial dice cuántos días se corrió el tour", async () => {
+    await abrir(
+      reserva({
+        correcciones: [{ tipo: "corregido", fecha: "2026-10-20T13:00:00.000Z", persona: "Damián", vuelos: [], dato: "fechas", nota: false, diasCorridos: 2 }],
+      }),
+    );
+    expect(screen.getByTestId("historial-correcciones")).toHaveTextContent(`${T.historialCorregido("Damián", "fechas")} y ${T.historialCorrio(2)}`);
+  });
+});

@@ -456,6 +456,14 @@ export const TEXTOS = {
       historialSinVuelos: "sin vuelos",
       historialRevisado: (persona: string, dato: string) => `${persona} marcó como revisado: ${dato}`,
       historialCorregido: (persona: string, dato: string) => `${persona} corrigió: ${dato}`,
+      /** Owner 2026-10-20: las partes del tour se corrieron con las fechas de la reserva. */
+      historialCorrio: (dias: number) => {
+        const n = Math.abs(dias);
+        return `corrió las fechas del tour ${n} ${n === 1 ? "día" : "días"}${dias < 0 ? " para antes" : ""}`;
+      },
+      /** Owner 2026-10-20: con noches extra (o de menos) las partes no se corren solas. */
+      avisoDuracion: (antes: number, despues: number) =>
+        `Cambió la duración del tour (de ${antes} a ${despues} noches): revisá las fechas de cada parte en los pedidos antes de enviar`,
       vueloEnHistorial: (lado: "llegada" | "salida", numero: string, aeropuerto: string, cuando: string) =>
         `${lado} ${numero} ${lado === "llegada" ? "a" : "de"} ${aeropuerto} ${cuando}`.trim(),
       avisoPedidoEnviado: (proveedor: string) => `El vuelo cambió después de enviar el pedido a ${proveedor}: avisale`,

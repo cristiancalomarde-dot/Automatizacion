@@ -5,6 +5,7 @@ import { MOTIVOS_EMPAREJADO as M } from "../emparejar/motivos";
 import type { FichaLectura, VueloIA } from "../esquema-ficha";
 import { MOTIVOS_INTERCAMBIO } from "../intercambio";
 import {
+  comoCambianLasFechas,
   datosDudosos,
   decidirCorreccion,
   porQueNoSeCorrige,
@@ -168,5 +169,45 @@ describe("M3-07 filas 1 y 8 — cuándo no se corrige y la versión que vio la p
     ]) {
       expect(versionParaCorregir({ ...base, ...cambio })).not.toBe(v);
     }
+  });
+});
+
+describe("Owner 2026-10-20 — corregir las fechas de un tour con partes", () => {
+  // ARCH31 (Kilroy): del 10 al 17 de enero, 7 noches.
+  const antes = { fechaInicio: "2027-01-10", fechaFin: "2027-01-17" };
+
+  it("inicio +2 y fin +2 → se corren las partes 2 días", () => {
+    expect(comoCambianLasFechas(antes, { fechaInicio: "2027-01-12", fechaFin: "2027-01-19" })).toEqual({ tipo: "correr", dias: 2 });
+  });
+
+  it("inicio -3 y fin -3 → se corren 3 días para antes (y cruzando el mes)", () => {
+    expect(comoCambianLasFechas(antes, { fechaInicio: "2027-01-07", fechaFin: "2027-01-14" })).toEqual({ tipo: "correr", dias: -3 });
+    expect(comoCambianLasFechas({ fechaInicio: "2027-02-27", fechaFin: "2027-03-02" }, { fechaInicio: "2027-03-01", fechaFin: "2027-03-04" })).toEqual({
+      tipo: "correr",
+      dias: 2,
+    });
+  });
+
+  it("inicio +2 y fin +3 → cambió la duración: las partes no se corren", () => {
+    expect(comoCambianLasFechas(antes, { fechaInicio: "2027-01-12", fechaFin: "2027-01-20" })).toEqual({ tipo: "duracion", nochesAntes: 7, nochesDespues: 8 });
+  });
+
+  it("noches extra al final (el inicio igual) → cambió la duración", () => {
+    expect(comoCambianLasFechas(antes, { fechaInicio: "2027-01-10", fechaFin: "2027-01-18" })).toEqual({ tipo: "duracion", nochesAntes: 7, nochesDespues: 8 });
+  });
+
+  it("las mismas fechas, o sin fechas antes → nada", () => {
+    expect(comoCambianLasFechas(antes, antes)).toEqual({ tipo: "nada" });
+    expect(comoCambianLasFechas({ fechaInicio: null, fechaFin: null }, antes)).toEqual({ tipo: "nada" });
+    expect(comoCambianLasFechas({ fechaInicio: "2027-01-10", fechaFin: null }, antes)).toEqual({ tipo: "nada" });
+  });
+
+  it("el aviso dice de cuántas a cuántas noches; el historial, cuántos días se corrió", () => {
+    expect(TEXTOS.reserva.corregir.avisoDuracion(7, 8)).toBe(
+      "Cambió la duración del tour (de 7 a 8 noches): revisá las fechas de cada parte en los pedidos antes de enviar",
+    );
+    expect(TEXTOS.reserva.corregir.historialCorrio(2)).toBe("corrió las fechas del tour 2 días");
+    expect(TEXTOS.reserva.corregir.historialCorrio(1)).toBe("corrió las fechas del tour 1 día");
+    expect(TEXTOS.reserva.corregir.historialCorrio(-3)).toBe("corrió las fechas del tour 3 días para antes");
   });
 });

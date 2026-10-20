@@ -28,6 +28,7 @@ import { DATOS_CLAVE, type DatoClave, type FichaLectura, type VueloIA } from "..
 import { esCancelacion, esIdDeReserva } from "../reglas";
 import type { EstadoReserva } from "../tipos";
 import {
+  comoCambianLasFechas,
   datosDudosos,
   decidirCorreccion,
   porQueNoSeCorrige,
@@ -63,7 +64,14 @@ export interface EntradaRevisarDato extends Base {
 export type EntradaCorregirDato = Base & ({ dato: "fechas"; fechaInicio: string; fechaFin: string } | { dato: "pax"; pax: number });
 
 export type ResultadoCorregir =
-  | { ok: true; estado: EstadoReserva; motivos: string[]; avisos: string[] }
+  | {
+      ok: true;
+      estado: EstadoReserva;
+      motivos: string[];
+      avisos: string[];
+      /** Owner 2026-10-20: cambió la duración de un tour con partes (las partes no se corrieron). */
+      aviso?: string;
+    }
   | { ok: false; error: string; sinSesion?: true; cambio?: true; errores?: ErrorDeVuelo[] };
 
 const fallo = (motivo: string): ResultadoCorregir => ({ ok: false, error: T.error(motivo) });
@@ -157,7 +165,7 @@ type Evento = { tipo: "vuelos_corregidos" | "dato_revisado" | "dato_corregido"; 
 async function corregir(
   cliente: SupabaseClient,
   entrada: Base,
-  armar: (l: Leida) => Promise<{ cambio: Cambio; cambios: Record<string, unknown>; evento: Evento } | ResultadoCorregir>,
+  armar: (l: Leida) => Promise<{ cambio: Cambio; cambios: Record<string, unknown>; evento: Evento; aviso?: string } | ResultadoCorregir>,
 ): Promise<ResultadoCorregir> {
   const persona = await quienEnvia(cliente);
   if (!persona) return { ok: false, error: T.error(R.sinSesion), sinSesion: true };
@@ -191,7 +199,13 @@ async function corregir(
   });
   if (error) return motivoDeError(error.code);
   const r = (data ?? {}) as { estado?: EstadoReserva; motivos?: string[] };
-  return { ok: true, estado: r.estado ?? decision.estado, motivos: Array.isArray(r.motivos) ? r.motivos : decision.motivos, avisos: decision.avisos };
+  return {
+    ok: true,
+    estado: r.estado ?? decision.estado,
+    motivos: Array.isArray(r.motivos) ? r.motivos : decision.motivos,
+    avisos: decision.avisos,
+    ...(armado.aviso ? { aviso: armado.aviso } : {}),
+  };
 }
 
 /** Filas 1 a 4, 6 y 7: los vuelos corregidos (y, si hay, la nota del operativo). */
@@ -233,16 +247,25 @@ export function revisarDato(cliente: SupabaseClient, entrada: EntradaRevisarDato
 
 /** Fila 5: corregir las fechas de inicio y fin o la cantidad de pasajeros. */
 export function corregirDato(cliente: SupabaseClient, entrada: EntradaCorregirDato): Promise<ResultadoCorregir> {
-  return corregir(cliente, entrada, async () => {
+  return corregir(cliente, entrada, async (l) => {
     if (entrada.dato === "fechas") {
       const inicio = String(entrada.fechaInicio ?? "").trim();
       const fin = String(entrada.fechaFin ?? "").trim();
       const error = validarFechas(inicio, fin);
       if (error) return fallo(error);
+      // Owner 2026-10-20: si se corre el tour, la base corre las partes; si cambia la duración, se avisa.
+      const como = comoCambianLasFechas(l.reserva, { fechaInicio: inicio, fechaFin: fin });
+      let aviso: string | undefined;
+      if (como.tipo === "duracion") {
+        const partes = await cliente.from("reserva_componente").select("id", { count: "exact", head: true }).eq("reserva_id", entrada.reservaId);
+        if (partes.error) return fallo(R.conexion);
+        if ((partes.count ?? 0) > 0) aviso = T.avisoDuracion(como.nochesAntes, como.nochesDespues);
+      }
       return {
         cambio: { fechas: { fechaInicio: inicio, fechaFin: fin } },
         cambios: { fecha_inicio: inicio, fecha_fin: fin },
         evento: { tipo: "dato_corregido", detalle: { dato: "fechas" } },
+        aviso,
       };
     }
     if (entrada.dato === "pax") {

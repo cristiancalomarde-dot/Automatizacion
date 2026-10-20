@@ -183,7 +183,8 @@ function aCorreccion(e: any): CorreccionDeReserva {
       fecha: texto(v.fecha),
       hora: texto(v.hora),
     }));
-  return { tipo: TIPO_CORRECCION[e.tipo], fecha: e.created_at, persona: texto(d.persona) ?? "", vuelos, dato: texto(d.dato), nota: d.nota === true };
+  const diasCorridos = typeof d.dias_corridos === "number" && d.dias_corridos !== 0 ? d.dias_corridos : null;
+  return { tipo: TIPO_CORRECCION[e.tipo], fecha: e.created_at, persona: texto(d.persona) ?? "", vuelos, dato: texto(d.dato), nota: d.nota === true, diasCorridos };
 }
 
 /** M3-07 fila 6: a qué proveedores hay que avisarles que el vuelo cambió después de enviarles el pedido. */

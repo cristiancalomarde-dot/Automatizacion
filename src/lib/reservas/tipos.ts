@@ -424,6 +424,8 @@ export interface CorreccionDeReserva {
   dato: string | null;
   /** Dejó una nota del operativo. */
   nota: boolean;
+  /** Owner 2026-10-20: al corregir las fechas, cuántos días se corrieron las partes del tour (null si no se corrieron). */
+  diasCorridos?: number | null;
 }
 
 /** M3-06 fila 8: una entrada del historial del responsable (los nombres, como quedaron en ese momento). */
