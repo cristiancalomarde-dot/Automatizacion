@@ -7,7 +7,7 @@ import { formatearFecha, formatearFechaHora, formatearHora, formatearRango } fro
 import { avisosDeLlegada } from "@/lib/reservas/avisos-vuelo";
 import { cargarReserva } from "@/lib/reservas/consultas";
 import { esIdDeReserva, frasesDeMotivos } from "@/lib/reservas/reglas";
-import type { DetalleReserva, EnvioDeReserva, HotelDeLaAgencia, ParteDeReserva, PedidoDeReservaVista, VueloDeReserva } from "@/lib/reservas/tipos";
+import type { DetalleReserva, EnvioDeReserva, HotelDeLaAgencia, ParteDeReserva, PedidoAManoEnHistorial, PedidoDeReservaVista, VueloDeReserva } from "@/lib/reservas/tipos";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { TEXTOS } from "@/lib/textos";
 import { Aviso, Chip, EsqueletoDetalle, EstadoError, EstadoVacio } from "@/components/ui/estados";
@@ -274,11 +274,18 @@ function lineaDeEnvio(e: EnvioDeReserva): string {
     : T.envioRegistrado(e.persona || SIN_DATO, e.cantidad, proveedores);
 }
 
+/** M3-09 fila 9: "<persona> agregó un pedido a mano a <a quién>" / "<persona> sacó el pedido a mano a …". */
+function lineaDePedidoAMano(h: PedidoAManoEnHistorial): string {
+  const A = TEXTOS.pedidos.aMano;
+  return h.tipo === "sacado" ? A.historialSaco(h.persona || SIN_DATO, h.a || SIN_DATO) : A.historialAgrego(h.persona || SIN_DATO, h.a || SIN_DATO);
+}
+
 /** Spec M3-03 fila 9: a qué proveedores se les escribió, cuándo y quién (y el historial de envíos). */
 function PedidosDeLaReserva({ reserva }: { reserva: DetalleReserva }) {
   const pedidos = reserva.pedidos ?? [];
   const envios = reserva.envios ?? [];
-  if (pedidos.length === 0 && envios.length === 0) return null;
+  const aMano = reserva.pedidosAMano ?? [];
+  if (pedidos.length === 0 && envios.length === 0 && aMano.length === 0) return null;
   return (
     <section className={ui.seccion} data-testid="pedidos-reserva">
       <h2 className={ui.subtitulo}>{T.pedidosTitulo}</h2>
@@ -287,8 +294,16 @@ function PedidosDeLaReserva({ reserva }: { reserva: DetalleReserva }) {
           <table className={ui.tabla} aria-label={T.pedidosTitulo}>
             <tbody>
               {pedidos.map((p) => (
-                <tr key={p.id} className={p.estado === "enviado" ? undefined : ui.filaAtencion}>
-                  <td>{p.proveedores.join(" y ") || SIN_DATO}</td>
+                <tr key={p.id} className={p.estado === "enviado" || p.aMano ? undefined : ui.filaAtencion}>
+                  <td>
+                    {p.proveedores.join(" y ") || SIN_DATO}
+                    {p.aMano ? (
+                      <>
+                        {" "}
+                        <Chip tono="info">{TEXTOS.pedidos.aMano.etiqueta}</Chip>
+                      </>
+                    ) : null}
+                  </td>
                   <td>{p.destinatarios.join(", ") || SIN_DATO}</td>
                   <td>{estadoDelPedido(p)}</td>
                 </tr>
@@ -304,6 +319,18 @@ function PedidosDeLaReserva({ reserva }: { reserva: DetalleReserva }) {
             {envios.map((e) => (
               <li key={`${e.fecha}-${e.tipo}`}>
                 <span className={ui.meta}>{formatearFechaHora(e.fecha)}</span> {lineaDeEnvio(e)}
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+      {aMano.length > 0 ? (
+        <div>
+          <p className={estilos.avisoTitulo}>{TEXTOS.pedidos.aMano.historialTitulo}</p>
+          <ul className={estilos.motivos} data-testid="historial-a-mano">
+            {aMano.map((h, i) => (
+              <li key={`${h.fecha}-${h.tipo}-${i}`}>
+                <span className={ui.meta}>{formatearFechaHora(h.fecha)}</span> {lineaDePedidoAMano(h)}
               </li>
             ))}
           </ul>

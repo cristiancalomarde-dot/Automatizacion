@@ -3,8 +3,16 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { armarPedidosDeLaReserva, enviarPedidos, guardarBorradorDePedido } from "@/app/(app)/reservas/[id]/pedidos/acciones";
+import {
+  agregarPedidoAManoDeLaReserva,
+  armarPedidosDeLaReserva,
+  buscarProveedoresDelDirectorio,
+  enviarPedidos,
+  guardarBorradorDePedido,
+  sacarPedidoAManoDeLaReserva,
+} from "@/app/(app)/reservas/[id]/pedidos/acciones";
 import { formatearFecha } from "@/lib/formato";
+import { esPedidoAMano, nombreDelPedido, validarPedidoAMano, type BorradorAMano } from "@/lib/pedidos/a-mano";
 import type { PedidoGuardado, TareaGuardada } from "@/lib/pedidos/guardar";
 import {
   conteoEnvio,
@@ -16,13 +24,14 @@ import {
   type ConfiguracionEnvio,
   type LoQuePidio,
 } from "@/lib/pedidos/pantalla";
-import type { EnvioHecho, PantallaPedidos, ResultadoPedido } from "@/lib/pedidos/revision";
+import type { EnvioHecho, PantallaPedidos, ProveedorEncontrado, ResultadoPedido } from "@/lib/pedidos/revision";
 import { TEXTOS } from "@/lib/textos";
 import { Aviso, Chip, EsqueletoDetalle, EstadoError } from "@/components/ui/estados";
 import ui from "@/components/ui/ui.module.css";
 import estilos from "./pedidos.module.css";
 
 const T = TEXTOS.pedidos;
+const A = T.aMano;
 const LOGIN = "/login?error=sesion_vencida";
 
 type Estado = { tipo: "cargando" } | { tipo: "error"; motivo: string } | { tipo: "listo"; datos: PantallaPedidos };
@@ -51,6 +60,8 @@ export function PedidosPantalla({ reservaId, firmante, envio }: { reservaId: str
   const [enviando, setEnviando] = useState<ReadonlySet<string>>(new Set());
   const [resultados, setResultados] = useState<ReadonlyMap<string, ResultadoPedido>>(new Map());
   const [ultimoEnvio, setUltimoEnvio] = useState<EnvioHecho | null>(null);
+  // M3-09: el pedido a mano que se está por sacar (con confirmación).
+  const [aSacar, setASacar] = useState<PedidoGuardado | null>(null);
 
   useEffect(() => {
     let vigente = true;
@@ -93,6 +104,15 @@ export function PedidosPantalla({ reservaId, firmante, envio }: { reservaId: str
 
   function actualizarPedido(p: PedidoGuardado) {
     setEstado((e) => (e.tipo === "listo" ? { tipo: "listo", datos: { ...e.datos, pedidos: e.datos.pedidos.map((x) => (x.id === p.id ? p : x)) } } : e));
+  }
+
+  /** M3-09: el pedido a mano recién guardado entra al final, como uno más. */
+  function sumarPedido(p: PedidoGuardado) {
+    setEstado((e) => (e.tipo === "listo" ? { tipo: "listo", datos: { ...e.datos, pedidos: [...e.datos.pedidos.filter((x) => x.id !== p.id), p] } } : e));
+  }
+
+  function quitarPedido(id: string) {
+    setEstado((e) => (e.tipo === "listo" ? { tipo: "listo", datos: { ...e.datos, pedidos: e.datos.pedidos.filter((x) => x.id !== id) } } : e));
   }
 
   return (
@@ -138,7 +158,7 @@ export function PedidosPantalla({ reservaId, firmante, envio }: { reservaId: str
           onSinSesion={() => router.replace(LOGIN)}
           rearmando={rearmando}
           errorRearmar={errorRearmar}
-          onVolverAArmar={() => (estado.datos.pedidos.some((p) => p.editado) ? setConfirmarRearmar(true) : rearmar(false))}
+          onVolverAArmar={() => (estado.datos.pedidos.some((p) => p.editado && !esPedidoAMano(p)) ? setConfirmarRearmar(true) : rearmar(false))}
           onEnviar={(aEnviar, pendientes) => setDialogoEnvio({ pedidos: aEnviar, titulo: T.enviar(aEnviar.length, pendientes), reenviar: false, conPendientes: true })}
           onReintentar={(p) => setDialogoEnvio({ pedidos: [p], titulo: T.envio.tituloReintentar, reenviar: false, conPendientes: false })}
           onReenviar={(p) => setDialogoEnvio({ pedidos: [p], titulo: T.envio.tituloReenviar, reenviar: true, conPendientes: false })}
@@ -146,12 +166,26 @@ export function PedidosPantalla({ reservaId, firmante, envio }: { reservaId: str
           resultados={resultados}
           ultimoEnvio={ultimoEnvio}
           reservaId={reservaId}
+          onAgregado={sumarPedido}
+          onSacar={setASacar}
+        />
+      ) : null}
+
+      {aSacar ? (
+        <DialogoSacar
+          pedido={aSacar}
+          onCerrar={() => setASacar(null)}
+          onSinSesion={() => router.replace(LOGIN)}
+          onSacado={(id) => {
+            setASacar(null);
+            quitarPedido(id);
+          }}
         />
       ) : null}
 
       {confirmarRearmar && estado.tipo === "listo" ? (
         <Dialogo titulo={T.rearmar.titulo} onCerrar={() => setConfirmarRearmar(false)}>
-          <p>{T.rearmar.editados(estado.datos.pedidos.filter((p) => p.editado).length)}</p>
+          <p>{T.rearmar.editados(estado.datos.pedidos.filter((p) => p.editado && !esPedidoAMano(p)).length)}</p>
           <div className={ui.acciones}>
             <button type="button" className={ui.botonPrimario} onClick={() => rearmar(false)}>
               {T.rearmar.conservar}
@@ -208,6 +242,8 @@ function Revision({
   resultados,
   ultimoEnvio,
   reservaId,
+  onAgregado,
+  onSacar,
 }: {
   datos: PantallaPedidos;
   firmante: string;
@@ -226,9 +262,14 @@ function Revision({
   resultados: ReadonlyMap<string, ResultadoPedido>;
   ultimoEnvio: EnvioHecho | null;
   reservaId: string;
+  onAgregado: (p: PedidoGuardado) => void;
+  onSacar: (p: PedidoGuardado) => void;
 }) {
   const { aEnviar, pendientes } = conteoEnvio(datos.pedidos, excluidos);
   const hayPedidos = datos.pedidos.length > 0;
+  const [escribiendo, setEscribiendo] = useState(false);
+  // M3-09 fila 1: solo en una reserva recibida o pedida a proveedor que no sea una cancelación (el servidor manda el borrador).
+  const borradorAMano = datos.aMano && (!datos.reserva.estado || datos.reserva.estado === "recibida" || datos.reserva.estado === "pedido_a_proveedor") ? datos.aMano : null;
 
   return (
     <>
@@ -265,6 +306,7 @@ function Revision({
               destinoPrueba={envio.destinoPrueba}
               onReintentar={() => onReintentar(p)}
               onReenviar={() => onReenviar(p)}
+              onSacar={() => onSacar(p)}
             />
           ))}
         </div>
@@ -274,6 +316,28 @@ function Revision({
           {datos.tareas.length ? <ListaTareas tareas={datos.tareas} /> : null}
         </div>
       )}
+
+      {borradorAMano && escribiendo ? (
+        <NuevoPedidoAMano
+          reservaId={reservaId}
+          borrador={borradorAMano}
+          firmante={firmante}
+          cc={envio.cc}
+          onCancelar={() => setEscribiendo(false)}
+          onSinSesion={onSinSesion}
+          onGuardado={(p) => {
+            setEscribiendo(false);
+            onAgregado(p);
+          }}
+        />
+      ) : null}
+      {borradorAMano && !escribiendo ? (
+        <div className={ui.acciones}>
+          <button type="button" className={ui.botonSecundario} onClick={() => setEscribiendo(true)}>
+            {A.agregar}
+          </button>
+        </div>
+      ) : null}
 
       {hayPedidos && datos.tareas.length > 0 ? (
         <section className={ui.seccion} aria-labelledby="titulo-tareas">
@@ -380,6 +444,7 @@ function TarjetaPedido({
   destinoPrueba,
   onReintentar,
   onReenviar,
+  onSacar,
 }: {
   pedido: PedidoGuardado;
   cc: string[];
@@ -393,6 +458,7 @@ function TarjetaPedido({
   destinoPrueba: string;
   onReintentar: () => void;
   onReenviar: () => void;
+  onSacar: () => void;
 }) {
   const [asunto, setAsunto] = useState(pedido.asunto);
   const [cuerpo, setCuerpo] = useState(pedido.cuerpo);
@@ -405,6 +471,9 @@ function TarjetaPedido({
   const nombre = pedido.proveedores.join(" y ") || TEXTOS.comunes.sinDato;
   const idBase = `pedido-${pedido.id}`;
   const cubre = queCubre(pedido.partes);
+  const aMano = esPedidoAMano(pedido);
+  // M3-09 fila 8: un pedido a mano se saca mientras no se envió (la base vuelve a chequearlo).
+  const sePuedeSacar = aMano && (pedido.estado === "borrador" || pedido.estado === "fallo") && !enviandoAhora;
 
   async function guardar() {
     if (bloqueado || pedido.estado !== "borrador" || (asunto === base.asunto && cuerpo === base.cuerpo)) return;
@@ -428,6 +497,7 @@ function TarjetaPedido({
           {nombre}
         </h2>
         <span className={ui.chips}>
+          {aMano ? <Chip tono="info">{A.etiqueta}</Chip> : null}
           {pedido.editado ? <Chip tono="info">{T.editado}</Chip> : null}
           {sinMail ? <Chip tono="aviso">{T.sinMail}</Chip> : null}
           <label className={estilos.incluir}>
@@ -461,7 +531,7 @@ function TarjetaPedido({
         {!sinMail ? (
           <>
             <dt>{T.para}</dt>
-            <dd title={T.destinatarioAyuda}>{pedido.destinatarios.join(", ")}</dd>
+            <dd title={aMano ? undefined : T.destinatarioAyuda}>{pedido.destinatarios.join(", ")}</dd>
           </>
         ) : null}
         <dt>{T.cc}</dt>
@@ -504,6 +574,13 @@ function TarjetaPedido({
         </span>
       ) : null}
       {guardado.tipo === "error" ? <Aviso tono="error">{T.errorGuardar}</Aviso> : null}
+      {sePuedeSacar ? (
+        <div className={ui.acciones}>
+          <button type="button" className={ui.botonSecundario} onClick={onSacar}>
+            {A.sacar}
+          </button>
+        </div>
+      ) : null}
     </article>
   );
 }
@@ -694,6 +771,238 @@ function DialogoEnvio({
         </button>
         <button type="button" className={ui.botonSecundario} onClick={onCerrar} disabled={respuesta.tipo === "enviando"}>
           {T.dialogo.cancelar}
+        </button>
+      </div>
+    </Dialogo>
+  );
+}
+
+type Busqueda = { tipo: "nada" } | { tipo: "buscando" } | { tipo: "listo"; proveedores: ProveedorEncontrado[] } | { tipo: "error"; mensaje: string };
+type Guardando = { tipo: "nada" } | { tipo: "guardando" } | { tipo: "invalido"; mensaje: string } | { tipo: "error"; mensaje: string };
+
+/** Desde 2 letras se busca, un rato después de dejar de escribir. */
+const ESPERA_BUSQUEDA_MS = 250;
+
+/**
+ * Spec M3-09 §4: la tarjeta nueva de un pedido a mano. "Para": un proveedor
+ * del directorio (completa sus mails, que se pueden editar) o mails escritos
+ * a mano. El asunto y el texto vienen empezados de la plantilla (los arma el
+ * servidor); la firma es la de siempre. Guardar lo hace el servidor (con la
+ * sesión) y la base pone el nombre del proveedor.
+ */
+function NuevoPedidoAMano({
+  reservaId,
+  borrador,
+  firmante,
+  cc,
+  onCancelar,
+  onSinSesion,
+  onGuardado,
+}: {
+  reservaId: string;
+  borrador: BorradorAMano;
+  firmante: string;
+  cc: string[];
+  onCancelar: () => void;
+  onSinSesion: () => void;
+  onGuardado: (p: PedidoGuardado) => void;
+}) {
+  const [busqueda, setBusqueda] = useState("");
+  const [encontrados, setEncontrados] = useState<Busqueda>({ tipo: "nada" });
+  const [proveedor, setProveedor] = useState<{ id: string; nombre: string } | null>(null);
+  const [mails, setMails] = useState("");
+  const [asunto, setAsunto] = useState(borrador.asunto);
+  const [cuerpo, setCuerpo] = useState(borrador.cuerpo);
+  const [guardando, setGuardando] = useState<Guardando>({ tipo: "nada" });
+  const id = "pedido-a-mano";
+
+  // Solo cuenta la respuesta de la última búsqueda (si se sigue escribiendo, las anteriores se ignoran).
+  const turno = useRef(0);
+  const espera = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(
+    () => () => {
+      if (espera.current) clearTimeout(espera.current);
+    },
+    [],
+  );
+
+  function cortarBusqueda(): number {
+    if (espera.current) clearTimeout(espera.current);
+    espera.current = null;
+    return ++turno.current;
+  }
+
+  function buscar(texto: string) {
+    const n = cortarBusqueda();
+    const q = texto.trim();
+    if (q.length < 2) return setEncontrados({ tipo: "nada" });
+    setEncontrados({ tipo: "buscando" });
+    espera.current = setTimeout(() => {
+      buscarProveedoresDelDirectorio(q).then(
+        (r) => {
+          if (n !== turno.current) return;
+          if (r.ok) setEncontrados({ tipo: "listo", proveedores: r.proveedores });
+          else if (r.sinSesion) onSinSesion();
+          else setEncontrados({ tipo: "error", mensaje: r.error });
+        },
+        () => n === turno.current && setEncontrados({ tipo: "error", mensaje: "No se pudo buscar en el directorio." }),
+      );
+    }, ESPERA_BUSQUEDA_MS);
+  }
+
+  function elegir(p: ProveedorEncontrado) {
+    cortarBusqueda();
+    setProveedor({ id: p.id, nombre: p.nombre });
+    setBusqueda(p.nombre);
+    setMails(p.mails.join(", "));
+    setEncontrados({ tipo: "nada" });
+  }
+
+  async function guardar() {
+    const entrada = { reservaId, proveedorId: proveedor?.id ?? null, mails, asunto, cuerpo };
+    const v = validarPedidoAMano(entrada, borrador);
+    if (!v.ok) {
+      setGuardando({ tipo: "invalido", mensaje: v.error });
+      return;
+    }
+    setGuardando({ tipo: "guardando" });
+    const r = await agregarPedidoAManoDeLaReserva(entrada).catch(() => null);
+    if (r?.ok) return onGuardado(r.pedido);
+    if (r && r.sinSesion) return onSinSesion();
+    const motivo = r?.error ?? "falló la conexión con el servidor.";
+    setGuardando({ tipo: "error", mensaje: /^No se pud/.test(motivo) ? motivo : A.noSeGuardo(motivo) });
+  }
+
+  const ocupado = guardando.tipo === "guardando";
+
+  return (
+    <form
+      className={estilos.tarjeta}
+      aria-labelledby={`${id}-titulo`}
+      onSubmit={(e) => {
+        e.preventDefault();
+        void guardar();
+      }}
+    >
+      <div className={estilos.cabecera}>
+        <h2 id={`${id}-titulo`} className={estilos.proveedor}>
+          {A.titulo}
+        </h2>
+        <span className={ui.chips}>
+          <Chip tono="info">{A.etiqueta}</Chip>
+        </span>
+      </div>
+
+      <label className={estilos.campo}>
+        <span className={estilos.etiqueta}>{A.buscar}</span>
+        <input
+          className={estilos.editor}
+          value={busqueda}
+          placeholder={A.buscarAyuda}
+          disabled={ocupado}
+          onChange={(e) => {
+            setBusqueda(e.target.value);
+            if (proveedor && e.target.value.trim() !== proveedor.nombre) setProveedor(null);
+            buscar(e.target.value);
+          }}
+        />
+      </label>
+      {encontrados.tipo === "buscando" ? (
+        <p className={ui.meta} role="status">
+          {A.buscando}
+        </p>
+      ) : null}
+      {encontrados.tipo === "error" ? <Aviso tono="error">{encontrados.mensaje}</Aviso> : null}
+      {encontrados.tipo === "listo" && encontrados.proveedores.length === 0 ? <p className={ui.meta}>{A.sinCoincidencias}</p> : null}
+      {encontrados.tipo === "listo" && encontrados.proveedores.length > 0 ? (
+        <ul className={estilos.lista}>
+          {encontrados.proveedores.map((p) => (
+            <li key={p.id}>
+              <button type="button" className={ui.enlace} onClick={() => elegir(p)}>
+                {[p.nombre, p.ciudad, p.mails.join(", ") || TEXTOS.comunes.sinDato].filter(Boolean).join(" · ")}
+              </button>
+            </li>
+          ))}
+        </ul>
+      ) : null}
+      {proveedor ? <p className={ui.meta}>{A.elegido(proveedor.nombre)}</p> : null}
+
+      <label className={estilos.campo}>
+        <span className={estilos.etiqueta}>{A.para}</span>
+        <input className={estilos.editor} value={mails} placeholder={A.paraAyuda} disabled={ocupado} onChange={(e) => setMails(e.target.value)} />
+      </label>
+      <dl className={ui.datos}>
+        <dt>{T.cc}</dt>
+        <dd>{cc.join(", ")}</dd>
+      </dl>
+      <label className={estilos.campo}>
+        <span className={estilos.etiqueta}>{T.asunto}</span>
+        <input className={estilos.editor} value={asunto} disabled={ocupado} onChange={(e) => setAsunto(e.target.value)} />
+      </label>
+      <label className={estilos.campo}>
+        <span className={estilos.etiqueta}>{T.texto}</span>
+        <textarea className={estilos.editor} value={cuerpo} rows={14} disabled={ocupado} onChange={(e) => setCuerpo(e.target.value)} />
+      </label>
+      <div className={estilos.campo}>
+        <span className={estilos.etiqueta}>{T.firma}</span>
+        <p className={estilos.firma}>{firmaConNombre(borrador.firma, firmante)}</p>
+      </div>
+
+      {guardando.tipo === "invalido" ? <Aviso tono="error">{guardando.mensaje}</Aviso> : null}
+      {guardando.tipo === "error" ? (
+        <div role="alert" className={`${ui.aviso} ${ui.aviso_error}`}>
+          <span>{guardando.mensaje}</span>{" "}
+          <button type="button" className={ui.botonSecundario} onClick={() => void guardar()}>
+            {A.reintentar}
+          </button>
+        </div>
+      ) : null}
+      <div className={ui.acciones}>
+        <button type="submit" className={ui.botonPrimario} disabled={ocupado}>
+          {ocupado ? A.guardando : A.guardar}
+        </button>
+        <button type="button" className={ui.botonSecundario} onClick={onCancelar} disabled={ocupado}>
+          {A.cancelar}
+        </button>
+      </div>
+    </form>
+  );
+}
+
+type Sacando = { tipo: "nada" } | { tipo: "sacando" } | { tipo: "error"; mensaje: string };
+
+/** Spec M3-09 fila 8: "Sacar este pedido" pide confirmación; la base no deja sacar uno enviado. */
+function DialogoSacar({
+  pedido,
+  onCerrar,
+  onSinSesion,
+  onSacado,
+}: {
+  pedido: PedidoGuardado;
+  onCerrar: () => void;
+  onSinSesion: () => void;
+  onSacado: (id: string) => void;
+}) {
+  const [estado, setEstado] = useState<Sacando>({ tipo: "nada" });
+
+  async function sacar() {
+    setEstado({ tipo: "sacando" });
+    const r = await sacarPedidoAManoDeLaReserva(pedido.id).catch(() => null);
+    if (r?.ok) return onSacado(pedido.id);
+    if (r && r.sinSesion) return onSinSesion();
+    setEstado({ tipo: "error", mensaje: r?.error ?? A.noSeSaco("falló la conexión con el servidor.") });
+  }
+
+  return (
+    <Dialogo titulo={A.sacarTitulo} onCerrar={estado.tipo === "sacando" ? () => undefined : onCerrar}>
+      <p>{A.sacarPregunta(nombreDelPedido(pedido))}</p>
+      {estado.tipo === "error" ? <Aviso tono="error">{estado.mensaje}</Aviso> : null}
+      <div className={ui.acciones}>
+        <button type="button" className={ui.botonPrimario} onClick={sacar} disabled={estado.tipo === "sacando"}>
+          {estado.tipo === "sacando" ? A.sacando : A.sacarConfirmar}
+        </button>
+        <button type="button" className={ui.botonSecundario} onClick={onCerrar} disabled={estado.tipo === "sacando"}>
+          {A.cancelar}
         </button>
       </div>
     </Dialogo>
