@@ -29,6 +29,7 @@ import { esCorreoDelDominioPermitido, obtenerDominioPermitido } from "@/lib/auth
 import { esIdDeReserva } from "@/lib/reservas/reglas";
 import type { EstadoReserva } from "@/lib/reservas/tipos";
 import { TEXTOS } from "@/lib/textos";
+import { esPedidoAMano } from "../a-mano";
 import { cargarPedidos, type PedidoGuardado } from "../guardar";
 import { leerNombreParaLaFirma } from "@/lib/usuarios/firma";
 import { nombreDeQuienFirma } from "../pantalla";
@@ -115,8 +116,9 @@ export async function quienEnvia(cliente: SupabaseClient): Promise<QuienEnvia | 
   return persona ? conNombreParaLaFirma(cliente, persona) : null;
 }
 
-export const pedidoIncompleto = (estado: EstadoReserva, pedidos: ReadonlyArray<{ estado: string }>): boolean =>
-  estado === "pedido_a_proveedor" && pedidos.some((p) => p.estado !== "enviado");
+/** M3-09 fila 7: un pedido a mano (lo que el armado no cubre) no cuenta para "pedido incompleto". */
+export const pedidoIncompleto = (estado: EstadoReserva, pedidos: ReadonlyArray<{ estado: string; a_mano?: boolean | null; casilla?: string }>): boolean =>
+  estado === "pedido_a_proveedor" && pedidos.some((p) => p.estado !== "enviado" && !esPedidoAMano(p));
 
 function motivoDeError(e: unknown): { motivo: string; deLaCasilla: boolean } {
   if (e instanceof ErrorSmtp) {

@@ -325,6 +325,8 @@ export interface PedidoDeReservaVista {
   motivoFallo: string | null;
   sinDestinatario: string | null;
   reenvios: number;
+  /** M3-09: lo escribió una persona del equipo (no cuenta para "pedido incompleto"). */
+  aMano?: boolean;
 }
 
 /** Spec M3-03 filas 8 y 9: una entrada del historial de envíos ("<persona> envió N pedidos a: …"). */
@@ -411,6 +413,17 @@ export interface DetalleReserva extends FilaReserva {
   correcciones?: CorreccionDeReserva[];
   /** M3-07 fila 6: los proveedores con un pedido ya enviado cuyo vuelo cambió después ("avisale"). */
   avisarCambioDeVuelo?: string[];
+  /** M3-09 fila 9: quién agregó o sacó un pedido a mano, y a quién. */
+  pedidosAMano?: PedidoAManoEnHistorial[];
+}
+
+/** M3-09 fila 9: "<persona> agregó un pedido a mano a <proveedor o mail>" (sin datos de pasajeros). */
+export interface PedidoAManoEnHistorial {
+  tipo: "agregado" | "sacado";
+  fecha: string;
+  persona: string;
+  /** El proveedor o, si no está en el directorio, el mail. */
+  a: string;
 }
 
 /** M3-07 fila 7: una corrección del historial (sin datos de pasajeros). */

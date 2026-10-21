@@ -22,6 +22,7 @@ import {
   type DetalleReserva,
   type EnvioDeReserva,
   type PedidoDeReservaVista,
+  type PedidoAManoEnHistorial,
   type HotelDeLaAgencia,
   type EstadoReserva,
   type FilaReserva,
@@ -111,13 +112,14 @@ function aFila(
 
 /** Spec M3-03 fila 8: las reservas con algún pedido que no está enviado (la marca "pedido incompleto"). */
 async function conPedidosSinEnviar(cliente: SupabaseClient, ids?: string[]): Promise<Set<string>> {
-  let consulta = cliente.from("reserva_pedido").select("reserva_id").neq("estado", "enviado");
+  // M3-09 fila 7: los pedidos a mano no cuentan.
+  let consulta = cliente.from("reserva_pedido").select("reserva_id").neq("estado", "enviado").eq("a_mano", false);
   if (ids) consulta = consulta.in("reserva_id", ids);
   const filas = verificar(await consulta) as any[];
   return new Set(filas.map((p) => p.reserva_id as string));
 }
 
-const CAMPOS_PEDIDO = "id,proveedores,destinatarios,estado,enviado_en,enviado_por_nombre,motivo_fallo,sin_destinatario,reenvios,created_at";
+const CAMPOS_PEDIDO = "id,proveedores,destinatarios,estado,enviado_en,enviado_por_nombre,motivo_fallo,sin_destinatario,reenvios,created_at,a_mano";
 
 function aPedidoVista(p: any): PedidoDeReservaVista {
   return {
@@ -130,7 +132,19 @@ function aPedidoVista(p: any): PedidoDeReservaVista {
     motivoFallo: texto(p.motivo_fallo),
     sinDestinatario: texto(p.sin_destinatario),
     reenvios: typeof p.reenvios === "number" ? p.reenvios : 0,
+    aMano: p.a_mano === true,
   };
+}
+
+const TIPO_A_MANO: Record<string, PedidoAManoEnHistorial["tipo"]> = {
+  pedido_a_mano_agregado: "agregado",
+  pedido_a_mano_sacado: "sacado",
+};
+
+/** M3-09 fila 9: "<persona> agregó un pedido a mano a <a quién>" o "<persona> sacó el pedido a mano a …". */
+function aPedidoAMano(e: any): PedidoAManoEnHistorial {
+  const d = e.detalle ?? {};
+  return { tipo: TIPO_A_MANO[e.tipo], fecha: e.created_at, persona: texto(d.persona) ?? "", a: texto(d.a) ?? "" };
 }
 
 function aEnvio(e: any): EnvioDeReserva {
@@ -350,7 +364,7 @@ export async function cargarReserva(cliente: SupabaseClient, id: string): Promis
       .from("evento_reserva")
       .select("tipo,detalle,created_at")
       .eq("reserva_id", id)
-      .in("tipo", ["pedidos_enviados", "envio_de_prueba", "producto_confirmado", ...Object.keys(TIPO_CAMBIO), ...Object.keys(TIPO_CORRECCION)])
+      .in("tipo", ["pedidos_enviados", "envio_de_prueba", "producto_confirmado", ...Object.keys(TIPO_CAMBIO), ...Object.keys(TIPO_CORRECCION), ...Object.keys(TIPO_A_MANO)])
       .order("created_at"),
   ]);
   const filasPedidos = (verificar(pedidos) as any[]).map(aPedidoVista);
@@ -365,7 +379,7 @@ export async function cargarReserva(cliente: SupabaseClient, id: string): Promis
   const sumados = filasMails.filter((m) => m.id !== r.mail_recibido_id).sort((a, b) => llegada(a) - llegada(b));
 
   return {
-    ...aFila(r, avisos.get(r.id), canceladas.has(r.id), otros, filasPedidos.some((p) => p.estado !== "enviado")),
+    ...aFila(r, avisos.get(r.id), canceladas.has(r.id), otros, filasPedidos.some((p) => p.estado !== "enviado" && !p.aMano)),
     productoTextoAgencia: texto(r.producto_texto_agencia),
     duplicadaDeId: r.duplicada_de_id ?? null,
     habitacion: texto(r.habitacion),
@@ -384,6 +398,7 @@ export async function cargarReserva(cliente: SupabaseClient, id: string): Promis
     responsables: historial.filter((e) => e.tipo in TIPO_CAMBIO).map(aCambioDeResponsable),
     correcciones: historial.filter((e) => e.tipo in TIPO_CORRECCION).map(aCorreccion),
     avisarCambioDeVuelo: proveedoresAAvisar(historial),
+    pedidosAMano: historial.filter((e) => e.tipo in TIPO_A_MANO).map(aPedidoAMano),
   };
 }
 

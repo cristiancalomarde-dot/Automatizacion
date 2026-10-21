@@ -53,6 +53,8 @@ export interface PedidoGuardado {
   copia_en_enviados?: boolean | null;
   envio_prueba_en?: string | null;
   envio_prueba_por_nombre?: string | null;
+  /** M3-09 (0023): lo escribió una persona del equipo (casilla "a-mano:<uuid>"). */
+  a_mano?: boolean;
 }
 
 export interface TareaGuardada {
