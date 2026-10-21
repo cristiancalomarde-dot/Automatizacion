@@ -3,14 +3,14 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
 
 # Dónde retomar
 
-- **2026-10-21: M3-09 (pedido a mano) terminada, SIN publicar.** Commits d712bf7..b343477 en el clon
-  (`C:\Users\gs\dev\hi-travel-automatizacion`, donde se instala y verifica: en Drive `npm ci` deja los archivos vacíos).
-  Migración **0023_pedido_a_mano** aplicada solo a la base de pruebas: **va a la real con OK del owner ANTES del push**
-  (el código lee `reserva_pedido.a_mano`; publicar antes rompe detalle, lista y pedidos). M3-08 ya está online (sin
-  migración). Admin = **operations@** (es el owner; ccalomarde@ le dio problemas): `ADMINS_EMAILS` ya cambiada en
-  `.env.local` del clon; en Vercel la carga el owner + Redeploy. Suite completa: fallas intermitentes por lentitud de la
-  base de pruebas (timeouts), que pasan corridas solas.
-  - **Siguiente:** (1) OK del owner → 0023 a la real → push → probar el pedido a mano con ARCH31 en modo prueba.
+- **2026-10-21: M3-09 (pedido a mano) publicada; migración 0023 aplicada a la real con OK** (la corrió el owner con
+  `! bash <script>`: el clasificador de permisos bloquea `db push` a la real desde el agente; el push a GitHub sí pasó).
+  Se trabaja en el clon `C:\Users\gs\dev\hi-travel-automatizacion` (en Drive `npm ci` deja los archivos vacíos) y el
+  repo de Drive hace `git pull --ff-only` del clon y `git push`. Base real por el pooler
+  `aws-0-ca-central-1.pooler.supabase.com:5432` (la URL directa de `.env.local` no resuelve). M3-08 online.
+  Admin = **operations@** (es el owner): `ADMINS_EMAILS` cargada en Vercel por el owner + Redeploy. Suite completa:
+  fallas intermitentes por lentitud de la base de pruebas (timeouts), que pasan corridas solas.
+  - **Siguiente:** (1) el owner prueba el pedido a mano con ARCH31 en modo prueba y "Viajes terminados" con operations@.
     (2) Aceptar reenvíos del equipo a sales@ (propuesto). (3) M3-04 cuando entren reservas reales.
 
 - **2026-10-20: M3-06 y M3-07 publicadas; migraciones 0021 y 0022 aplicadas a la real con OK.** Firma por operativo
