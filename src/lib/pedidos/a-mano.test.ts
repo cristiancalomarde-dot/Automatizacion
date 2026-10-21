@@ -6,7 +6,8 @@
 // un pedido a mano no cuente como "pedido incompleto" (fila 7).
 import { describe, expect, it } from "vitest";
 import { TEXTOS } from "@/lib/textos";
-import { borradorAMano, CASILLA_A_MANO, esPedidoAMano, leerMails, nombreDelPedido, validarPedidoAMano } from "./a-mano";
+import { CASILLA_A_MANO, esPedidoAMano, leerMails, nombreDelPedido, validarPedidoAMano } from "./a-mano";
+import { borradorAMano } from "./a-mano-borrador";
 import { pedidoIncompleto } from "./envio/enviar";
 import { cargarPlantilla, leerPlantilla } from "./plantilla";
 import { MARCA_NOMBRE } from "./tipos";

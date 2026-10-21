@@ -269,7 +269,7 @@ function Revision({
   const hayPedidos = datos.pedidos.length > 0;
   const [escribiendo, setEscribiendo] = useState(false);
   // M3-09 fila 1: solo en una reserva recibida o pedida a proveedor que no sea una cancelación (el servidor manda el borrador).
-  const borradorAMano = datos.aMano && (!datos.reserva.estado || datos.reserva.estado === "recibida" || datos.reserva.estado === "pedido_a_proveedor") ? datos.aMano : null;
+  const borradorAMano = datos.aMano && (!datos.estadoReserva || datos.estadoReserva === "recibida" || datos.estadoReserva === "pedido_a_proveedor") ? datos.aMano : null;
 
   return (
     <>

@@ -407,6 +407,15 @@ dice así (no "Excel de paquetes").
 - Las dos tablas cuelgan de la reserva con `on delete cascade` (solo se van con una reserva de
   prueba: una real no se borra). RLS del equipo: select/insert/update; delete solo de borradores
   sin editar y de tareas.
+- **Pedidos a mano (M3-09, 0023):** `a_mano` marca un pedido escrito por una persona del equipo
+  (lo que el armado no cubre: una noche extra, un servicio aparte, una consulta). Su casilla es
+  `a-mano:<uuid>` (check: la marca y la casilla dicen lo mismo), así que convive con otro a mano o
+  con un armado al mismo mail. `agregar_pedido_a_mano(reserva, proveedor, destinatarios, asunto,
+  cuerpo, firma)` y `sacar_pedido_a_mano(pedido)` (security invoker, con historial
+  `pedido_a_mano_agregado` / `pedido_a_mano_sacado`, sin datos de pasajeros): solo en una reserva
+  `recibida` o `pedido_a_proveedor`; se saca solo en `borrador` o `fallo` (policy de delete propia).
+  Sin proveedor del directorio, `proveedores` lleva los mails. El rearmado no los borra y "pedido
+  incompleto" no los cuenta. Se mandan por el mismo envío de M3-03.
 - `npm run armar:pedidos -- --reserva <id> | --ejemplos` (solo base de pruebas) arma y guarda; con
   `--ejemplos` escribe `docs/sdd/diagnosticos/M3-01-ejemplos-pedidos.md` con los pasajeros
   enmascarados.

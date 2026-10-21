@@ -1,24 +1,18 @@
 /**
  * Un pedido escrito por una persona del equipo (spec M3-09), sin base ni red:
- * el borrador inicial (de la misma plantilla que los armados), la lectura de
- * los mails a mano y la validación antes de guardarlo.
+ * la lectura de los mails a mano y la validación antes de guardarlo.
  *
- * Se puede importar desde el navegador: no lee archivos (la plantilla la pasa
- * el servidor, que la lee con `cargarPlantilla`).
+ * Se puede importar desde el navegador: no lee archivos. El borrador inicial
+ * (que usa la plantilla) está en `a-mano-borrador.ts`, solo para el servidor.
  */
 import { esIdDeReserva } from "@/lib/reservas/reglas";
 import { TEXTOS } from "@/lib/textos";
-import { nombreDelPasajero } from "./formato";
-import { completar } from "./plantilla";
-import type { PasajeroDeReserva, Plantilla } from "./tipos";
+import type { PasajeroDeReserva } from "./tipos";
 
 const T = TEXTOS.pedidos.aMano;
 
 /** La casilla de un pedido a mano: "a-mano:<uuid>" (0023), nunca choca con la de un armado. */
 export const CASILLA_A_MANO = "a-mano:";
-
-/** El lugar del espacio en blanco: no puede aparecer en la plantilla (es un carácter de control). */
-const ESPACIO = "\u0000";
 
 export interface BorradorAMano {
   asunto: string;
@@ -31,34 +25,6 @@ export interface DatosParaAMano {
   numero: string | null;
   pax: number | null;
   pasajeros: readonly PasajeroDeReserva[];
-}
-
-/**
- * El borrador con que arranca un pedido a mano (fila 3): el asunto de la
- * plantilla con el pasajero principal, el pax y la referencia (sin producto:
- * el pedido no es de un producto del catálogo); el cuerpo de la plantilla con
- * un espacio en blanco donde van los servicios, la cantidad de pasajeros y el
- * cierre; la firma de siempre.
- */
-export function borradorAMano(reserva: DatosParaAMano, plantilla: Plantilla): BorradorAMano {
-  const principal = reserva.pasajeros.map(nombreDelPasajero).find(Boolean) ?? "sin nombre";
-  const pax = reserva.pax ?? (reserva.pasajeros.length || null);
-  const asunto = completar(plantilla.asunto, {
-    pasajero: principal,
-    pax: String(pax ?? "?"),
-    producto: "",
-    referencia: reserva.numero?.trim() ? ` · Ref. ${reserva.numero.trim()}` : "",
-  })
-    // Sin producto, el separador que lo rodeaba sobra.
-    .split(/\s*·\s*/)
-    .filter(Boolean)
-    .join(" · ");
-  const cuerpo = completar(plantilla.cuerpo, {
-    servicios: ESPACIO,
-    pasajeros: `Pasajeros: ${pax ?? "a confirmar"}`,
-    pendientes: "",
-  }).replace(ESPACIO, "");
-  return { asunto, cuerpo, firma: plantilla.firma };
 }
 
 // Un mail: algo antes de la @, un dominio con al menos un punto y nada vacío entre puntos.

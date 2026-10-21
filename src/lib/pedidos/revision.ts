@@ -14,7 +14,8 @@ import { esCorreoDelDominioPermitido, obtenerDominioPermitido } from "@/lib/auth
 import { esCancelacion, esIdDeReserva } from "@/lib/reservas/reglas";
 import type { EstadoReserva } from "@/lib/reservas/tipos";
 import { TEXTOS } from "@/lib/textos";
-import { borradorAMano, validarPedidoAMano, type BorradorAMano, type EntradaAMano } from "./a-mano";
+import { validarPedidoAMano, type BorradorAMano, type EntradaAMano } from "./a-mano";
+import { borradorAMano } from "./a-mano-borrador";
 import { armarPedidos, porQueNoSeArma } from "./armar";
 import { cargarCatalogoParaPedidos, cargarDiasServicio, cargarExcursionesConEntrada, cargarProveedoresFichaCompleta, cargarReservaParaPedidos } from "./cargar";
 import { cargarPedidos, guardarPedidosArmados, type PedidoGuardado, type TareaGuardada } from "./guardar";
@@ -42,7 +43,9 @@ export async function usuarioDelEquipo(cliente: SupabaseClient): Promise<{ id: s
 }
 
 export interface PantallaPedidos {
-  reserva: { id: string; numero: string | null; agencia: string; estado?: EstadoReserva };
+  reserva: { id: string; numero: string | null; agencia: string };
+  /** M3-09: el estado de la reserva (los pedidos a mano se agregan en recibida o pedido a proveedor). */
+  estadoReserva?: EstadoReserva;
   pedidos: PedidoGuardado[];
   tareas: TareaGuardada[];
   avisos: string[];
@@ -106,7 +109,8 @@ export async function prepararPedidos(cliente: SupabaseClient, reservaId: string
 
   return {
     ok: true,
-    reserva: { id: reserva.id, numero: reserva.numero, agencia: reserva.agencia, estado: reserva.estado },
+    reserva: { id: reserva.id, numero: reserva.numero, agencia: reserva.agencia },
+    estadoReserva: reserva.estado,
     pedidos: guardados.pedidos,
     tareas: guardados.tareas,
     avisos: avisosDeLaPantalla(reserva, armado),

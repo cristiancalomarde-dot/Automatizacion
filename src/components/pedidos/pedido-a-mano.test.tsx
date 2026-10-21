@@ -82,7 +82,8 @@ const aMano = (n: number, parcial: Partial<PedidoGuardado> = {}) =>
 function pantalla(parcial: Partial<PantallaPedidos> = {}) {
   return {
     ok: true as const,
-    reserva: { id: RESERVA, numero: "DK1592913", agencia: "Kilroy", estado: "recibida" as const },
+    reserva: { id: RESERVA, numero: "DK1592913", agencia: "Kilroy" },
+    estadoReserva: "recibida" as const,
     pedidos: [armado],
     tareas: [],
     avisos: [],
@@ -112,7 +113,7 @@ afterEach(cleanup);
 
 describe("dónde aparece (fila 1)", () => {
   it.each(["recibida", "pedido_a_proveedor"] as const)("en una reserva %s, debajo de las tarjetas", async (estado) => {
-    acciones.armarPedidosDeLaReserva.mockResolvedValueOnce(pantalla({ reserva: { id: RESERVA, numero: "DK1592913", agencia: "Kilroy", estado } }));
+    acciones.armarPedidosDeLaReserva.mockResolvedValueOnce(pantalla({ estadoReserva: estado }));
     abrir();
     const boton = await screen.findByRole("button", { name: A.agregar });
     const tarjeta = screen.getByRole("article", { name: "Cuenca del Plata" });
