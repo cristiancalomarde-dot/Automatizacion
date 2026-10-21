@@ -18,6 +18,7 @@ import { cargarEquivalencias } from "@/lib/importador-productos/equivalencias";
 import { CODIGOS_PILOTO, importarProductosSimples, type ResumenImportacionProductos } from "@/lib/importador-productos/importar";
 import { parsearNivelesConfirmados } from "@/lib/importador-productos/niveles-confirmados";
 import { parsearPaquetesPiloto } from "@/lib/importador-productos/paquetes-piloto";
+import { parsearRenglonesAgregados } from "@/lib/importador-productos/renglones-agregados";
 import { leerServiciosCargados, resumirCarga } from "@/lib/importador-productos/reporte-carga";
 import { credencialesSupabaseDisponibles } from "./helpers/entorno-supabase";
 
@@ -29,6 +30,8 @@ const REPORTE = resolve(RAIZ, "docs/sdd/diagnosticos/M1-04d-carga.md");
 const LOS_17 = parsearPaquetesPiloto(readFileSync(resolve(RAIZ, "data/paquetes-piloto.csv"), "utf-8")).filter(
   (p) => !CODIGOS_PILOTO.includes(p.codigo),
 );
+/** M3-10: los renglones que el owner todavía no escribió en el Excel (el Fitz Camp de AR34), como el script. */
+const RENGLONES_AGREGADOS = parsearRenglonesAgregados(readFileSync(resolve(RAIZ, "data/renglones-agregados.csv"), "utf-8"));
 const NIVELES = parsearNivelesConfirmados(readFileSync(resolve(RAIZ, "data/niveles-confirmados.csv"), "utf-8"));
 const CORRE = credencialesSupabaseDisponibles() && existsSync(RUTA_PAQUETES) && existsSync(RUTA_PROVEEDORES);
 const TIMEOUT = 300_000;
@@ -77,6 +80,7 @@ interface Fila {
       nivelesConfirmados: NIVELES,
       paquetes: LOS_17,
       tipoCorrida: TIPO_CORRIDA_PAQUETES,
+      renglonesAgregados: RENGLONES_AGREGADOS,
     });
   }
 
@@ -109,11 +113,11 @@ interface Fila {
       }
     }, TIMEOUT);
 
-    it("#2 cargar las equivalencias del formato nuevo (92 desde M1-08, 95 desde M2-08) es idempotente", async () => {
+    it("#2 cargar las equivalencias del formato nuevo (92 desde M1-08, 95 desde M2-08, 104 desde M3-10) es idempotente", async () => {
       const texto = readFileSync(RUTA_EQUIVALENCIAS, "utf-8");
       await cargarEquivalencias({ admin, textoCsv: texto });
       const segunda = await cargarEquivalencias({ admin, textoCsv: texto });
-      expect(segunda).toMatchObject({ total: 95, creados: 0, actualizados: 0 });
+      expect(segunda).toMatchObject({ total: 104, creados: 0, actualizados: 0 });
       const { data } = await admin
         .from("proveedor_alias")
         .select("destino, modo, proveedor:proveedor_id(nombre, ciudad)")
@@ -129,11 +133,11 @@ interface Fila {
       expect((rumbo!.proveedor as unknown as { ciudad: string }).ciudad).toBe("USHUAIA");
     }, TIMEOUT);
 
-    it("#9 los 17 productos existen con servicios; una segunda corrida deja 0 filas nuevas", async () => {
+    it("#9 los 17 productos (22 desde M3-10) existen con servicios; una segunda corrida deja 0 filas nuevas", async () => {
       const primera = await cargar();
       importaciones.push(primera.importacionId);
       expect(primera.codigosNoEncontrados).toEqual([]);
-      expect(primera.productos).toHaveLength(17);
+      expect(primera.productos).toHaveLength(22);
       expect(primera.productos.every((p) => !p.bloqueParaRevisar && p.opciones > 0)).toBe(true);
       const tras = await conteos();
       const segunda = await cargar();
@@ -141,7 +145,7 @@ interface Fila {
       expect(segunda.creados).toEqual({ productos: 0, servicios: 0, codigos: 0 });
       expect(segunda.servicios).toMatchObject({ creados: 0, actualizados: 0, eliminados: 0 });
       expect(await conteos()).toEqual(tras);
-      expect(tras.productos).toBe(17);
+      expect(tras.productos).toBe(22);
       const { data } = await admin.from("importacion").select("tipo_corrida, filas_cargadas").eq("id", segunda.importacionId).single();
       expect(data).toEqual({ tipo_corrida: TIPO_CORRIDA_PAQUETES, filas_cargadas: 0 });
     }, TIMEOUT);

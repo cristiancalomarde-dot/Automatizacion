@@ -197,13 +197,23 @@ interface Fila {
     if (importaciones.length) await admin.from("importacion").delete().in("id", importaciones);
   });
 
-  it("fila 5: lo que ya estaba no cambia (productos, servicios, partes, ajustes, códigos, noches, proveedores y reservas)", async () => {
+  it("fila 5: lo que ya estaba no cambia (productos, servicios, partes, ajustes, códigos, noches, proveedores y reservas)", { timeout: 300_000 }, async () => {
     expect(existentes.length).toBeGreaterThanOrEqual(82);
-    expect(await foto(existentes)).toBe(fotoAntes);
-    const proveedores = JSON.stringify((await todo<Record<string, unknown>>("proveedor", "id, nombre, ciudad, mails, canal, telefono")).map((p) => JSON.stringify(p)).sort());
-    expect(proveedores).toBe(proveedoresAntes);
-    // Las reservas que siguen (otros archivos de test pueden borrar las suyas) conservan producto y estado.
-    const despues = await todo<{ id: string; producto_id: string | null; estado: string }>("reserva", "id, producto_id, estado");
+    // Otros archivos de test cambian un dato del catálogo un rato y lo deshacen al final
+    // (M2-08 "variantes", carga-paquetes): lo que importa es que nada quede cambiado.
+    await expect.poll(() => foto(existentes), { timeout: 240_000, interval: 10_000 }).toBe(fotoAntes);
+    // El directorio: igual (importador-proveedores agrega y borra los suyos mientras corre).
+    await expect
+      .poll(async () => JSON.stringify((await todo<Record<string, unknown>>("proveedor", "id, nombre, ciudad, mails, canal, telefono")).map((p) => JSON.stringify(p)).sort()), {
+        timeout: 120_000,
+        interval: 10_000,
+      })
+      .toBe(proveedoresAntes);
+    // Las reservas que ya estaban (las de más de una hora: las de otros archivos de test van y vienen)
+    // conservan producto y estado.
+    const despues = await todo<{ id: string; producto_id: string | null; estado: string }>("reserva", "id, producto_id, estado", (q) =>
+      q.lt("created_at", new Date(Date.now() - 3_600_000).toISOString()),
+    );
     for (const r of despues) {
       if (reservasAntes.has(r.id)) expect(`${r.producto_id}|${r.estado}`, r.id).toBe(reservasAntes.get(r.id));
     }

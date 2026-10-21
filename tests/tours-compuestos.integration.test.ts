@@ -103,7 +103,7 @@ interface Componente {
       const { data } = await admin.from("producto").select("codigo").in("codigo", TOURS_PILOTO);
       expect(data!.map((p) => p.codigo).sort()).toEqual([...TOURS_PILOTO].sort());
       const { data: ce } = await admin.from("codigo_externo").select("codigo").eq("agencia", "HI Travel").in("codigo", TOURS_PILOTO);
-      expect(ce).toHaveLength(7);
+      expect(ce).toHaveLength(TOURS_PILOTO.length); // 7, y 10 desde M3-10
       expect(await serviciosPaquetes()).toEqual(antes);
       const { data: imp } = await admin.from("importacion").select("tipo_corrida").eq("id", primera.importacionId).single();
       expect(imp!.tipo_corrida).toBe(TIPO_CORRIDA_TOURS);

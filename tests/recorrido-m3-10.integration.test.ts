@@ -248,7 +248,9 @@ interface ReservaCreada {
       "reservas@gruposumma.tur.ar",
       "reservas@maderotango.com.ar",
     ]);
-    expect(oxford).toMatch(/^Pedir a mano: Hotel Oxford Montevideo \(OD040\), IN 14 mar 2027, OUT 16 mar 2027\. .*Sin mail: pedilo a mano/);
+    expect(oxford).toBe(
+      "Pedir a mano: Hotel Oxford Montevideo (OD040), IN 14 mar 2027, OUT 16 mar 2027. Sin mail todavía: pedilo a mano. El owner lo agrega con su mail al Excel de proveedores (respuesta del owner, 2026-10-21)",
+    );
     // Ningún otro "revisar a mano" en ninguno de los 6.
     const revisar = Object.entries(resumen).flatMap(([c, r]) => r.tareas.filter((t) => t.startsWith("revisar")).map((t) => `${c} ${t}`));
     expect(revisar).toHaveLength(1);

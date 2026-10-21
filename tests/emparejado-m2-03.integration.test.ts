@@ -112,10 +112,11 @@ const fichaDePrueba = (nombre: string) => conNumerosDeTest(fichaDePruebaReal(nom
       }
     }, 120_000);
 
-    it("fila 2: una fila con ARCH33EXP (no cargado) hace fallar la carga y no escribe nada", async () => {
+    // M3-10: ARCH33EXP ya está cargado; el caso se prueba con un código que no existe.
+    it("fila 2: una fila con un producto que no está en el catálogo (XX99) hace fallar la carga y no escribe nada", async () => {
       const antes = await codigosExternos();
-      const malo = `${CSV.trim()}\nHI_TRAVEL_ARCH_EXP-677,ARCH33EXP,Trekking Paradise EXPRESS,no cargado\n`;
-      await expect(importarCodigosKilroy(admin, malo)).rejects.toThrow(/ARCH33EXP no existe en el catálogo.*No se cargó nada/);
+      const malo = `${CSV.trim()}\nHI_TRAVEL_XX99-677,XX99,Producto inexistente,no cargado\n`;
+      await expect(importarCodigosKilroy(admin, malo)).rejects.toThrow(/XX99 no existe en el catálogo.*No se cargó nada/);
       expect(await codigosExternos()).toEqual(antes);
     });
 
@@ -244,26 +245,30 @@ const fichaDePrueba = (nombre: string) => conNumerosDeTest(fichaDePruebaReal(nom
     }
     const iaQueNoSeDebeLlamar = () => vi.fn<ProponerProducto>(async () => ({ resultado: { tipo: "fallo", causa: "error" }, llamada: null, costo: 0 }));
 
-    it("owner 2026-10-14: Kilroy HI_TRAVEL_ARCH_EXP-677 → para revisión con 'no cargado' y 0 llamadas a la IA", async () => {
+    /** El id de un producto del catálogo. */
+    async function idDeProducto(codigo: string): Promise<string> {
+      const { data, error } = await admin.from("producto").select("id").eq("codigo", codigo).single();
+      if (error) throw new Error(error.message);
+      return data!.id;
+    }
+
+    // M3-10: ARCH33EXP y ARBR23 ya están cargados (antes, "no cargado"; el mecanismo se prueba en los unitarios).
+    it("M3-10: Kilroy HI_TRAVEL_ARCH_EXP-677 → ARCH33EXP por código, recibida y 0 llamadas a la IA", async () => {
       const proponer = iaQueNoSeDebeLlamar();
       const [c] = await crear(fichaDePrueba("kilroy-arch-exp-dk1586168"), proponer);
-      expect(c.reserva).toMatchObject({ estado: "para_revision", producto_id: null });
-      expect(c.reserva.motivos_revision).toEqual([
-        "El producto ARCH33EXP (Patagonia, Trekking Paradise with W-Trek EXPRESS) existe en el catálogo de HI Travel pero todavía no está cargado en el sistema.",
-      ]);
+      expect(c.reserva).toMatchObject({ estado: "recibida", producto_id: await idDeProducto("ARCH33EXP") });
+      expect(c.reserva.motivos_revision).toEqual([]);
       expect(proponer).not.toHaveBeenCalled();
       expect(await llamadasDe(c.reserva.id)).toEqual([]);
     });
 
-    it("owner 2026-10-14: TourRadar número de tour 150104 → ARBR23 no cargado, 0 llamadas a la IA", async () => {
+    it("M3-10: TourRadar número de tour 150104 → ARBR23 por código, 0 llamadas a la IA", async () => {
       const proponer = iaQueNoSeDebeLlamar();
       const ficha = fichaDePrueba("tourradar-ba-rio-1377583");
       ficha.productos[0].codigo = "150104";
       const [c] = await crear(ficha, proponer);
-      expect(c.reserva).toMatchObject({ estado: "para_revision", producto_id: null });
-      expect(c.reserva.motivos_revision).toEqual([
-        "El producto ARBR23 (From Buenos Aires to Rio) existe en el catálogo de HI Travel pero todavía no está cargado en el sistema.",
-      ]);
+      expect(c.reserva.producto_id).toBe(await idDeProducto("ARBR23"));
+      expect(c.reserva.motivos_revision.join(" ")).not.toMatch(/no está cargado|producto/i);
       expect(proponer).not.toHaveBeenCalled();
       expect(await llamadasDe(c.reserva.id)).toEqual([]);
     });
