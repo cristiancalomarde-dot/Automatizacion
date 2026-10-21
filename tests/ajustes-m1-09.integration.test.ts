@@ -89,7 +89,7 @@ const TIMEOUT = 120_000;
     }
     const reporte = readFileSync(resolve(RAIZ, "docs/sdd/diagnosticos/M1-08-traslados.md"), "utf-8");
     const linea = "- **OD016** · Transfer FTE Airport - El Calafate Accommodation (Chalten Travel): no se pide — Llega en bus desde El Chaltén.";
-    expect(reporte.split(linea).length - 1).toBe(2);
+    expect(reporte.split(linea).length - 1).toBe(3); // ARCH31, ARCH33 y, desde M3-10, ARCH33EXP
     expect(reporte).not.toContain("El Calafate Accommodation - FTE Airport");
   }, TIMEOUT);
 
