@@ -168,7 +168,8 @@ interface Paso {
 }
 
 // "night bus", "overnight bus" y el typo del Word "nigh bus" (AR09, día 8).
-const NOCTURNO_DIA = /\b(over)?night?\s+bus\b|\bovernight\b/i;
+// M3-10: "In the evening, departure to Puerto Iguazú by bus" (ARBR23, día 4).
+const NOCTURNO_DIA = /\b(over)?night?\s+bus\b|\bovernight\b|\bin the evening\b[^.]*\bby bus\b/i;
 const DESTINOS_CON_TRANSFER = new Set(["IGR", "IGU"]);
 
 /** "PNT - PUQ" (encabezado de RutasenBus, en códigos) es la ruta de ese tramo, en cualquier sentido. */
@@ -358,7 +359,13 @@ export function armarTour(e: EntradaArmado): TourArmado {
     const hoy = textoDia.get(p.dia);
     const manana = textoDia.get(p.dia + 1);
     if (!hoy) return; // el Word no tiene ese día escrito: no hay con qué controlar
-    const llega = nombraDestino(hoy.titulo, hasta) || (p.nocturno && manana !== undefined && nombraDestino(manana.titulo, hasta));
+    // M3-10: un título sin ciudad ("Day 11: End of Itinerary", ARCH33EXP) se controla con
+    // el renglón que sigue ("Puerto Natales – Punta Arenas Airport").
+    const subtitulo = ciudadesEnTexto(hoy.titulo).length === 0 ? (hoy.texto.split("\n")[1] ?? "") : "";
+    const llega =
+      nombraDestino(hoy.titulo, hasta) ||
+      nombraDestino(subtitulo, hasta) ||
+      (p.nocturno && manana !== undefined && nombraDestino(manana.titulo, hasta));
     if (!llega) {
       motivos.push(
         `según las noches, el bus a ${nombreDestino(hasta)} sale el día ${p.dia}, pero el itinerario ese día dice “${hoy.titulo}”`,
@@ -521,7 +528,8 @@ export function armarTour(e: EntradaArmado): TourArmado {
       destinos: [],
       desde: bus.desde,
       hasta: bus.hasta,
-      descripcionRuta: ruta(bus.desde!, bus.hasta!),
+      // M3-10: el ferry de ARUY01 (Buenos Aires – Colonia) también lo compra HI Travel.
+      descripcionRuta: `${bus.ferry ? "Ferry " : ""}${ruta(bus.desde!, bus.hasta!)}`,
       noches: null,
       diaDesde: el.paso.dia,
       nocturno: el.paso.nocturno,

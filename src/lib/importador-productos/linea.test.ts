@@ -348,3 +348,36 @@ describe("clasificarLinea — \"+\" dentro del nombre de una excursión (OD025, 
     expect(r.servicios[0].opciones[0].serviceProvider).toBe("Pinguinera + Gaiman 1 Sepiembre a 28 Febrero");
   });
 });
+
+describe("clasificarLinea — renglones de Uruguay y del W Trek Express (spec M3-10)", () => {
+  it("\"Accommodaton\" (typo de COMPUY03) se lee como alojamiento Hostel con sus dos opciones", () => {
+    const r = clasificarLinea("Accommodaton: Viajero Hostel Colonia / Viajero B&B. Booking Supplier: Viajero Hostels");
+    if (r.clase !== "servicio") throw new Error(r.clase);
+    expect(r.servicios[0]).toMatchObject({ tipo: "alojamiento", nivel: "Hostel" });
+    expect(r.servicios[0].opciones.map((o) => [o.serviceProvider, o.bookingSupplier])).toEqual([
+      ["Viajero Hostel Colonia", "Viajero Hostels"],
+      ["Viajero B&B", "Viajero Hostels"],
+    ]);
+  });
+
+  it("\"Regular Transfer … hotel / hostel\" (OD040) es UN traslado: \"hotel / hostel\" no son dos opciones", () => {
+    const r = clasificarLinea("Regular Transfer MVD Airport - hotel / hostel. Booking Supplier: Turismo Dcom");
+    if (r.clase !== "servicio") throw new Error(r.clase);
+    expect(r.servicios).toHaveLength(1);
+    expect(r.servicios[0].tipo).toBe("traslado");
+    expect(r.servicios[0].opciones).toEqual([
+      { prioridad: 1, serviceProvider: "MVD Airport - hotel/hostel", bookingSupplier: "Turismo Dcom" },
+    ]);
+  });
+
+  it.each([
+    "Tarifas W Trek Express",
+    "Group Tour with Guide Tent DBL",
+    "Group Tour with Guide Refugio",
+    "Net Rates COL",
+    "(poner en listado de buses)",
+    "2",
+  ])("\"%s\" es una etiqueta de la tabla de precios, no un servicio (CH11, COMPUY03, OD040)", (texto) => {
+    expect(clasificarLinea(texto).clase).toBe("etiqueta");
+  });
+});

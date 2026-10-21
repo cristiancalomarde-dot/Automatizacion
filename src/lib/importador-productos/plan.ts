@@ -15,6 +15,7 @@ import {
 } from "./bloque";
 import { nivelDeAlojamiento, type ServicioLeido, type TipoServicio } from "./linea";
 import { aplicarNivelesConfirmados, type NivelConfirmado } from "./niveles-confirmados";
+import { sumarRenglonesAgregados, type RenglonAgregado } from "./renglones-agregados";
 
 /**
  * De la hoja a "qué productos y servicios cargar" (spec M1-04 §3 #1, #3,
@@ -76,6 +77,8 @@ export interface ProductoPlaneado {
   correcciones: CorreccionAplicada[];
   /** Niveles confirmados (M1-04b) de este producto cuya línea no apareció en el bloque: para revisar el archivo. */
   nivelesConfirmadosSinLinea: NivelConfirmado[];
+  /** M3-10: renglones de data/renglones-agregados.csv que el bloque ya trae (no se duplicaron). */
+  renglonesAgregadosYaEnElExcel: string[];
   origen: "reglas" | "ia" | "reglas+ia";
 }
 
@@ -177,6 +180,8 @@ export async function planificarProductos(opciones: {
   interpretarIA: InterpretarBloque | null;
   /** Niveles confirmados por el owner (data/niveles-confirmados.csv, spec M1-04b). */
   nivelesConfirmados?: NivelConfirmado[];
+  /** Renglones que todavía no están en el Excel (data/renglones-agregados.csv, M3-10). */
+  renglonesAgregados?: readonly RenglonAgregado[];
 }): Promise<Plan> {
   const { filas, codigos, interpretarIA } = opciones;
   const nivelesConfirmados = opciones.nivelesConfirmados ?? [];
@@ -197,6 +202,7 @@ export async function planificarProductos(opciones: {
     bloques: bloques.map((bloque) => ({ bloque, rango })),
     interpretarIA,
     nivelesConfirmados,
+    renglonesAgregados: opciones.renglonesAgregados,
   });
   return { destinoEncontrado: true, codigosNoEncontrados: noEncontrados, ...planeados };
 }
@@ -211,6 +217,7 @@ export async function planificarBloques(opciones: {
   bloques: Array<{ bloque: BloqueProducto; rango: RangoDestino }>;
   interpretarIA: InterpretarBloque | null;
   nivelesConfirmados?: NivelConfirmado[];
+  renglonesAgregados?: readonly RenglonAgregado[];
 }): Promise<Pick<Plan, "productos" | "bloquesQueNecesitanIA" | "lineasDescartadasPorIA">> {
   const { filas, interpretarIA } = opciones;
   const nivelesConfirmados = opciones.nivelesConfirmados ?? [];
@@ -238,6 +245,7 @@ export async function planificarBloques(opciones: {
       nivelesNoOfrecidos: [],
       correcciones: lectura.correcciones,
       nivelesConfirmadosSinLinea: [],
+      renglonesAgregadosYaEnElExcel: [],
       origen: "reglas",
     };
 
@@ -292,6 +300,10 @@ export async function planificarBloques(opciones: {
     }
 
     if (!producto.bloqueParaRevisar) {
+      // M3-10: los renglones que el owner todavía no agregó al Excel, al final del bloque.
+      const conAgregados = sumarRenglonesAgregados(bloque.codigo, producto.servicios, opciones.renglonesAgregados ?? []);
+      producto.servicios = conAgregados.servicios;
+      producto.renglonesAgregadosYaEnElExcel = conAgregados.yaEnElExcel;
       // Lo que interpretó la IA también recibe su nivel confirmado.
       const trasIA = aplicarNivelesConfirmados(
         bloque.codigo,

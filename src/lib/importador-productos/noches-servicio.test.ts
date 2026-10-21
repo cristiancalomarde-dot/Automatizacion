@@ -50,7 +50,7 @@ describe("noches de cada servicio de un paquete (spec M1-07 §3 #8)", () => {
 
   it("el archivo real tiene CH10 en tres partes y OD010D por lado (M1-08)", () => {
     const filas = parsearNochesServicio(readFileSync("data/noches-servicio.csv", "utf-8"));
-    expect(filas.map((f) => [f.paquete, f.servicio, f.nocheDesde, f.noches])).toEqual([
+    expect(filas.filter((f) => ["CH10", "OD010D"].includes(f.paquete)).map((f) => [f.paquete, f.servicio, f.nocheDesde, f.noches])).toEqual([
       ["CH10", "alojamiento", 1, 1],
       ["CH10", "W Trek Standard", 2, 4],
       ["CH10", "alojamiento", 6, 1],
@@ -62,6 +62,30 @@ describe("noches de cada servicio de un paquete (spec M1-07 §3 #8)", () => {
       ["OD010D", "La Aldea", 3, 1],
     ]);
     expect(planNochesServicio("OD010D", filas, OD010D, 3)).toHaveLength(6);
+  });
+
+  it("M3-10: CH11 como CH10 (1 + 3 + 1) y AR34 con cada nivel en El Chaltén 1-3 y El Calafate 4-5", () => {
+    const filas = parsearNochesServicio(readFileSync("data/noches-servicio.csv", "utf-8"));
+    const ch11: ServicioDelPaquete[] = [
+      { orden: 1, prioridad: 1, tipo: "alojamiento", nivel: "Hostel", serviceProviderNombre: "Puma Hostel" },
+      { orden: 2, prioridad: 1, tipo: "alojamiento", nivel: "Hotel 3*", serviceProviderNombre: "Big Sur" },
+      { orden: 3, prioridad: 1, tipo: "otro", nivel: null, serviceProviderNombre: "W Trek Express" },
+    ];
+    expect(planNochesServicio("CH11", filas, ch11, 5).map((p) => `${p.orden}:${p.nocheDesde}+${p.noches}`)).toEqual([
+      "1:1+1", "1:5+1", "2:1+1", "2:5+1", "3:2+3",
+    ]);
+    // Los alojamientos de AR34 como los lee el importador (Excel, fila 214): dos estadías por renglón.
+    const hoteles = [
+      ["Hostel", "Rancho Grande"], ["Hostel", "Hostel del Glaciar Pioneros"],
+      ["Budget Hotel", "Budget Hotel Kau Si Aike"], ["Budget Hotel", "Budget Hotel Del Glaciar Libertador"],
+      ["Hotel 3*", "Hotel 3* Poincenot"], ["Hotel 3*", "Hotel 3* Rincon del Calafate"],
+      ["Hotel 4*", "Hotel Destino Sur"], ["Hotel 4*", "Hotel 4* Mirador del Lago"],
+    ];
+    const ar34: ServicioDelPaquete[] = hoteles.map(([nivel, hotel], i) => ({ orden: i + 1, prioridad: 1, tipo: "alojamiento", nivel, serviceProviderNombre: hotel }));
+    expect(planNochesServicio("AR34", filas, ar34, 5).map((p) => `${p.orden}:${p.nocheDesde}+${p.noches} ${p.lugar}`)).toEqual([
+      "1:1+3 El Chaltén", "2:4+2 El Calafate", "3:1+3 El Chaltén", "4:4+2 El Calafate",
+      "5:1+3 El Chaltén", "6:4+2 El Calafate", "7:1+3 El Chaltén", "8:4+2 El Calafate",
+    ]);
   });
 
   // M1-08 §3 #5: Iguazú combined, noches 1-2 del lado brasileño y 3 del argentino.

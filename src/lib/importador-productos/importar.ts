@@ -6,6 +6,7 @@ import { ubicarBloquesEnHoja, type CorreccionAplicada, type LineaDudosa } from "
 import { leerCodigosTourRadar } from "./codigos-tourradar";
 import type { NivelConfirmado } from "./niveles-confirmados";
 import type { PaquetePiloto } from "./paquetes-piloto";
+import type { RenglonAgregado } from "./renglones-agregados";
 import { planificarBloques, planificarProductos, type InterpretarBloque, type NivelParaRevisar, type Plan } from "./plan";
 import { armarFilasServicio, crearIndiceProveedores, type FilaServicio } from "./proveedores";
 
@@ -85,6 +86,8 @@ export interface ResumenProducto {
   lineasParaRevisar: LineaDudosa[];
   correcciones: CorreccionAplicada[];
   nivelesConfirmadosSinLinea: NivelConfirmado[];
+  /** M3-10: renglones de data/renglones-agregados.csv que el Excel ya trae (sacarlos del archivo). */
+  renglonesAgregadosYaEnElExcel: string[];
 }
 
 export interface ResumenImportacionProductos {
@@ -231,6 +234,8 @@ export async function importarProductosSimples(opciones: {
   paquetes?: PaquetePiloto[];
   /** Cómo se registra la corrida en `importacion.tipo_corrida`. */
   tipoCorrida?: string;
+  /** M3-10: renglones que todavía no están en el Excel (data/renglones-agregados.csv). */
+  renglonesAgregados?: readonly RenglonAgregado[];
 }): Promise<ResumenImportacionProductos> {
   const { admin } = opciones;
   const destino = opciones.destino ?? DESTINO_PILOTO;
@@ -245,6 +250,7 @@ export async function importarProductosSimples(opciones: {
       bloques: ubicacion.ubicados.map((u) => ({ bloque: u.bloque, rango: u.rango })),
       interpretarIA: opciones.interpretarIA,
       nivelesConfirmados: opciones.nivelesConfirmados,
+      renglonesAgregados: opciones.renglonesAgregados,
     });
     plan = { destinoEncontrado: true, codigosNoEncontrados: ubicacion.noUbicados.map((n) => n.codigo), ...planeados };
   } else {
@@ -254,6 +260,7 @@ export async function importarProductosSimples(opciones: {
       codigos,
       interpretarIA: opciones.interpretarIA,
       nivelesConfirmados: opciones.nivelesConfirmados,
+      renglonesAgregados: opciones.renglonesAgregados,
     });
   }
   const codigosTR = opciones.rutaCodigosTourRadar
@@ -410,6 +417,7 @@ export async function importarProductosSimples(opciones: {
       lineasParaRevisar: producto.lineasParaRevisar,
       correcciones: producto.correcciones,
       nivelesConfirmadosSinLinea: producto.nivelesConfirmadosSinLinea,
+      renglonesAgregadosYaEnElExcel: producto.renglonesAgregadosYaEnElExcel,
     });
   }
 

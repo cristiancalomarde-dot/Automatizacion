@@ -68,9 +68,11 @@ export type LineaClasificada =
   | { clase: "dudosa"; motivo: string };
 
 const TIPOS: Array<[RegExp, TipoServicio]> = [
-  [/^accomm?odations?$/i, "alojamiento"],
+  // "Accomodation" (COMPBR10) y "Accommodaton" (COMPUY03, M3-10): typos del Excel.
+  [/^accomm?odati?ons?$/i, "alojamiento"],
   [/^excursions?$/i, "excursion"],
-  [/^transfers?$/i, "traslado"],
+  // "Regular Transfer MVD Airport - …" (OD040, M3-10).
+  [/^(regular )?transfers?$/i, "traslado"],
   [/^(public )?bus(es)?$/i, "bus"],
   [/^cruises?$/i, "crucero"],
   [/^(ferry|ferries)$/i, "otro"],
@@ -79,7 +81,7 @@ const TIPOS: Array<[RegExp, TipoServicio]> = [
 ];
 
 const PREFIJO_SERVICIO =
-  /^(accomm?odations?|excursions?|transfers?|public bus(?:es)?|bus(?:es)?|cruises?|ferry|ferries|car rentals?|other services?)\b\s*[:.]?\s*(.*)$/i;
+  /^(accomm?odati?ons?|excursions?|(?:regular\s+)?transfers?|public bus(?:es)?|bus(?:es)?|cruises?|ferry|ferries|car rentals?|other services?)\b\s*[:.]?\s*(.*)$/i;
 /**
  * "Optional Excursion: …" / "Optional: …" (M1-04d #6): el resto se lee como
  * cualquier línea. También "Optiona Transfer …", el typo del Excel del
@@ -104,6 +106,14 @@ export const NOTAS_SIN_SERVICIO = [
   "o Kau Yatun o Design o Esplendor o Rochester",
   "Self Guided Tent DBL",
   "Self Guided Refugio",
+  // M3-10: etiquetas de la tabla de precios del W Trek Express (CH11), del
+  // bloque de Colonia (COMPUY03) y un número suelto en el de Montevideo (OD040).
+  "Tarifas W Trek Express",
+  "Group Tour with Guide Tent DBL",
+  "Group Tour with Guide Refugio",
+  "Net Rates COL",
+  "(poner en listado de buses)",
+  "2",
 ];
 const NOTAS_NORMALIZADAS = new Set(NOTAS_SIN_SERVICIO.map((n) => limpiarNombre(n).toLowerCase()));
 /** Títulos de la tabla de costos (incluye los del Excel vigente: "Excursions Net Rates", "Net Prices", "Tarifas W Trek"). */
@@ -123,6 +133,13 @@ const BOOKING_SUPPLIER = /[\s./:]*\b(?:booking\s+)?book(?:ing|ind|inkg)\s+sup{1,
 const BOOKING_MAL_ESCRITO = /\bbook/i;
 /** "c/" pegado (= "con", ej. "c/ trekking y canoa") no separa opciones (M1-04d). */
 const SEPARADOR_OPCIONES = /\s+\/\s*|(?<!\b[cC])\/\s+/;
+/**
+ * "hotel / hostel" (OD040, M3-10: "Regular Transfer MVD Airport - hotel /
+ * hostel", al final del nombre) no son dos opciones sino a qué alojamiento va:
+ * se pega la "/" (una "/" pegada es parte del nombre). "Beer Hostel / Hostel
+ * Inn" sí son dos opciones: después del segundo no termina el nombre.
+ */
+const HOTEL_O_HOSTEL = /\b(hotel|hostel)\s*\/\s*(hotel|hostel)(?=[\s.:]*$)/i;
 const SEPARADOR_TRAMOS = /\s*\+\s*/;
 const NOCHES = /^(\d+)\s*nights?\b\s*/i;
 /** "El Pueblito 7 Botanica": dos palabras, un 7 suelto y una palabra con mayúscula. */
@@ -210,6 +227,7 @@ export function clasificarLinea(celda: string): LineaClasificada {
     }
   }
 
+  partes[0] = partes[0].replace(HOTEL_O_HOSTEL, "$1/$2");
   const nivel = tipo === "alojamiento" ? nivelDeAlojamiento(partes[0]) : null;
   const tramosBS = partes.length === 2 ? partir(partes[1], SEPARADOR_TRAMOS) : null;
   // Fuera del alojamiento, un "+" con un solo Booking Supplier es parte del

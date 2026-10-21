@@ -11,14 +11,17 @@ import { buscarNoCargado, leerProductosNoCargados } from "./productos-no-cargado
  * (`data/codigos-tourradar.csv`). Sin base ni IA.
  */
 
-const NO_CARGADOS = readFileSync(join(process.cwd(), "data", "productos-no-cargados.csv"), "utf-8");
+const NO_CARGADOS_REAL = readFileSync(join(process.cwd(), "data", "productos-no-cargados.csv"), "utf-8");
+/** La lista de antes de M3-10, para probar el mecanismo (ver __fixtures__/cargar.ts). */
+const NO_CARGADOS = readFileSync(join(__dirname, "__fixtures__", "productos-no-cargados.csv"), "utf-8");
 const CODIGOS_TR = readFileSync(join(process.cwd(), "data", "codigos-tourradar.csv"), "utf-8");
 const ENCABEZADO = "codigo,nombre,agencia,codigo_agencia,nombre_agencia,nota";
 
 describe("data/productos-no-cargados.csv", () => {
   const lista = leerProductosNoCargados(NO_CARGADOS);
 
-  it("trae solo ARCH33EXP, ARBR23, ARUY01 y OD014", () => {
+  it("M3-10: los cuatro que había (ARCH33EXP, ARBR23, ARUY01 y OD014) ya están cargados: el archivo quedó vacío", () => {
+    expect(leerProductosNoCargados(NO_CARGADOS_REAL)).toEqual([]);
     expect([...new Set(lista.map((p) => p.codigo))].sort()).toEqual(["ARBR23", "ARCH33EXP", "ARUY01", "OD014"]);
   });
 
@@ -56,17 +59,23 @@ describe("data/productos-no-cargados.csv", () => {
 });
 
 describe("data/codigos-tourradar.csv", () => {
-  it("trae solo 150146 → AR09", () => {
+  it("trae 150146 → AR09 y, desde M3-10, los tres que estaban en productos-no-cargados.csv", () => {
     expect(leerCodigosTourRadarCsv(CODIGOS_TR)).toEqual([
       { codigo: "150146", nombre: "Patagonia Adventure Tour 16 Days", nuestroCodigo: "AR09" },
+      { codigo: "275366", nombre: "", nuestroCodigo: "ARCH33EXP" },
+      { codigo: "150104", nombre: "Buenos Aires to Rio de Janeiro 12 Days", nuestroCodigo: "ARBR23" },
+      { codigo: "317766", nombre: "Argentina and Uruguay, heart of the River Plate (7 days)", nuestroCodigo: "ARUY01" },
     ]);
   });
 
-  it("la carga apunta a AR09; si el producto no existe, falla sin escribir nada", () => {
+  it("la carga apunta a cada producto; si alguno no existe, falla sin escribir nada", () => {
     const filas = leerCodigosTourRadarCsv(CODIGOS_TR);
-    expect(planCargaCodigosTourRadar(filas, new Map([["AR09", "id-ar09"]]))).toEqual([
+    const ids = new Map([["AR09", "id-ar09"], ["ARCH33EXP", "id-exp"], ["ARBR23", "id-arbr23"], ["ARUY01", "id-aruy01"]]);
+    expect(planCargaCodigosTourRadar(filas, ids)[0]).toEqual(
       { productoId: "id-ar09", agencia: "TourRadar", codigo: "150146", nombre: "Patagonia Adventure Tour 16 Days" },
-    ]);
+    );
+    expect(planCargaCodigosTourRadar(filas, ids).map((c) => c.productoId)).toEqual(["id-ar09", "id-exp", "id-arbr23", "id-aruy01"]);
+    expect(planCargaCodigosTourRadar(filas, ids)[1].nombre).toBeNull();
     expect(() => planCargaCodigosTourRadar(filas, new Map())).toThrow(
       "codigos-tourradar.csv: el código HI Travel AR09 no existe en el catálogo (TourRadar 150146). No se cargó nada.",
     );

@@ -11,3 +11,8 @@ BRARCH26,BRARCH26,,"Kilroy usa nuestro mismo código (owner, 2026-09-27); el imp
 HI_ARGENTINA_IGUAZU_BR_4DAYS-677,OD010B,Iguazu Falls on a Shoestring - 4 Days - Start in Brazil,"Owner (2026-10-15): es OD010B. Llegó en los mails reales DK1585447 y DK1593111 (sales@, 12-13/10)"
 HI_ARGENTINA_SAN_PEDRO_ATACAMA_4DAYS-677,OD030,San Pedro de Atacama Explorer - 4 Days,"Owner (2026-10-15): es OD030. Llegó en el mail real DK1593111 (sales@, 13/10)"
 OD031,OD031,HI - La Paz Starter Package (Adventure Brew Hostal),"Owner (2026-10-19): es OD031. Llegó en el mail real UK1595157 (sales@, 19/10), junto con el CHB31"
+HI_ARGENTINA_W_TREK_CH_11-677,CH11,,"M3-10: mail DK1594177 (para revisión hasta que se cargó CH11; se confirma desde el detalle)"
+HI_ARGENTINA_AR34-677,AR34,,"M3-10: mail DK1594177. Kilroy usa nuestro mismo código (envoltorio HI_ARGENTINA_…-677)"
+HI_ARGENTINA_OD014-677,OD014,El Calafate & El Chalten full day - 4 nights,"Owner (2026-10-16): mail DK1594100. Antes en data/productos-no-cargados.csv (M3-10)"
+HI_TRAVEL_ARCH_EXP-677,ARCH33EXP,"Patagonia, Trekking Paradise with W-Trek EXPRESS","Owner (2026-10-14 y 2026-10-21): es ARCH33 con la W Express (CH11). Antes en data/productos-no-cargados.csv (M3-10)"
+ARCH33EXP,ARCH33EXP,,"Kilroy usa nuestro mismo código en los tours; el importador de tours solo carga el código HI Travel (M3-10)"

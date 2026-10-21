@@ -17,8 +17,18 @@ describe("M2-03 fila 2 — data/codigos-kilroy.csv", () => {
     expect(filas).toContainEqual(
       expect.objectContaining({ codigoKilroy: "HI_ARGENTINA_W_TREK_ARCH_33-677", codigoHiTravel: "ARCH33" }),
     );
-    // Nunca el Express (no cargado) ni el OD014.
-    expect(filas.map((f) => f.codigoHiTravel)).not.toContain("ARCH33EXP");
+  });
+
+  it("M3-10: los códigos de los que pidieron las agencias (DK1594177, DK1594100, ARCH_EXP)", () => {
+    const filas = leerCodigosKilroy(CSV);
+    for (const [kilroy, nuestro] of [
+      ["HI_ARGENTINA_W_TREK_CH_11-677", "CH11"],
+      ["HI_ARGENTINA_AR34-677", "AR34"],
+      ["HI_ARGENTINA_OD014-677", "OD014"],
+      ["HI_TRAVEL_ARCH_EXP-677", "ARCH33EXP"],
+    ]) {
+      expect(filas).toContainEqual(expect.objectContaining({ codigoKilroy: kilroy, codigoHiTravel: nuestro }));
+    }
   });
 
   it("owner 2026-10-15 (mails reales del modo prueba): IGUAZU_BR_4DAYS → OD010B y SAN_PEDRO_ATACAMA_4DAYS → OD030", () => {

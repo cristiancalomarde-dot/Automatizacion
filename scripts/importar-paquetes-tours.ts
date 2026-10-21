@@ -24,6 +24,9 @@
  * OD010D noches 1-2 en Foz y 3 en Puerto Iguazú), y `data/servicios-a-pedido.csv`
  * (M1-08): los servicios que no se piden siempre (salida de OD016, Remis de OD019).
  *
+ * M3-10: `data/renglones-agregados.csv` suma al final de un bloque los renglones
+ * que el owner todavía no escribió en el Excel (el Fitz Camp opcional de AR34).
+ *
  * Variables de entorno (regla #2 — nunca en el código; en local se leen de
  * `.env.local`): NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY y,
  * opcional, ANTHROPIC_API_KEY (sin clave, lo que no calza queda "para
@@ -42,6 +45,7 @@ import { cargarServiciosAPedido, parsearServiciosAPedido } from "@/lib/importado
 import { nochesBasePaquete } from "@/lib/importador-tours/noches-base";
 import { parsearNivelesConfirmados } from "@/lib/importador-productos/niveles-confirmados";
 import { parsearPaquetesPiloto } from "@/lib/importador-productos/paquetes-piloto";
+import { parsearRenglonesAgregados } from "@/lib/importador-productos/renglones-agregados";
 import { leerServiciosCargados, reporteCargaMarkdown, resumirCarga } from "@/lib/importador-productos/reporte-carga";
 import { otrosPuntosDeLaCarga, TIPO_CORRIDA_PAQUETES } from "@/lib/importador-productos/carga-paquetes";
 
@@ -51,6 +55,7 @@ const LISTA = "data/paquetes-piloto.csv";
 const NIVELES_CONFIRMADOS = "data/niveles-confirmados.csv";
 const NOCHES_SERVICIO = "data/noches-servicio.csv";
 const A_PEDIDO = "data/servicios-a-pedido.csv";
+const RENGLONES_AGREGADOS = "data/renglones-agregados.csv";
 const REPORTE = "docs/sdd/diagnosticos/M1-04d-carga.md";
 
 function variable(nombre: string): string {
@@ -74,6 +79,11 @@ async function main() {
     (p) => !CODIGOS_PILOTO.includes(p.codigo),
   );
   const nivelesConfirmados = parsearNivelesConfirmados(readFileSync(archivo(NIVELES_CONFIRMADOS), "utf-8"));
+  const renglonesAgregados = existsSync(resolve(process.cwd(), RENGLONES_AGREGADOS))
+    ? parsearRenglonesAgregados(readFileSync(archivo(RENGLONES_AGREGADOS), "utf-8"))
+    : [];
+  const ajenos = renglonesAgregados.filter((r) => !paquetes.some((p) => p.codigo === r.paquete)).map((r) => r.paquete);
+  if (ajenos.length) throw new Error(`${RENGLONES_AGREGADOS}: ${[...new Set(ajenos)].join(", ")} no está en ${LISTA}. No se cargó nada.`);
 
   const admin = createClient(variable("NEXT_PUBLIC_SUPABASE_URL"), variable("SUPABASE_SERVICE_ROLE_KEY"), {
     auth: { autoRefreshToken: false, persistSession: false },
@@ -100,6 +110,7 @@ async function main() {
     nivelesConfirmados,
     paquetes,
     tipoCorrida: TIPO_CORRIDA_PAQUETES,
+    renglonesAgregados,
   });
 
   const filasPaquetes = leerFilasPaquetes(rutaPaquetes);

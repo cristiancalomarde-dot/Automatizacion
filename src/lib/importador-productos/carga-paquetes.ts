@@ -24,6 +24,9 @@ export function otrosPuntosDeLaCarga(r: ResumenImportacionProductos): string[] {
           : `${p.codigo}: la tabla de precios nombra “${n.nivel}”, que podría ser uno de los alojamientos sin categoría.`,
       );
     }
+    for (const r of p.renglonesAgregadosYaEnElExcel ?? []) {
+      puntos.push(`${p.codigo}: el renglón “${r}” ya está en el Excel; sacalo de data/renglones-agregados.csv.`);
+    }
     for (const c of p.nivelesConfirmadosSinLinea) {
       puntos.push(`${p.codigo}: la categoría confirmada “${c.nivel}” no encontró su renglón (“${c.texto_linea}”).`);
     }

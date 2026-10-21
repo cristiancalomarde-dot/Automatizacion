@@ -36,6 +36,8 @@ describe("tramos-con-proveedor.csv (spec M1-05 §3 #6)", () => {
       ["5C01", "CJC", "SPA", "Kupos.cl", false],
       ["ARCH33", "PNT", "PUQ", "Kupos.cl", false],
       ["ARCH31", "PNT", "PUQ", "Kupos.cl", false],
+      // M3-10: ARCH33EXP = ARCH33 con CH11, con la misma salida de Puerto Natales.
+      ["ARCH33EXP", "PNT", "PUQ", "Kupos.cl", false],
     ]);
     // M1-07 #3: Transvip queda solo como traslado del aeropuerto de Calama (en OD030), no en 5C01.
     expect(texto).not.toMatch(/transvip/i);

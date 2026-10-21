@@ -342,3 +342,28 @@ describe("correcciones del probalo vos de M1 (spec M1-07)", () => {
     expect(a33.estado === "armado" && a33.serviciosPropios.length).toBe(1);
   });
 });
+
+describe("ARCH33EXP: el último día del Word dice \"End of Itinerary\" (spec M3-10)", () => {
+  const KUPOS: TramoConProveedor = {
+    tour: "ARCH33",
+    desde: "PNT",
+    hasta: "PUQ",
+    ruta: "Bus Puerto Natales – Punta Arenas",
+    bookingSupplier: "Kupos.cl",
+    ambosSentidos: false,
+  };
+
+  it("el bus del último día se controla también con el subtítulo del día (\"Puerto Natales – Punta Arenas Airport\")", () => {
+    const word = WORD_ARCH33.flatMap((p) =>
+      p.startsWith("DAY 12:") ? ["Day 12: End of Itinerary", "Puerto Natales – Punta Arenas Airport"] : [p],
+    );
+    const t = armarTour(entrada("ARCH33", RUTAS_ARCH33, word, { tramosConProveedor: [KUPOS] }));
+    expect(resumen(t)).toEqual(["1 OD033 d1 3n IN", "2 bus CHA-FTE d4", "3 OD016 d4 2n", "4 bus FTE-PNT d6", "5 CH10 d6 6n OUT"]);
+  });
+
+  it("sin el subtítulo, un día que no nombra el destino del bus sigue mandando el tour a revisión", () => {
+    const word = WORD_ARCH33.map((p) => (p.startsWith("DAY 12:") ? "Day 12: End of Itinerary" : p));
+    const t = armarTour(entrada("ARCH33", RUTAS_ARCH33, word, { tramosConProveedor: [KUPOS] }));
+    expect(t.estado).toBe("para_revisar");
+  });
+});

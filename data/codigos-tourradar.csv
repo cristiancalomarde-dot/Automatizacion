@@ -1,2 +1,5 @@
 Codigo TR,Nombre en Tourradar,Nuestro Codigo,Nota
 150146,Patagonia Adventure Tour 16 Days,AR09,"Owner (2026-10-15): el nombre es el que trae el PDF de TourRadar (el paso 2 empareja por nombre, el PDF no trae el número); en Wetu figura como Patagonia Adventure Tour From Buenos Aires to Ushuaia. Owner (2026-10-14): AR09 sí está cargado. El resto del borrador de códigos TourRadar se valida aparte y va a Codigos Productos Tourradar.xlsx"
+275366,,ARCH33EXP,"Owner (2026-10-14): número de tour de TourRadar (el nombre que trae el PDF todavía no lo tenemos). Antes en data/productos-no-cargados.csv (M3-10)"
+150104,Buenos Aires to Rio de Janeiro 12 Days,ARBR23,"Owner (2026-10-14): ""Buenos Aires to Rio de Janeiro 12 days"" (PDF 1377583). Antes en data/productos-no-cargados.csv (M3-10)"
+317766,"Argentina and Uruguay, heart of the River Plate (7 days)",ARUY01,"Owner (2026-10-12 y 2026-10-14); el nombre es el del PDF 1383503. Antes en data/productos-no-cargados.csv (M3-10)"

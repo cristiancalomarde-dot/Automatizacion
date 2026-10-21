@@ -21,7 +21,15 @@ export interface DiaItinerario {
 
 export type ItemIncluido =
   | { tipo: "estadia"; noches: number; destino: string | null; texto: string }
-  | { tipo: "bus"; desde: string | null; hasta: string | null; nocturnoTexto: boolean; texto: string };
+  | {
+      tipo: "bus";
+      desde: string | null;
+      hasta: string | null;
+      nocturnoTexto: boolean;
+      texto: string;
+      /** M3-10: es un ferry ("Ferry from Buenos Aires port to Colonia…"), no un bus. */
+      ferry?: true;
+    };
 
 export interface ItinerarioWord {
   codigo: string;
@@ -109,7 +117,8 @@ const NOCTURNO_INCLUIDO = /\b(night|nigh|overnight|pm)\b/i;
 
 function leerBus(linea: string): ItemIncluido | null {
   // El último "bus … to …" de la línea ("shuttle or bus to X or bus from A to B").
-  const partes = [...linea.matchAll(/\bbus(?:es)?\b/gi)];
+  // M3-10: un ferry ("Ferry from Buenos Aires port to Colonia…") es un tramo igual que un bus.
+  const partes = [...linea.matchAll(/\b(?:bus(?:es)?|ferry)\b/gi)];
   for (let k = partes.length - 1; k >= 0; k--) {
     const resto = linea.slice(partes[k].index! + partes[k][0].length);
     const m = /^\s+(?:from\s+)?(.+?)\s+to\s+(.+)$/i.exec(resto);
@@ -121,6 +130,7 @@ function leerBus(linea: string): ItemIncluido | null {
       hasta: primeraCiudad(m[2]),
       nocturnoTexto: NOCTURNO_INCLUIDO.test(antes),
       texto: linea.trim(),
+      ...(/^ferry$/i.test(partes[k][0]) ? { ferry: true as const } : {}),
     };
   }
   return null;

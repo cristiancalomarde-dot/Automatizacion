@@ -14,3 +14,6 @@ BRARCH26,Budget Hotel,OD029,Hotel 3*,"Regla general confirmada por el owner (202
 5C01,Budget Hotel,OD029,Hotel 3*,"Regla general confirmada por el owner (2026-10-06): en los tours largos, Budget Hotel = el Hotel 3* del paquete"
 5C01,Budget Hotel,COMPCH01,Hotel 3*,"Regla general confirmada por el owner (2026-10-06): en los tours largos, Budget Hotel = el Hotel 3* del paquete"
 5C01,Budget Hotel,CHB31,Hotel in SPA,"El componente CHB31 es un tour: su Budget equivale a su Hotel in SPA (= Hotel 3* de OD030)"
+ARCH33EXP,Hotel 3*,OD033,Budget Hotel,"Como ARCH33 (owner 2026-10-06; ARCH33EXP = ARCH33 con CH11, owner 2026-10-21): el 3* del tour en El Chaltén es el Budget del paquete (Kau Si Aike y similares)"
+ARBR23,Budget Hotel,OD032,Hotel 3*,"Como BRARCH26 (DECISIONS 2026-10-05): en los tours, Nacional Inn Copacabana y Copacabana Mar son el Budget Hotel de Río"
+ARBR23,Budget Hotel,OD010A,Hotel 3*,"Regla general confirmada por el owner (2026-10-06): en los tours largos, Budget Hotel = el Hotel 3* del paquete (como BRARCH26)"

@@ -182,6 +182,12 @@ describe("el motivo que ve el operativo (spec M1-10)", () => {
       "BOCHI04R · OD030 · En este tour el traslado es de salida, de San Pedro al aeropuerto de Calama.",
       "5C01 · COMPCH01 · Solo ida: desde Valparaíso el tour sigue en bus a Calama.",
       "ARCH31 · OD017 · Llega a Puerto Natales en bus desde El Calafate.",
+      // M3-10
+      "ARBR23 · OD010A · Llega en bus desde Buenos Aires y sigue en bus a Río desde Puerto Iguazú.",
+      "ARBR23 · OD032 · En este tour el traslado es de salida, del alojamiento al aeropuerto de Río.",
+      "ARUY01 · OD018 · Sale en ferry a Colonia del Sacramento.",
+      "ARUY01 · COMPUY03 · En este tour el bus va al revés: de Colonia a Montevideo.",
+      "ARUY01 · OD040 · En este tour el traslado es de salida, del alojamiento al aeropuerto de Carrasco.",
     ]);
     for (const x of REAL) expect(x.motivo).not.toMatch(INTERNO);
     for (const tour of Object.keys(SECUENCIAS)) {

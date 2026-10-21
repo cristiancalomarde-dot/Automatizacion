@@ -32,7 +32,10 @@ export function filasCodigosKilroy(): FilasCatalogo["codigos"] {
   const f = fotoCatalogo();
   const idPorCodigo = new Map(f.productos.map((p) => [p.codigo, p.id]));
   const csv = readFileSync(join(process.cwd(), "data", "codigos-kilroy.csv"), "utf-8");
-  return leerCodigosKilroy(csv).map((c) => ({
+  // La foto es de antes de M3-10: los códigos de productos que no están en ella (CH11, AR34…) no van.
+  return leerCodigosKilroy(csv)
+    .filter((c) => idPorCodigo.has(c.codigoHiTravel))
+    .map((c) => ({
     producto_id: idPorCodigo.get(c.codigoHiTravel)!,
     agencia: "Kilroy",
     codigo: c.codigoKilroy,
@@ -44,7 +47,10 @@ export function filasCodigosKilroy(): FilasCatalogo["codigos"] {
 export function filasCodigosTourRadarCsv(): FilasCatalogo["codigos"] {
   const idPorCodigo = new Map(fotoCatalogo().productos.map((p) => [p.codigo, p.id]));
   const csv = readFileSync(join(process.cwd(), "data", "codigos-tourradar.csv"), "utf-8");
-  return leerCodigosTourRadarCsv(csv).map((c) => ({
+  // La foto es de antes de M3-10: los códigos de productos que no están en ella (ARBR23, ARUY01…) no van.
+  return leerCodigosTourRadarCsv(csv)
+    .filter((c) => idPorCodigo.has(c.nuestroCodigo))
+    .map((c) => ({
     producto_id: idPorCodigo.get(c.nuestroCodigo)!,
     agencia: "TourRadar",
     codigo: c.codigo,
@@ -52,9 +58,14 @@ export function filasCodigosTourRadarCsv(): FilasCatalogo["codigos"] {
   }));
 }
 
-/** `data/productos-no-cargados.csv` (owner 2026-10-14). */
+/**
+ * La lista de productos no cargados como estaba antes de M3-10 (owner 2026-10-14 y
+ * 2026-10-16: ARCH33EXP, ARBR23, ARUY01 y OD014), coherente con la foto del catálogo:
+ * prueba el mecanismo. Desde M3-10 esos productos están cargados y
+ * `data/productos-no-cargados.csv` quedó vacío.
+ */
 export function noCargadosDePrueba(): ProductoNoCargado[] {
-  return leerProductosNoCargados(readFileSync(join(process.cwd(), "data", "productos-no-cargados.csv"), "utf-8"));
+  return leerProductosNoCargados(readFileSync(join(DIR, "productos-no-cargados.csv"), "utf-8"));
 }
 
 /**

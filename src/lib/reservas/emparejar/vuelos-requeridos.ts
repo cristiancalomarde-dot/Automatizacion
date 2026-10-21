@@ -27,6 +27,8 @@ export const AEROPUERTOS: Record<string, string> = {
   GIG: "Río de Janeiro",
   USH: "Ushuaia",
   MDZ: "Mendoza",
+  // M3-10: el traslado al aeropuerto de Carrasco de OD040 (ARUY01).
+  MVD: "Montevideo",
   IGR: "Puerto Iguazú",
   IGU: "Foz do Iguaçu",
 };
