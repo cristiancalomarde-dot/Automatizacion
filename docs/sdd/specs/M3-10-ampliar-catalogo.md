@@ -17,7 +17,7 @@ reconozca cuando una agencia los reserva:
 | **ARBR23** | From Buenos Aires to Rio (11 nights) | tour compuesto | TourRadar 150104 |
 | **ARUY01** | Argentina and Uruguay, heart of the River Plate (6 nights) | tour compuesto | TourRadar 317766 |
 
-Las fuentes ya están completas (owner): `Insumos/Construccion de Paquetes 2019 con 3 y 4 estrellas para IA.xlsm`
+Las fuentes ya están completas (owner): `Insumos/Construccion de Paquetes 2019 con 3 y 4 estrellas.xls` (la vigente, 2026-10-10; la `.xlsm` "para IA" es vieja)
 (servicios, niveles, precios, proveedores), los Word de itinerarios día por día (`Insumos/One|Two|Multi
 Destination … Tours 1 Jun 2026 - 31 Dec 2027.docx`), `Insumos/RutasenBus2020.xls` (hoja "Tours 2027": la
 fila de códigos de cada tour) y `data/productos-no-cargados.csv` (los códigos de agencia ya anotados). **Al
