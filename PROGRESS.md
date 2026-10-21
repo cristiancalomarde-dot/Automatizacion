@@ -11,7 +11,8 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
   Admin = **operations@** (es el owner): `ADMINS_EMAILS` cargada en Vercel por el owner + Redeploy. Suite completa:
   fallas intermitentes por lentitud de la base de pruebas (timeouts), que pasan corridas solas.
   - **Siguiente:** (1) el owner prueba el pedido a mano con ARCH31 en modo prueba y "Viajes terminados" con operations@.
-    (2) Aceptar reenvíos del equipo a sales@ (propuesto). (3) M3-04 cuando entren reservas reales.
+    (2) Reenvíos a sales@: descartado por ahora (2026-10-21), Journaway prometió cargar sales@ esta semana.
+    (3) M3-04 cuando entren reservas reales. (4) Lista de productos pedidos que faltan en el catálogo (para el Excel).
 
 - **2026-10-20: M3-06 y M3-07 publicadas; migraciones 0021 y 0022 aplicadas a la real con OK.** Firma por operativo
   (/mi-firma), responsable de la reserva (tomar/pasar, por defecto quien envía) y filtro por operativo; "Corregir vuelos"
