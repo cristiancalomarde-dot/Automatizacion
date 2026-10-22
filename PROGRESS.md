@@ -3,10 +3,12 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
 
 # Dónde retomar
 
+- **Alejandra (operaciones3@) no puede crear cuenta Google con ese mail:** tiene "sesión de visitante" con archivos de Drive compartidos; NO eliminarla. Propuesto: casilla nueva alejandra@hitravel.com.ar en Ferozo y cuenta Google con ese mail (o, si le pasa a varios, login con código por mail = pieza nueva). Fecha del Bike Tour sigue "a coordinar"; nombre de catálogo "… Alta Montaña. Booking" con basura (ya no se ve en pedidos de OD019).
+
 - **2026-10-22 (noche): M3-14 publicada:** en los tours la categoría vendida elige el hotel de cada parte (Budget →
   Budget donde hay, si no Hotel 3*; `data/categorias-tour.csv` manda). BRARCH26/ARBR23/5C01/ARCH33 sin "Elegir el hotel".
   Nota: `nivelDeLaHabitacion` no reconoce "Hotel in SPA" (CHB31 funciona igual porque OD030 tiene un solo nivel).
-  - **M3-15 en curso:** Bike Tour con punto de encuentro (Pasaje Giuffra 370, San Telmo, sin pick up); Mendoza
+  - **M3-15 publicada (2026-10-22):** Bike Tour con punto de encuentro (Pasaje Giuffra 370, San Telmo, sin pick up); Mendoza
     Bodegas día 1 (tarde ~14:30) y Alta Montaña/Rafting/Cabalgata día 2.
   - **Adventure360 sin número de reserva (owner):** ellos esperan NUESTRO número; los mails siguientes solo se pueden
     unir por agencia + nombre del lead pax o por un número que asignemos. Propuesto: número HI Travel visible por
