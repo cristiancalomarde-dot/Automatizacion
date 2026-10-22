@@ -3,6 +3,14 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
 
 # Dónde retomar
 
+- **2026-10-22 (noche): M3-12 publicada (Iguazú: hotel en cada renglón del pedido a Cuenca del Plata, "Premium" en
+  título y excursiones) y el cierre de los pedidos pasó de "Un abrazo," a "¡Saludos!" (owner, `data/plantillas/pedido-proveedor.md`).**
+  - **Huecos que vio el builder (piezas aparte si el owner quiere):** BRARCH26 con "Budget Hotel" no elige el hotel de
+    Iguazú (la categoría del tour no se aplica al armar; mismo abierto que ARCH33/ARBR23) → sale "alojamiento a
+    confirmar"; OD010C sin tramos de noches (el día del cruce saldría el mismo hotel); TRF IN/OUT siguen "regular".
+  - **Adventure360:** ya escribe a sales@. Faltan del owner: bike tour BUE (¿reemplaza al City Tour?), rafting Mendoza
+    (¿reemplaza qué y con qué proveedor?), fecha "TBC" → para revisión.
+
 - **2026-10-22 (tarde): M3-11 publicada: en Puerto Natales el hostel sale según la habitación** (Dorm → Puma, Last Hope;
   privada → Factoria, Last Hope, Puma; regla en `data/hostel-segun-habitacion.csv`, se lee al armar, sin recarga).
   Los borradores ya armados se corrigen con "Volver a armar". El Excel de proveedores "para IA" estaba solo en el clon:
