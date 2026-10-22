@@ -75,6 +75,9 @@ const IGUAZU = new Set(["IGR", "IGU"]);
 const IGUAZU_EMPIEZA_EN_BRASIL = new Set(["OD010D"]);
 /** Combined de Iguazú: el día del cruce la excursión incluye el cambio de hotel (owner, 2026-10-19). */
 const IGUAZU_COMBINED = new Set(["OD010C", "OD010D"]);
+/** El paquete receptivo de Cuenca del Plata que se vende (M3-12): el título lo dice siempre. */
+const PAQUETE_105_PREMIUM = /\b105\s+Premium\b/i;
+const PREMIUM = /\bpremium\b/i;
 const PRIVADO = /\b(privad[oa]|private)\b/i;
 /** El servicio se hace en español (el Overland de Imperio Inca: "chofer de habla hispana, sin guía en inglés"). */
 const EN_ESPANOL = /habla hispana|spanish[- ]speaking|sin gu[ií]a en ingl[eé]s/i;
@@ -318,7 +321,9 @@ class Armado {
           const desde = b.inicio && tramo ? sumarDias(b.inicio, tramo.nocheDesde - 1) : b.inicio;
           const hasta = b.inicio && tramo ? sumarDias(b.inicio, tramo.nocheDesde - 1 + tramo.noches) : b.fin;
           if (!desde || !hasta) continue;
-          const ciudad = b.destino ? (NOMBRE_DESTINO[b.destino] ?? null) : null;
+          // En Iguazú el tramo dice de qué lado duerme (M3-12): "Foz do Iguaçu (lado brasileño)" → "Foz do Iguaçu".
+          const lugar = IGUAZU.has(b.destino ?? "") ? tramo?.lugar?.replace(/\s*\(.*\)\s*$/, "").trim() : null;
+          const ciudad = lugar || (b.destino ? (NOMBRE_DESTINO[b.destino] ?? null) : null);
           estadias.push({ hotel: s.serviceProviderNombre ?? queEs(s), ciudad, desde, hasta, aConfirmar: true });
         }
       }
@@ -500,7 +505,7 @@ class Armado {
   private excursion(b: Bloque, s: Servicio, nombre: string, desde: string | null, hasta: string | null): Renglones {
     const regular = PRIVADO.test(`${s.descripcion ?? ""} ${nombre}`) ? "privado" : "regular";
     const incluye = (s.descripcion ?? "").match(INCLUYE_TRASLADOS);
-    if (incluye) return this.paqueteConTraslados(b, nombre, incluye[1], regular);
+    if (incluye) return this.paqueteConTraslados(b, nombre, incluye[1], regular, `${s.descripcion ?? ""} ${nombre}`);
 
     const idioma = EN_ESPANOL.test(s.descripcion ?? "") ? "español" : "inglés";
     const renglones = [`Excursión: ${nombre}`];
@@ -567,14 +572,33 @@ class Armado {
    * llegada el primer día, cada excursión en los días siguientes y traslado de
    * salida el último día, como se pide hoy a mano.
    */
-  private paqueteConTraslados(b: Bloque, nombre: string, lista: string, regular: string): Renglones {
-    const titulo = nombre.replace(/^Paquete\s+Rece?pti?vo\s+/i, "Paquete ");
+  private paqueteConTraslados(b: Bloque, nombre: string, lista: string, regular: string, texto: string): Renglones {
+    // El 105 Premium se pide como Premium, no como regular (owner, 2026-10-22, M3-12).
+    const premium = PREMIUM.test(texto);
+    const sinReceptivo = nombre.replace(/^Paquete\s+Rece?pti?vo\s+/i, "Paquete ");
+    const titulo =
+      PAQUETE_105_PREMIUM.test(texto) && !/Paquete 105 Premium/i.test(sinReceptivo) ? `Paquete 105 Premium (${sinReceptivo})` : sinReceptivo;
     const codigos = IGUAZU.has(b.destino ?? "") ? ["IGR", "IGU"] : (lugarDelTraslado("", b.destino)?.codigos ?? []);
     const renglones = [titulo];
     const pendientes: string[] = [];
+    // El hotel de cada renglón (M3-12): pick up = la noche anterior, drop off = la noche de ese día.
+    // Si la agencia mandó un pick up, va solo ese, al final (como antes).
+    const hotel = (fecha: string | null): string => {
+      const e = this.estadiaDe(fecha);
+      if (!e) {
+        if (!pendientes.includes(PENDIENTE.alojamiento)) pendientes.push(PENDIENTE.alojamiento);
+        return "alojamiento a confirmar";
+      }
+      return `${e.hotel}${e.ciudad ? ` (${e.ciudad})` : ""}${e.aConfirmar ? " · hotel a confirmar" : ""}`;
+    };
+    const conHotel = (renglon: string, partes: Array<[string, string | null]>): string =>
+      b.pickUp ? renglon : [renglon, ...partes.map(([que, fecha]) => `${que}: ${hotel(fecha)}`)].join(" · ");
+    const nocheAnterior = (fecha: string | null) => (fecha ? sumarDias(fecha, -1) : null);
     const llegada = this.traslado("in", "", b.inicio, codigos, IGUAZU.has(b.destino ?? ""));
     if (!b.omitir.includes("in")) {
-      renglones.push(`TRF IN, ${regular}: ${b.inicio ? fechaCorta(llegada.fecha ?? b.inicio) : "a confirmar"} · ${llegada.dato}`);
+      renglones.push(
+        conHotel(`TRF IN, ${regular}: ${b.inicio ? fechaCorta(llegada.fecha ?? b.inicio) : "a confirmar"} · ${llegada.dato}`, [["Drop off", b.inicio]]),
+      );
       pendientes.push(...llegada.pendientes);
     }
     const excursiones = lista
@@ -588,7 +612,13 @@ class Armado {
     excursiones.forEach((e, i) => {
       const lado = /argentin/i.test(e) ? "Lado argentino" : /brasil/i.test(e) ? "Lado brasileño" : e;
       const fecha = b.inicio ? sumarDias(b.inicio, i + 1) : null;
-      renglones.push(`${lado}, ${regular} en inglés: ${fecha ? fechaCorta(fecha) : "a coordinar"}`);
+      const mismoHotel = !fecha || this.estadiaDe(nocheAnterior(fecha)) === this.estadiaDe(fecha);
+      renglones.push(
+        conHotel(
+          `${lado}, ${premium ? "Premium, en inglés" : `${regular} en inglés`}: ${fecha ? fechaCorta(fecha) : "a coordinar"}`,
+          mismoHotel ? [["Pick up y drop off", fecha]] : [["Pick up", nocheAnterior(fecha)], ["Drop off", fecha]],
+        ),
+      );
       if (IGUAZU_COMBINED.has(b.codigo ?? "") && i === 1 && excursiones.length > 1) {
         const destino = /brasil/i.test(e) ? "Brasil" : "Argentina";
         renglones.push(
@@ -598,7 +628,9 @@ class Armado {
     });
     const salida = this.traslado("out", "", b.fin, codigos, IGUAZU.has(b.destino ?? ""));
     if (!b.omitir.includes("out")) {
-      renglones.push(`TRF OUT, ${regular}: ${b.fin ? fechaCorta(salida.fecha ?? b.fin) : "a confirmar"} · ${salida.dato}`);
+      renglones.push(
+        conHotel(`TRF OUT, ${regular}: ${b.fin ? fechaCorta(salida.fecha ?? b.fin) : "a confirmar"} · ${salida.dato}`, [["Pick up", nocheAnterior(b.fin)]]),
+      );
       pendientes.push(...salida.pendientes);
     }
     if (b.pickUp) renglones.push(`Pick up: ${b.pickUp}`);

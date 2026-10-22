@@ -164,8 +164,8 @@ describe("armarPedidos — qué lleva cada servicio (fila 3)", () => {
   it("en Iguazú el traslado sin dato dice 'Bus o vuelo pendiente'", () => {
     const p = ok(armarPedidos(reservaOd010b, catalogoCon([od010b]), plantilla)).pedidos[0];
     expect(p.cuerpo).toContain("TRF IN, regular: 3 oct 2026 · Bus o vuelo pendiente");
-    expect(p.cuerpo).toContain("Lado argentino, regular en inglés: 4 oct 2026");
-    expect(p.cuerpo).toContain("Lado brasileño, regular en inglés: 5 oct 2026");
+    expect(p.cuerpo).toContain("Lado argentino, Premium, en inglés: 4 oct 2026");
+    expect(p.cuerpo).toContain("Lado brasileño, Premium, en inglés: 5 oct 2026");
     expect(p.cuerpo).toContain("TRF OUT, regular: 6 oct 2026 · Bus o vuelo pendiente");
     expect(p.cuerpo).not.toContain("Ese día cruzan");
   });
@@ -173,8 +173,8 @@ describe("armarPedidos — qué lleva cada servicio (fila 3)", () => {
   it("Combined que empieza en Brasil (OD010D): lado brasileño el día 2 y argentino el día 3, el del cruce", () => {
     const od010d = { ...od010b, id: "prod-od010d", codigo: "OD010D", servicios: od010b.servicios.map((s) => ({ ...s, productoId: "prod-od010d" })) };
     const p = ok(armarPedidos({ ...reservaOd010b, productoId: od010d.id }, catalogoCon([od010d]), plantilla)).pedidos[0];
-    expect(p.cuerpo).toContain("Lado brasileño, regular en inglés: 4 oct 2026");
-    expect(p.cuerpo).toContain("Lado argentino, regular en inglés: 5 oct 2026");
+    expect(p.cuerpo).toContain("Lado brasileño, Premium, en inglés: 4 oct 2026");
+    expect(p.cuerpo).toContain("Lado argentino, Premium, en inglés: 5 oct 2026");
     expect(p.cuerpo).toContain("Ese día cruzan: el drop off es en el hotel de Argentina. Los pasajeros hacen check out y llevan el equipaje");
     expect(p.cuerpo.indexOf("Ese día cruzan")).toBeGreaterThan(p.cuerpo.indexOf("Lado argentino"));
   });
