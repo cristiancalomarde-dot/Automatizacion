@@ -12,6 +12,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { armarPedidos, porQueNoSeArma } from "./armar";
 import {
   cargarCatalogoParaPedidos,
+  cargarCategoriasTour,
   cargarDiasServicio,
   cargarExcursionesConEntrada,
   cargarHostelSegunHabitacion,
@@ -20,6 +21,7 @@ import {
   cargarReservaParaPedidos,
 } from "./cargar";
 import { cargarPlantilla } from "./plantilla";
+import type { CategoriaTour } from "@/lib/importador-tours/datos";
 import type { DiaDeServicio, ExcursionConEntrada, HostelSegunHabitacion, OpcionDelPasajero, ProveedorFichaCompleta, PedidoArmado, Plantilla, ResultadoArmado, TareaArmada, TipoTarea } from "./tipos";
 
 export interface ConteoGuardado {
@@ -113,6 +115,8 @@ export interface OpcionesArmado {
   hostelSegunHabitacion?: readonly HostelSegunHabitacion[];
   /** M3-13: las opciones del pasajero (por defecto, las de data/opciones-pasajero.csv). */
   opcionesPasajero?: readonly OpcionDelPasajero[];
+  /** M3-14: las categorías tour ↔ paquete (por defecto, las de data/categorias-tour.csv). */
+  categoriasTour?: readonly CategoriaTour[];
 }
 
 /** Lee la reserva y el catálogo, arma los borradores y los guarda. Una reserva que no está recibida no guarda nada. */
@@ -132,6 +136,7 @@ export async function armarYGuardarPedidos(cliente: SupabaseClient, reservaId: s
     opciones.fichaCompleta ?? cargarProveedoresFichaCompleta(),
     opciones.hostelSegunHabitacion ?? cargarHostelSegunHabitacion(),
     opciones.opcionesPasajero ?? cargarOpcionesPasajero(),
+    opciones.categoriasTour ?? cargarCategoriasTour(),
   );
   const armado = armarPedidos(reserva, catalogo, plantilla);
   if (!armado.ok) return armado;

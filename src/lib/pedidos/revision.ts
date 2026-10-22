@@ -19,6 +19,7 @@ import { borradorAMano } from "./a-mano-borrador";
 import { armarPedidos, porQueNoSeArma } from "./armar";
 import {
   cargarCatalogoParaPedidos,
+  cargarCategoriasTour,
   cargarDiasServicio,
   cargarExcursionesConEntrada,
   cargarHostelSegunHabitacion,
@@ -29,6 +30,7 @@ import {
 import { cargarPedidos, guardarPedidosArmados, type PedidoGuardado, type TareaGuardada } from "./guardar";
 import { avisosDeLaPantalla, loQuePidioLaAgencia, validarEdicion, type EdicionPedido, type LoQuePidio } from "./pantalla";
 import { cargarPlantilla } from "./plantilla";
+import type { CategoriaTour } from "@/lib/importador-tours/datos";
 import type { DiaDeServicio, ExcursionConEntrada, HostelSegunHabitacion, OpcionDelPasajero, ProveedorFichaCompleta, Plantilla } from "./tipos";
 import { enviarPedidosAprobados, type DependenciasEnvio, type PedidoDeEnvio, type ResultadoEnvio } from "./envio/enviar";
 
@@ -75,6 +77,8 @@ export interface OpcionesPreparar {
   hostelSegunHabitacion?: readonly HostelSegunHabitacion[];
   /** M3-13: las opciones del pasajero (por defecto, las de data/opciones-pasajero.csv). */
   opcionesPasajero?: readonly OpcionDelPasajero[];
+  /** M3-14: las categorías tour ↔ paquete (por defecto, las de data/categorias-tour.csv). */
+  categoriasTour?: readonly CategoriaTour[];
 }
 
 /**
@@ -101,6 +105,7 @@ export async function prepararPedidos(cliente: SupabaseClient, reservaId: string
     opciones.fichaCompleta ?? cargarProveedoresFichaCompleta(),
     opciones.hostelSegunHabitacion ?? cargarHostelSegunHabitacion(),
     opciones.opcionesPasajero ?? cargarOpcionesPasajero(),
+    opciones.categoriasTour ?? cargarCategoriasTour(),
   );
   const armado = armarPedidos(reserva, catalogo, plantilla);
   if (!armado.ok) return armado;

@@ -7,6 +7,7 @@
  */
 import type { DetalleProducto, ProveedorResumen } from "@/lib/catalogo/tipos";
 import type { EstadoReserva, HotelDeLaAgencia, TipoComponenteReserva } from "@/lib/reservas/tipos";
+import type { CategoriaTour } from "@/lib/importador-tours/datos";
 
 /** Un pasajero como lo guarda la reserva (M2-02); los campos que no vinieron faltan. */
 export interface PasajeroDeReserva {
@@ -140,6 +141,8 @@ export interface CatalogoParaPedidos {
   hostelSegunHabitacion?: readonly HostelSegunHabitacion[];
   /** Las opciones que elige el pasajero (M3-13; sin la lista, como antes). */
   opcionesPasajero?: readonly OpcionDelPasajero[];
+  /** Las categorías tour ↔ paquete (M3-14, data/categorias-tour.csv; sin la lista, la regla general). */
+  categoriasTour?: readonly CategoriaTour[];
 }
 
 /** La plantilla del mail (`data/plantillas/pedido-proveedor.md`), ya separada en sus partes. */

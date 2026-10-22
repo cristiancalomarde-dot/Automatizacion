@@ -13,6 +13,7 @@ import { normalizarTexto } from "@/lib/catalogo/reglas";
 import type { Canal, DetalleProducto, ProveedorResumen } from "@/lib/catalogo/tipos";
 import type { EstadoReserva, HotelDeLaAgencia, TipoComponenteReserva } from "@/lib/reservas/tipos";
 import { leerCsv } from "@/lib/importador-productos/csv";
+import { parsearCategoriasTour, type CategoriaTour } from "@/lib/importador-tours/datos";
 import type {
   CatalogoParaPedidos,
   DiaDeServicio,
@@ -31,6 +32,7 @@ export const ARCHIVO_ENTRADAS = join("data", "excursiones-con-entrada.csv");
 export const ARCHIVO_FICHA_COMPLETA = join("data", "proveedores-ficha-completa.csv");
 export const ARCHIVO_HOSTEL_SEGUN_HABITACION = join("data", "hostel-segun-habitacion.csv");
 export const ARCHIVO_OPCIONES_PASAJERO = join("data", "opciones-pasajero.csv");
+export const ARCHIVO_CATEGORIAS_TOUR = join("data", "categorias-tour.csv");
 
 /* eslint-disable @typescript-eslint/no-explicit-any -- filas crudas de PostgREST, se tipan al mapear */
 
@@ -215,6 +217,14 @@ export function cargarOpcionesPasajero(raiz: string = process.cwd()): OpcionDelP
   return leerOpcionesPasajero(readFileSync(join(raiz, ARCHIVO_OPCIONES_PASAJERO), "utf-8"));
 }
 
+/**
+ * `data/categorias-tour.csv`: tour,categoria_tour,componente,categoria_paquete,nota (M1-05; al armar,
+ * M3-14). La misma lectura que el importador de tours (categorías normalizadas).
+ */
+export function cargarCategoriasTour(raiz: string = process.cwd()): CategoriaTour[] {
+  return parsearCategoriasTour(readFileSync(join(raiz, ARCHIVO_CATEGORIAS_TOUR), "utf-8"));
+}
+
 /** Las reglas con su proveedor del directorio (por nombre, sin mayúsculas ni acentos); null si no está. */
 export function conProveedores(reglas: readonly OpcionDelPasajero[], proveedores: readonly ProveedorResumen[]): OpcionDelPasajero[] {
   return reglas.map((r) =>
@@ -251,6 +261,7 @@ export async function cargarCatalogoParaPedidos(
   fichaCompleta: readonly ProveedorFichaCompleta[] = [],
   hostelSegunHabitacion: readonly HostelSegunHabitacion[] = [],
   opcionesPasajero: readonly OpcionDelPasajero[] = [],
+  categoriasTour: readonly CategoriaTour[] = [],
 ): Promise<CatalogoParaPedidos> {
   const ids = [...new Set([reserva.productoId, ...reserva.otrosProductos, ...reserva.partes.map((p) => p.productoId)].filter((x): x is string => !!x))];
   const detalles = new Map<string, DetalleProducto>(await Promise.all(ids.map(async (id) => [id, await cargarProducto(cliente, id)] as const)));
@@ -265,5 +276,5 @@ export async function cargarCatalogoParaPedidos(
   // M3-13: las opciones del pasajero de estos paquetes (sueltos o dentro de un tour), con su proveedor.
   const codigos = new Set([...detalles.values()].flatMap((d) => [d.codigo, ...d.componentes.map((c) => c.producto?.codigo ?? "")]));
   const opciones = opcionesPasajero.length ? await proveedoresDeOpciones(cliente, opcionesPasajero, codigos) : [];
-  return { detalles, proveedores, dias, entradas, fichaCompleta, hostelSegunHabitacion, opcionesPasajero: opciones };
+  return { detalles, proveedores, dias, entradas, fichaCompleta, hostelSegunHabitacion, opcionesPasajero: opciones, categoriasTour };
 }

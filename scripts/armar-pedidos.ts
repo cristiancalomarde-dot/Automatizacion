@@ -18,6 +18,7 @@ import { asegurarBaseDePruebas, cargarEntornoDePruebas } from "@/lib/entorno/bas
 import { armarPedidos } from "@/lib/pedidos/armar";
 import {
   cargarCatalogoParaPedidos,
+  cargarCategoriasTour,
   cargarDiasServicio,
   cargarExcursionesConEntrada,
   cargarHostelSegunHabitacion,
@@ -125,6 +126,7 @@ async function ejemplos(admin: SupabaseClient) {
   const fichaCompleta = cargarProveedoresFichaCompleta();
   const hostelSegunHabitacion = cargarHostelSegunHabitacion();
   const opcionesPasajero = cargarOpcionesPasajero();
+  const categoriasTour = cargarCategoriasTour();
   const salida: EjemploDePedido[] = [];
   for (const e of EJEMPLOS) {
     const fila = (data as any[]).find((r) => r.agencia === e.agencia && r.producto?.codigo === e.codigo);
@@ -133,12 +135,12 @@ async function ejemplos(admin: SupabaseClient) {
       continue;
     }
     // El recorrido de verdad: arma y guarda los borradores en la base de pruebas.
-    const guardado = await armarYGuardarPedidos(admin, fila.id, { plantilla, dias, entradas, fichaCompleta, hostelSegunHabitacion, opcionesPasajero });
+    const guardado = await armarYGuardarPedidos(admin, fila.id, { plantilla, dias, entradas, fichaCompleta, hostelSegunHabitacion, opcionesPasajero, categoriasTour });
     const resumen = guardado.ok ? `${guardado.pedidos.length} pedidos, ${guardado.tareas.length} tareas` : guardado.error;
     console.log(`- ${e.titulo}: ${resumen}`);
     // El documento, con los pasajeros enmascarados (mismo armado, otros nombres).
     const reserva = await cargarReservaParaPedidos(admin, fila.id);
-    const catalogo = await cargarCatalogoParaPedidos(admin, reserva!, dias, entradas, fichaCompleta, hostelSegunHabitacion, opcionesPasajero);
+    const catalogo = await cargarCatalogoParaPedidos(admin, reserva!, dias, entradas, fichaCompleta, hostelSegunHabitacion, opcionesPasajero, categoriasTour);
     salida.push({ titulo: e.titulo, porQue: e.porQue, resultado: armarPedidos(enmascararReserva(reserva!), catalogo, plantilla) });
   }
   writeFileSync(DOCUMENTO, documentoDeEjemplos({ fecha: new Date().toISOString().slice(0, 10), ejemplos: salida, preguntas: PREGUNTAS }));

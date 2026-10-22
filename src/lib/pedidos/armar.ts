@@ -30,7 +30,7 @@ import {
   type Lado,
   type PasoConLlegada,
 } from "@/lib/catalogo/reglas";
-import type { DetalleProducto, ProveedorResumen, Servicio, TipoServicio } from "@/lib/catalogo/tipos";
+import type { ComponenteTour, DetalleProducto, ProveedorResumen, Servicio, TipoServicio } from "@/lib/catalogo/tipos";
 import { NOMBRE_DESTINO } from "@/lib/importador-tours/ciudades";
 import { TRANSFER_PNT } from "@/lib/reservas/emparejar/componentes";
 import { lugarDelTraslado } from "@/lib/reservas/emparejar/vuelos-requeridos";
@@ -119,6 +119,19 @@ interface Bloque {
   llegaEnBus: boolean;
   saleEnBus: boolean;
   omitir: Lado[];
+  /** Los tours en que está, de afuera hacia adentro (5C01, CHB31); vacío si es suelto (M3-14). */
+  tours: string[];
+}
+
+/** Los códigos de los tours que contienen el componente, de afuera hacia adentro (5C01 → CHB31). */
+function cadenaDeTours(codigo: string, componentes: readonly ComponenteTour[], buscado: ComponenteTour): string[] | null {
+  for (const c of componentes) {
+    if (c === buscado) return [codigo];
+    const adentro = c.producto?.esTour ? c.producto.componentes : null;
+    const cadena = adentro?.length ? cadenaDeTours(c.producto!.codigo, adentro, buscado) : null;
+    if (cadena) return [codigo, ...cadena];
+  }
+  return null;
 }
 
 /**
@@ -177,6 +190,7 @@ class Armado {
         llegaEnBus: false,
         saleEnBus: false,
         omitir: this.omitir(),
+        tours: [],
       };
       this.estadias = this.estadiasDe([b]);
       this.bloque(b);
@@ -232,12 +246,13 @@ class Armado {
       llegaEnBus: ubicado.llegaEnBus,
       saleEnBus: ubicado.saleEnBus,
       omitir: ubicado.dePrincipal ? this.omitir() : [],
+      tours: ubicado.tours,
     };
   }
 
   /** Dónde está el producto de una parte: dentro del tour (con sus ajustes) o suelto. */
   private ubicar(parte: ParteParaPedidos):
-    | { producto: { codigo: string; destino: string | null }; servicios: Servicio[]; llegaEnBus: boolean; saleEnBus: boolean; dePrincipal: boolean }
+    | { producto: { codigo: string; destino: string | null }; servicios: Servicio[]; llegaEnBus: boolean; saleEnBus: boolean; dePrincipal: boolean; tours: string[] }
     | null {
     const r = this.reserva;
     const tours = [r.productoId, ...r.otrosProductos]
@@ -265,11 +280,12 @@ class Armado {
         llegaEnBus: conBuses && (paso as PasoConLlegada).llegaEnBus,
         saleEnBus: conBuses && (paso as PasoConLlegada).saleEnBus,
         dePrincipal: tour.id === r.productoId,
+        tours: cadenaDeTours(tour.codigo, tour.componentes, paso.componente) ?? [tour.codigo],
       };
     }
     const suelto = this.catalogo.detalles.get(parte.productoId!);
     if (!suelto || suelto.esTour) return null;
-    return { producto: suelto, servicios: suelto.servicios, llegaEnBus: false, saleEnBus: false, dePrincipal: suelto.id === r.productoId };
+    return { producto: suelto, servicios: suelto.servicios, llegaEnBus: false, saleEnBus: false, dePrincipal: suelto.id === r.productoId, tours: [] };
   }
 
   /** Una parte "servicio" del tour: el bus que reserva Imperio Inca, el transfer al aeropuerto PNT. */
@@ -296,11 +312,31 @@ class Armado {
 
   /** El nivel de alojamiento que se pide del paquete; undefined si no se puede elegir. */
   private nivelElegido(b: Bloque): { nivel: string | null | undefined; niveles: Set<string | null>; hayAlojamiento: boolean } {
-    const nivel = nivelDeLaHabitacion(this.reserva.habitacion);
     const alojamientos = agruparPorOrden(b.servicios).filter((g) => g[0].tipo === "alojamiento" && g[0].ajusteTour?.accion !== "anular");
     const niveles = new Set(alojamientos.map((g) => g[0].nivel));
+    const nivel = this.nivelEnElTour(b, nivelDeLaHabitacion(this.reserva.habitacion), niveles);
     const elegido = niveles.size === 1 ? [...niveles][0] : nivel && niveles.has(nivel) ? nivel : undefined;
     return { nivel: elegido, niveles, hayAlojamiento: alojamientos.length > 0 };
+  }
+
+  /**
+   * En un tour, el nivel del paquete que corresponde a la categoría vendida (M3-14, owner
+   * 2026-10-22): la equivalencia de data/categorias-tour.csv (tour, categoría, componente) si
+   * existe; si no, la misma si el paquete la tiene; si no y es Budget Hotel, el Hotel 3*. Un tour de
+   * adentro (CHB31 en 5C01) primero traduce la categoría del de afuera. Un paquete suelto no cambia.
+   */
+  private nivelEnElTour(b: Bloque, categoria: string | null, niveles: Set<string | null>): string | null {
+    if (!categoria || b.tours.length === 0) return categoria;
+    const equivalencias = this.catalogo.categoriasTour ?? [];
+    const equivalente = (tour: string, cat: string, componente: string) =>
+      equivalencias.find((e) => e.tour === tour && e.categoriaTour === cat && e.componente === componente)?.categoriaPaquete;
+    let cat = categoria;
+    const cadena = [...b.tours, b.codigo];
+    for (let i = 0; i < cadena.length - 2; i++) cat = equivalente(cadena[i], cat, cadena[i + 1]) ?? cat;
+    const delArchivo = equivalente(cadena[cadena.length - 2], cat, b.codigo);
+    if (delArchivo) return delArchivo;
+    if (niveles.has(cat)) return cat;
+    return cat === "Budget Hotel" ? "Hotel 3*" : cat;
   }
 
   /**
