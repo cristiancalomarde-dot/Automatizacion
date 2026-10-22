@@ -3,6 +3,15 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
 
 # Dónde retomar
 
+- **2026-10-22 (noche): M3-14 publicada:** en los tours la categoría vendida elige el hotel de cada parte (Budget →
+  Budget donde hay, si no Hotel 3*; `data/categorias-tour.csv` manda). BRARCH26/ARBR23/5C01/ARCH33 sin "Elegir el hotel".
+  Nota: `nivelDeLaHabitacion` no reconoce "Hotel in SPA" (CHB31 funciona igual porque OD030 tiene un solo nivel).
+  - **M3-15 en curso:** Bike Tour con punto de encuentro (Pasaje Giuffra 370, San Telmo, sin pick up); Mendoza
+    Bodegas día 1 (tarde ~14:30) y Alta Montaña/Rafting/Cabalgata día 2.
+  - **Adventure360 sin número de reserva (owner):** ellos esperan NUESTRO número; los mails siguientes solo se pueden
+    unir por agencia + nombre del lead pax o por un número que asignemos. Propuesto: número HI Travel visible por
+    reserva (decidir con el owner; probablemente M4).
+
 - **2026-10-22 (noche): M3-13 publicada (Adventure360).** Agencia conocida (`adventure360.com`), "Rio de Janeiro to
   Santiago" = BRARCH26 (`data/codigos-agencias.csv`, importador `importar:codigos-agencias`), lectura v4 (TBC → para
   revisión "preguntársela a la agencia"), opciones del pasajero en `data/opciones-pasajero.csv` (bike → Bike Tour en
