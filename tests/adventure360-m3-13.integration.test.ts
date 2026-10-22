@@ -123,7 +123,8 @@ const ELECCIONES = ["Choice of tour in Buenos Aires: bike tour", "Choice of tour
     const kahuak = a("KAHUAK")!;
     expect(kahuak.destinatarios).toEqual(["reservas@kahuak.com.ar", "agencias@kahuak.com.ar", "receptivo@kahuak.com.ar"]);
     expect(kahuak.cuerpo).toContain("Excursión: Rafting");
-    expect(kahuak.cuerpo).toMatch(/Fecha: a coordinar \(estadía del \d+ al \d+ \w+ 2027\)/);
+    // M3-15: el rafting va el día 2 de Mendoza (data/dias-servicio.csv), ya no "a coordinar".
+    expect(kahuak.cuerpo).toMatch(/Excursión: Rafting\nFecha: \d+ \w+ 2027\n/);
     expect(kahuak.estado).toBe("borrador");
     // Ninguno sale sin destinatario.
     expect(pedidos.filter((p) => p.sin_destinatario)).toEqual([]);
