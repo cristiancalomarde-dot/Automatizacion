@@ -17,11 +17,18 @@ import { TEXTOS } from "@/lib/textos";
 import { validarPedidoAMano, type BorradorAMano, type EntradaAMano } from "./a-mano";
 import { borradorAMano } from "./a-mano-borrador";
 import { armarPedidos, porQueNoSeArma } from "./armar";
-import { cargarCatalogoParaPedidos, cargarDiasServicio, cargarExcursionesConEntrada, cargarProveedoresFichaCompleta, cargarReservaParaPedidos } from "./cargar";
+import {
+  cargarCatalogoParaPedidos,
+  cargarDiasServicio,
+  cargarExcursionesConEntrada,
+  cargarHostelSegunHabitacion,
+  cargarProveedoresFichaCompleta,
+  cargarReservaParaPedidos,
+} from "./cargar";
 import { cargarPedidos, guardarPedidosArmados, type PedidoGuardado, type TareaGuardada } from "./guardar";
 import { avisosDeLaPantalla, loQuePidioLaAgencia, validarEdicion, type EdicionPedido, type LoQuePidio } from "./pantalla";
 import { cargarPlantilla } from "./plantilla";
-import type { DiaDeServicio, ExcursionConEntrada, ProveedorFichaCompleta, Plantilla } from "./tipos";
+import type { DiaDeServicio, ExcursionConEntrada, HostelSegunHabitacion, ProveedorFichaCompleta, Plantilla } from "./tipos";
 import { enviarPedidosAprobados, type DependenciasEnvio, type PedidoDeEnvio, type ResultadoEnvio } from "./envio/enviar";
 
 type Rechazo = { ok: false; error: string; sinSesion?: true };
@@ -64,6 +71,7 @@ export interface OpcionesPreparar {
   dias?: readonly DiaDeServicio[];
   entradas?: readonly ExcursionConEntrada[];
   fichaCompleta?: readonly ProveedorFichaCompleta[];
+  hostelSegunHabitacion?: readonly HostelSegunHabitacion[];
 }
 
 /**
@@ -88,6 +96,7 @@ export async function prepararPedidos(cliente: SupabaseClient, reservaId: string
     dias,
     opciones.entradas ?? cargarExcursionesConEntrada(),
     opciones.fichaCompleta ?? cargarProveedoresFichaCompleta(),
+    opciones.hostelSegunHabitacion ?? cargarHostelSegunHabitacion(),
   );
   const armado = armarPedidos(reserva, catalogo, plantilla);
   if (!armado.ok) return armado;

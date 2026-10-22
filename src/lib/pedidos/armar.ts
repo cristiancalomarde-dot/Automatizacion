@@ -310,7 +310,8 @@ class Armado {
     for (const b of bloques) {
       const { nivel } = this.nivelElegido(b);
       if (nivel === undefined) continue;
-      for (const [s] of agruparPorOrden(b.servicios)) {
+      for (const grupo of agruparPorOrden(b.servicios)) {
+        const [s] = this.opcionesDe(b, grupo).opciones;
         if (s.tipo !== "alojamiento" || s.ajusteTour?.accion === "anular" || s.nivel !== nivel) continue;
         if (s.opcional || s.aPedido === "a_pedido" || this.loReservaLaAgencia(s)) continue;
         for (const tramo of s.tramosNoches?.length ? s.tramosNoches : [null]) {
@@ -338,7 +339,8 @@ class Armado {
       );
     }
 
-    for (const grupo of grupos) {
+    for (const grupoDelExcel of grupos) {
+      const { opciones: grupo, segunHabitacion } = this.opcionesDe(b, grupoDelExcel);
       const s = grupo[0];
       if (s.ajusteTour?.accion === "anular") continue;
       if (s.tipo === "alojamiento" && (nivelElegido === undefined || s.nivel !== nivelElegido)) continue;
@@ -356,9 +358,28 @@ class Armado {
         continue;
       }
       const otras = grupo.slice(1).map((x) => this.nombre(x)).filter((x) => x && x !== nombre);
-      const avisoOpciones = otras.length ? [`${nombre}: se tomó la primera opción del catálogo (otras: ${otras.join(", ")}).`] : [];
+      const elegida = segunHabitacion ? "se eligió según la habitación" : "se tomó la primera opción del catálogo";
+      const avisoOpciones = otras.length ? [`${nombre}: ${elegida} (otras: ${otras.join(", ")}).`] : [];
       this.servicio(b, s, avisoOpciones);
     }
+  }
+
+  /**
+   * Las opciones de un servicio en el orden en que se ofrecen (M3-11): las de un alojamiento del
+   * destino de una regla de `data/hostel-segun-habitacion.csv` van en el orden de la regla según
+   * la habitación (dorm o privada), sin las que la regla no nombra. Sin regla, sin habitación o si
+   * ninguna opción coincide, el orden del Excel.
+   */
+  private opcionesDe(b: Bloque, grupo: Servicio[]): { opciones: Servicio[]; segunHabitacion: boolean } {
+    const comoEnElExcel = { opciones: grupo, segunHabitacion: false };
+    if (grupo[0].tipo !== "alojamiento" || !b.destino) return comoEnElExcel;
+    const hab = normalizarTexto(tipoDeHabitacion(this.reserva.habitacion) ?? "");
+    const clase = hab.startsWith("dorm") ? "dorm" : ["doble", "twin", "single", "triple"].includes(hab) ? "privada" : null;
+    const regla = clase && (this.catalogo.hostelSegunHabitacion ?? []).find((r) => r.destino === b.destino && r.habitacion === clase);
+    if (!regla) return comoEnElExcel;
+    const nombreDe = (s: Servicio) => normalizarTexto(s.serviceProviderNombre ?? queEs(s));
+    const opciones = regla.orden.flatMap((n) => grupo.filter((s) => nombreDe(s) === normalizarTexto(n)));
+    return opciones.length ? { opciones, segunHabitacion: true } : comoEnElExcel;
   }
 
   private nombre(s: Servicio): string {

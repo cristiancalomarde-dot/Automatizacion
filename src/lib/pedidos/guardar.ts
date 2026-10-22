@@ -10,9 +10,16 @@
  */
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { armarPedidos, porQueNoSeArma } from "./armar";
-import { cargarCatalogoParaPedidos, cargarDiasServicio, cargarExcursionesConEntrada, cargarProveedoresFichaCompleta, cargarReservaParaPedidos } from "./cargar";
+import {
+  cargarCatalogoParaPedidos,
+  cargarDiasServicio,
+  cargarExcursionesConEntrada,
+  cargarHostelSegunHabitacion,
+  cargarProveedoresFichaCompleta,
+  cargarReservaParaPedidos,
+} from "./cargar";
 import { cargarPlantilla } from "./plantilla";
-import type { DiaDeServicio, ExcursionConEntrada, ProveedorFichaCompleta, PedidoArmado, Plantilla, ResultadoArmado, TareaArmada, TipoTarea } from "./tipos";
+import type { DiaDeServicio, ExcursionConEntrada, HostelSegunHabitacion, ProveedorFichaCompleta, PedidoArmado, Plantilla, ResultadoArmado, TareaArmada, TipoTarea } from "./tipos";
 
 export interface ConteoGuardado {
   insertados: number;
@@ -102,6 +109,7 @@ export interface OpcionesArmado {
   dias?: readonly DiaDeServicio[];
   entradas?: readonly ExcursionConEntrada[];
   fichaCompleta?: readonly ProveedorFichaCompleta[];
+  hostelSegunHabitacion?: readonly HostelSegunHabitacion[];
 }
 
 /** Lee la reserva y el catálogo, arma los borradores y los guarda. Una reserva que no está recibida no guarda nada. */
@@ -119,6 +127,7 @@ export async function armarYGuardarPedidos(cliente: SupabaseClient, reservaId: s
     dias,
     opciones.entradas ?? cargarExcursionesConEntrada(),
     opciones.fichaCompleta ?? cargarProveedoresFichaCompleta(),
+    opciones.hostelSegunHabitacion ?? cargarHostelSegunHabitacion(),
   );
   const armado = armarPedidos(reserva, catalogo, plantilla);
   if (!armado.ok) return armado;

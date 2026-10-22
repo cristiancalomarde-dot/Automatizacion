@@ -98,6 +98,16 @@ export interface ProveedorFichaCompleta {
   proveedor: string;
 }
 
+/**
+ * Una fila de `data/hostel-segun-habitacion.csv` (M3-11): en ese destino, el orden de los hostels
+ * según la habitación (dorm o privada). Los que no están en la lista no se ofrecen.
+ */
+export interface HostelSegunHabitacion {
+  destino: string;
+  habitacion: "dorm" | "privada";
+  orden: string[];
+}
+
 export interface CatalogoParaPedidos {
   /** El detalle (`cargarProducto`) del producto de la reserva, de los otros productos y de cada parte. */
   detalles: ReadonlyMap<string, DetalleProducto>;
@@ -108,6 +118,8 @@ export interface CatalogoParaPedidos {
   entradas?: readonly ExcursionConEntrada[];
   /** Los proveedores que piden la ficha completa por pasajero (sin la lista, ninguno). */
   fichaCompleta?: readonly ProveedorFichaCompleta[];
+  /** El hostel según la habitación (M3-11; sin la lista, el orden del Excel). */
+  hostelSegunHabitacion?: readonly HostelSegunHabitacion[];
 }
 
 /** La plantilla del mail (`data/plantillas/pedido-proveedor.md`), ya separada en sus partes. */

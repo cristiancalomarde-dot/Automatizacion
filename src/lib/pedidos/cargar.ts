@@ -16,6 +16,7 @@ import type {
   CatalogoParaPedidos,
   DiaDeServicio,
   ExcursionConEntrada,
+  HostelSegunHabitacion,
   ParteParaPedidos,
   PasajeroDeReserva,
   ProveedorFichaCompleta,
@@ -26,6 +27,7 @@ import type {
 export const ARCHIVO_DIAS = join("data", "dias-servicio.csv");
 export const ARCHIVO_ENTRADAS = join("data", "excursiones-con-entrada.csv");
 export const ARCHIVO_FICHA_COMPLETA = join("data", "proveedores-ficha-completa.csv");
+export const ARCHIVO_HOSTEL_SEGUN_HABITACION = join("data", "hostel-segun-habitacion.csv");
 
 /* eslint-disable @typescript-eslint/no-explicit-any -- filas crudas de PostgREST, se tipan al mapear */
 
@@ -157,6 +159,30 @@ export function cargarProveedoresFichaCompleta(raiz: string = process.cwd()): Pr
 }
 
 /**
+ * `data/hostel-segun-habitacion.csv`: destino,habitacion,orden,nota (M3-11, owner 2026-10-09/22).
+ * `habitacion` es "dorm" o "privada"; `orden`, los nombres de los hostels separados por "|".
+ */
+export function leerHostelSegunHabitacion(contenido: string): HostelSegunHabitacion[] {
+  const cabecera = contenido.replace(/^﻿/, "").split(/\r?\n/)[0]?.trim() ?? "";
+  if (!/^destino,habitacion,orden\b/.test(cabecera)) {
+    throw new Error(`${ARCHIVO_HOSTEL_SEGUN_HABITACION}: la primera fila tiene que ser "destino,habitacion,orden,nota".`);
+  }
+  return leerCsv(contenido).map((f, i) => {
+    const destino = f.destino?.trim();
+    const habitacion = f.habitacion?.trim().toLowerCase();
+    const orden = (f.orden ?? "").split("|").map((x) => x.trim()).filter(Boolean);
+    if (!destino || (habitacion !== "dorm" && habitacion !== "privada") || orden.length === 0) {
+      throw new Error(`${ARCHIVO_HOSTEL_SEGUN_HABITACION}, fila ${i + 2}: hace falta el destino, la habitación ("dorm" o "privada") y al menos un hostel.`);
+    }
+    return { destino, habitacion, orden };
+  });
+}
+
+export function cargarHostelSegunHabitacion(raiz: string = process.cwd()): HostelSegunHabitacion[] {
+  return leerHostelSegunHabitacion(readFileSync(join(raiz, ARCHIVO_HOSTEL_SEGUN_HABITACION), "utf-8"));
+}
+
+/**
  * El catálogo que necesita una reserva: el detalle del producto, de los otros
  * productos y de cada parte (una vez cada uno), y los proveedores de las partes
  * de tipo servicio. Si algo no se puede leer, falla: nunca se arma a medias.
@@ -167,6 +193,7 @@ export async function cargarCatalogoParaPedidos(
   dias: readonly DiaDeServicio[],
   entradas: readonly ExcursionConEntrada[] = [],
   fichaCompleta: readonly ProveedorFichaCompleta[] = [],
+  hostelSegunHabitacion: readonly HostelSegunHabitacion[] = [],
 ): Promise<CatalogoParaPedidos> {
   const ids = [...new Set([reserva.productoId, ...reserva.otrosProductos, ...reserva.partes.map((p) => p.productoId)].filter((x): x is string => !!x))];
   const detalles = new Map<string, DetalleProducto>(await Promise.all(ids.map(async (id) => [id, await cargarProducto(cliente, id)] as const)));
@@ -178,5 +205,5 @@ export async function cargarCatalogoParaPedidos(
       proveedores.set(f.id, { id: f.id, nombre: f.nombre, mails: f.mails ?? [], canal: (f.canal ?? null) as Canal, telefono: f.telefono ?? null });
     }
   }
-  return { detalles, proveedores, dias, entradas, fichaCompleta };
+  return { detalles, proveedores, dias, entradas, fichaCompleta, hostelSegunHabitacion };
 }
