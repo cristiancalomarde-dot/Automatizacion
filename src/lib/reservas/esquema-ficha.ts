@@ -21,7 +21,8 @@ export const TIPOS_MAIL = [
 ] as const;
 export type TipoMail = (typeof TIPOS_MAIL)[number];
 
-export const AGENCIAS_PILOTO = ["Kilroy", "Jysk", "TourRadar", "Journaway"] as const;
+/** M3-13 (owner, 2026-10-22): Adventure360 (BRARCH26). */
+export const AGENCIAS_PILOTO = ["Kilroy", "Jysk", "TourRadar", "Journaway", "Adventure360"] as const;
 
 export interface Campo<T> {
   valor: T;

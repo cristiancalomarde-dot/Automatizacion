@@ -4,6 +4,7 @@ import { vi } from "vitest";
 import type { DetalleProducto } from "@/lib/catalogo/tipos";
 import type { DatoClave, FichaLectura, TipoMail, VueloIA } from "../../esquema-ficha";
 import { armarCatalogo, type CatalogoParaEmparejar, type FilasCatalogo } from "../catalogo";
+import { leerCodigosAgencias } from "../codigos-agencias";
 import { leerCodigosKilroy } from "../codigos-kilroy";
 import { leerCodigosTourRadarCsv } from "../codigos-tourradar-csv";
 import { leerProductosNoCargados, type ProductoNoCargado } from "../productos-no-cargados";
@@ -58,6 +59,15 @@ export function filasCodigosTourRadarCsv(): FilasCatalogo["codigos"] {
   }));
 }
 
+/** M3-13: las filas de `data/codigos-agencias.csv` (Adventure360 → BRARCH26) como filas de `codigo_externo`. */
+export function filasCodigosAgencias(): FilasCatalogo["codigos"] {
+  const idPorCodigo = new Map(fotoCatalogo().productos.map((p) => [p.codigo, p.id]));
+  const csv = readFileSync(join(process.cwd(), "data", "codigos-agencias.csv"), "utf-8");
+  return leerCodigosAgencias(csv)
+    .filter((c) => idPorCodigo.has(c.codigoHiTravel))
+    .map((c) => ({ producto_id: idPorCodigo.get(c.codigoHiTravel)!, agencia: c.agencia, codigo: c.codigoAgencia, nombre_externo: c.nombreAgencia }));
+}
+
 /**
  * La lista de productos no cargados como estaba antes de M3-10 (owner 2026-10-14 y
  * 2026-10-16: ARCH33EXP, ARBR23, ARUY01 y OD014), coherente con la foto del catálogo:
@@ -69,12 +79,12 @@ export function noCargadosDePrueba(): ProductoNoCargado[] {
 }
 
 /**
- * El catálogo real con lo que dejan las cargas de `data/codigos-tourradar.csv`
- * y, salvo `codigosKilroy: false`, `data/codigos-kilroy.csv`.
+ * El catálogo real con lo que dejan las cargas de `data/codigos-tourradar.csv`,
+ * `data/codigos-agencias.csv` (M3-13) y, salvo `codigosKilroy: false`, `data/codigos-kilroy.csv`.
  */
 export function catalogoDePrueba(opciones: { codigosKilroy?: boolean } = {}): CatalogoParaEmparejar {
   const f = fotoCatalogo();
-  const extra = [...(opciones.codigosKilroy === false ? [] : filasCodigosKilroy()), ...filasCodigosTourRadarCsv()];
+  const extra = [...(opciones.codigosKilroy === false ? [] : filasCodigosKilroy()), ...filasCodigosTourRadarCsv(), ...filasCodigosAgencias()];
   const yaEstan = new Set(f.codigos.map((c) => `${c.agencia}|${c.codigo}`));
   return armarCatalogo({ ...f, codigos: [...f.codigos, ...extra.filter((c) => !yaEstan.has(`${c.agencia}|${c.codigo}`))] });
 }

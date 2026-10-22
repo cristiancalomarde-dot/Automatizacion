@@ -1,0 +1,23 @@
+{
+  "id": "msg_grabado",
+  "type": "message",
+  "role": "assistant",
+  "model": "modelo-grabado",
+  "content": [
+    {
+      "type": "thinking",
+      "thinking": "…",
+      "signature": "grabada"
+    },
+    {
+      "type": "text",
+      "text": "{\"tipo_mail\":{\"valor\":\"reserva_nueva\",\"confianza\":1},\"agencia\":{\"valor\":\"Adventure360\",\"confianza\":1},\"numero_reserva\":{\"valor\":null,\"confianza\":0},\"titulo_paquete\":{\"valor\":null,\"confianza\":0},\"productos\":[{\"nombre\":\"Rio de Janeiro to Santiago\",\"codigo\":null,\"fecha_inicio\":\"2026-11-10\",\"fecha_fin\":null,\"noches\":null,\"habitacion\":\"Hostel Dorm\",\"punto_recogida\":null,\"opcionales\":[],\"confianza\":1}],\"fecha_inicio\":{\"valor\":\"2026-11-10\",\"confianza\":1},\"fecha_fin\":{\"valor\":null,\"confianza\":0},\"pax\":{\"valor\":1,\"confianza\":1},\"pasajeros\":[{\"nombre\":\"Tomas Ejemplo\",\"apellido\":\"Pruebasen\",\"nacionalidad\":\"British\",\"fecha_nacimiento\":\"1999-03-03\",\"confianza\":1}],\"vuelos\":[],\"hoteles_agencia\":[],\"todos_hoteles_agencia\":{\"valor\":false,\"confianza\":1},\"pedidos_especiales\":[{\"texto\":\"Choice of tour in Buenos Aires: bike tour\",\"confianza\":1},{\"texto\":\"Choice of tour in Mendoza: rafting\",\"confianza\":1},{\"texto\":\"Arrival flight details for the airport pick up: TBC\",\"confianza\":1}],\"pdf_ilegible\":false,\"aviso\":null}"
+    }
+  ],
+  "stop_reason": "end_turn",
+  "stop_sequence": null,
+  "usage": {
+    "input_tokens": 3000,
+    "output_tokens": 500
+  }
+}

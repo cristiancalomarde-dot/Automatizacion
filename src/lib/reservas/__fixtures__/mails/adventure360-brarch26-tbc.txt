@@ -1,0 +1,24 @@
+Remitente: Adventure360 <bookings@adventure360.com>
+Asunto: New booking - Rio de Janeiro to Santiago
+Fecha: 2026-10-15T12:29:00Z
+
+Hi team,
+I hope you're well!
+We have just received a new booking for the Rio de Janeiro to Santiago trip! Please see below for the details:
+
+First name: Tomas Ejemplo
+Last name: Pruebasen
+Date of birth: 3rd March 1999
+Nationality: British
+Passport number: 000000000
+Telephone number: +440000000000
+Tour: Rio de Janeiro to Santiago
+Arrival date: TBC
+Arrival flight details for the airport pick up: TBC
+Choice of tour in Buenos Aires: bike tour
+Choice of tour in Mendoza: rafting
+Type of accommodation selected: Hostel Dorm
+
+Please let me know ASAP whether you are able to confirm the booking. I will then send over the customers flight details once we have them.
+Best wishes,
+Ria

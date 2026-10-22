@@ -524,7 +524,8 @@ export const TEXTOS = {
       posible_duplicada:
         "Esta reserva se parece a otra (misma agencia, producto y fechas). Revisala antes de seguir.",
       sin_producto: "El mail no dice qué producto se reserva.",
-      sin_fecha_inicio: "El mail no trae la fecha de inicio del viaje.",
+      // M3-13 (owner, 2026-10-22): una reserva de catálogo no viene sin fecha; si vino "TBC", se pregunta.
+      sin_fecha_inicio: "Falta la fecha de inicio: preguntársela a la agencia.",
       elegir_variante: (codigo: string) => `Hay que elegir la variante de ${codigo}: con o sin traslados.`,
       datos_dudosos: (datos: string) => `Algunos datos no se leyeron con seguridad (${datos}). Comparalos con el mail.`,
       cancelacion: "La agencia mandó una cancelación. La resuelve una persona.",

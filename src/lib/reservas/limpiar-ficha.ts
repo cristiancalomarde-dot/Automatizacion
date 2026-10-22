@@ -99,6 +99,8 @@ export function codigoApareceEnTexto(codigo: string, texto: string): boolean {
 export function fechaApareceEnTexto(fechaIso: string, texto: string): boolean {
   const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(fechaIso);
   if (!m) return false;
+  // "10th November 2026", "3rd March 1999" (Adventure360, M3-13): el ordinal inglés no cuenta.
+  const sinOrdinales = texto.replace(/\b(\d{1,2})(?:st|nd|rd|th)\b/gi, "$1");
   const [yyyy, mm, dd] = [m[1], m[2], m[3]];
   const yy = yyyy.slice(2);
   const d = String(+dd);
@@ -122,7 +124,7 @@ export function fechaApareceEnTexto(fechaIso: string, texto: string): boolean {
     `${dd}-${mm}-${yyyy}`,
     `${yyyy}-${mm}-${dd}`,
   ];
-  const t = sinEspacios(texto);
+  const t = sinEspacios(sinOrdinales);
   return variantes.some((v) => new RegExp(`(?<![0-9])${escapar(v)}(?![0-9])`).test(t));
 }
 
