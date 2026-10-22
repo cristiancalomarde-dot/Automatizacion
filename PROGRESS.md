@@ -3,6 +3,15 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
 
 # Dónde retomar
 
+- **2026-10-22 (tarde): M3-11 publicada: en Puerto Natales el hostel sale según la habitación** (Dorm → Puma, Last Hope;
+  privada → Factoria, Last Hope, Puma; regla en `data/hostel-segun-habitacion.csv`, se lee al armar, sin recarga).
+  Los borradores ya armados se corrigen con "Volver a armar". El Excel de proveedores "para IA" estaba solo en el clon:
+  se copió a `Insumos/` del Drive; el owner agregó el mail del Hotel Oxford MVD, Merit MVD espera confirmación →
+  después copiar el Excel al clon y reimportar proveedores en la real (lo corre el owner con `!`).
+  - **Adventure360** (agencia nueva, reserva BRARCH26, ya en catálogo): no está en `data/agencias.csv`, sus mails quedan
+    "desconocida". Falta que el owner pase remitente/dominio y cómo nombran el producto; después, sumarla.
+  - **Próximas tandas de catálogo:** el owner sugiere lo que piden las agencias (BRARCH26 ya está; 5C01 también).
+
 - **2026-10-22: M3-10 (6 productos nuevos) cargada en la real y publicada; Perito Moreno día 2 en OD013/OD016.**
   La carga la corrió el owner con `! bash cargar-m3-10.sh` (equivalencias → paquetes sin ANTHROPIC_API_KEY → tours →
   códigos Kilroy → códigos TourRadar, desde el clon con `.env.local`): 5 paquetes + 3 tours creados, nada actualizado
