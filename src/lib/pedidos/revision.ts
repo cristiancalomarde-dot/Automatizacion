@@ -25,13 +25,14 @@ import {
   cargarHostelSegunHabitacion,
   cargarOpcionesPasajero,
   cargarProveedoresFichaCompleta,
+  cargarPuntosDeEncuentro,
   cargarReservaParaPedidos,
 } from "./cargar";
 import { cargarPedidos, guardarPedidosArmados, type PedidoGuardado, type TareaGuardada } from "./guardar";
 import { avisosDeLaPantalla, loQuePidioLaAgencia, validarEdicion, type EdicionPedido, type LoQuePidio } from "./pantalla";
 import { cargarPlantilla } from "./plantilla";
 import type { CategoriaTour } from "@/lib/importador-tours/datos";
-import type { DiaDeServicio, ExcursionConEntrada, HostelSegunHabitacion, OpcionDelPasajero, ProveedorFichaCompleta, Plantilla } from "./tipos";
+import type { DiaDeServicio, ExcursionConEntrada, HostelSegunHabitacion, OpcionDelPasajero, ProveedorFichaCompleta, PuntoDeEncuentro, Plantilla } from "./tipos";
 import { enviarPedidosAprobados, type DependenciasEnvio, type PedidoDeEnvio, type ResultadoEnvio } from "./envio/enviar";
 
 type Rechazo = { ok: false; error: string; sinSesion?: true };
@@ -79,6 +80,8 @@ export interface OpcionesPreparar {
   opcionesPasajero?: readonly OpcionDelPasajero[];
   /** M3-14: las categorías tour ↔ paquete (por defecto, las de data/categorias-tour.csv). */
   categoriasTour?: readonly CategoriaTour[];
+  /** M3-15: los puntos de encuentro (por defecto, los de data/puntos-de-encuentro.csv). */
+  puntosDeEncuentro?: readonly PuntoDeEncuentro[];
 }
 
 /**
@@ -106,6 +109,7 @@ export async function prepararPedidos(cliente: SupabaseClient, reservaId: string
     opciones.hostelSegunHabitacion ?? cargarHostelSegunHabitacion(),
     opciones.opcionesPasajero ?? cargarOpcionesPasajero(),
     opciones.categoriasTour ?? cargarCategoriasTour(),
+    opciones.puntosDeEncuentro ?? cargarPuntosDeEncuentro(),
   );
   const armado = armarPedidos(reserva, catalogo, plantilla);
   if (!armado.ok) return armado;

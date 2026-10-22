@@ -23,6 +23,7 @@ import type {
   ParteParaPedidos,
   PasajeroDeReserva,
   ProveedorFichaCompleta,
+  PuntoDeEncuentro,
   ReservaParaPedidos,
   VueloDeReserva,
 } from "./tipos";
@@ -33,6 +34,7 @@ export const ARCHIVO_FICHA_COMPLETA = join("data", "proveedores-ficha-completa.c
 export const ARCHIVO_HOSTEL_SEGUN_HABITACION = join("data", "hostel-segun-habitacion.csv");
 export const ARCHIVO_OPCIONES_PASAJERO = join("data", "opciones-pasajero.csv");
 export const ARCHIVO_CATEGORIAS_TOUR = join("data", "categorias-tour.csv");
+export const ARCHIVO_PUNTOS_DE_ENCUENTRO = join("data", "puntos-de-encuentro.csv");
 
 /* eslint-disable @typescript-eslint/no-explicit-any -- filas crudas de PostgREST, se tipan al mapear */
 
@@ -95,21 +97,27 @@ export async function cargarReservaParaPedidos(cliente: SupabaseClient, id: stri
   };
 }
 
-/** `data/dias-servicio.csv`: codigo,orden,dia,nota (el día de un servicio dentro de su paquete). */
+/**
+ * `data/dias-servicio.csv`: codigo,orden,dia,servicio,momento,nota (el día de un servicio dentro de
+ * su paquete). `servicio` (M3-15) da el día a una excursión por su nombre cuando el renglón del
+ * catálogo junta varias ("Bodegas half Day and Alta Montaña"); `momento` dice cuándo ese día
+ * ("por la tarde"). Sigue leyendo el formato de antes (codigo,orden,dia,nota).
+ */
 export function leerDiasServicio(contenido: string): DiaDeServicio[] {
-  const filas = contenido.replace(/\r\n?/g, "\n").split("\n").filter((l) => l.trim());
-  const [cabecera, ...resto] = filas;
-  if (!cabecera || !/^codigo,orden,dia\b/.test(cabecera.trim())) {
-    throw new Error(`${ARCHIVO_DIAS}: la primera fila tiene que ser "codigo,orden,dia,nota".`);
+  const cabecera = contenido.replace(/^﻿/, "").split(/\r?\n/)[0]?.trim() ?? "";
+  if (!/^codigo,orden,dia\b/.test(cabecera)) {
+    throw new Error(`${ARCHIVO_DIAS}: la primera fila tiene que ser "codigo,orden,dia,servicio,momento,nota".`);
   }
-  return resto.map((l, i) => {
-    const [codigo, orden, dia] = l.split(",").map((x) => x.trim());
-    const o = Number(orden);
-    const d = Number(dia);
+  return leerCsv(contenido).map((f, i) => {
+    const codigo = f.codigo?.trim();
+    const o = Number(f.orden?.trim());
+    const d = Number(f.dia?.trim());
     if (!codigo || !Number.isInteger(o) || !Number.isInteger(d) || d < 1) {
       throw new Error(`${ARCHIVO_DIAS}, fila ${i + 2}: hace falta código, orden y día (un número desde 1).`);
     }
-    return { codigo, orden: o, dia: d };
+    const servicio = f.servicio?.trim();
+    const momento = f.momento?.trim();
+    return { codigo, orden: o, dia: d, ...(servicio ? { servicio } : {}), ...(momento ? { momento } : {}) };
   });
 }
 
@@ -218,6 +226,32 @@ export function cargarOpcionesPasajero(raiz: string = process.cwd()): OpcionDelP
 }
 
 /**
+ * `data/puntos-de-encuentro.csv`: codigo,orden,servicio,punto,nota (M3-15, owner 2026-10-22). La
+ * excursión `servicio` del servicio `orden` del paquete `codigo` no tiene pick up: el pasajero va
+ * directo al `punto`.
+ */
+export function leerPuntosDeEncuentro(contenido: string): PuntoDeEncuentro[] {
+  const cabecera = contenido.replace(/^﻿/, "").split(/\r?\n/)[0]?.trim() ?? "";
+  if (!/^codigo,orden,servicio,punto\b/.test(cabecera)) {
+    throw new Error(`${ARCHIVO_PUNTOS_DE_ENCUENTRO}: la primera fila tiene que ser "codigo,orden,servicio,punto,nota".`);
+  }
+  return leerCsv(contenido).map((f, i) => {
+    const codigo = f.codigo?.trim();
+    const orden = Number(f.orden?.trim());
+    const servicio = f.servicio?.trim();
+    const punto = f.punto?.trim();
+    if (!codigo || !Number.isInteger(orden) || !servicio || !punto) {
+      throw new Error(`${ARCHIVO_PUNTOS_DE_ENCUENTRO}, fila ${i + 2}: hace falta el código, el orden (un número), el servicio y el punto de encuentro.`);
+    }
+    return { codigo, orden, servicio, punto };
+  });
+}
+
+export function cargarPuntosDeEncuentro(raiz: string = process.cwd()): PuntoDeEncuentro[] {
+  return leerPuntosDeEncuentro(readFileSync(join(raiz, ARCHIVO_PUNTOS_DE_ENCUENTRO), "utf-8"));
+}
+
+/**
  * `data/categorias-tour.csv`: tour,categoria_tour,componente,categoria_paquete,nota (M1-05; al armar,
  * M3-14). La misma lectura que el importador de tours (categorías normalizadas).
  */
@@ -262,6 +296,7 @@ export async function cargarCatalogoParaPedidos(
   hostelSegunHabitacion: readonly HostelSegunHabitacion[] = [],
   opcionesPasajero: readonly OpcionDelPasajero[] = [],
   categoriasTour: readonly CategoriaTour[] = [],
+  puntosDeEncuentro: readonly PuntoDeEncuentro[] = [],
 ): Promise<CatalogoParaPedidos> {
   const ids = [...new Set([reserva.productoId, ...reserva.otrosProductos, ...reserva.partes.map((p) => p.productoId)].filter((x): x is string => !!x))];
   const detalles = new Map<string, DetalleProducto>(await Promise.all(ids.map(async (id) => [id, await cargarProducto(cliente, id)] as const)));
@@ -276,5 +311,5 @@ export async function cargarCatalogoParaPedidos(
   // M3-13: las opciones del pasajero de estos paquetes (sueltos o dentro de un tour), con su proveedor.
   const codigos = new Set([...detalles.values()].flatMap((d) => [d.codigo, ...d.componentes.map((c) => c.producto?.codigo ?? "")]));
   const opciones = opcionesPasajero.length ? await proveedoresDeOpciones(cliente, opcionesPasajero, codigos) : [];
-  return { detalles, proveedores, dias, entradas, fichaCompleta, hostelSegunHabitacion, opcionesPasajero: opciones, categoriasTour };
+  return { detalles, proveedores, dias, entradas, fichaCompleta, hostelSegunHabitacion, opcionesPasajero: opciones, categoriasTour, puntosDeEncuentro };
 }

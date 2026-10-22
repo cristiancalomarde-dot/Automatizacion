@@ -19,8 +19,9 @@ describe("días fijos del Perito Moreno (data/dias-servicio.csv)", () => {
     expect(diaDe("AR34", 10)).toBe(5);
   });
 
-  it("no hay dos reglas para el mismo servicio", () => {
-    const claves = dias.map((d) => `${d.codigo}#${d.orden}`);
+  it("no hay dos reglas para el mismo servicio (o la misma excursión del servicio)", () => {
+    // Con nombre de excursión (M3-15), la regla es por excursión: OD019 5 tiene Bodegas, Alta Montaña y Rafting.
+    const claves = dias.map((d) => `${d.codigo}#${d.orden}#${d.servicio ?? ""}`);
     expect(new Set(claves).size).toBe(claves.length);
   });
 });

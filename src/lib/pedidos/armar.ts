@@ -50,6 +50,7 @@ import {
 } from "./formato";
 import type {
   CatalogoParaPedidos,
+  DiaDeServicio,
   OpcionDelPasajero,
   ParteCubierta,
   ParteParaPedidos,
@@ -562,8 +563,13 @@ class Armado {
       case "traslado":
         return this.traslados(b, s, nombre, desde, hasta);
       case "excursion":
-      case "crucero":
-        return [this.excursion(b, s, nombre, desde, hasta)];
+      case "crucero": {
+        // M3-15: si el renglón junta excursiones con su propio día (data/dias-servicio.csv por nombre), van separadas.
+        const porNombre = this.diasPorNombre(b, s, nombre);
+        return porNombre.length
+          ? porNombre.map((d) => this.excursion(b, s, d.servicio!, desde, hasta, d))
+          : [this.excursion(b, s, nombre, desde, hasta)];
+      }
       case "bus":
         return [this.bus(b, s, nombre)];
       default:
@@ -587,15 +593,33 @@ class Armado {
     return { renglones, fecha: desde, resumen: desde && hasta ? `IN ${fechaCorta(desde)}, OUT ${fechaCorta(hasta)}` : "", queParaTarea: hab ? `${hotel} (${hab})` : hotel, datosPax: true, avisos, pendientes: [] };
   }
 
-  private fechaDeExcursion(b: Bloque, s: Servicio, desde: string | null, hasta: string | null): string | null {
+  /**
+   * Las reglas de `data/dias-servicio.csv` con nombre de excursión (M3-15) de ese servicio del
+   * paquete cuyo nombre está en el del renglón ("Bodegas half Day and Alta Montaña" → Bodegas half
+   * Day y Alta Montaña; "Rafting" → Rafting), en orden de día. Vacío si ninguna lo nombra.
+   */
+  private diasPorNombre(b: Bloque, s: Servicio, nombre: string): DiaDeServicio[] {
+    const texto = normalizarTexto(nombre);
+    return this.catalogo.dias
+      .filter((d) => d.servicio && d.codigo === b.codigo && d.orden === s.orden && texto.includes(normalizarTexto(d.servicio)))
+      .sort((x, y) => x.dia - y.dia);
+  }
+
+  private fechaDeExcursion(b: Bloque, s: Servicio, desde: string | null, hasta: string | null, diaFijo?: DiaDeServicio): string | null {
     if (s.tramosNoches?.length && desde) return desde;
     if (b.inicio && b.fin && b.inicio === b.fin) return b.inicio;
-    const dia = this.catalogo.dias.find((d) => d.codigo === b.codigo && d.orden === s.orden)?.dia;
+    const dia = (diaFijo ?? this.catalogo.dias.find((d) => !d.servicio && d.codigo === b.codigo && d.orden === s.orden))?.dia;
     if (dia && b.inicio) return sumarDias(b.inicio, dia - 1);
     return desde && hasta && desde === hasta ? desde : null;
   }
 
-  private excursion(b: Bloque, s: Servicio, nombre: string, desde: string | null, hasta: string | null): Renglones {
+  /** M3-15: la excursión sin pick up, con su punto de encuentro (`data/puntos-de-encuentro.csv`). */
+  private puntoDeEncuentro(b: Bloque, s: Servicio, nombre: string): string | null {
+    const texto = normalizarTexto(nombre);
+    return (this.catalogo.puntosDeEncuentro ?? []).find((p) => p.codigo === b.codigo && p.orden === s.orden && normalizarTexto(p.servicio) === texto)?.punto ?? null;
+  }
+
+  private excursion(b: Bloque, s: Servicio, nombre: string, desde: string | null, hasta: string | null, diaFijo?: DiaDeServicio): Renglones {
     const regular = PRIVADO.test(`${s.descripcion ?? ""} ${nombre}`) ? "privado" : "regular";
     const incluye = (s.descripcion ?? "").match(INCLUYE_TRASLADOS);
     if (incluye) return this.paqueteConTraslados(b, nombre, incluye[1], regular, `${s.descripcion ?? ""} ${nombre}`);
@@ -605,9 +629,10 @@ class Armado {
     const avisos: string[] = [];
     // De varios días (el Overland de 3 días): va con sus fechas de punta a punta.
     const variosDias = VARIOS_DIAS.test(s.descripcion ?? "") && !!desde && !!hasta && desde !== hasta;
-    const fecha = variosDias ? null : this.fechaDeExcursion(b, s, desde, hasta);
+    const fecha = variosDias ? null : this.fechaDeExcursion(b, s, desde, hasta, diaFijo);
+    const momento = fecha && diaFijo?.momento ? `, ${diaFijo.momento}` : "";
     if (variosDias) renglones.push(`Desde: ${fechaCorta(desde!)} · Hasta: ${fechaCorta(hasta!)}`);
-    else if (fecha) renglones.push(`Fecha: ${fechaCorta(fecha)}`);
+    else if (fecha) renglones.push(`Fecha: ${fechaCorta(fecha)}${momento}`);
     else {
       renglones.push(desde && hasta ? `Fecha: a coordinar (estadía ${rangoCorto(desde, hasta)})` : "Fecha: a coordinar");
       avisos.push(`Falta la fecha de ${nombre}: completala antes de enviar.`);
@@ -615,9 +640,12 @@ class Armado {
     // Solo Journaway: las excursiones de la lista van con las entradas a los parques (owner, 2026-10-19).
     const entradas = this.esDeJournaway() && llevaEntradas(this.catalogo.entradas ?? [], b.codigo, `${nombre} ${s.descripcion ?? ""}`);
     renglones.push(`Servicio: ${regular} · Idioma: ${idioma}${entradas ? " · Con entradas" : ""}`);
-    const pickUp = this.pickUp(b, variosDias ? desde : (fecha ?? desde), !variosDias);
+    const punto = this.puntoDeEncuentro(b, s, nombre);
+    const pickUp = punto
+      ? { renglon: `Punto de encuentro: ${punto} (el pasajero va directo)`, pendientes: [], lugar: punto }
+      : this.pickUp(b, variosDias ? desde : (fecha ?? desde), !variosDias);
     renglones.push(pickUp.renglon);
-    const resumen = variosDias ? rangoCorto(desde!, hasta!) : fecha ? fechaCorta(fecha) : "fecha a coordinar";
+    const resumen = variosDias ? rangoCorto(desde!, hasta!) : fecha ? `${fechaCorta(fecha)}${momento}` : "fecha a coordinar";
     const tour: TourDeFicha = {
       nombre,
       fecha: variosDias ? desde : fecha,

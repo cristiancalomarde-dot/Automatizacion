@@ -81,6 +81,24 @@ export interface DiaDeServicio {
   codigo: string;
   orden: number;
   dia: number;
+  /**
+   * M3-15: la excursión (por su nombre) a la que va el día, cuando el servicio junta varias en un
+   * renglón ("Bodegas half Day and Alta Montaña"): el pedido las separa, cada una con su fecha.
+   */
+  servicio?: string;
+  /** M3-15: cuándo ese día ("por la tarde (14:30 aprox.)"). */
+  momento?: string;
+}
+
+/**
+ * Una fila de `data/puntos-de-encuentro.csv` (M3-15, owner 2026-10-22): la excursión `servicio` del
+ * servicio `orden` del paquete `codigo` no tiene pick up; el pasajero va directo a `punto`.
+ */
+export interface PuntoDeEncuentro {
+  codigo: string;
+  orden: number;
+  servicio: string;
+  punto: string;
 }
 
 /**
@@ -143,6 +161,8 @@ export interface CatalogoParaPedidos {
   opcionesPasajero?: readonly OpcionDelPasajero[];
   /** Las categorías tour ↔ paquete (M3-14, data/categorias-tour.csv; sin la lista, la regla general). */
   categoriasTour?: readonly CategoriaTour[];
+  /** Las excursiones sin pick up, con su punto de encuentro (M3-15; sin la lista, todas con pick up). */
+  puntosDeEncuentro?: readonly PuntoDeEncuentro[];
 }
 
 /** La plantilla del mail (`data/plantillas/pedido-proveedor.md`), ya separada en sus partes. */
