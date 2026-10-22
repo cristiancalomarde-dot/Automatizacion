@@ -1,12 +1,12 @@
 # Carga de los paquetes de los 7 tours (M1-04d)
 
-Cargué en el sistema los paquetes de un destino de los 7 tours desde **Construccion de Paquetes 2019 con 3 y 4 estrellas.xls** (2026-10-11). Cada servicio de cada paquete ya sabe a qué proveedor pedírselo, salvo los de la lista de abajo.
+Cargué en el sistema los paquetes de un destino de los 7 tours desde **Construccion de Paquetes 2019 con 3 y 4 estrellas.xls** (2026-10-22). Cada servicio de cada paquete ya sabe a qué proveedor pedírselo, salvo los de la lista de abajo.
 
-- Paquetes: 17. Servicios (cada opción de hotel o excursión cuenta una vez): 147.
-- Con proveedor y mail: **132**.
+- Paquetes: 22. Servicios (cada opción de hotel o excursión cuenta una vez): 196.
+- Con proveedor y mail: **178**.
 - Por WhatsApp (el pedido lo hace una persona): **10**.
-- Manuales, no se le escribe a nadie (se reservan a mano en el sistema de ellos: Kupos.cl, Buquebus, Transvipp): **4**.
-- Sin resolver: **1**.
+- Manuales, no se le escribe a nadie (se reservan a mano en el sistema de ellos: Kupos.cl, Buquebus, Transvipp): **5**.
+- Sin resolver: **3**.
 
 ## Por paquete
 
@@ -29,12 +29,19 @@ Cargué en el sistema los paquetes de un destino de los 7 tours desde **Construc
 | COMPCH01 | VLP | 5 | 4 | 0 | 1 | 0 | 0 |
 | COMPBO20 | UYU | 1 | 1 | 0 | 0 | 0 | 0 |
 | COMPBR10 | SAO | 4 | 2 | 1 | 0 | 1 | 0 |
+| CH11 | PNT | 9 | 9 | 0 | 0 | 0 | 0 |
+| OD014 | FTE | 12 | 12 | 0 | 0 | 0 | 0 |
+| AR34 | FTE | 19 | 19 | 0 | 0 | 0 | 0 |
+| OD040 | MVD | 5 | 3 | 0 | 0 | 2 | 0 |
+| COMPUY03 | COL | 4 | 3 | 0 | 1 | 0 | 0 |
 
 ## Lo que sigue sin resolver
 
 Estos servicios todavía no saben a quién escribirle. Cuando completes el dato en el Excel de proveedores, alcanza con volver a correr la importación.
 
 - [ ] **COMPBR10** (fila 2671): O Hostel GRU → «O Hostel GRU». "O Hostel GRU" no está en el directorio ni en las equivalencias de SAO.
+- [ ] **OD040** (fila 1791): Hotel Oxford Montevideo → «Hotel Oxford Montevideo». Sin mail todavía: pedilo a mano. El owner lo agrega con su mail al Excel de proveedores (respuesta del owner, 2026-10-21).
+- [ ] **OD040** (fila 1791): Merit Montevideo → «Merit Hoteles». Merit Montevideo: sin mail todavía, pedilo a mano. El owner lo agrega con su mail al Excel de proveedores (respuesta del owner, 2026-10-21).
 
 ## Detalle: servicio → nivel → opción → a quién se le pide → contacto
 
@@ -269,3 +276,77 @@ Estos servicios todavía no saben a quién escribirle. Cuando completes el dato 
 | 2671 | alojamiento | Hostel | 2 | O Hostel GRU | O Hostel GRU | — | **sin resolver** |
 | 2676 | alojamiento | Hotel 3* | 1 | Soos Hotel Collection | Sooz Hotel | sooz hotel | saopaulo@soozhotel.com |
 | 2676 | alojamiento | Hotel 3* | 2 | Nacionalinn Jaragua Sao Paulo | Nacionalinn | Nacional Inn Jaragua Sao Paulo | rio.lazer@nacionalinn.com |
+
+### CH11 · W Trek Express Self Guided + Puerto Natales (5 nights)
+
+| Fila | Servicio | Nivel | Opción | Hotel / servicio | Se le pide a | Proveedor del directorio | Contacto |
+|---|---|---|---|---|---|---|---|
+| 1305 | alojamiento | Hostel | 1 | Puma Hostel | Puma Hostel | Puma House | info@pumahouse.com |
+| 1305 | alojamiento | Hostel | 2 | Last Hope | Last Hope | Last Hope | hostel.last.hope@gmail.com |
+| 1305 | alojamiento | Hostel | 3 | Factoria | Vertice | W trek VERTICE | ventas@vertice.travel |
+| 1309 | alojamiento | Hotel 3* | 1 | Big Sur | Big Sur | Hotel big sur | reservas@hotelbigsur.cl |
+| 1309 | alojamiento | Hotel 3* | 2 | Loreto Belen | Loreto Belen | LORETO BELEN | reservas@loretobelen.cl |
+| 1309 | alojamiento | Hotel 3* | 3 | Darwin | CL Mundo | Cl mundo | gabriela@clmundo.cl, luzmaria@clmundo.cl |
+| 1309 | alojamiento | Hotel 3* | 4 | Pristine Patagonia | CL Mundo | Cl mundo | gabriela@clmundo.cl, luzmaria@clmundo.cl |
+| 1309 | alojamiento | Hotel 3* | 5 | Vendaval | Vendaval | Hotel Vendaval | oalarcon@hotelvendaval.com |
+| 1314 | otro | — | 1 | W Trek Express | Las Torres | W trek LAS TORRES | carmen.munoz@lastorres.com |
+
+### OD014 · El Calafate & El Chalten full day
+
+| Fila | Servicio | Nivel | Opción | Hotel / servicio | Se le pide a | Proveedor del directorio | Contacto |
+|---|---|---|---|---|---|---|---|
+| 216 | alojamiento | Hostel | 1 | Hostel del Glaciar Pioneros | Del Glaciar | Del Glaciar / Juan Pablo | reservas@glaciar.com |
+| 216 | alojamiento | Hostel | 2 | Calafate Hostel | Always Glaciers | ALWAYS Glaciers | calafatehostel@alwaysglaciers.com |
+| 221 | alojamiento | Budget Hotel | 1 | Budget Hotel Del Glaciar Libertador | Del Glaciar | Del Glaciar / Juan Pablo | reservas@glaciar.com |
+| 221 | alojamiento | Budget Hotel | 2 | Hosteria HI | Always Glaciers | ALWAYS Glaciers | calafatehostel@alwaysglaciers.com |
+| 221 | alojamiento | Budget Hotel | 3 | Puerto San Julian | Patagonian Group | Hosteria Puerto San Julian, proveedor Patagonian Group | info@patagoniangroup.com.ar |
+| 226 | alojamiento | Hotel 3* | 1 | Holtel 3* Rincon del Calafate | Tremun | Rincon del calafate | reservas@rincondelcalafate.com.ar |
+| 226 | alojamiento | Hotel 3* | 2 | Hotel * Sent Calafate | Tremun | Sent | reservas@sentcalafate.com.ar |
+| 231 | alojamiento | Hotel 4* | 1 | Hotel 4* Mirador del Lago | Tremun | Mirador del Lago | reservas@miradordellago.com.ar |
+| 231 | alojamiento | Hotel 4* | 2 | Hotel 4* Calafate Parque | Tremun | Calafate Parque | reservas@calafateparquehotel.com.ar |
+| 238 | traslado | — | 1 | Round Trip | Chalten Travel | Chalten Travel | agencias@chaltentravel.com |
+| 239 | excursion | — | 1 | Perito Moreno Glaciar Excursion | Chalten Travel | Chalten Travel | agencias@chaltentravel.com |
+| 240 | excursion | — | 1 | Chalten Full day Soft with Lunch | South Road | South Road | contacto@southroad.com.ar, bue@southroad.com.ar |
+
+### AR34 · El Chalten + El Calafate, Glaciers and Trekking
+
+| Fila | Servicio | Nivel | Opción | Hotel / servicio | Se le pide a | Proveedor del directorio | Contacto |
+|---|---|---|---|---|---|---|---|
+| 216 | alojamiento | Hostel | 1 | Rancho Grande | Chalten Travel | Chalten Travel | agencias@chaltentravel.com |
+| 216 | alojamiento | Hostel | 2 | Pioneros del Valle | Pioneros del Valle | Pioneros del valle | reservas@pionerosdelvalle.com.ar |
+| 216 | alojamiento | Hostel | 1 | Hostel del Glaciar Pioneros | Del Glaciar | Del Glaciar / Juan Pablo | reservas@glaciar.com |
+| 216 | alojamiento | Hostel | 2 | Calafate Hostel | Always Glaciers | ALWAYS Glaciers | calafatehostel@alwaysglaciers.com |
+| 221 | alojamiento | Budget Hotel | 1 | Budget Hotel Kau Si Aike | Kau Si Aike | Kau si ake | hosteriakausiaike@gmail.com |
+| 221 | alojamiento | Budget Hotel | 2 | Vertical Lodge | Patagonian Group | Vertical Lodge, proveedor Patagonian Group | info@patagoniangroup.com.ar |
+| 221 | alojamiento | Budget Hotel | 1 | Budget Hotel Del Glaciar Libertador | Del Glaciar | Del Glaciar / Juan Pablo | reservas@glaciar.com |
+| 221 | alojamiento | Budget Hotel | 2 | Hosteria HI | Always Glaciers | ALWAYS Glaciers | calafatehostel@alwaysglaciers.com |
+| 221 | alojamiento | Budget Hotel | 3 | Puerto San Julian | Patagonian Group | Hosteria Puerto San Julian, proveedor Patagonian Group | info@patagoniangroup.com.ar |
+| 226 | alojamiento | Hotel 3* | 1 | Hotel 3* Poincenot | Chalten Travel | Chalten Travel | agencias@chaltentravel.com |
+| 226 | alojamiento | Hotel 3* | 1 | Hotel 3* Rincon del Calafate | Tremun | Rincon del calafate | reservas@rincondelcalafate.com.ar |
+| 226 | alojamiento | Hotel 3* | 2 | Hotel 3 * Sent Calafate | Tremun | Sent | reservas@sentcalafate.com.ar |
+| 231 | alojamiento | Hotel 4* | 1 | Hotel Destino Sur | Chalten Travel | Chalten Travel | agencias@chaltentravel.com |
+| 231 | alojamiento | Hotel 4* | 1 | Hotel 4* Mirador del Lago | Tremun | Mirador del Lago | reservas@miradordellago.com.ar |
+| 231 | alojamiento | Hotel 4* | 2 | Hotel 4* Calafate Parque | Tremun | Calafate Parque | reservas@calafateparquehotel.com.ar |
+| 238 | traslado | — | 1 | El Calafate - FTE Airport | Chalten Travel | Chalten Travel | agencias@chaltentravel.com |
+| 239 | excursion | — | 1 | Perito Moreno Glaciar Excursion | Chalten Travel | Chalten Travel | agencias@chaltentravel.com |
+| 240 | otro | — | 1 | Regular Bus Round Trip FTE Airport - CHA - FTE city | Chalten Travel | Chalten Travel | agencias@chaltentravel.com |
+|  | otro (opcional) | — | 1 | 2nd Night at Fitz Camp | Receptivo Chalten | Fitz Camp / Receptivo Chalten | info@receptivochalten.com |
+
+### OD040 · Montevideo Starter Package
+
+| Fila | Servicio | Nivel | Opción | Hotel / servicio | Se le pide a | Proveedor del directorio | Contacto |
+|---|---|---|---|---|---|---|---|
+| 1787 | alojamiento | Hostel | 1 | Viajero Hostel | Viajero Hostels | Comercial Cono Sur | comercialcs@viajerohostels.com |
+| 1791 | alojamiento | Hotel 3* | 1 | Hotel Oxford Montevideo | Hotel Oxford Montevideo | — | **sin resolver** |
+| 1791 | alojamiento | Hotel 3* | 2 | Merit Montevideo | Merit Hoteles | — | **sin resolver** |
+| 1800 | traslado | — | 1 | MVD Airport - hotel/hostel | Turismo Dcom | Dcom Travel | operaciones@dcomtravel.com, macarena.perez@dcomtravel.com |
+| 1801 | excursion | — | 1 | Montevideo City Tour (regular) | Turismo Dcom | Dcom Travel | operaciones@dcomtravel.com, macarena.perez@dcomtravel.com |
+
+### COMPUY03 · Extension a Colonia
+
+| Fila | Servicio | Nivel | Opción | Hotel / servicio | Se le pide a | Proveedor del directorio | Contacto |
+|---|---|---|---|---|---|---|---|
+| 1851 | alojamiento | Hostel | 1 | Viajero Hostel Colonia | Viajero Hostels | Viajero en Colonia. | natalyp@viajerohostels.com, dfarinati@viajerohostels.com |
+| 1851 | alojamiento | Hostel | 2 | Viajero B&B | Viajero Hostels | Viajero en Colonia. | natalyp@viajerohostels.com, dfarinati@viajerohostels.com |
+| 1855 | alojamiento | Hotel 3* | 1 | Viajero B&B superior Room | Viajero Hostels | Viajero en Colonia. | natalyp@viajerohostels.com, dfarinati@viajerohostels.com |
+| 1864 | bus | — | 1 | Regular Montevideo Bus Station - Colonia Bus Station | COT online | — | manual (no se le escribe) |

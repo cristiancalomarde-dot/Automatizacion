@@ -3,15 +3,16 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
 
 # Dónde retomar
 
-- **2026-10-22: M3-10 (6 productos nuevos) lista en pruebas, falta la carga en la real; Perito Moreno día 2 en OD013/OD016.**
-  M3-10 sigue 🔵 hasta cargarla en la real: el owner corre `cargar-m3-10.sh` (equivalencias → paquetes sin
-  ANTHROPIC_API_KEY → tours → códigos Kilroy → códigos TourRadar, desde el clon con `.env.local`) y después se pushea.
+- **2026-10-22: M3-10 (6 productos nuevos) cargada en la real y publicada; Perito Moreno día 2 en OD013/OD016.**
+  La carga la corrió el owner con `! bash cargar-m3-10.sh` (equivalencias → paquetes sin ANTHROPIC_API_KEY → tours →
+  códigos Kilroy → códigos TourRadar, desde el clon con `.env.local`): 5 paquetes + 3 tours creados, nada actualizado
+  ni borrado; sin resolver: Oxford y Merit Montevideo (sin mail) y O Hostel GRU (de antes).
   Reportes: `docs/sdd/diagnosticos/M3-10-diagnostico.md` y `M3-10-carga.md`. Días fijos en `data/dias-servicio.csv`
   (se leen al armar, sin recarga): OD013/OD014/OD016 Perito Moreno día 2, AR34 día 5. OD015 no está cargado.
   - **Abiertos de M3-10 (piezas aparte si el owner quiere):** la categoría del tour no elige el hotel de cada paquete
     (ARCH33/ARCH33EXP/BRARCH26/ARBR23 dejan "Elegir el hotel de…"); el bus ida y vuelta de AR34 sale "día 1 a día 6"
     y la vuelta es el día 4.
-  - **Pendientes del owner:** correr la carga de M3-10; mails de Hotel Oxford y Merit Montevideo en el Excel de
+  - **Pendientes del owner:** "Confirmar producto" en DK1594177; revisar el Perito Moreno de DK1592913; mails de Hotel Oxford y Merit Montevideo en el Excel de
     proveedores; Fitz Camp, si lo agrega al bloque AR34, al final del bloque.
 
 - **2026-10-21: M3-09 (pedido a mano) publicada; migración 0023 aplicada a la real con OK** (la corrió el owner con
