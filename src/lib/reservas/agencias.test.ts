@@ -11,9 +11,9 @@ const RUTA_CSV = resolve(__dirname, "..", "..", "..", "data", "agencias.csv");
 const reglasReales = () => leerAgencias(readFileSync(RUTA_CSV, "utf-8"));
 
 describe("data/agencias.csv (fila 8)", () => {
-  it("el archivo real se lee sin errores y tiene las cuatro agencias", () => {
+  it("el archivo real se lee sin errores y tiene las cinco agencias (M3-13: Adventure360)", () => {
     const reglas = reglasReales();
-    expect(new Set(reglas.map((r) => r.agencia))).toEqual(new Set(["Kilroy", "Jysk", "TourRadar", "Journaway"]));
+    expect(new Set(reglas.map((r) => r.agencia))).toEqual(new Set(["Kilroy", "Jysk", "TourRadar", "Journaway", "Adventure360"]));
     expect(reglas.every((r) => r.estado === "confirmado")).toBe(true);
   });
 
@@ -103,6 +103,9 @@ describe("agenciaDelRemitente (fila 9)", () => {
     ["info@journaway.com", "Journaway"],
     ["Kilroy Aarhus <aarhus@kilroy.dk>", "Kilroy"],
     ['"Journaway Operations" <operations@journaway.com>', "Journaway"],
+    // M3-13 (owner, 2026-10-22): Adventure360 vende BRARCH26.
+    ["bookings@adventure360.com", "Adventure360"],
+    ["Adventure360 <bookings@adventure360.com>", "Adventure360"],
   ])("%s → %s", (remitente, agencia) => {
     expect(reconocer(remitente)).toBe(agencia);
   });

@@ -20,6 +20,7 @@
     "eval:lectura": "tsx --conditions=react-server scripts/eval-lectura.ts",
     "importar:codigos-kilroy": "tsx scripts/importar-codigos-kilroy.ts",
     "importar:codigos-tourradar": "tsx scripts/importar-codigos-tourradar.ts",
+    "importar:codigos-agencias": "tsx scripts/importar-codigos-agencias.ts",
     "probar:emparejado": "tsx --conditions=react-server scripts/probar-emparejado.ts",
     "probar:intercambio": "tsx --conditions=react-server scripts/probar-intercambio.ts",
     "probar:mails": "tsx --conditions=react-server scripts/probar-mails.ts",
