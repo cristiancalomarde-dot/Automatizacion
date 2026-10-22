@@ -37,7 +37,7 @@ const FIRMA = "{{nombre_de_quien_envia}}\nHi Travel South America";
 
 const BORRADOR = {
   asunto: "Reserva Ana Prueba x2 · Ref. DK1592913",
-  cuerpo: "¡Hola! ¿Cómo están? Esperamos que muy bien.\n\nLes escribimos desde HI Travel para pedirles la siguiente reserva:\n\n\n\nPasajeros: 2\n\n¡Muchas gracias!\nUn abrazo,",
+  cuerpo: "¡Hola! ¿Cómo están? Esperamos que muy bien.\n\nLes escribimos desde HI Travel para pedirles la siguiente reserva:\n\n\n\nPasajeros: 2\n\n¡Muchas gracias!\n¡Saludos!",
   firma: FIRMA,
 };
 const PEDIDO = "1 noche extra, IN 14/01/2027 OUT 15/01/2027, habitación doble";
