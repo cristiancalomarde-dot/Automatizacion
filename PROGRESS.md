@@ -3,6 +3,22 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
 
 # Dónde retomar
 
+- **2026-10-22 (noche): M3-13 publicada (Adventure360).** Agencia conocida (`adventure360.com`), "Rio de Janeiro to
+  Santiago" = BRARCH26 (`data/codigos-agencias.csv`, importador `importar:codigos-agencias`), lectura v4 (TBC → para
+  revisión "preguntársela a la agencia"), opciones del pasajero en `data/opciones-pasajero.csv` (bike → Bike Tour en
+  lugar del City Tour; rafting → Huentata solo Bodegas + Kahuak). `next.config.ts` ahora sube `data/*.csv` y la
+  plantilla con las rutas de reservas/pedidos.
+  - **Pendiente del owner:** correr la carga del código en la real (`! bash cargar-m3-13.sh` del scratchpad).
+  - **Abiertos:** qué día va el rafting/Bodegas (sin regla → "a coordinar"); el mail de Adventure360 no trae número de
+    reserva (los mails siguientes no se unen solos); eval real de la lectura v4 sin correr (cuesta plata).
+  - **M3-14 (categoría del tour elige el hotel) en curso.**
+
+- **Para cuando arranque M4 (owner 2026-10-22, de acuerdo):** la respuesta del proveedor se registra **por pedido**
+  (confirmado / con cambios / rechazado) y la reserva pasa sola a confirmada cuando todos sus pedidos lo están.
+  El owner aprobó también el estado de cada pedido/componente visible en la reserva (ej. Puma ✓ · Cuenca del Plata ✓ · Huentata pendiente).
+  El owner ya hizo "Confirmar producto" en DK1594177 y revisó los pedidos rearmados ("quedó muy bien"); el equipo
+  (operativos) está probando la app en modo prueba: juntar sus errores (código de reserva + qué esperaban + captura).
+
 - **2026-10-22 (noche): M3-12 publicada (Iguazú: hotel en cada renglón del pedido a Cuenca del Plata, "Premium" en
   título y excursiones) y el cierre de los pedidos pasó de "Un abrazo," a "¡Saludos!" (owner, `data/plantillas/pedido-proveedor.md`).**
   - **Huecos que vio el builder (piezas aparte si el owner quiere):** BRARCH26 con "Budget Hotel" no elige el hotel de
