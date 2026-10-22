@@ -50,6 +50,7 @@ import {
 } from "./formato";
 import type {
   CatalogoParaPedidos,
+  OpcionDelPasajero,
   ParteCubierta,
   ParteParaPedidos,
   PedidoArmado,
@@ -345,11 +346,13 @@ class Armado {
     }
 
     for (const grupoDelExcel of grupos) {
-      const { opciones: grupo, segunHabitacion } = this.opcionesDe(b, grupoDelExcel);
+      const { opciones: grupo, segunHabitacion, segunPasajero } = this.opcionesDe(b, grupoDelExcel);
       const s = grupo[0];
       if (s.ajusteTour?.accion === "anular") continue;
       if (s.tipo === "alojamiento" && (nivelElegido === undefined || s.nivel !== nivelElegido)) continue;
-      const nombre = this.nombre(s);
+      // Lo que eligió el pasajero (M3-13): el servicio se pide con el nombre de la regla.
+      const elecciones = this.eleccionesDe(b, s.orden);
+      const nombre = elecciones.find((r) => (r.accion === "elegir" && segunPasajero) || r.accion === "renombrar")?.servicio ?? this.nombre(s);
       if (s.opcional) {
         this.avisos.push(`No se pidió "${nombre}" (${b.codigo}) porque es opcional: agregalo si el pasajero lo compró.`);
         continue;
@@ -362,20 +365,74 @@ class Armado {
         this.avisos.push(`No se pide "${nombre}": lo reserva la agencia.`);
         continue;
       }
-      const otras = grupo.slice(1).map((x) => this.nombre(x)).filter((x) => x && x !== nombre);
-      const elegida = segunHabitacion ? "se eligió según la habitación" : "se tomó la primera opción del catálogo";
+      // Las opciones del Excel comparten la descripción ("City Tour / Bike Tour"): las nombra su opción.
+      const otras = grupo
+        .slice(1)
+        .map((x) => (segunPasajero ? (x.serviceProviderNombre ?? this.nombre(x)) : this.nombre(x)))
+        .filter((x) => x && x !== nombre);
+      const elegida = segunPasajero
+        ? "lo eligió el pasajero"
+        : segunHabitacion
+          ? "se eligió según la habitación"
+          : "se tomó la primera opción del catálogo";
       const avisoOpciones = otras.length ? [`${nombre}: ${elegida} (otras: ${otras.join(", ")}).`] : [];
-      this.servicio(b, s, avisoOpciones);
+      this.servicio(b, s, avisoOpciones, nombre);
+      for (const r of elecciones.filter((x) => x.accion === "agregar")) this.agregarElegido(b, s, r);
     }
+  }
+
+  /**
+   * Las reglas de `data/opciones-pasajero.csv` (M3-13) de ese servicio del paquete cuya elección
+   * está en los pedidos especiales de la reserva ("Choice of tour in Mendoza: rafting"), de
+   * cualquier agencia.
+   */
+  private eleccionesDe(b: Bloque, orden: number | null): OpcionDelPasajero[] {
+    const pedidos = normalizarTexto(this.reserva.pedidosEspeciales ?? "");
+    if (!pedidos || orden === null) return [];
+    return (this.catalogo.opcionesPasajero ?? []).filter((r) => {
+      if (r.codigo !== b.codigo || r.orden !== orden) return false;
+      const palabra = normalizarTexto(r.eleccion).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      return new RegExp(`(?<![a-z0-9])${palabra}(?![a-z0-9])`).test(pedidos);
+    });
+  }
+
+  /** "agregar": el servicio que eligió el pasajero, a su proveedor, con las fechas del que reemplaza. */
+  private agregarElegido(b: Bloque, s: Servicio, r: OpcionDelPasajero): void {
+    if (!r.proveedorDelDirectorio) {
+      this.tarea(
+        "revisar",
+        `Pedir a mano: ${r.servicio} (${b.codigo}): el pasajero eligió ${r.eleccion}, pero ${r.proveedor} no está en el directorio de proveedores.`,
+        { producto: b.codigo, servicioId: s.id },
+        b.inicio,
+      );
+      return;
+    }
+    const elegido: Servicio = {
+      ...s,
+      descripcion: `${s.tipo === "excursion" ? "Excursion: " : ""}${r.servicio}. Booking Supplier: ${r.proveedor}`,
+      serviceProviderNombre: r.servicio,
+      bookingSupplierNombre: r.proveedor,
+      bookingSupplier: r.proveedorDelDirectorio,
+      reservaManual: false,
+    };
+    this.servicio(b, elegido, [], r.servicio);
   }
 
   /**
    * Las opciones de un servicio en el orden en que se ofrecen (M3-11): las de un alojamiento del
    * destino de una regla de `data/hostel-segun-habitacion.csv` van en el orden de la regla según
    * la habitación (dorm o privada), sin las que la regla no nombra. Sin regla, sin habitación o si
-   * ninguna opción coincide, el orden del Excel.
+   * ninguna opción coincide, el orden del Excel. Antes que eso, la opción que eligió el pasajero
+   * (M3-13, `data/opciones-pasajero.csv`, acción "elegir") va primera.
    */
-  private opcionesDe(b: Bloque, grupo: Servicio[]): { opciones: Servicio[]; segunHabitacion: boolean } {
+  private opcionesDe(b: Bloque, grupo: Servicio[]): { opciones: Servicio[]; segunHabitacion: boolean; segunPasajero?: boolean } {
+    // M3-13: la opción que eligió el pasajero ("bike" → Bike Tour) va primero; si no está en el catálogo, se avisa.
+    const elegida = this.eleccionesDe(b, grupo[0].orden).find((r) => r.accion === "elegir");
+    if (elegida) {
+      const i = grupo.findIndex((s) => normalizarTexto(s.serviceProviderNombre ?? queEs(s)) === normalizarTexto(elegida.servicio));
+      if (i >= 0) return { opciones: [grupo[i], ...grupo.filter((_, j) => j !== i)], segunHabitacion: false, segunPasajero: true };
+      this.avisos.push(`El pasajero eligió ${elegida.eleccion}, pero ${b.codigo} no tiene la opción ${elegida.servicio} en el catálogo: se pidió la primera opción.`);
+    }
     const comoEnElExcel = { opciones: grupo, segunHabitacion: false };
     if (grupo[0].tipo !== "alojamiento" || !b.destino) return comoEnElExcel;
     const hab = normalizarTexto(tipoDeHabitacion(this.reserva.habitacion) ?? "");
@@ -402,8 +459,8 @@ class Armado {
   }
 
   /** Un servicio elegido: va a un pedido, a una tarea o a WhatsApp. */
-  private servicio(b: Bloque, s: Servicio, avisos: string[]): void {
-    const nombre = this.nombre(s);
+  private servicio(b: Bloque, s: Servicio, avisos: string[], nombreElegido?: string): void {
+    const nombre = nombreElegido ?? this.nombre(s);
     const tramos = s.tramosNoches?.length ? s.tramosNoches : [null];
     for (const tramo of tramos) {
       const desde = b.inicio && tramo ? sumarDias(b.inicio, tramo.nocheDesde - 1) : b.inicio;

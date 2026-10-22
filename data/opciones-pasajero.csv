@@ -1,0 +1,4 @@
+codigo,orden,eleccion,accion,servicio,proveedor,nota
+OD018,5,bike,elegir,Bike Tour,,"Owner 2026-10-22 (M3-13): en Buenos Aires el pasajero elige; si eligió bike tour se reserva el Bike Tour (La Bicicleta Naranja) y no el City Tour (Grupo Summa). Sin elección o con city tour, el City Tour como siempre"
+OD019,5,rafting,renombrar,Bodegas half Day,,"Owner 2026-10-22 (M3-13): en Mendoza, si eligió rafting no va Alta Montaña: a Huentata se le pide solo Bodegas"
+OD019,5,rafting,agregar,Rafting,Kahuak,"Owner 2026-10-22 (M3-13): y el rafting a Kahuak (Excel de proveedores, fila 196: reservas@, agencias@ y receptivo@kahuak.com.ar, rafting y cabalgata)"

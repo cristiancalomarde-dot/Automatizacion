@@ -9,6 +9,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { cargarProducto } from "@/lib/catalogo/consultas";
+import { normalizarTexto } from "@/lib/catalogo/reglas";
 import type { Canal, DetalleProducto, ProveedorResumen } from "@/lib/catalogo/tipos";
 import type { EstadoReserva, HotelDeLaAgencia, TipoComponenteReserva } from "@/lib/reservas/tipos";
 import { leerCsv } from "@/lib/importador-productos/csv";
@@ -17,6 +18,7 @@ import type {
   DiaDeServicio,
   ExcursionConEntrada,
   HostelSegunHabitacion,
+  OpcionDelPasajero,
   ParteParaPedidos,
   PasajeroDeReserva,
   ProveedorFichaCompleta,
@@ -28,6 +30,7 @@ export const ARCHIVO_DIAS = join("data", "dias-servicio.csv");
 export const ARCHIVO_ENTRADAS = join("data", "excursiones-con-entrada.csv");
 export const ARCHIVO_FICHA_COMPLETA = join("data", "proveedores-ficha-completa.csv");
 export const ARCHIVO_HOSTEL_SEGUN_HABITACION = join("data", "hostel-segun-habitacion.csv");
+export const ARCHIVO_OPCIONES_PASAJERO = join("data", "opciones-pasajero.csv");
 
 /* eslint-disable @typescript-eslint/no-explicit-any -- filas crudas de PostgREST, se tipan al mapear */
 
@@ -183,6 +186,59 @@ export function cargarHostelSegunHabitacion(raiz: string = process.cwd()): Hoste
 }
 
 /**
+ * `data/opciones-pasajero.csv`: codigo,orden,eleccion,accion,servicio,proveedor,nota (M3-13, owner
+ * 2026-10-22). `accion` es "elegir", "renombrar" o "agregar"; "agregar" lleva el proveedor (su
+ * nombre en el directorio).
+ */
+export function leerOpcionesPasajero(contenido: string): OpcionDelPasajero[] {
+  const cabecera = contenido.replace(/^﻿/, "").split(/\r?\n/)[0]?.trim() ?? "";
+  if (!/^codigo,orden,eleccion,accion,servicio,proveedor\b/.test(cabecera)) {
+    throw new Error(`${ARCHIVO_OPCIONES_PASAJERO}: la primera fila tiene que ser "codigo,orden,eleccion,accion,servicio,proveedor,nota".`);
+  }
+  return leerCsv(contenido).map((f, i) => {
+    const fila = `${ARCHIVO_OPCIONES_PASAJERO}, fila ${i + 2}`;
+    const codigo = f.codigo?.trim();
+    const orden = Number(f.orden?.trim());
+    const eleccion = f.eleccion?.trim();
+    const accion = f.accion?.trim().toLowerCase();
+    const servicio = f.servicio?.trim();
+    const proveedor = f.proveedor?.trim() || null;
+    if (!codigo || !Number.isInteger(orden) || !eleccion || !servicio || (accion !== "elegir" && accion !== "renombrar" && accion !== "agregar")) {
+      throw new Error(`${fila}: hace falta el código, el orden (un número), la elección, la acción ("elegir", "renombrar" o "agregar") y el servicio.`);
+    }
+    if (accion === "agregar" && !proveedor) throw new Error(`${fila}: "agregar" necesita el proveedor.`);
+    return { codigo, orden, eleccion, accion, servicio, proveedor };
+  });
+}
+
+export function cargarOpcionesPasajero(raiz: string = process.cwd()): OpcionDelPasajero[] {
+  return leerOpcionesPasajero(readFileSync(join(raiz, ARCHIVO_OPCIONES_PASAJERO), "utf-8"));
+}
+
+/** Las reglas con su proveedor del directorio (por nombre, sin mayúsculas ni acentos); null si no está. */
+export function conProveedores(reglas: readonly OpcionDelPasajero[], proveedores: readonly ProveedorResumen[]): OpcionDelPasajero[] {
+  return reglas.map((r) =>
+    r.proveedor ? { ...r, proveedorDelDirectorio: proveedores.find((p) => normalizarTexto(p.nombre) === normalizarTexto(r.proveedor!)) ?? null } : r,
+  );
+}
+
+/** Los proveedores de las reglas que tocan a estos productos, del directorio (una consulta por nombre). */
+async function proveedoresDeOpciones(cliente: SupabaseClient, reglas: readonly OpcionDelPasajero[], codigos: Set<string>): Promise<OpcionDelPasajero[]> {
+  const propias = reglas.filter((r) => codigos.has(r.codigo));
+  const nombres = [...new Set(propias.map((r) => r.proveedor).filter((x): x is string => !!x))];
+  const encontrados: ProveedorResumen[] = [];
+  for (const nombre of nombres) {
+    // Sin comodines: el nombre exacto, sin mayúsculas.
+    const patron = nombre.replace(/[\\%_]/g, (c) => `\\${c}`);
+    const filas = verificar(await cliente.from("proveedor").select("id,nombre,mails,canal,telefono").ilike("nombre", patron), "los proveedores") as any[];
+    for (const f of filas) {
+      encontrados.push({ id: f.id, nombre: f.nombre, mails: f.mails ?? [], canal: (f.canal ?? null) as Canal, telefono: f.telefono ?? null });
+    }
+  }
+  return conProveedores(propias, encontrados);
+}
+
+/**
  * El catálogo que necesita una reserva: el detalle del producto, de los otros
  * productos y de cada parte (una vez cada uno), y los proveedores de las partes
  * de tipo servicio. Si algo no se puede leer, falla: nunca se arma a medias.
@@ -194,6 +250,7 @@ export async function cargarCatalogoParaPedidos(
   entradas: readonly ExcursionConEntrada[] = [],
   fichaCompleta: readonly ProveedorFichaCompleta[] = [],
   hostelSegunHabitacion: readonly HostelSegunHabitacion[] = [],
+  opcionesPasajero: readonly OpcionDelPasajero[] = [],
 ): Promise<CatalogoParaPedidos> {
   const ids = [...new Set([reserva.productoId, ...reserva.otrosProductos, ...reserva.partes.map((p) => p.productoId)].filter((x): x is string => !!x))];
   const detalles = new Map<string, DetalleProducto>(await Promise.all(ids.map(async (id) => [id, await cargarProducto(cliente, id)] as const)));
@@ -205,5 +262,8 @@ export async function cargarCatalogoParaPedidos(
       proveedores.set(f.id, { id: f.id, nombre: f.nombre, mails: f.mails ?? [], canal: (f.canal ?? null) as Canal, telefono: f.telefono ?? null });
     }
   }
-  return { detalles, proveedores, dias, entradas, fichaCompleta, hostelSegunHabitacion };
+  // M3-13: las opciones del pasajero de estos paquetes (sueltos o dentro de un tour), con su proveedor.
+  const codigos = new Set([...detalles.values()].flatMap((d) => [d.codigo, ...d.componentes.map((c) => c.producto?.codigo ?? "")]));
+  const opciones = opcionesPasajero.length ? await proveedoresDeOpciones(cliente, opcionesPasajero, codigos) : [];
+  return { detalles, proveedores, dias, entradas, fichaCompleta, hostelSegunHabitacion, opcionesPasajero: opciones };
 }

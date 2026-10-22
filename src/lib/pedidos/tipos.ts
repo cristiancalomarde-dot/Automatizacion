@@ -108,6 +108,24 @@ export interface HostelSegunHabitacion {
   orden: string[];
 }
 
+/**
+ * Una fila de `data/opciones-pasajero.csv` (M3-13, owner 2026-10-22): si los pedidos especiales
+ * de la reserva traen la elección (la palabra `eleccion`), en el servicio `orden` del paquete
+ * `codigo` se elige la opción `servicio` ("elegir"), se pide solo `servicio` ("renombrar") o se
+ * pide además `servicio` a `proveedor` ("agregar").
+ */
+export interface OpcionDelPasajero {
+  codigo: string;
+  orden: number;
+  eleccion: string;
+  accion: "elegir" | "renombrar" | "agregar";
+  servicio: string;
+  /** El nombre del proveedor en el directorio (solo "agregar"). */
+  proveedor: string | null;
+  /** El proveedor del directorio (lo completa `cargar.ts`); null si no está. */
+  proveedorDelDirectorio?: ProveedorResumen | null;
+}
+
 export interface CatalogoParaPedidos {
   /** El detalle (`cargarProducto`) del producto de la reserva, de los otros productos y de cada parte. */
   detalles: ReadonlyMap<string, DetalleProducto>;
@@ -120,6 +138,8 @@ export interface CatalogoParaPedidos {
   fichaCompleta?: readonly ProveedorFichaCompleta[];
   /** El hostel según la habitación (M3-11; sin la lista, el orden del Excel). */
   hostelSegunHabitacion?: readonly HostelSegunHabitacion[];
+  /** Las opciones que elige el pasajero (M3-13; sin la lista, como antes). */
+  opcionesPasajero?: readonly OpcionDelPasajero[];
 }
 
 /** La plantilla del mail (`data/plantillas/pedido-proveedor.md`), ya separada en sus partes. */

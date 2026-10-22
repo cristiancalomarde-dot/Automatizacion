@@ -21,6 +21,7 @@ import {
   cargarDiasServicio,
   cargarExcursionesConEntrada,
   cargarHostelSegunHabitacion,
+  cargarOpcionesPasajero,
   cargarProveedoresFichaCompleta,
   cargarReservaParaPedidos,
 } from "@/lib/pedidos/cargar";
@@ -123,6 +124,7 @@ async function ejemplos(admin: SupabaseClient) {
   const entradas = cargarExcursionesConEntrada();
   const fichaCompleta = cargarProveedoresFichaCompleta();
   const hostelSegunHabitacion = cargarHostelSegunHabitacion();
+  const opcionesPasajero = cargarOpcionesPasajero();
   const salida: EjemploDePedido[] = [];
   for (const e of EJEMPLOS) {
     const fila = (data as any[]).find((r) => r.agencia === e.agencia && r.producto?.codigo === e.codigo);
@@ -131,12 +133,12 @@ async function ejemplos(admin: SupabaseClient) {
       continue;
     }
     // El recorrido de verdad: arma y guarda los borradores en la base de pruebas.
-    const guardado = await armarYGuardarPedidos(admin, fila.id, { plantilla, dias, entradas, fichaCompleta, hostelSegunHabitacion });
+    const guardado = await armarYGuardarPedidos(admin, fila.id, { plantilla, dias, entradas, fichaCompleta, hostelSegunHabitacion, opcionesPasajero });
     const resumen = guardado.ok ? `${guardado.pedidos.length} pedidos, ${guardado.tareas.length} tareas` : guardado.error;
     console.log(`- ${e.titulo}: ${resumen}`);
     // El documento, con los pasajeros enmascarados (mismo armado, otros nombres).
     const reserva = await cargarReservaParaPedidos(admin, fila.id);
-    const catalogo = await cargarCatalogoParaPedidos(admin, reserva!, dias, entradas, fichaCompleta, hostelSegunHabitacion);
+    const catalogo = await cargarCatalogoParaPedidos(admin, reserva!, dias, entradas, fichaCompleta, hostelSegunHabitacion, opcionesPasajero);
     salida.push({ titulo: e.titulo, porQue: e.porQue, resultado: armarPedidos(enmascararReserva(reserva!), catalogo, plantilla) });
   }
   writeFileSync(DOCUMENTO, documentoDeEjemplos({ fecha: new Date().toISOString().slice(0, 10), ejemplos: salida, preguntas: PREGUNTAS }));
