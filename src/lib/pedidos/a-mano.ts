@@ -23,6 +23,9 @@ export interface BorradorAMano {
 
 export interface DatosParaAMano {
   numero: string | null;
+  /** M3-16: las fechas de la reserva van en el asunto si las hay. */
+  fechaInicio?: string | null;
+  fechaFin?: string | null;
   pax: number | null;
   pasajeros: readonly PasajeroDeReserva[];
 }

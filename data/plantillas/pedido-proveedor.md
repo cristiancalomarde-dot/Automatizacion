@@ -5,9 +5,10 @@
 > Las líneas que empiezan con ">" (como esta) son notas y no salen.
 >
 > Los datos van entre llaves dobles y la app los completa sola:
-> - En el asunto: {{pasajero}} (el pasajero principal), {{pax}} (cuántos viajan), {{producto}}
->   (el código del producto, ej. OD010B) y {{referencia}} (" · Ref. " y el número de reserva de la
->   agencia, o nada si no vino).
+> - En el asunto: {{pasajero}} (el pasajero principal) y {{fechas}} (del primer al último día de
+>   los servicios de ese pedido, ej. "5 al 10 mar 2027"; un solo día, esa fecha; si no hay fechas,
+>   no sale, y tampoco el guion de antes). El asunto no lleva el código del producto ni el número
+>   de reserva de la agencia: son internos y el proveedor no los usa.
 > - En el cuerpo: {{servicios}} (lo que se pide, con fechas), {{pasajeros}} (cuántos son y, si el
 >   pedido los necesita, sus datos) y {{pendientes}} (lo que todavía falta, como el vuelo; si no
 >   falta nada, no sale).
@@ -16,7 +17,7 @@
 
 ## Asunto
 
-Reserva {{pasajero}} x{{pax}} · {{producto}}{{referencia}}
+Solicitud de reserva – {{pasajero}} – {{fechas}}
 
 ## Cuerpo
 

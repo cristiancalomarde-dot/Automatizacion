@@ -105,6 +105,14 @@ const PASAJEROS = [
     expect(guardados.pedidos.every((p) => p.firma.includes("{{nombre_de_quien_envia}}"))).toBe(true);
     // Cuenca del Plata (el 105 de Iguazú) va con su casilla.
     expect(guardados.pedidos.some((p) => p.destinatarios.includes("reservas8@cuencadelplata.com"))).toBe(true);
+    // M3-16: el asunto guardado no lleva el código del producto ni el número de la agencia...
+    for (const p of guardados.pedidos) {
+      expect(p.asunto).toMatch(/^Solicitud de reserva – /);
+      expect(p.asunto).not.toMatch(/OD010D|DK9000001/);
+    }
+    // ...que sigue guardado en la reserva.
+    const fila = await admin.from("reserva").select("booking_id_original").eq("id", id).single();
+    expect(fila.data?.booking_id_original).toBe("DK9000001/test");
 
     const segunda = await armarYGuardarPedidos(admin, id);
     if (!segunda.ok) throw new Error(segunda.error);

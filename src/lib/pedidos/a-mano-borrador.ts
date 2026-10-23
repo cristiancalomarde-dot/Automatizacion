@@ -3,8 +3,8 @@
  * misma plantilla que los armados (`data/plantillas/pedido-proveedor.md`).
  * Puro, pero importa `plantilla.ts` (que lee archivos): solo servidor y tests.
  */
-import { nombreDelPasajero } from "./formato";
-import { completar } from "./plantilla";
+import { fechasDelAsunto, nombreDelPasajero } from "./formato";
+import { completar, completarAsunto } from "./plantilla";
 import type { BorradorAMano, DatosParaAMano } from "./a-mano";
 import type { Plantilla } from "./tipos";
 
@@ -13,24 +13,22 @@ const ESPACIO = "\u0000";
 
 /**
  * El borrador con que arranca un pedido a mano (fila 3): el asunto de la
- * plantilla con el pasajero principal, el pax y la referencia (sin producto:
- * el pedido no es de un producto del catálogo); el cuerpo de la plantilla con
+ * plantilla con el pasajero principal y las fechas de la reserva si las hay
+ * (M3-16; sin producto: el pedido no es de un producto del catálogo); el cuerpo de la plantilla con
  * un espacio en blanco donde van los servicios, la cantidad de pasajeros y el
  * cierre; la firma de siempre.
  */
 export function borradorAMano(reserva: DatosParaAMano, plantilla: Plantilla): BorradorAMano {
   const principal = reserva.pasajeros.map(nombreDelPasajero).find(Boolean) ?? "sin nombre";
   const pax = reserva.pax ?? (reserva.pasajeros.length || null);
-  const asunto = completar(plantilla.asunto, {
+  // Sin producto (o sin fechas), el separador que lo rodeaba no queda colgando.
+  const asunto = completarAsunto(plantilla.asunto, {
     pasajero: principal,
+    fechas: fechasDelAsunto([reserva.fechaInicio, reserva.fechaFin]),
     pax: String(pax ?? "?"),
     producto: "",
     referencia: reserva.numero?.trim() ? ` · Ref. ${reserva.numero.trim()}` : "",
-  })
-    // Sin producto, el separador que lo rodeaba sobra.
-    .split(/\s*·\s*/)
-    .filter(Boolean)
-    .join(" · ");
+  });
   const cuerpo = completar(plantilla.cuerpo, {
     servicios: ESPACIO,
     pasajeros: `Pasajeros: ${pax ?? "a confirmar"}`,

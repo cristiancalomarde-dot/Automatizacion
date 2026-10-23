@@ -27,6 +27,17 @@ export function rangoCorto(desde: string, hasta: string): string {
   return `del ${Number(a[3])} al ${fechaCorta(hasta)}`;
 }
 
+/**
+ * Las fechas del asunto (M3-16): del primer al último día, en corto ("5 al 10 mar 2027");
+ * un solo día, esa fecha; sin fechas, "". Lo que no es una fecha se ignora.
+ */
+export function fechasDelAsunto(fechas: ReadonlyArray<string | null | undefined>): string {
+  const dias = fechas.filter((f): f is string => !!f && ISO.test(f)).sort();
+  if (dias.length === 0) return "";
+  const [desde, hasta] = [dias[0], dias[dias.length - 1]];
+  return desde === hasta ? fechaCorta(desde) : rangoCorto(desde, hasta).replace(/^del /, "");
+}
+
 export function sumarDias(fecha: string, dias: number): string {
   const d = new Date(`${fecha}T00:00:00Z`);
   d.setUTCDate(d.getUTCDate() + dias);

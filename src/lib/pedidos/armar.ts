@@ -36,10 +36,11 @@ import { TRANSFER_PNT } from "@/lib/reservas/emparejar/componentes";
 import { lugarDelTraslado } from "@/lib/reservas/emparejar/vuelos-requeridos";
 import { llevaEntradas } from "./entradas";
 import { HOTEL_A_CONFIRMAR, fichasDePasajeros, lineaDeTour, llevaFichaCompleta, restriccionAlimentaria, type TourDeFicha } from "./ficha";
-import { completar } from "./plantilla";
+import { completar, completarAsunto } from "./plantilla";
 import {
   diasEntre,
   fechaCorta,
+  fechasDelAsunto,
   nivelDeLaHabitacion,
   nombreDelPasajero,
   rangoCorto,
@@ -97,6 +98,8 @@ interface Item {
   tipo: TipoServicio;
   renglones: string[];
   fecha: string | null;
+  /** M3-16: el último día del servicio, si dura más de uno (para las fechas del asunto). */
+  hasta: string | null;
   seq: number;
   cubre: ParteCubierta;
   /** El pedido lleva los datos de los pasajeros (alojamiento y excursiones). */
@@ -301,7 +304,7 @@ class Armado {
     if (que === TRANSFER_PNT) {
       const t = this.traslado("out", que, parte.fechaInicio, ["PNT"], false);
       const renglones = [`Traslado de salida: ${que}`, `Fecha: ${t.fecha ? fechaCorta(t.fecha) : "a confirmar"}`, t.dato];
-      this.agregar(proveedor, "traslado", renglones, t.fecha, cubre, false, [], t.pendientes);
+      this.agregar(proveedor, "traslado", renglones, t.fecha, cubre, false, [], t.pendientes, undefined, null);
       return;
     }
     const nocturno = !!parte.fechaInicio && !!parte.fechaFin && parte.fechaFin > parte.fechaInicio;
@@ -533,7 +536,7 @@ class Armado {
       return;
     }
     const cubre: ParteCubierta = { parteId: b.parteId, productoServicioId: s.id, producto: b.codigo, fecha: a.fecha };
-    this.agregar(proveedor, s.tipo, a.renglones, a.fecha, cubre, a.datosPax, [...avisos, ...a.avisos], a.pendientes, a.tour);
+    this.agregar(proveedor, s.tipo, a.renglones, a.fecha, cubre, a.datosPax, [...avisos, ...a.avisos], a.pendientes, a.tour, a.hasta ?? null);
   }
 
   private agregar(
@@ -546,8 +549,9 @@ class Armado {
     avisos: string[],
     pendientes: string[],
     tour?: TourDeFicha,
+    hasta: string | null = null,
   ): void {
-    this.items.push({ proveedor, tipo, renglones, fecha, seq: this.seq++, cubre, datosPax, avisos, pendientes, tour });
+    this.items.push({ proveedor, tipo, renglones, fecha, hasta, seq: this.seq++, cubre, datosPax, avisos, pendientes, tour });
   }
 
   private tarea(tipo: TareaArmada["tipo"], texto: string, detalle: Record<string, unknown>, fecha: string | null): void {
@@ -590,7 +594,7 @@ class Armado {
     }
     const hab = tipoDeHabitacion(this.reserva.habitacion);
     if (hab) renglones.push(`Habitación: ${hab}`);
-    return { renglones, fecha: desde, resumen: desde && hasta ? `IN ${fechaCorta(desde)}, OUT ${fechaCorta(hasta)}` : "", queParaTarea: hab ? `${hotel} (${hab})` : hotel, datosPax: true, avisos, pendientes: [] };
+    return { renglones, fecha: desde, hasta: desde ? hasta : null, resumen: desde && hasta ? `IN ${fechaCorta(desde)}, OUT ${fechaCorta(hasta)}` : "", queParaTarea: hab ? `${hotel} (${hab})` : hotel, datosPax: true, avisos, pendientes: [] };
   }
 
   /**
@@ -655,7 +659,7 @@ class Armado {
       idioma,
       lugar: pickUp.lugar,
     };
-    return { renglones, fecha: fecha ?? desde, resumen, queParaTarea: nombre, datosPax: true, avisos, pendientes: pickUp.pendientes, tour };
+    return { renglones, fecha: fecha ?? desde, hasta: variosDias ? hasta : null, resumen, queParaTarea: nombre, datosPax: true, avisos, pendientes: pickUp.pendientes, tour };
   }
 
   private esDeJournaway(): boolean {
@@ -755,7 +759,7 @@ class Armado {
       pendientes.push(...salida.pendientes);
     }
     if (b.pickUp) renglones.push(`Pick up: ${b.pickUp}`);
-    return { renglones, fecha: b.inicio, resumen: b.inicio && b.fin ? rangoCorto(b.inicio, b.fin) : "", queParaTarea: titulo, datosPax: true, avisos: [], pendientes };
+    return { renglones, fecha: b.inicio, hasta: b.inicio ? b.fin : null, resumen: b.inicio && b.fin ? rangoCorto(b.inicio, b.fin) : "", queParaTarea: titulo, datosPax: true, avisos: [], pendientes };
   }
 
   private traslados(b: Bloque, s: Servicio, nombre: string, desde: string | null, hasta: string | null): Renglones[] {
@@ -845,7 +849,7 @@ class Armado {
       renglones.push(pickUp.renglon);
       pendientes.push(...pickUp.pendientes);
     }
-    return { renglones, fecha: desde, resumen: desde && hasta ? rangoCorto(desde, hasta) : desde ? fechaCorta(desde) : "", queParaTarea: nombre, datosPax: true, avisos: [], pendientes };
+    return { renglones, fecha: desde, hasta: desde ? hasta : null, resumen: desde && hasta ? rangoCorto(desde, hasta) : desde ? fechaCorta(desde) : "", queParaTarea: nombre, datosPax: true, avisos: [], pendientes };
   }
 
   // --- Salida -------------------------------------------------------------------------------
@@ -870,6 +874,8 @@ class Armado {
 interface Renglones {
   renglones: string[];
   fecha: string | null;
+  /** M3-16: el último día, si el servicio dura más de uno. */
+  hasta?: string | null;
   /** La fecha (y el vuelo) en una línea, para las tareas. */
   resumen: string;
   queParaTarea: string;
@@ -1043,7 +1049,8 @@ export function armarPedidos(reserva: ReservaParaPedidos, catalogo: CatalogoPara
         destinatarios: g.destinatarios,
         proveedores,
         partes: g.items.map((it) => it.cubre),
-        asunto: completar(plantilla.asunto, datosAsunto),
+        // M3-16: las fechas son las de los servicios de ESTE pedido, no las de toda la reserva.
+        asunto: completarAsunto(plantilla.asunto, { ...datosAsunto, fechas: fechasDelAsunto(g.items.flatMap((it) => [it.fecha, it.hasta])) }),
         cuerpo: completar(plantilla.cuerpo, {
           servicios,
           pasajeros,

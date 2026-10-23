@@ -210,14 +210,35 @@ describe("armarPedidos — los pasajeros (fila 4)", () => {
   });
 });
 
-describe("armarPedidos — asunto (fila 5)", () => {
-  it("con número de la agencia", () => {
+describe("armarPedidos — asunto (fila 5; M3-16: sin códigos internos)", () => {
+  it("'Solicitud de reserva – pasajero – fechas': sin el código del producto ni el número de la agencia", () => {
     const p = ok(armarPedidos(reservaOd010b, catalogoCon([od010b]), plantilla)).pedidos[0];
-    expect(p.asunto).toBe("Reserva Ana Gómez x2 · OD010B · Ref. DK1234567/abcd");
+    expect(p.asunto).toBe("Solicitud de reserva – Ana Gómez – 3 al 6 oct 2026");
+    expect(p.asunto).not.toContain("OD010B");
+    expect(p.asunto).not.toContain("DK1234567");
   });
-  it("sin número", () => {
+  it("sin número, igual", () => {
     const p = ok(armarPedidos({ ...reservaOd010b, numero: null }, catalogoCon([od010b]), plantilla)).pedidos[0];
-    expect(p.asunto).toBe("Reserva Ana Gómez x2 · OD010B");
+    expect(p.asunto).toBe("Solicitud de reserva – Ana Gómez – 3 al 6 oct 2026");
+  });
+  it("las fechas son las de ese pedido, no las de toda la reserva", () => {
+    const r = ok(armarPedidos(reservaChb31, catalogoChb31, plantilla));
+    for (const p of r.pedidos) {
+      expect(p.asunto).toMatch(/^Solicitud de reserva – Ana Gómez – \d/);
+      expect(p.asunto).not.toMatch(/CHB31|OD030|COMPBO20/);
+    }
+    expect(r.pedidos.map((p) => p.asunto)).not.toContain("Solicitud de reserva – Ana Gómez – 18 al 24 ene 2027");
+    expect(pedidoA(r, "reservas@horizonte.test")!.asunto).toBe("Solicitud de reserva – Ana Gómez – 20 ene 2027");
+    expect(pedidoA(r, "reservas@imperioinca.test")!.asunto).toBe("Solicitud de reserva – Ana Gómez – 21 al 23 ene 2027");
+  });
+  it("un solo día → esa fecha", () => {
+    const exc = producto("prod-exc", "EXC01", [servicio({ productoId: "prod-exc", tipo: "excursion", descripcion: "Argentina Side of the Falls", bookingSupplier: P.cuencaArg })], { destino: "IGR" });
+    const r = reserva({ productoId: exc.id, partes: [parte({ id: "a", orden: 1, tipo: "paquete", productoId: exc.id, fechaInicio: "2027-03-13", fechaFin: "2027-03-13" })] });
+    expect(ok(armarPedidos(r, catalogoCon([exc]), plantilla)).pedidos[0].asunto).toBe("Solicitud de reserva – Ana Gómez – 13 mar 2027");
+  });
+  it("sin ninguna fecha conocida: sin el guion colgando", () => {
+    const p = ok(armarPedidos({ ...reservaOd010b, fechaInicio: null, fechaFin: null, partes: [] }, catalogoCon([od010b]), plantilla)).pedidos[0];
+    expect(p.asunto).toBe("Solicitud de reserva – Ana Gómez");
   });
 });
 

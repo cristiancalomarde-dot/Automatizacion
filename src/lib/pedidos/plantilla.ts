@@ -17,7 +17,8 @@ export const ARCHIVO_PLANTILLA = join("data", "plantillas", "pedido-proveedor.md
 
 /** Los datos que completa la app, por parte de la plantilla. */
 export const DATOS_PLANTILLA = {
-  asunto: ["pasajero", "pax", "producto", "referencia"],
+  // M3-16: la plantilla usa {{pasajero}} y {{fechas}}; los viejos se siguen aceptando.
+  asunto: ["pasajero", "fechas", "pax", "producto", "referencia"],
   cuerpo: ["servicios", "pasajeros", "pendientes"],
   firma: ["nombre_de_quien_envia"],
 } as const satisfies Record<keyof Plantilla, readonly string[]>;
@@ -78,6 +79,17 @@ export function completar(texto: string, valores: Record<string, string>): strin
     .map((l) => l.replace(/[ \t]+$/, ""))
     .join("\n")
     .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
+/**
+ * Completa el asunto (M3-16): como `completar`, y un dato vacío no deja su
+ * separador colgando ("Solicitud de reserva – Ana –" → "Solicitud de reserva – Ana").
+ */
+export function completarAsunto(texto: string, valores: Record<string, string>): string {
+  return completar(texto, valores)
+    .replace(/\s*([–·])(?:\s*[–·])+\s*/g, " $1 ")
+    .replace(/^\s*[–·]\s*|\s*[–·]\s*$/g, "")
     .trim();
 }
 
