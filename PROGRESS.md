@@ -3,6 +3,8 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
 
 # Dónde retomar
 
+- **2026-10-23: llegó la tanda 1 del feedback de operaciones** (pedidos a proveedores; el owner desde el aeropuerto a SCL) → `docs/sdd/diagnosticos/feedback-operaciones-2026-10-23.md`. Próximo paso: ordenarla en piezas (plan) y sumar las tandas que vengan.
+
 - **2026-10-22 (cierre): Buenos Aires City Tour/Bike Tour por defecto el día 2** de OD018 y OD020 (`data/dias-servicio.csv`; también dentro de los tours); OD020 suma el punto de encuentro y la opción bike como OD018. Todo publicado. El owner viaja a Santiago; **al volver trae el feedback de las chicas de operaciones** → empezar por ahí (ordenarlo y armar las correcciones). Alejandra entra con abonomo@hitravel.com.ar (casilla nueva). Siguen abiertos: mail de Merit MVD, número propio HI Travel por reserva (decidido, DECISIONS 2026-10-23; se construye en M4), M3-04.
 
 - **Alejandra (operaciones3@) no puede crear cuenta Google con ese mail:** tiene "sesión de visitante" con archivos de Drive compartidos; NO eliminarla. Propuesto: casilla nueva alejandra@hitravel.com.ar en Ferozo y cuenta Google con ese mail (o, si le pasa a varios, login con código por mail = pieza nueva). Fecha del Bike Tour sigue "a coordinar"; nombre de catálogo "… Alta Montaña. Booking" con basura (ya no se ve en pedidos de OD019).
