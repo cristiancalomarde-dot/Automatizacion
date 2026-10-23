@@ -72,3 +72,14 @@ Pendientes (propuesta):
 | 8 | OD022 Ushuaia | PN Tierra del Fuego medio día (Rumbo Sur) | día 3 (¿o el mismo día 2, mañana/tarde?) |
 | 9 | OD029 Santiago | Bike Tour (Bicicleta Verde) | día 2 |
 | 10 | OD010A-D / OD011 Iguazú | Paquete Receptivo 105 Premium (Cuenca del Plata) | ¿necesita día fijo o lo arma Cuenca del Plata? |
+
+### G3 · Respuestas del owner (2026-10-23)
+
+- **1 a 9: ok** tal como están en la tabla (TdP Puerto Natales día 2, Big Dude día 2, Península Valdés día 2,
+  TdP desde El Calafate día 3, Tango día 3 de noche, Colonia día 3, Beagle día 2, PN Tierra del Fuego día 3,
+  Bike Tour Santiago día 2).
+- **10 Iguazú:** en general **lado argentino primero (día 2) y lado brasileño después (día 3)**; puede cambiar
+  a mano. "La regla es la que te dije, en general."
+- Reconfirma: **Tiwanaco (LPB) día 2** y **Bike Tour SCL día 2**.
+- **Río, paquete aún no cargado** (no es OD032): tour de Río que NO es Big Dude → día 2; **Angra dos Reis e
+  Ilha Grande day tour → día 3**. Se carga el día cuando entre ese paquete al catálogo (¿cuál es el código?).
