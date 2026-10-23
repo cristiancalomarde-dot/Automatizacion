@@ -114,7 +114,10 @@ describe("las reglas en data/ (fila 5)", () => {
   });
 
   it("puntos-de-encuentro.csv: el Bike Tour de OD018 en Pasaje Giuffra 370, San Telmo", () => {
-    expect(puntos).toEqual([{ codigo: "OD018", orden: 5, servicio: "Bike Tour", punto: "Pasaje Giuffra 370, San Telmo" }]);
+    expect(puntos).toEqual([
+      { codigo: "OD018", orden: 5, servicio: "Bike Tour", punto: "Pasaje Giuffra 370, San Telmo" },
+      { codigo: "OD020", orden: 5, servicio: "Bike Tour", punto: "Pasaje Giuffra 370, San Telmo" },
+    ]);
   });
 
   it("rechaza un archivo de puntos de encuentro mal armado", () => {
@@ -128,7 +131,7 @@ describe("las reglas en data/ (fila 5)", () => {
 describe("Buenos Aires (OD018): el Bike Tour con punto de encuentro (fila 1)", () => {
   it("con bike, el pedido a La Bicicleta Naranja dice el punto de encuentro y no 'Pick up'", () => {
     const naranja = a(suelto(od018, BIKE, "2027-03-18", "2027-03-21"), "info@labicicletanaranja.test")!;
-    expect(naranja.cuerpo).toContain(`Excursión: Bike Tour\nFecha: a coordinar (estadía del 18 al 21 mar 2027)\nServicio: regular · Idioma: inglés\n${PUNTO}`);
+    expect(naranja.cuerpo).toContain(`Excursión: Bike Tour\nFecha: 19 mar 2027\nServicio: regular · Idioma: inglés\n${PUNTO}`);
     expect(naranja.cuerpo).not.toMatch(/Pick up/i);
   });
 

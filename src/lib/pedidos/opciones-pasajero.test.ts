@@ -92,6 +92,7 @@ describe("data/opciones-pasajero.csv (fila 4)", () => {
       { codigo: "OD018", orden: 5, eleccion: "bike", accion: "elegir", servicio: "Bike Tour", proveedor: null },
       { codigo: "OD019", orden: 5, eleccion: "rafting", accion: "renombrar", servicio: "Bodegas half Day", proveedor: null },
       { codigo: "OD019", orden: 5, eleccion: "rafting", accion: "agregar", servicio: "Rafting", proveedor: "Kahuak" },
+      { codigo: "OD020", orden: 5, eleccion: "bike", accion: "elegir", servicio: "Bike Tour", proveedor: null },
     ]);
   });
 

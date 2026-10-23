@@ -19,6 +19,11 @@ describe("días fijos del Perito Moreno (data/dias-servicio.csv)", () => {
     expect(diaDe("AR34", 10)).toBe(5);
   });
 
+  // Owner (2026-10-22): City Tour o Bike Tour por defecto el día 2 de todo componente con noches en Buenos Aires.
+  it.each(["OD018", "OD020"])("%s: el City Tour o el Bike Tour (servicio 5) va el día 2", (codigo) => {
+    expect(diaDe(codigo, 5)).toBe(2);
+  });
+
   it("no hay dos reglas para el mismo servicio (o la misma excursión del servicio)", () => {
     // Con nombre de excursión (M3-15), la regla es por excursión: OD019 5 tiene Bodegas, Alta Montaña y Rafting.
     const claves = dias.map((d) => `${d.codigo}#${d.orden}#${d.servicio ?? ""}`);

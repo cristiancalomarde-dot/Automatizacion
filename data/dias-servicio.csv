@@ -10,3 +10,5 @@ OD016,6,2,,,"Owner (2026-10-22): en todos los paquetes de El Calafate el Perito 
 OD019,5,1,Bodegas half Day,por la tarde (14:30 aprox.),"Owner (2026-10-22, M3-15): en Mendoza el bus llega de mañana: Bodegas half Day va el día 1 de la estadía, por la tarde (también dentro de BRARCH26/ARBR23/5C01; salvo cambio manual)"
 OD019,5,2,Alta Montaña,,"Owner (2026-10-22, M3-15): la excursión de día entero de Mendoza va el día 2 de la estadía: Alta Montaña (salvo cambio manual)"
 OD019,5,2,Rafting,,"Owner (2026-10-22, M3-15): si eligió rafting (data/opciones-pasajero.csv), el rafting va el día 2 de la estadía en lugar de Alta Montaña (salvo cambio manual)"
+OD018,5,2,,,"Owner (2026-10-22): en Buenos Aires el City Tour o el Bike Tour va por defecto el día 2 de la estadía, en todo componente con noches en BUE (también dentro de los tours; salvo cambio manual)"
+OD020,5,2,,,"Owner (2026-10-22): en Buenos Aires el City Tour o el Bike Tour va por defecto el día 2 de la estadía, en todo componente con noches en BUE (también dentro de los tours; salvo cambio manual)"
