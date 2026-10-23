@@ -37,3 +37,14 @@ convierte en pieza cuando se ordene la tanda.
   W Trek, pero de catálogo solo "W Trek Standard con Grey" (aún no cargada; está en el Excel y los Word).
   **Factoria tiene un email propio** en el Excel de proveedores. Pregunta del owner: ¿cambia el nombre del
   proveedor en el Excel?
+
+## Respuestas del owner (2026-10-23)
+
+1. **Subject:** sí → "Solicitud de reserva – <nombre del pasajero> – <fechas>", sin códigos (G1).
+2. **Día 2:** no como regla general ciega. Hay destinos con más de una excursión y en San Pedro de Atacama
+   los géiseres van el **día 3** (aclimatación). Se ve **caso a caso** → armar una lista por componente OD
+   con sus excursiones y un día propuesto, y que el owner la valide antes de cargarla en `data/dias-servicio.csv` (G3).
+3. **Vuelo después de las 17 hs:** sí → aviso interno en la reserva ("revisar con el vendedor: puede necesitar
+   privado"); el pedido a Chalten Travel no lo dice.
+4. **Vértice / Factoria:** correcto → el pedido de Factoria va al email propio de Factoria (del Excel); no se
+   cambia el nombre de Vértice en el Excel, se separa el proveedor Factoria del de W Trek.
