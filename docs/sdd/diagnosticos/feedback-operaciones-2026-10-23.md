@@ -48,3 +48,27 @@ convierte en pieza cuando se ordene la tanda.
    privado"); el pedido a Chalten Travel no lo dice.
 4. **Vértice / Factoria:** correcto → el pedido de Factoria va al email propio de Factoria (del Excel); no se
    cambia el nombre de Vértice en el Excel, se separa el proveedor Factoria del de W Trek.
+
+## G3 · Propuesta de días de excursión, para validar 1 a 1 con el owner
+
+Fuente: excursiones cargadas (`M1-04d-carga.md`, `M3-10-diagnostico.md`) + lo que ya está en `data/dias-servicio.csv`.
+Día = día de la estadía en ese destino (vale también dentro de los tours).
+
+Ya fijados (no cambian): OD030 Géiseres día 3 · OD031 Tiwanaco día 2 · Perito Moreno día 2 en OD013/OD014/OD016
+(día 5 en AR34) · OD014 Chaltén full day día 3 · OD019 Bodegas día 1 tarde y Alta Montaña/Rafting día 2 ·
+OD018/OD020 City Tour o Bike Tour día 2 · OD040 City Tour Montevideo día 2.
+
+Pendientes (propuesta):
+
+| # | Componente | Excursión (proveedor) | Propuesta |
+|---|---|---|---|
+| 1 | OD017 Puerto Natales | Torres del Paine Full Day (Patagonia Planet) | día 2 (dicho por el owner) |
+| 2 | OD032 Río | Big Dude (Local 55) | día 2 (dicho por el owner) |
+| 3 | OD025 Puerto Madryn | Península Valdés Full Day (All Peninsula) | día 2 (dicho por el owner) |
+| 4 | OD013 El Calafate + TdP | Torres del Paine Full Day from El Calafate (South Road) | día 3 (Perito Moreno ya va el 2) |
+| 5 | OD018 Buenos Aires | Tango Show con cena (Madero Tango) | día 3, de noche |
+| 6 | OD020 Buenos Aires + Uruguay | Colonia Day Trip (Buquebus) | día 3 |
+| 7 | OD022 Ushuaia | Canal Beagle 3 hs (Rumbo Sur) | día 2 |
+| 8 | OD022 Ushuaia | PN Tierra del Fuego medio día (Rumbo Sur) | día 3 (¿o el mismo día 2, mañana/tarde?) |
+| 9 | OD029 Santiago | Bike Tour (Bicicleta Verde) | día 2 |
+| 10 | OD010A-D / OD011 Iguazú | Paquete Receptivo 105 Premium (Cuenca del Plata) | ¿necesita día fijo o lo arma Cuenca del Plata? |
