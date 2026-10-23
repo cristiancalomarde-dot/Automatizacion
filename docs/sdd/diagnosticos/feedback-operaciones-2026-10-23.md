@@ -83,3 +83,5 @@ Pendientes (propuesta):
 - Reconfirma: **Tiwanaco (LPB) día 2** y **Bike Tour SCL día 2**.
 - **Río, paquete aún no cargado** (no es OD032): tour de Río que NO es Big Dude → día 2; **Angra dos Reis e
   Ilha Grande day tour → día 3**. Se carga el día cuando entre ese paquete al catálogo (¿cuál es el código?).
+- **El otro de Río es OD037** (no está cargado): tour de Río día 2, Angra dos Reis e Ilha Grande día 3.
+- **Montevideo:** el City Tour regular de Turismo Dcom (OD040) va el día 2 — ya estaba fijado (`dias-servicio.csv`, 2026-10-21).
