@@ -78,6 +78,27 @@ export function habitacionDelOverland(habitacion: string | null): string | null 
   return tipoDeHabitacion(habitacion);
 }
 
+/** M3-19: el W Trek cuando no se puede saber cuál de las tres opciones es. */
+export const TREK_A_CONFIRMAR = "a confirmar (Refugio Dorm a compartir / Tent DBL / Tent SGL)";
+
+/**
+ * El alojamiento en el W Trek (M3-19, owner 2026-10-23): Refugio Dorm a compartir, Tent DBL o Tent
+ * SGL. Si la habitación menciona la carpa, manda esa parte ("Double Room - Hostel and W-Trek Tent"
+ * → Tent DBL); doble/single sin carpa ni refugio es carpa (la única opción privada del trek). Si no
+ * se puede saber, "a confirmar" con las tres opciones.
+ */
+export function alojamientoDelTrek(habitacion: string | null): string {
+  if (!habitacion?.trim()) return TREK_A_CONFIRMAR;
+  const h = normalizarTexto(habitacion);
+  const doble = /\b(double|doble|dbl|matrimonial|twin)\b/.test(h);
+  const single = /\b(single|sgl|individual|simple)\b/.test(h);
+  if (/\b(tent|carpa)\b/.test(h)) return doble ? "Tent DBL" : single ? "Tent SGL" : TREK_A_CONFIRMAR;
+  if (/dorm|refugio|shared|compartid/.test(h)) return "Refugio Dorm a compartir";
+  if (doble) return "Tent DBL";
+  if (single) return "Tent SGL";
+  return TREK_A_CONFIRMAR;
+}
+
 /** El tipo de habitación en español ("Double Room - Hostel" → "doble"). Null si no vino. */
 export function tipoDeHabitacion(habitacion: string | null): string | null {
   if (!habitacion?.trim()) return null;

@@ -48,6 +48,8 @@ import {
   sumarDias,
   habitacionDelOverland,
   habitacionDelPedido,
+  alojamientoDelTrek,
+  TREK_A_CONFIRMAR,
   tipoDeHabitacion,
 } from "./formato";
 import type {
@@ -862,6 +864,13 @@ class Armado {
     const pendientes: string[] = [];
     if (desde && hasta && desde !== hasta) renglones.push(`Desde: ${fechaCorta(desde)} · Hasta: ${fechaCorta(hasta)}`);
     else renglones.push(`Fecha: ${desde ? fechaCorta(desde) : "a confirmar"}`);
+    const avisos: string[] = [];
+    if (/\bw[\s-]?trek\b/i.test(nombre)) {
+      // M3-19 (owner, 2026-10-23): el tipo de alojamiento en el trek.
+      const trek = alojamientoDelTrek(this.reserva.habitacion);
+      renglones.push(`Alojamiento en el trek: ${trek}`);
+      if (trek === TREK_A_CONFIRMAR) avisos.push(`Falta el tipo de alojamiento del ${nombre}: completalo antes de enviar.`);
+    }
     if (/overland/i.test(nombre)) {
       // El Overland de Imperio Inca que vendemos es tour regular, no el privado de Journaway (owner, 2026-10-19).
       renglones.push("Servicio: tour regular");
@@ -872,7 +881,7 @@ class Armado {
       renglones.push(pickUp.renglon);
       pendientes.push(...pickUp.pendientes);
     }
-    return { renglones, fecha: desde, hasta: desde ? hasta : null, resumen: desde && hasta ? rangoCorto(desde, hasta) : desde ? fechaCorta(desde) : "", queParaTarea: nombre, datosPax: true, avisos: [], pendientes };
+    return { renglones, fecha: desde, hasta: desde ? hasta : null, resumen: desde && hasta ? rangoCorto(desde, hasta) : desde ? fechaCorta(desde) : "", queParaTarea: nombre, datosPax: true, avisos, pendientes };
   }
 
   // --- Salida -------------------------------------------------------------------------------

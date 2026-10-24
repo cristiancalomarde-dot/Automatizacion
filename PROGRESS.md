@@ -3,6 +3,8 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
 
 # Dónde retomar
 
+- **2026-10-23 (noche): M3-19 publicada** (W Trek: "Alojamiento en el trek: Tent DBL / Tent SGL / Refugio Dorm a compartir", o a confirmar con aviso). Preguntado al owner: "Dormitory - Hostel and W-Trek Tent" (carpa sin decir para cuántos) hoy sale a confirmar. Siguen: buses El Chaltén, Factoria aparte.
+
 - **2026-10-23 (noche): M3-18 publicada** ("Habitación: DBL/SGL/TWIN/TPL Standard con desayuno", dorm "dorm compartido, con desayuno", sin habitación "Standard con desayuno (tipo a confirmar)" + aviso). Preguntado al owner: habitación que solo dice el nivel ("Budget Hotel, con desayuno") y los Tayka de SPAP05 (Journaway) con el renglón nuevo. Siguen: W Trek tipo de alojamiento, buses El Chaltén, Factoria aparte.
 
 - **2026-10-23 (noche): M3-16 y M3-17 publicadas** (asunto sin códigos; excursiones con día fijo en todos los destinos cargados, Tango de noche, Iguazú AR día 2 / BR día 3; si el día cae en la salida queda "a coordinar"). OD010D (empieza en Brasil) queda BR día 2 / AR día 3 (owner OK: cambian de alojamiento al terminar el lado argentino). OD037 sin cargar (Río día 2, Angra día 3). Siguen: Standard con desayuno, W Trek tipo de alojamiento, buses El Chaltén, Factoria aparte.
