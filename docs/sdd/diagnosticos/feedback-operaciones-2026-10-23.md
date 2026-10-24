@@ -89,3 +89,8 @@ Pendientes (propuesta):
   "así cambian de alojamiento cuando termina el tour del lado argentino".
 - **W Trek con "Dormitory - Hostel and W-Trek Tent" (owner 2026-10-23):** dorm en el hostel + carpa según los pax:
   2 pax → Tent DBL, 1 pax → Tent SGL. (Hoy M3-19 lo deja "a confirmar"; ajuste chico después de M3-20.)
+- **Habitación que solo dice el nivel (owner 2026-10-23):** "Budget Hotel" / "Hotel 3*" NO es un tipo de habitación;
+  en hotel tiene que decir DBL o SGL. Regla: **2 pax → DBL, 1 pax → SGL**, salvo que la reserva explique otra cosa
+  (ej. 2 SGLs); hay que revisarlo con el vendedor (aviso).
+- **Tayka de SPAP05 (Journaway):** está bien "Habitación: DBL/SGL Standard con desayuno", con la misma regla por pax.
+- → Pieza M3-21 (después de M3-20): habitación por pax en hoteles sin tipo + carpa del W Trek por pax.
