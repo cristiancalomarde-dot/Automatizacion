@@ -5,7 +5,7 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
 
 - **2026-10-23 (noche): M3-21 publicada** (habitación según los pax: hotel sin tipo 2 pax DBL / 1 pax SGL con aviso de revisar con el vendedor; hostel sin tipo a confirmar; W Trek carpa sin cantidad 2 pax Tent DBL, 1 pax a confirmar). Hostel vs hotel = nivel del catálogo ("Hostal Rio Amazonas" figura como hotel). Queda de la tanda 1: **Factoria aparte** (pedido de Factoria a su propio email).
 
-- **2026-10-23 (noche): M3-20 publicada** (buses de El Chaltén: bus regular aeropuerto FTE → terminal con horario según el vuelo, round trip de AR34 en dos renglones, vuelta 8:00 am, aviso interno si el vuelo llega después de las 17 hs; reglas en `data/buses-el-chalten.csv`). Vuelta de AR34 = día 4 (8 mar en DK1594177, no el 10 que decía el feedback): preguntado al owner. Siguen: M3-21 (habitación según los pax + carpa del W Trek, reglas en el feedback) y Factoria aparte.
+- **2026-10-23 (noche): M3-20 publicada** (buses de El Chaltén: bus regular aeropuerto FTE → terminal con horario según el vuelo, round trip de AR34 en dos renglones, vuelta 8:00 am, aviso interno si el vuelo llega después de las 17 hs; reglas en `data/buses-el-chalten.csv`). Vuelta de AR34 = día 4 (8 mar en DK1594177; el owner confirmó, el 10 del feedback era un error). Siguen: M3-21 (habitación según los pax + carpa del W Trek, reglas en el feedback) y Factoria aparte.
 
 - **2026-10-23 (noche): M3-19 publicada** (W Trek: "Alojamiento en el trek: Tent DBL / Tent SGL / Refugio Dorm a compartir", o a confirmar con aviso). Preguntado al owner: "Dormitory - Hostel and W-Trek Tent" (carpa sin decir para cuántos) hoy sale a confirmar. Siguen: buses El Chaltén, Factoria aparte.
 
