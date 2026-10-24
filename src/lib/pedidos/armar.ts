@@ -47,6 +47,7 @@ import {
   renglonDelPasajero,
   sumarDias,
   habitacionDelOverland,
+  habitacionDelPedido,
   tipoDeHabitacion,
 } from "./formato";
 import type {
@@ -593,7 +594,9 @@ class Armado {
       avisos.push(`Faltan las fechas de ${hotel}: completalas antes de enviar.`);
     }
     const hab = tipoDeHabitacion(this.reserva.habitacion);
-    if (hab) renglones.push(`Habitación: ${hab}`);
+    // M3-18: Standard y con desayuno (sin upgrades que no pedimos); sin habitación, a confirmar y con aviso.
+    renglones.push(`Habitación: ${habitacionDelPedido(this.reserva.habitacion)}`);
+    if (!hab) avisos.push(`Falta el tipo de habitación de ${hotel}: completalo antes de enviar.`);
     return { renglones, fecha: desde, hasta: desde ? hasta : null, resumen: desde && hasta ? `IN ${fechaCorta(desde)}, OUT ${fechaCorta(hasta)}` : "", queParaTarea: hab ? `${hotel} (${hab})` : hotel, datosPax: true, avisos, pendientes: [] };
   }
 

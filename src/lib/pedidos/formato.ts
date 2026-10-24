@@ -91,6 +91,19 @@ export function tipoDeHabitacion(habitacion: string | null): string | null {
   return base;
 }
 
+/**
+ * El renglón de habitación del pedido de alojamiento (M3-18, owner 2026-10-23): la habitación
+ * Standard y con desayuno, para que no haya upgrades que no pedimos ("Double Room - Hostel" →
+ * "DBL Standard con desayuno"). Sin habitación, "Standard con desayuno (tipo a confirmar)". Solo
+ * para el texto del pedido: para decidir se sigue usando `tipoDeHabitacion`.
+ */
+export function habitacionDelPedido(habitacion: string | null): string {
+  const tipo = tipoDeHabitacion(habitacion);
+  if (!tipo) return "Standard con desayuno (tipo a confirmar)";
+  const sigla: Record<string, string> = { doble: "DBL", twin: "TWIN", single: "SGL", triple: "TPL" };
+  return sigla[tipo] ? `${sigla[tipo]} Standard con desayuno` : `${tipo}, con desayuno`;
+}
+
 const texto = (v: unknown): string | null => (typeof v === "string" && v.trim() ? v.trim() : null);
 
 export function nombreDelPasajero(p: PasajeroDeReserva): string {

@@ -107,12 +107,12 @@ describe("armarPedidos — tour compuesto (fila 2)", () => {
 });
 
 describe("armarPedidos — qué lleva cada servicio (fila 3)", () => {
-  it("alojamiento: IN/OUT, noches y tipo de habitación; sin régimen inventado", () => {
+  it("alojamiento: IN/OUT, noches y tipo de habitación (Standard con desayuno, M3-18); sin régimen inventado", () => {
     const p = ok(armarPedidos(reservaOd010b, catalogoCon([od010b]), plantilla)).pedidos[0];
     expect(p.cuerpo).toContain("IN: 3 oct 2026");
     expect(p.cuerpo).toContain("OUT: 6 oct 2026 (3 noches)");
-    expect(p.cuerpo).toContain("Habitación: doble");
-    expect(p.cuerpo).not.toMatch(/desayuno|régimen/i);
+    expect(p.cuerpo).toContain("Habitación: DBL Standard con desayuno");
+    expect(p.cuerpo).not.toMatch(/régimen/i);
   });
 
   it("excursión: fecha, idioma inglés por defecto y regular", () => {
