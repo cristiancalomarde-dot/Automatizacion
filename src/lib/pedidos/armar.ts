@@ -612,9 +612,24 @@ class Armado {
   private fechaDeExcursion(b: Bloque, s: Servicio, desde: string | null, hasta: string | null, diaFijo?: DiaDeServicio): string | null {
     if (s.tramosNoches?.length && desde) return desde;
     if (b.inicio && b.fin && b.inicio === b.fin) return b.inicio;
-    const dia = (diaFijo ?? this.catalogo.dias.find((d) => !d.servicio && d.codigo === b.codigo && d.orden === s.orden))?.dia;
-    if (dia && b.inicio) return sumarDias(b.inicio, dia - 1);
+    const dia = diaFijo?.dia;
+    if (dia && b.inicio) return this.diaDeLaEstadia(b, dia);
     return desde && hasta && desde === hasta ? desde : null;
+  }
+
+  /** La regla de `data/dias-servicio.csv` sin nombre de excursión para ese servicio del componente. */
+  private diaDelServicio(b: Bloque, s: Servicio): DiaDeServicio | undefined {
+    return this.catalogo.dias.find((d) => !d.servicio && d.codigo === b.codigo && d.orden === s.orden);
+  }
+
+  /**
+   * El día N de la estadía en ese componente (el 1 es el de llegada). M3-17: si la estadía es más
+   * corta (el día cae en la salida o después), no se inventa: null, y queda "a coordinar".
+   */
+  private diaDeLaEstadia(b: Bloque, dia: number): string | null {
+    if (!b.inicio) return null;
+    const fecha = sumarDias(b.inicio, dia - 1);
+    return b.fin && fecha >= b.fin && dia > 1 ? null : fecha;
   }
 
   /** M3-15: la excursión sin pick up, con su punto de encuentro (`data/puntos-de-encuentro.csv`). */
@@ -626,15 +641,16 @@ class Armado {
   private excursion(b: Bloque, s: Servicio, nombre: string, desde: string | null, hasta: string | null, diaFijo?: DiaDeServicio): Renglones {
     const regular = PRIVADO.test(`${s.descripcion ?? ""} ${nombre}`) ? "privado" : "regular";
     const incluye = (s.descripcion ?? "").match(INCLUYE_TRASLADOS);
-    if (incluye) return this.paqueteConTraslados(b, nombre, incluye[1], regular, `${s.descripcion ?? ""} ${nombre}`);
+    if (incluye) return this.paqueteConTraslados(b, s, nombre, incluye[1], regular, `${s.descripcion ?? ""} ${nombre}`);
 
     const idioma = EN_ESPANOL.test(s.descripcion ?? "") ? "español" : "inglés";
     const renglones = [`Excursión: ${nombre}`];
     const avisos: string[] = [];
     // De varios días (el Overland de 3 días): va con sus fechas de punta a punta.
     const variosDias = VARIOS_DIAS.test(s.descripcion ?? "") && !!desde && !!hasta && desde !== hasta;
-    const fecha = variosDias ? null : this.fechaDeExcursion(b, s, desde, hasta, diaFijo);
-    const momento = fecha && diaFijo?.momento ? `, ${diaFijo.momento}` : "";
+    const regla = diaFijo ?? this.diaDelServicio(b, s);
+    const fecha = variosDias ? null : this.fechaDeExcursion(b, s, desde, hasta, regla);
+    const momento = fecha && regla?.momento ? `, ${regla.momento}` : "";
     if (variosDias) renglones.push(`Desde: ${fechaCorta(desde!)} · Hasta: ${fechaCorta(hasta!)}`);
     else if (fecha) renglones.push(`Fecha: ${fechaCorta(fecha)}${momento}`);
     else {
@@ -697,7 +713,7 @@ class Armado {
    * llegada el primer día, cada excursión en los días siguientes y traslado de
    * salida el último día, como se pide hoy a mano.
    */
-  private paqueteConTraslados(b: Bloque, nombre: string, lista: string, regular: string, texto: string): Renglones {
+  private paqueteConTraslados(b: Bloque, s: Servicio, nombre: string, lista: string, regular: string, texto: string): Renglones {
     // El 105 Premium se pide como Premium, no como regular (owner, 2026-10-22, M3-12).
     const premium = PREMIUM.test(texto);
     const sinReceptivo = nombre.replace(/^Paquete\s+Rece?pti?vo\s+/i, "Paquete ");
@@ -734,9 +750,13 @@ class Armado {
       const brasil = (e: string) => (/brasil/i.test(e) ? 0 : 1);
       excursiones.sort((x, y) => brasil(x) - brasil(y));
     }
+    const avisos: string[] = [];
     excursiones.forEach((e, i) => {
       const lado = /argentin/i.test(e) ? "Lado argentino" : /brasil/i.test(e) ? "Lado brasileño" : e;
-      const fecha = b.inicio ? sumarDias(b.inicio, i + 1) : null;
+      // M3-17: el día de cada lado sale de data/dias-servicio.csv (por nombre); sin regla, uno tras otro desde el día 2.
+      const regla = this.catalogo.dias.find((d) => d.servicio && d.codigo === b.codigo && d.orden === s.orden && normalizarTexto(e).includes(normalizarTexto(d.servicio)));
+      const fecha = regla ? this.diaDeLaEstadia(b, regla.dia) : b.inicio ? sumarDias(b.inicio, i + 1) : null;
+      if (regla && b.inicio && !fecha) avisos.push(`Falta la fecha del ${lado.toLowerCase()}: completala antes de enviar.`);
       const mismoHotel = !fecha || this.estadiaDe(nocheAnterior(fecha)) === this.estadiaDe(fecha);
       renglones.push(
         conHotel(
@@ -759,7 +779,7 @@ class Armado {
       pendientes.push(...salida.pendientes);
     }
     if (b.pickUp) renglones.push(`Pick up: ${b.pickUp}`);
-    return { renglones, fecha: b.inicio, hasta: b.inicio ? b.fin : null, resumen: b.inicio && b.fin ? rangoCorto(b.inicio, b.fin) : "", queParaTarea: titulo, datosPax: true, avisos: [], pendientes };
+    return { renglones, fecha: b.inicio, hasta: b.inicio ? b.fin : null, resumen: b.inicio && b.fin ? rangoCorto(b.inicio, b.fin) : "", queParaTarea: titulo, datosPax: true, avisos, pendientes };
   }
 
   private traslados(b: Bloque, s: Servicio, nombre: string, desde: string | null, hasta: string | null): Renglones[] {

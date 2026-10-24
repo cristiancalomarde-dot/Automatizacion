@@ -24,6 +24,36 @@ describe("días fijos del Perito Moreno (data/dias-servicio.csv)", () => {
     expect(diaDe(codigo, 5)).toBe(2);
   });
 
+  // M3-17 (owner 2026-10-23, feedback de operaciones G3): el día de cada excursión en su destino.
+  it.each([
+    ["OD017", 4, 2],
+    ["OD032", 4, 2],
+    ["OD025", 5, 2],
+    ["OD013", 7, 3],
+    ["OD018", 7, 3],
+    ["OD020", 7, 3],
+    ["OD022", 5, 2],
+    ["OD022", 6, 3],
+    ["OD029", 4, 2],
+  ] as const)("%s: la excursión del servicio %i va el día %i", (codigo, orden, dia) => {
+    expect(diaDe(codigo, orden)).toBe(dia);
+  });
+
+  it("OD018: el Tango va por la noche", () => {
+    expect(dias.find((d) => d.codigo === "OD018" && d.orden === 7)?.momento).toBe("por la noche");
+  });
+
+  it.each([
+    ["OD010A", 4],
+    ["OD010B", 5],
+    ["OD010C", 7],
+    ["OD011", 3],
+  ] as const)("%s (servicio %i): Cataratas Argentinas el día 2 y Brasileras el día 3", (codigo, orden) => {
+    const de = (servicio: string) => dias.find((d) => d.codigo === codigo && d.orden === orden && d.servicio === servicio)?.dia;
+    expect(de("Cataratas Argentinas")).toBe(2);
+    expect(de("Cataratas Brasileras")).toBe(3);
+  });
+
   it("no hay dos reglas para el mismo servicio (o la misma excursión del servicio)", () => {
     // Con nombre de excursión (M3-15), la regla es por excursión: OD019 5 tiene Bodegas, Alta Montaña y Rafting.
     const claves = dias.map((d) => `${d.codigo}#${d.orden}#${d.servicio ?? ""}`);
