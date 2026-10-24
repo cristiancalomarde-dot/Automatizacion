@@ -87,3 +87,5 @@ Pendientes (propuesta):
 - **Montevideo:** el City Tour regular de Turismo Dcom (OD040) va el día 2 — ya estaba fijado (`dias-servicio.csv`, 2026-10-21).
 - **OD010D (2 noches BRA + 1 ARG), owner 2026-10-23:** queda como está: lado brasileño día 2 y lado argentino día 3;
   "así cambian de alojamiento cuando termina el tour del lado argentino".
+- **W Trek con "Dormitory - Hostel and W-Trek Tent" (owner 2026-10-23):** dorm en el hostel + carpa según los pax:
+  2 pax → Tent DBL, 1 pax → Tent SGL. (Hoy M3-19 lo deja "a confirmar"; ajuste chico después de M3-20.)
