@@ -85,3 +85,5 @@ Pendientes (propuesta):
   Ilha Grande day tour → día 3**. Se carga el día cuando entre ese paquete al catálogo (¿cuál es el código?).
 - **El otro de Río es OD037** (no está cargado): tour de Río día 2, Angra dos Reis e Ilha Grande día 3.
 - **Montevideo:** el City Tour regular de Turismo Dcom (OD040) va el día 2 — ya estaba fijado (`dias-servicio.csv`, 2026-10-21).
+- **OD010D (2 noches BRA + 1 ARG), owner 2026-10-23:** queda como está: lado brasileño día 2 y lado argentino día 3;
+  "así cambian de alojamiento cuando termina el tour del lado argentino".

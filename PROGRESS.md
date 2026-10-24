@@ -3,7 +3,7 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
 
 # Dónde retomar
 
-- **2026-10-23 (noche): M3-16 y M3-17 publicadas** (asunto sin códigos; excursiones con día fijo en todos los destinos cargados, Tango de noche, Iguazú AR día 2 / BR día 3; si el día cae en la salida queda "a coordinar"). Abierto: OD010D (empieza en Brasil) sigue BR día 2 / AR día 3 — confirmar con el owner. OD037 sin cargar (Río día 2, Angra día 3). Siguen: Standard con desayuno, W Trek tipo de alojamiento, buses El Chaltén, Factoria aparte.
+- **2026-10-23 (noche): M3-16 y M3-17 publicadas** (asunto sin códigos; excursiones con día fijo en todos los destinos cargados, Tango de noche, Iguazú AR día 2 / BR día 3; si el día cae en la salida queda "a coordinar"). OD010D (empieza en Brasil) queda BR día 2 / AR día 3 (owner OK: cambian de alojamiento al terminar el lado argentino). OD037 sin cargar (Río día 2, Angra día 3). Siguen: Standard con desayuno, W Trek tipo de alojamiento, buses El Chaltén, Factoria aparte.
 
 - **2026-10-23 (noche): M3-16 en verde (asunto "Solicitud de reserva – <pasajero> – <fechas del pedido>", sin booking code ni código del tour).** Sin publicar todavía (falta el OK del owner). Siguen las piezas de la tanda 1: días de excursión (reglas ya validadas, sección G3), Standard con desayuno, W Trek con tipo de alojamiento, buses de El Chaltén, Factoria aparte. **Ojo:** los tests corren en el clon `C:Usersgsdevhi-travel-automatizacion` (ahí están node_modules y los .env); se commitea en Drive y el clon hace pull.
 
