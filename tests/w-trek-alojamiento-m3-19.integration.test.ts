@@ -68,7 +68,7 @@ function habitaciones(cuerpos: string[]): string[] {
 
 const CASOS = [
   { codigo: "HI_ARGENTINA_W_TREK_CH_11-677", producto: "CH11", habitacion: "Double Room - Hostel and W-Trek Tent", inicio: "2027-03-01", trek: "Alojamiento en el trek: Tent DBL", hab: "Habitación: DBL Standard con desayuno" },
-  { codigo: "HI_TRAVEL_CH10-677", producto: "CH10", habitacion: "Single Room - Hotel 3*", inicio: "2027-04-01", trek: "Alojamiento en el trek: Tent SGL", hab: "Habitación: SGL Standard con desayuno" },
+  { codigo: "HI_TRAVEL_CH10-677", producto: "CH10", habitacion: "Single Room - Hotel 3*", inicio: "2027-04-01", trek: A_CONFIRMAR, hab: "Habitación: SGL Standard con desayuno" }, // M3-21: single sin el trek, 1 pax → a confirmar
   { codigo: "HI_ARGENTINA_W_TREK_ARCH_33-677", producto: "ARCH33", habitacion: "Dormitory - Hostel", inicio: "2027-05-01", trek: "Alojamiento en el trek: Refugio Dorm a compartir", hab: "Habitación: dorm compartido, con desayuno" },
   { codigo: "HI_TRAVEL_ARCH_EXP-677", producto: "ARCH33EXP", habitacion: "Double Room - Hostel and W-Trek Tent", inicio: "2027-06-01", trek: "Alojamiento en el trek: Tent DBL", hab: "Habitación: DBL Standard con desayuno" },
   { codigo: "HI_ARGENTINA_W_TREK_CH_11-677", producto: "CH11", habitacion: "Triple Room - Hotel 3*", inicio: "2027-07-01", trek: A_CONFIRMAR, hab: "Habitación: TPL Standard con desayuno" },

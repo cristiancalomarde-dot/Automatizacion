@@ -72,8 +72,8 @@ const CASOS = [
   { tour: "ARCH31", habitacion: "Single Room - Hostel", inicio: "2027-05-07", esperado: "Habitación: SGL Standard con desayuno" },
   { tour: "ARCH31", habitacion: "Dormitory - Hostel", inicio: "2027-06-07", esperado: "Habitación: dorm compartido, con desayuno" },
   { tour: "CHB31", habitacion: "Double Room - Hostel", inicio: "2027-07-07", esperado: "Habitación: DBL Standard con desayuno" },
-  // Lo que no se reconoce: lo de hoy + ", con desayuno".
-  { tour: "BRARCH26", habitacion: "Budget Hotel", inicio: "2027-08-07", esperado: "Habitación: Budget Hotel, con desayuno" },
+  // M3-21: la habitación que solo dice el nivel va por los pax (la ficha de ejemplo es de 1 pax → SGL).
+  { tour: "BRARCH26", habitacion: "Budget Hotel", inicio: "2027-08-07", esperado: "Habitación: SGL Standard con desayuno" },
 ];
 
 (credencialesSupabaseDisponibles() ? describe : describe.skip)("M3-18 — Standard con desayuno, en la base de pruebas", { timeout: 180_000 }, () => {
@@ -126,7 +126,7 @@ const CASOS = [
     });
   });
 
-  it("sin habitación (SPAP05 de Journaway, los Tayka del Overland privado): «Standard con desayuno (tipo a confirmar)» y un aviso", async () => {
+  it("sin habitación (SPAP05 de Journaway, los Tayka del Overland privado), 2 pax: «DBL Standard con desayuno» (M3-21) y un aviso", async () => {
     const prod = await admin.from("producto").select("id").eq("codigo", "SPAP05").single();
     if (prod.error) throw new Error(prod.error.message);
     const detalle = await cargarProducto(admin, prod.data.id);
@@ -159,10 +159,8 @@ const CASOS = [
     const avisos = pedidos.filter((p) => p.cuerpo.includes("Alojamiento: ")).flatMap((p) => p.avisos);
     console.log(`[M3-18] SPAP05 sin habitación: ${habs.map(([h, x]) => `${h} → ${x}`).join(" | ")} · avisos: ${avisos.join(" | ")}`);
     expect(habs.length).toBeGreaterThan(0);
-    for (const [hotel, x] of habs) {
-      expect(x).toBe("Habitación: Standard con desayuno (tipo a confirmar)");
-      expect(avisos).toContain(`Falta el tipo de habitación de ${hotel}: completalo antes de enviar.`);
-    }
+    for (const [, x] of habs) expect(x).toBe("Habitación: DBL Standard con desayuno");
+    expect(avisos).toContain("La reserva no dice el tipo de habitación: va DBL por 2 pax. Revisalo con el vendedor.");
   });
 
   it("sin sesión no se ven los borradores ni las tareas (RLS)", async () => {

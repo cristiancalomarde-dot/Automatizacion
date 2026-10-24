@@ -48,7 +48,9 @@ import {
   sumarDias,
   habitacionDelOverland,
   habitacionDelPedido,
+  habitacionSinTipo,
   alojamientoDelTrek,
+  trekDeUnPax,
   TREK_A_CONFIRMAR,
   tipoDeHabitacion,
 } from "./formato";
@@ -602,9 +604,17 @@ class Armado {
       avisos.push(`Faltan las fechas de ${hotel}: completalas antes de enviar.`);
     }
     const hab = tipoDeHabitacion(this.reserva.habitacion);
-    // M3-18: Standard y con desayuno (sin upgrades que no pedimos); sin habitación, a confirmar y con aviso.
-    renglones.push(`Habitación: ${habitacionDelPedido(this.reserva.habitacion)}`);
-    if (!hab) avisos.push(`Falta el tipo de habitación de ${hotel}: completalo antes de enviar.`);
+    // M3-18: Standard y con desayuno (sin upgrades que no pedimos). M3-21: sin tipo, en un hotel va por
+    // los pax (2 → DBL, 1 → SGL) y en un hostel a confirmar, con un aviso para revisarlo con el vendedor.
+    // Hostel = el nivel del servicio en el catálogo o, si no tiene, el que dice la habitación.
+    const pax = this.paxDeLaReserva();
+    const hostel = normalizarTexto(s.nivel ?? nivelDeLaHabitacion(this.reserva.habitacion) ?? "") === "hostel";
+    renglones.push(`Habitación: ${habitacionDelPedido(this.reserva.habitacion, { pax, hostel })}`);
+    if (habitacionSinTipo(this.reserva.habitacion)) {
+      if (hostel) avisos.push(`La reserva no dice si en ${hotel} es dorm, DBL o SGL: completalo antes de enviar y revisalo con el vendedor.`);
+      else if (pax === 1 || pax === 2) avisos.push(`La reserva no dice el tipo de habitación: va ${pax === 2 ? "DBL" : "SGL"} por ${pax} pax. Revisalo con el vendedor.`);
+      else avisos.push(`Falta el tipo de habitación de ${hotel}: completalo antes de enviar.`);
+    }
     return { renglones, fecha: desde, hasta: desde ? hasta : null, resumen: desde && hasta ? `IN ${fechaCorta(desde)}, OUT ${fechaCorta(hasta)}` : "", queParaTarea: hab ? `${hotel} (${hab})` : hotel, datosPax: true, avisos, pendientes: [] };
   }
 
@@ -904,6 +914,11 @@ class Armado {
     return { renglones, fecha, resumen: fecha ? fechaCorta(fecha) : "", queParaTarea: nombre, datosPax: false, avisos: [], pendientes: [] };
   }
 
+  /** Los pax de la reserva: `pax` o, si no vino, la cantidad de pasajeros (M3-21). */
+  private paxDeLaReserva(): number | null {
+    return this.reserva.pax ?? (this.reserva.pasajeros.length || null);
+  }
+
   private otro(b: Bloque, nombre: string, desde: string | null, hasta: string | null): Renglones {
     const renglones = [nombre];
     const pendientes: string[] = [];
@@ -912,9 +927,17 @@ class Armado {
     const avisos: string[] = [];
     if (/\bw[\s-]?trek\b/i.test(nombre)) {
       // M3-19 (owner, 2026-10-23): el tipo de alojamiento en el trek.
-      const trek = alojamientoDelTrek(this.reserva.habitacion);
+      // M3-21: la carpa sin cantidad va por los pax; con 1 pax no se asume Tent SGL (mucho más caro).
+      const pax = this.paxDeLaReserva();
+      const trek = alojamientoDelTrek(this.reserva.habitacion, pax);
       renglones.push(`Alojamiento en el trek: ${trek}`);
-      if (trek === TREK_A_CONFIRMAR) avisos.push(`Falta el tipo de alojamiento del ${nombre}: completalo antes de enviar.`);
+      if (trek === TREK_A_CONFIRMAR) {
+        avisos.push(
+          trekDeUnPax(this.reserva.habitacion, pax)
+            ? `Falta el tipo de alojamiento del ${nombre} (1 pax): Tent SGL es mucho más caro que el Refugio Dorm; revisalo con el vendedor.`
+            : `Falta el tipo de alojamiento del ${nombre}: completalo antes de enviar.`,
+        );
+      }
     }
     if (/overland/i.test(nombre)) {
       // El Overland de Imperio Inca que vendemos es tour regular, no el privado de Journaway (owner, 2026-10-19).

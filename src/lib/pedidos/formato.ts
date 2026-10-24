@@ -84,19 +84,28 @@ export const TREK_A_CONFIRMAR = "a confirmar (Refugio Dorm a compartir / Tent DB
 /**
  * El alojamiento en el W Trek (M3-19, owner 2026-10-23): Refugio Dorm a compartir, Tent DBL o Tent
  * SGL. Si la habitación menciona la carpa, manda esa parte ("Double Room - Hostel and W-Trek Tent"
- * → Tent DBL); doble/single sin carpa ni refugio es carpa (la única opción privada del trek). Si no
- * se puede saber, "a confirmar" con las tres opciones.
+ * → Tent DBL); la carpa sin decir de cuántos va por los pax (M3-21): 2 pax → Tent DBL. Doble sin
+ * carpa ni refugio es carpa (la única opción privada del trek). Tent SGL solo si la reserva lo pide
+ * para el trek (M3-21: es mucho más caro que el Refugio Dorm; un single que no menciona el trek queda
+ * a confirmar). Si no se puede saber, "a confirmar" con las tres opciones.
  */
-export function alojamientoDelTrek(habitacion: string | null): string {
+export function alojamientoDelTrek(habitacion: string | null, pax: number | null = null): string {
   if (!habitacion?.trim()) return TREK_A_CONFIRMAR;
   const h = normalizarTexto(habitacion);
   const doble = /\b(double|doble|dbl|matrimonial|twin)\b/.test(h);
   const single = /\b(single|sgl|individual|simple)\b/.test(h);
-  if (/\b(tent|carpa)\b/.test(h)) return doble ? "Tent DBL" : single ? "Tent SGL" : TREK_A_CONFIRMAR;
+  if (/\b(tent|carpa)\b/.test(h)) return doble ? "Tent DBL" : single ? "Tent SGL" : pax === 2 ? "Tent DBL" : TREK_A_CONFIRMAR;
   if (/dorm|refugio|shared|compartid/.test(h)) return "Refugio Dorm a compartir";
   if (doble) return "Tent DBL";
-  if (single) return "Tent SGL";
   return TREK_A_CONFIRMAR;
+}
+
+/**
+ * M3-21: el W Trek quedó a confirmar y es de 1 pax (por la reserva o porque la habitación es
+ * single): el aviso dice que Tent SGL es mucho más caro que el Refugio Dorm.
+ */
+export function trekDeUnPax(habitacion: string | null, pax: number | null): boolean {
+  return pax === 1 || /\b(single|sgl|individual|simple)\b/.test(normalizarTexto(habitacion ?? ""));
 }
 
 /** El tipo de habitación en español ("Double Room - Hostel" → "doble"). Null si no vino. */
@@ -115,14 +124,47 @@ export function tipoDeHabitacion(habitacion: string | null): string | null {
 /**
  * El renglón de habitación del pedido de alojamiento (M3-18, owner 2026-10-23): la habitación
  * Standard y con desayuno, para que no haya upgrades que no pedimos ("Double Room - Hostel" →
- * "DBL Standard con desayuno"). Sin habitación, "Standard con desayuno (tipo a confirmar)". Solo
- * para el texto del pedido: para decidir se sigue usando `tipoDeHabitacion`.
+ * "DBL Standard con desayuno"). M3-21: sin tipo, en un hotel va por los pax (2 → DBL, 1 → SGL; si
+ * no, "Standard con desayuno (tipo a confirmar)") y en un hostel queda a confirmar (dorm / DBL /
+ * SGL); "2 SGLs" → "2 SGL". Solo para el texto del pedido: para decidir se sigue usando
+ * `tipoDeHabitacion`.
  */
-export function habitacionDelPedido(habitacion: string | null): string {
+export function habitacionDelPedido(habitacion: string | null, contexto: ContextoDeHabitacion = { pax: null, hostel: false }): string {
+  const varias = variasHabitaciones(habitacion);
+  if (varias) return `${varias} Standard con desayuno`;
+  if (habitacionSinTipo(habitacion)) {
+    if (contexto.hostel) return "a confirmar (dorm / DBL / SGL), con desayuno";
+    if (contexto.pax === 2) return "DBL Standard con desayuno";
+    if (contexto.pax === 1) return "SGL Standard con desayuno";
+    return "Standard con desayuno (tipo a confirmar)";
+  }
+  const tipo = tipoDeHabitacion(habitacion)!;
+  return SIGLA[tipo] ? `${SIGLA[tipo]} Standard con desayuno` : `${tipo}, con desayuno`;
+}
+
+/** Para decidir la habitación sin tipo (M3-21): cuántos pax y si el alojamiento es un hostel. */
+export interface ContextoDeHabitacion {
+  pax: number | null;
+  hostel: boolean;
+}
+
+/** M3-21: la habitación no dice el tipo: vacía o solo el nivel ("Budget Hotel", "Hotel 3*", "Hostel"). */
+export function habitacionSinTipo(habitacion: string | null): boolean {
   const tipo = tipoDeHabitacion(habitacion);
-  if (!tipo) return "Standard con desayuno (tipo a confirmar)";
-  const sigla: Record<string, string> = { doble: "DBL", twin: "TWIN", single: "SGL", triple: "TPL" };
-  return sigla[tipo] ? `${sigla[tipo]} Standard con desayuno` : `${tipo}, con desayuno`;
+  if (!tipo) return true;
+  const h = normalizarTexto(tipo).replace(/\s+/g, " ");
+  return /^(budget( hotel)?|hotel( \d ?(\*|estrellas|stars?))?|\d ?(\*|estrellas|stars?)( hotel)?|hostel)$/.test(h);
+}
+
+const SIGLA: Record<string, string> = { doble: "DBL", twin: "TWIN", single: "SGL", triple: "TPL" };
+
+/** "2 SGLs" / "2 single rooms" → "2 SGL" (M3-21: lo que la reserva dice explícito manda). */
+function variasHabitaciones(habitacion: string | null): string | null {
+  const base = normalizarTexto((habitacion ?? "").split(/\s+-\s+/)[0]);
+  const m = base.match(/^(\d+)\s*x?\s*(single|sgl|double|doble|dbl|twin|triple|tpl)s?\b/);
+  if (!m || Number(m[1]) < 2) return null;
+  const sigla: Record<string, string> = { single: "SGL", sgl: "SGL", double: "DBL", doble: "DBL", dbl: "DBL", twin: "TWIN", triple: "TPL", tpl: "TPL" };
+  return `${Number(m[1])} ${sigla[m[2]]}`;
 }
 
 const texto = (v: unknown): string | null => (typeof v === "string" && v.trim() ? v.trim() : null);

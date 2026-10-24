@@ -35,7 +35,8 @@ describe("alojamientoDelTrek (fila 1: un caso por fila de la tabla)", () => {
     // doble/single sin tent ni refugio → la única opción privada del trek
     ["Double Room - Hostel", "Tent DBL"],
     ["Double Room - Hotel 3*", "Tent DBL"],
-    ["Single Room - Hostel", "Tent SGL"],
+    // M3-21: un single que no menciona el trek no se asume Tent SGL (es mucho más caro)
+    ["Single Room - Hostel", A_CONFIRMAR],
     // no se puede saber
     [null, A_CONFIRMAR],
     ["   ", A_CONFIRMAR],
@@ -71,7 +72,7 @@ describe("armarPedidos — el renglón del W Trek (filas 1 y 2)", () => {
   });
 
   it.each([
-    ["W Trek Standard", "Single Room - Hostel", "Alojamiento en el trek: Tent SGL"],
+    ["W Trek Standard", "Single Room - Hostel and W-Trek Tent", "Alojamiento en el trek: Tent SGL"],
     ["W-Trek Express", "Dormitory - Hostel", "Alojamiento en el trek: Refugio Dorm a compartir"],
   ])("%s con %s → %s", (nombre, habitacion, esperado) => {
     expect(renglonTrek(pedidoDelTrek(nombre, habitacion).cuerpo)).toEqual([esperado]);

@@ -74,10 +74,10 @@ describe("armarPedidos — el renglón de habitación del alojamiento (fila 1)",
     expect(renglonHabitacion(pedidoDelHotel(armar("Dormitory - Hostel")).cuerpo)).toEqual(["Habitación: dorm compartido, con desayuno"]);
   });
 
-  it("sin habitación: Standard con desayuno (tipo a confirmar) y un aviso para completarla", () => {
+  it("sin habitación (2 pax, M3-21): DBL Standard con desayuno y un aviso para revisarlo con el vendedor", () => {
     const p = pedidoDelHotel(armar(null));
-    expect(renglonHabitacion(p.cuerpo)).toEqual(["Habitación: Standard con desayuno (tipo a confirmar)"]);
-    expect(p.avisos).toContain("Falta el tipo de habitación de El Pueblito Iguazu: completalo antes de enviar.");
+    expect(renglonHabitacion(p.cuerpo)).toEqual(["Habitación: DBL Standard con desayuno"]);
+    expect(p.avisos).toContain("La reserva no dice el tipo de habitación: va DBL por 2 pax. Revisalo con el vendedor.");
   });
 
   it("con habitación no hay aviso de habitación", () => {
