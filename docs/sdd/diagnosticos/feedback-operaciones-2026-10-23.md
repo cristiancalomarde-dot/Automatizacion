@@ -94,3 +94,7 @@ Pendientes (propuesta):
   (ej. 2 SGLs); hay que revisarlo con el vendedor (aviso).
 - **Tayka de SPAP05 (Journaway):** está bien "Habitación: DBL/SGL Standard con desayuno", con la misma regla por pax.
 - → Pieza M3-21 (después de M3-20): habitación por pax en hoteles sin tipo + carpa del W Trek por pax.
+- **Corrección del owner (2026-10-23):** "Hostel" sin aclarar dorm/DBL/SGL → **a confirmar**. En el W Trek, **1 pax
+  NO se asume Tent SGL** (es mucho más caro que Shared Dorm): solo Tent SGL si la reserva lo especifica para el trek;
+  si no, a confirmar. 2 pax con carpa sin cantidad → Tent DBL. Ojo: M3-19 hoy da Tent SGL para "Single Room - Hotel 3*"
+  (single sin mencionar el trek) → pasa a "a confirmar" en M3-21.
