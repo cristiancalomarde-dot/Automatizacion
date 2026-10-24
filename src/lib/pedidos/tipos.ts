@@ -102,6 +102,25 @@ export interface PuntoDeEncuentro {
 }
 
 /**
+ * Una fila de `data/buses-el-chalten.csv` (M3-20, owner 2026-10-23): el servicio `orden` del paquete
+ * `codigo` es el bus regular aeropuerto FTE → El Chaltén (`ida`) o El Chaltén → El Calafate
+ * (`vuelta`). Sale con `renglon` (sin él, el nombre del catálogo), su `horario` y, si hay `dia`,
+ * ese día del paquete. La ida busca el vuelo que llega a `aeropuerto`; si llega después de
+ * `vueloDespuesDe`, el borrador lleva el `aviso` (interno, no va al proveedor).
+ */
+export interface BusElChalten {
+  codigo: string;
+  orden: number;
+  tramo: "ida" | "vuelta";
+  dia: number | null;
+  aeropuerto: string | null;
+  renglon: string | null;
+  horario: string;
+  vueloDespuesDe: string | null;
+  aviso: string | null;
+}
+
+/**
  * Una fila de `data/excursiones-con-entrada.csv`: la excursión (por código de producto
  * o por una parte del nombre) que en las reservas de Journaway se pide con entradas.
  * "revisar" no se aplica hasta que el owner la pase a "si".
@@ -163,6 +182,8 @@ export interface CatalogoParaPedidos {
   categoriasTour?: readonly CategoriaTour[];
   /** Las excursiones sin pick up, con su punto de encuentro (M3-15; sin la lista, todas con pick up). */
   puntosDeEncuentro?: readonly PuntoDeEncuentro[];
+  /** Los buses de El Chaltén (M3-20, data/buses-el-chalten.csv; sin la lista, como antes). */
+  busesElChalten?: readonly BusElChalten[];
 }
 
 /** La plantilla del mail (`data/plantillas/pedido-proveedor.md`), ya separada en sus partes. */

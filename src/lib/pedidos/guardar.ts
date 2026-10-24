@@ -18,12 +18,13 @@ import {
   cargarHostelSegunHabitacion,
   cargarOpcionesPasajero,
   cargarProveedoresFichaCompleta,
+  cargarBusesElChalten,
   cargarPuntosDeEncuentro,
   cargarReservaParaPedidos,
 } from "./cargar";
 import { cargarPlantilla } from "./plantilla";
 import type { CategoriaTour } from "@/lib/importador-tours/datos";
-import type { DiaDeServicio, ExcursionConEntrada, HostelSegunHabitacion, OpcionDelPasajero, ProveedorFichaCompleta, PuntoDeEncuentro, PedidoArmado, Plantilla, ResultadoArmado, TareaArmada, TipoTarea } from "./tipos";
+import type { BusElChalten, DiaDeServicio, ExcursionConEntrada, HostelSegunHabitacion, OpcionDelPasajero, ProveedorFichaCompleta, PuntoDeEncuentro, PedidoArmado, Plantilla, ResultadoArmado, TareaArmada, TipoTarea } from "./tipos";
 
 export interface ConteoGuardado {
   insertados: number;
@@ -120,6 +121,8 @@ export interface OpcionesArmado {
   categoriasTour?: readonly CategoriaTour[];
   /** M3-15: los puntos de encuentro (por defecto, los de data/puntos-de-encuentro.csv). */
   puntosDeEncuentro?: readonly PuntoDeEncuentro[];
+  /** M3-20: los buses de El Chaltén (por defecto, los de data/buses-el-chalten.csv). */
+  busesElChalten?: readonly BusElChalten[];
 }
 
 /** Lee la reserva y el catálogo, arma los borradores y los guarda. Una reserva que no está recibida no guarda nada. */
@@ -141,6 +144,7 @@ export async function armarYGuardarPedidos(cliente: SupabaseClient, reservaId: s
     opciones.opcionesPasajero ?? cargarOpcionesPasajero(),
     opciones.categoriasTour ?? cargarCategoriasTour(),
     opciones.puntosDeEncuentro ?? cargarPuntosDeEncuentro(),
+    opciones.busesElChalten ?? cargarBusesElChalten(),
   );
   const armado = armarPedidos(reserva, catalogo, plantilla);
   if (!armado.ok) return armado;

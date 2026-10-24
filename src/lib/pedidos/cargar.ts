@@ -15,6 +15,7 @@ import type { EstadoReserva, HotelDeLaAgencia, TipoComponenteReserva } from "@/l
 import { leerCsv } from "@/lib/importador-productos/csv";
 import { parsearCategoriasTour, type CategoriaTour } from "@/lib/importador-tours/datos";
 import type {
+  BusElChalten,
   CatalogoParaPedidos,
   DiaDeServicio,
   ExcursionConEntrada,
@@ -35,6 +36,7 @@ export const ARCHIVO_HOSTEL_SEGUN_HABITACION = join("data", "hostel-segun-habita
 export const ARCHIVO_OPCIONES_PASAJERO = join("data", "opciones-pasajero.csv");
 export const ARCHIVO_CATEGORIAS_TOUR = join("data", "categorias-tour.csv");
 export const ARCHIVO_PUNTOS_DE_ENCUENTRO = join("data", "puntos-de-encuentro.csv");
+export const ARCHIVO_BUSES_EL_CHALTEN = join("data", "buses-el-chalten.csv");
 
 /* eslint-disable @typescript-eslint/no-explicit-any -- filas crudas de PostgREST, se tipan al mapear */
 
@@ -252,6 +254,39 @@ export function cargarPuntosDeEncuentro(raiz: string = process.cwd()): PuntoDeEn
 }
 
 /**
+ * `data/buses-el-chalten.csv`: codigo,orden,tramo,dia,aeropuerto,renglon,horario,vuelo_despues_de,aviso,nota
+ * (M3-20, owner 2026-10-23). El bus regular aeropuerto FTE → El Chaltén (ida) y El Chaltén → El
+ * Calafate (vuelta) de ese servicio del paquete, con su horario y la hora límite del vuelo.
+ */
+export function leerBusesElChalten(contenido: string): BusElChalten[] {
+  const cabecera = contenido.replace(/^﻿/, "").split(/\r?\n/)[0]?.trim() ?? "";
+  if (!/^codigo,orden,tramo,dia,aeropuerto,renglon,horario,vuelo_despues_de,aviso\b/.test(cabecera)) {
+    throw new Error(`${ARCHIVO_BUSES_EL_CHALTEN}: la primera fila tiene que ser "codigo,orden,tramo,dia,aeropuerto,renglon,horario,vuelo_despues_de,aviso,nota".`);
+  }
+  const opcional = (x: string | undefined) => x?.trim() || null;
+  return leerCsv(contenido).map((f, i) => {
+    const codigo = f.codigo?.trim();
+    const orden = Number(f.orden?.trim() || "x");
+    const tramo = f.tramo?.trim();
+    const dia = f.dia?.trim() ? Number(f.dia.trim()) : null;
+    const horario = f.horario?.trim();
+    const vueloDespuesDe = opcional(f.vuelo_despues_de);
+    const diaValido = dia === null || (Number.isInteger(dia) && dia > 0);
+    const horaValida = !vueloDespuesDe || /^\d{1,2}:\d{2}$/.test(vueloDespuesDe);
+    if (!codigo || !Number.isInteger(orden) || (tramo !== "ida" && tramo !== "vuelta") || !horario || !diaValido || !horaValida) {
+      throw new Error(
+        `${ARCHIVO_BUSES_EL_CHALTEN}, fila ${i + 2}: hace falta el código, el orden (un número), el tramo (ida o vuelta) y el horario; el día va como número y la hora límite como 17:00.`,
+      );
+    }
+    return { codigo, orden, tramo, dia, aeropuerto: opcional(f.aeropuerto)?.toUpperCase() ?? null, renglon: opcional(f.renglon), horario, vueloDespuesDe, aviso: opcional(f.aviso) };
+  });
+}
+
+export function cargarBusesElChalten(raiz: string = process.cwd()): BusElChalten[] {
+  return leerBusesElChalten(readFileSync(join(raiz, ARCHIVO_BUSES_EL_CHALTEN), "utf-8"));
+}
+
+/**
  * `data/categorias-tour.csv`: tour,categoria_tour,componente,categoria_paquete,nota (M1-05; al armar,
  * M3-14). La misma lectura que el importador de tours (categorías normalizadas).
  */
@@ -297,6 +332,7 @@ export async function cargarCatalogoParaPedidos(
   opcionesPasajero: readonly OpcionDelPasajero[] = [],
   categoriasTour: readonly CategoriaTour[] = [],
   puntosDeEncuentro: readonly PuntoDeEncuentro[] = [],
+  busesElChalten: readonly BusElChalten[] = [],
 ): Promise<CatalogoParaPedidos> {
   const ids = [...new Set([reserva.productoId, ...reserva.otrosProductos, ...reserva.partes.map((p) => p.productoId)].filter((x): x is string => !!x))];
   const detalles = new Map<string, DetalleProducto>(await Promise.all(ids.map(async (id) => [id, await cargarProducto(cliente, id)] as const)));
@@ -311,5 +347,5 @@ export async function cargarCatalogoParaPedidos(
   // M3-13: las opciones del pasajero de estos paquetes (sueltos o dentro de un tour), con su proveedor.
   const codigos = new Set([...detalles.values()].flatMap((d) => [d.codigo, ...d.componentes.map((c) => c.producto?.codigo ?? "")]));
   const opciones = opcionesPasajero.length ? await proveedoresDeOpciones(cliente, opcionesPasajero, codigos) : [];
-  return { detalles, proveedores, dias, entradas, fichaCompleta, hostelSegunHabitacion, opcionesPasajero: opciones, categoriasTour, puntosDeEncuentro };
+  return { detalles, proveedores, dias, entradas, fichaCompleta, hostelSegunHabitacion, opcionesPasajero: opciones, categoriasTour, puntosDeEncuentro, busesElChalten };
 }

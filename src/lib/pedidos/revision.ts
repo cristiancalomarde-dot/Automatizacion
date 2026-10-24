@@ -25,6 +25,7 @@ import {
   cargarHostelSegunHabitacion,
   cargarOpcionesPasajero,
   cargarProveedoresFichaCompleta,
+  cargarBusesElChalten,
   cargarPuntosDeEncuentro,
   cargarReservaParaPedidos,
 } from "./cargar";
@@ -32,7 +33,7 @@ import { cargarPedidos, guardarPedidosArmados, type PedidoGuardado, type TareaGu
 import { avisosDeLaPantalla, loQuePidioLaAgencia, validarEdicion, type EdicionPedido, type LoQuePidio } from "./pantalla";
 import { cargarPlantilla } from "./plantilla";
 import type { CategoriaTour } from "@/lib/importador-tours/datos";
-import type { DiaDeServicio, ExcursionConEntrada, HostelSegunHabitacion, OpcionDelPasajero, ProveedorFichaCompleta, PuntoDeEncuentro, Plantilla } from "./tipos";
+import type { BusElChalten, DiaDeServicio, ExcursionConEntrada, HostelSegunHabitacion, OpcionDelPasajero, ProveedorFichaCompleta, PuntoDeEncuentro, Plantilla } from "./tipos";
 import { enviarPedidosAprobados, type DependenciasEnvio, type PedidoDeEnvio, type ResultadoEnvio } from "./envio/enviar";
 
 type Rechazo = { ok: false; error: string; sinSesion?: true };
@@ -82,6 +83,8 @@ export interface OpcionesPreparar {
   categoriasTour?: readonly CategoriaTour[];
   /** M3-15: los puntos de encuentro (por defecto, los de data/puntos-de-encuentro.csv). */
   puntosDeEncuentro?: readonly PuntoDeEncuentro[];
+  /** M3-20: los buses de El Chaltén (por defecto, los de data/buses-el-chalten.csv). */
+  busesElChalten?: readonly BusElChalten[];
 }
 
 /**
@@ -110,6 +113,7 @@ export async function prepararPedidos(cliente: SupabaseClient, reservaId: string
     opciones.opcionesPasajero ?? cargarOpcionesPasajero(),
     opciones.categoriasTour ?? cargarCategoriasTour(),
     opciones.puntosDeEncuentro ?? cargarPuntosDeEncuentro(),
+    opciones.busesElChalten ?? cargarBusesElChalten(),
   );
   const armado = armarPedidos(reserva, catalogo, plantilla);
   if (!armado.ok) return armado;

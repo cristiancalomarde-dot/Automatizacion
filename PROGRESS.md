@@ -3,6 +3,8 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
 
 # Dónde retomar
 
+- **2026-10-23 (noche): M3-20 publicada** (buses de El Chaltén: bus regular aeropuerto FTE → terminal con horario según el vuelo, round trip de AR34 en dos renglones, vuelta 8:00 am, aviso interno si el vuelo llega después de las 17 hs; reglas en `data/buses-el-chalten.csv`). Vuelta de AR34 = día 4 (8 mar en DK1594177, no el 10 que decía el feedback): preguntado al owner. Siguen: M3-21 (habitación según los pax + carpa del W Trek, reglas en el feedback) y Factoria aparte.
+
 - **2026-10-23 (noche): M3-19 publicada** (W Trek: "Alojamiento en el trek: Tent DBL / Tent SGL / Refugio Dorm a compartir", o a confirmar con aviso). Preguntado al owner: "Dormitory - Hostel and W-Trek Tent" (carpa sin decir para cuántos) hoy sale a confirmar. Siguen: buses El Chaltén, Factoria aparte.
 
 - **2026-10-23 (noche): M3-18 publicada** ("Habitación: DBL/SGL/TWIN/TPL Standard con desayuno", dorm "dorm compartido, con desayuno", sin habitación "Standard con desayuno (tipo a confirmar)" + aviso). Preguntado al owner: habitación que solo dice el nivel ("Budget Hotel, con desayuno") y los Tayka de SPAP05 (Journaway) con el renglón nuevo. Siguen: W Trek tipo de alojamiento, buses El Chaltén, Factoria aparte.

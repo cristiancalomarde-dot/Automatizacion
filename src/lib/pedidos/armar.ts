@@ -53,6 +53,7 @@ import {
   tipoDeHabitacion,
 } from "./formato";
 import type {
+  BusElChalten,
   CatalogoParaPedidos,
   DiaDeServicio,
   OpcionDelPasajero,
@@ -579,8 +580,13 @@ class Armado {
       }
       case "bus":
         return [this.bus(b, s, nombre)];
-      default:
-        return [this.otro(b, nombre, desde, hasta)];
+      default: {
+        // M3-20: el round trip de AR34 (data/buses-el-chalten.csv) sale en dos renglones, ida y vuelta.
+        const buses = this.busesElChalten(b, s);
+        return buses.length
+          ? buses.map((r) => this.busElChalten(b, nombre, r, r.tramo === "ida" ? desde : hasta))
+          : [this.otro(b, nombre, desde, hasta)];
+      }
     }
   }
 
@@ -822,6 +828,9 @@ class Armado {
       renglones.push(`Fecha: ${fecha ? fechaCorta(fecha) : "a confirmar"}`);
       return { renglones, fecha, resumen: fecha ? fechaCorta(fecha) : "", queParaTarea: `${titulo.toLowerCase()} ${nombre}`, datosPax: false, avisos: [], pendientes: [] };
     }
+    // M3-20: el "Transfer El Calafate Airport to El Chalten" de OD033 no es traslado: es el bus regular.
+    const bus = this.busesElChalten(b, s).find((r) => r.tramo === (lado === "in" ? "ida" : "vuelta"));
+    if (bus) return this.busElChalten(b, nombre, bus, fecha);
     const t = this.traslado(lado, nombre, fecha, codigos, iguazu);
     renglones.push(`Fecha: ${t.fecha ? fechaCorta(t.fecha) : "a confirmar"}`, t.dato);
     if (b.pickUp && lado === "in") renglones.push(`Destino: ${b.pickUp}`);
@@ -844,16 +853,52 @@ class Armado {
       const hora = lado === "in" ? vuelo.hora_llegada : vuelo.hora_salida;
       const dia = (lado === "in" ? vuelo.fecha_llegada : vuelo.fecha_salida) ?? fecha;
       const dato = `Vuelo: ${vuelo.numero}${aeropuerto ? ` (${aeropuerto})` : ""} ${lado === "in" ? "llegada" : "salida"}${hora ? ` ${hora} hs` : ""}`;
-      return { dato, fecha: dia, pendientes: [] as string[] };
+      return { dato, fecha: dia, pendientes: [] as string[], hora: hora ?? null };
     }
     return iguazu
-      ? { dato: "Bus o vuelo pendiente", fecha, pendientes: [PENDIENTE.busOVuelo] }
-      : { dato: "Vuelo pendiente", fecha, pendientes: [PENDIENTE.vuelo] };
+      ? { dato: "Bus o vuelo pendiente", fecha, pendientes: [PENDIENTE.busOVuelo], hora: null }
+      : { dato: "Vuelo pendiente", fecha, pendientes: [PENDIENTE.vuelo], hora: null };
+  }
+
+  /** Las reglas de `data/buses-el-chalten.csv` (M3-20) de ese servicio del paquete, ida primero. */
+  private busesElChalten(b: Bloque, s: Servicio): BusElChalten[] {
+    return (this.catalogo.busesElChalten ?? [])
+      .filter((r) => r.codigo === b.codigo && r.orden === s.orden)
+      .sort((x, y) => (x.tramo === y.tramo ? 0 : x.tramo === "ida" ? -1 : 1));
+  }
+
+  /**
+   * M3-20 (owner, 2026-10-23): el bus regular aeropuerto FTE → El Chaltén (con el vuelo, o el
+   * pendiente) o El Chaltén → El Calafate, con su horario. La fecha es el día de la regla o, sin
+   * él, la del servicio. Si el vuelo llega después de la hora límite, un aviso interno.
+   */
+  private busElChalten(b: Bloque, nombre: string, r: BusElChalten, fechaDelServicio: string | null): Renglones {
+    const base = r.dia && b.inicio ? sumarDias(b.inicio, r.dia - 1) : fechaDelServicio;
+    const titulo = r.renglon ?? `Bus: ${nombre}`;
+    const que = r.renglon ?? nombre;
+    const conHorario = (fecha: string | null) => `Fecha: ${fecha ? fechaCorta(fecha) : "a confirmar"} · Horario: ${r.horario}`;
+    if (r.tramo === "vuelta") {
+      return { renglones: [titulo, conHorario(base)], fecha: base, resumen: base ? `${fechaCorta(base)} · ${r.horario}` : "", queParaTarea: que, datosPax: false, avisos: [], pendientes: [] };
+    }
+    const t = this.traslado("in", nombre, base, r.aeropuerto ? [r.aeropuerto] : [], false);
+    const tarde = !!r.aviso && !!r.vueloDespuesDe && !!t.hora && minutosDelDia(t.hora) > minutosDelDia(r.vueloDespuesDe);
+    return {
+      renglones: [titulo, conHorario(t.fecha), t.dato],
+      fecha: t.fecha,
+      resumen: `${t.fecha ? fechaCorta(t.fecha) : "fecha a confirmar"} · ${t.dato}`,
+      queParaTarea: que,
+      datosPax: false,
+      avisos: tarde ? [r.aviso!] : [],
+      pendientes: t.pendientes,
+    };
   }
 
   private bus(b: Bloque, s: Servicio, nombre: string): Renglones {
     const dia = (s.descripcion ?? "").match(/d[ií]a (\d+) del (tour|overland)/i);
     const fecha = dia && b.inicio ? sumarDias(b.inicio, Number(dia[1]) - 1) : b.fin;
+    // M3-20: la vuelta El Chaltén → El Calafate (data/buses-el-chalten.csv) lleva su horario.
+    const regla = this.busesElChalten(b, s)[0];
+    if (regla) return this.busElChalten(b, nombre, regla, fecha);
     const nocturno = /nocturno|overnight|night bus/i.test(s.descripcion ?? "");
     const renglones = [`Bus: ${nombre}`, `Fecha: ${fecha ? fechaCorta(fecha) : "a confirmar"}${nocturno ? " (nocturno)" : ""}`];
     return { renglones, fecha, resumen: fecha ? fechaCorta(fecha) : "", queParaTarea: nombre, datosPax: false, avisos: [], pendientes: [] };
@@ -915,6 +960,12 @@ interface Renglones {
   avisos: string[];
   pendientes: string[];
   tour?: TourDeFicha;
+}
+
+/** "18:30" (o "18:30:00") → los minutos desde la medianoche; NaN si no es una hora. */
+function minutosDelDia(hora: string): number {
+  const m = hora.match(/(\d{1,2}):(\d{2})/);
+  return m ? Number(m[1]) * 60 + Number(m[2]) : NaN;
 }
 
 /** El vuelo que llega (o sale) de uno de esos aeropuertos, el del día del traslado primero. */
