@@ -514,7 +514,8 @@ class Armado {
   }
 
   /** Un servicio elegido: va a un pedido, a una tarea o a WhatsApp. */
-  private servicio(b: Bloque, s: Servicio, avisos: string[], nombreElegido?: string): void {
+  private servicio(b: Bloque, delCatalogo: Servicio, avisosDelServicio: string[], nombreElegido?: string): void {
+    const { s, avisos } = this.seLePideA(b, delCatalogo, avisosDelServicio);
     const nombre = nombreElegido ?? this.nombre(s);
     const tramos = s.tramosNoches?.length ? s.tramosNoches : [null];
     for (const tramo of tramos) {
@@ -523,6 +524,30 @@ class Armado {
       const armados = this.renglones(b, s, nombre, desde, hasta);
       for (const a of armados) this.destino(b, s, nombre, a, avisos);
     }
+  }
+
+  /**
+   * M3-22 (owner, 2026-10-23): un alojamiento con regla en `data/alojamiento-se-pide-a.csv` (Factoria en
+   * Puerto Natales) se le pide al proveedor de la regla, no al Booking Supplier del Excel (Vértice). Si
+   * ese proveedor no está en el directorio, queda como en el catálogo, con un aviso.
+   */
+  private seLePideA(b: Bloque, s: Servicio, avisos: string[]): { s: Servicio; avisos: string[] } {
+    if (s.tipo !== "alojamiento" || !b.destino) return { s, avisos };
+    const hotel = normalizarTexto(s.serviceProviderNombre ?? queEs(s));
+    const regla = (this.catalogo.alojamientoSePideA ?? []).find((r) => r.destino === b.destino && normalizarTexto(r.alojamiento) === hotel);
+    if (!regla) return { s, avisos };
+    const proveedor = regla.proveedorDelDirectorio;
+    if (!proveedor) {
+      const hoy = s.bookingSupplier?.nombre ?? s.bookingSupplierNombre ?? "el proveedor del catálogo";
+      return {
+        s,
+        avisos: [
+          ...avisos,
+          `"${regla.proveedor}" no está en el directorio de proveedores: el pedido de ${regla.alojamiento} sale a ${hoy}, como en el catálogo. Revisalo antes de enviar.`,
+        ],
+      };
+    }
+    return { s: { ...s, bookingSupplier: proveedor, bookingSupplierNombre: proveedor.nombre }, avisos };
   }
 
   /** A quién va: mail, WhatsApp, a mano o sin proveedor. */

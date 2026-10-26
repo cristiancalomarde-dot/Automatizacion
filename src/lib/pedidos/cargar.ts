@@ -15,6 +15,7 @@ import type { EstadoReserva, HotelDeLaAgencia, TipoComponenteReserva } from "@/l
 import { leerCsv } from "@/lib/importador-productos/csv";
 import { parsearCategoriasTour, type CategoriaTour } from "@/lib/importador-tours/datos";
 import type {
+  AlojamientoSePideA,
   BusElChalten,
   CatalogoParaPedidos,
   DiaDeServicio,
@@ -37,6 +38,7 @@ export const ARCHIVO_OPCIONES_PASAJERO = join("data", "opciones-pasajero.csv");
 export const ARCHIVO_CATEGORIAS_TOUR = join("data", "categorias-tour.csv");
 export const ARCHIVO_PUNTOS_DE_ENCUENTRO = join("data", "puntos-de-encuentro.csv");
 export const ARCHIVO_BUSES_EL_CHALTEN = join("data", "buses-el-chalten.csv");
+export const ARCHIVO_ALOJAMIENTO_SE_PIDE_A = join("data", "alojamiento-se-pide-a.csv");
 
 /* eslint-disable @typescript-eslint/no-explicit-any -- filas crudas de PostgREST, se tipan al mapear */
 
@@ -200,6 +202,30 @@ export function cargarHostelSegunHabitacion(raiz: string = process.cwd()): Hoste
 }
 
 /**
+ * `data/alojamiento-se-pide-a.csv`: destino,alojamiento,proveedor,nota (M3-22, owner 2026-10-23). El
+ * alojamiento (su nombre en el catálogo) de ese destino se le pide al proveedor (su nombre en el directorio).
+ */
+export function leerAlojamientoSePideA(contenido: string): AlojamientoSePideA[] {
+  const cabecera = contenido.replace(/^﻿/, "").split(/\r?\n/)[0]?.trim() ?? "";
+  if (!/^destino,alojamiento,proveedor\b/.test(cabecera)) {
+    throw new Error(`${ARCHIVO_ALOJAMIENTO_SE_PIDE_A}: la primera fila tiene que ser "destino,alojamiento,proveedor,nota".`);
+  }
+  return leerCsv(contenido).map((f, i) => {
+    const destino = f.destino?.trim().toUpperCase();
+    const alojamiento = f.alojamiento?.trim();
+    const proveedor = f.proveedor?.trim();
+    if (!destino || !alojamiento || !proveedor) {
+      throw new Error(`${ARCHIVO_ALOJAMIENTO_SE_PIDE_A}, fila ${i + 2}: hace falta el destino, el alojamiento y el proveedor.`);
+    }
+    return { destino, alojamiento, proveedor };
+  });
+}
+
+export function cargarAlojamientoSePideA(raiz: string = process.cwd()): AlojamientoSePideA[] {
+  return leerAlojamientoSePideA(readFileSync(join(raiz, ARCHIVO_ALOJAMIENTO_SE_PIDE_A), "utf-8"));
+}
+
+/**
  * `data/opciones-pasajero.csv`: codigo,orden,eleccion,accion,servicio,proveedor,nota (M3-13, owner
  * 2026-10-22). `accion` es "elegir", "renombrar" o "agregar"; "agregar" lleva el proveedor (su
  * nombre en el directorio).
@@ -303,10 +329,26 @@ export function conProveedores(reglas: readonly OpcionDelPasajero[], proveedores
   );
 }
 
+/** M3-22: las reglas de alojamiento con su proveedor del directorio (por nombre, sin mayúsculas ni acentos); null si no está. */
+export function conProveedorDelAlojamiento(reglas: readonly AlojamientoSePideA[], proveedores: readonly ProveedorResumen[]): AlojamientoSePideA[] {
+  return reglas.map((r) => ({ ...r, proveedorDelDirectorio: proveedores.find((p) => normalizarTexto(p.nombre) === normalizarTexto(r.proveedor)) ?? null }));
+}
+
 /** Los proveedores de las reglas que tocan a estos productos, del directorio (una consulta por nombre). */
 async function proveedoresDeOpciones(cliente: SupabaseClient, reglas: readonly OpcionDelPasajero[], codigos: Set<string>): Promise<OpcionDelPasajero[]> {
   const propias = reglas.filter((r) => codigos.has(r.codigo));
   const nombres = [...new Set(propias.map((r) => r.proveedor).filter((x): x is string => !!x))];
+  return conProveedores(propias, await proveedoresPorNombre(cliente, nombres));
+}
+
+/** M3-22: las reglas de alojamiento de los destinos de estos productos, con su proveedor del directorio. */
+async function proveedoresDeAlojamientos(cliente: SupabaseClient, reglas: readonly AlojamientoSePideA[], destinos: Set<string>): Promise<AlojamientoSePideA[]> {
+  const propias = reglas.filter((r) => destinos.has(r.destino));
+  return conProveedorDelAlojamiento(propias, await proveedoresPorNombre(cliente, [...new Set(propias.map((r) => r.proveedor))]));
+}
+
+/** Los proveedores del directorio con esos nombres (una consulta por nombre). */
+async function proveedoresPorNombre(cliente: SupabaseClient, nombres: readonly string[]): Promise<ProveedorResumen[]> {
   const encontrados: ProveedorResumen[] = [];
   for (const nombre of nombres) {
     // Sin comodines: el nombre exacto, sin mayúsculas.
@@ -316,7 +358,7 @@ async function proveedoresDeOpciones(cliente: SupabaseClient, reglas: readonly O
       encontrados.push({ id: f.id, nombre: f.nombre, mails: f.mails ?? [], canal: (f.canal ?? null) as Canal, telefono: f.telefono ?? null });
     }
   }
-  return conProveedores(propias, encontrados);
+  return encontrados;
 }
 
 /**
@@ -335,6 +377,7 @@ export async function cargarCatalogoParaPedidos(
   categoriasTour: readonly CategoriaTour[] = [],
   puntosDeEncuentro: readonly PuntoDeEncuentro[] = [],
   busesElChalten: readonly BusElChalten[] = [],
+  alojamientoSePideA: readonly AlojamientoSePideA[] = [],
 ): Promise<CatalogoParaPedidos> {
   const ids = [...new Set([reserva.productoId, ...reserva.otrosProductos, ...reserva.partes.map((p) => p.productoId)].filter((x): x is string => !!x))];
   const detalles = new Map<string, DetalleProducto>(await Promise.all(ids.map(async (id) => [id, await cargarProducto(cliente, id)] as const)));
@@ -349,5 +392,20 @@ export async function cargarCatalogoParaPedidos(
   // M3-13: las opciones del pasajero de estos paquetes (sueltos o dentro de un tour), con su proveedor.
   const codigos = new Set([...detalles.values()].flatMap((d) => [d.codigo, ...d.componentes.map((c) => c.producto?.codigo ?? "")]));
   const opciones = opcionesPasajero.length ? await proveedoresDeOpciones(cliente, opcionesPasajero, codigos) : [];
-  return { detalles, proveedores, dias, entradas, fichaCompleta, hostelSegunHabitacion, opcionesPasajero: opciones, categoriasTour, puntosDeEncuentro, busesElChalten };
+  // M3-22: a quién se le pide el alojamiento (Factoria a Factoria), solo de los destinos de estos productos.
+  const destinos = new Set([...detalles.values()].flatMap((d) => [d.destino ?? "", ...d.componentes.map((c) => c.producto?.destino ?? "")]).filter(Boolean));
+  const alojamientos = alojamientoSePideA.length ? await proveedoresDeAlojamientos(cliente, alojamientoSePideA, destinos) : [];
+  return {
+    detalles,
+    proveedores,
+    dias,
+    entradas,
+    fichaCompleta,
+    hostelSegunHabitacion,
+    opcionesPasajero: opciones,
+    categoriasTour,
+    puntosDeEncuentro,
+    busesElChalten,
+    alojamientoSePideA: alojamientos,
+  };
 }

@@ -79,6 +79,10 @@ const PASAJEROS = [
     for (const s of detalle.servicios.filter((x) => x.tipo === "alojamiento" && x.nivel === "Hostel")) {
       mailDe.set(s.serviceProviderNombre ?? "", [...new Set((s.bookingSupplier?.mails ?? []).map((m) => m.trim().toLowerCase()))]);
     }
+    // M3-22: Factoria se le pide a Factoria (data/alojamiento-se-pide-a.csv), con su mail del directorio.
+    const factoria = await admin.from("proveedor").select("mails").eq("nombre", "Factoria (hostel de Vertice)").single();
+    if (factoria.error) throw new Error(factoria.error.message);
+    mailDe.set("Factoria", [...new Set(((factoria.data.mails ?? []) as string[]).map((m) => m.trim().toLowerCase()))]);
   });
 
   afterAll(async () => {

@@ -169,6 +169,18 @@ export interface OpcionDelPasajero {
   proveedorDelDirectorio?: ProveedorResumen | null;
 }
 
+/**
+ * Una fila de `data/alojamiento-se-pide-a.csv` (M3-22, owner 2026-10-23): el alojamiento `alojamiento`
+ * del destino se le pide a `proveedor` (su nombre en el directorio), no al Booking Supplier del Excel.
+ */
+export interface AlojamientoSePideA {
+  destino: string;
+  alojamiento: string;
+  proveedor: string;
+  /** El proveedor del directorio (lo completa `cargar.ts`); null si no está. */
+  proveedorDelDirectorio?: ProveedorResumen | null;
+}
+
 export interface CatalogoParaPedidos {
   /** El detalle (`cargarProducto`) del producto de la reserva, de los otros productos y de cada parte. */
   detalles: ReadonlyMap<string, DetalleProducto>;
@@ -181,6 +193,8 @@ export interface CatalogoParaPedidos {
   fichaCompleta?: readonly ProveedorFichaCompleta[];
   /** El hostel según la habitación (M3-11; sin la lista, el orden del Excel). */
   hostelSegunHabitacion?: readonly HostelSegunHabitacion[];
+  /** A quién se le pide un alojamiento (M3-22, Factoria a Factoria; sin la lista, al del Excel). */
+  alojamientoSePideA?: readonly AlojamientoSePideA[];
   /** Las opciones que elige el pasajero (M3-13; sin la lista, como antes). */
   opcionesPasajero?: readonly OpcionDelPasajero[];
   /** Las categorías tour ↔ paquete (M3-14, data/categorias-tour.csv; sin la lista, la regla general). */
