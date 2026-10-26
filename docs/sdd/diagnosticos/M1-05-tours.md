@@ -1,8 +1,8 @@
 # Los 7 tours compuestos (M1-05)
 
-Armé los tours top-seller con los códigos de RutasenBus y el itinerario día por día de los Word de catálogo (2026-10-22). Leí: RutasenBus2020.xls, Multi Destination Independent Tours 1 Jun 2026 - 31 Dec 2027.docx, Two Destination Tours 1 Jun 2026 - 31 Dec 2027.docx, One Destination Tours 1 Jun 2026 - 31 Dec 2027.docx, Unique Tours 1 Jun 2026 - 31 Dec 2027.docx, Construccion de Paquetes 2019 con 3 y 4 estrellas.xls.
+Armé los tours top-seller con los códigos de RutasenBus y el itinerario día por día de los Word de catálogo (2026-10-26). Leí: RutasenBus2020.xls, Multi Destination Independent Tours 1 Jun 2026 - 31 Dec 2027.docx, Two Destination Tours 1 Jun 2026 - 31 Dec 2027.docx, One Destination Tours 1 Jun 2026 - 31 Dec 2027.docx, Unique Tours 1 Jun 2026 - 31 Dec 2027.docx, Construccion de Paquetes 2019 con 3 y 4 estrellas.xls.
 
-- Armados: **10 de 10**. Para revisar: **0**.
+- Armados: **11 de 11**. Para revisar: **0**.
 - Cada tour guarda su secuencia: cada paquete con sus noches en el tour y el día en que empieza, y cada bus con el día en que sale y si es nocturno. Las fechas reales se calculan cuando llegue la reserva con su fecha de inicio.
 - Transfer: solo la llegada del primer destino y la salida del último. Iguazú conserva los suyos aunque esté en el medio. Dentro de cada tour, los traslados del paquete al que se llega o del que se sale en bus no se piden (M1-08); el detalle está en M1-08-traslados.md.
 
@@ -20,6 +20,7 @@ Armé los tours top-seller con los códigos de RutasenBus y el itinerario día p
 | ARCH33EXP | Patagonia, Trekking Paradise with W-Trek EXPRESS | 10 | armado | OD033 → OD016 → CH11 | 1 | 1 |
 | ARBR23 | From Buenos Aires to RIO | 11 | armado | OD018 → OD010A → OD032 | 2 | 0 |
 | ARUY01 | Argentina and Uruguay, heart of the River Plate | 6 | armado | OD018 → COMPUY03 → OD040 | 1 | 0 |
+| AR10 | Full Argentina Adventure – Route 40 | 20 | armado | OD027 → OD019 → OD024 → OD033 → OD013 → OD022 | 5 | 0 |
 
 ## Secuencia de cada tour
 
@@ -68,7 +69,7 @@ Traslados en este tour (M1-08, detalle en M1-08-traslados.md):
 
 - **OD016** · Transfer FTE Airport - El Calafate Accommodation (Chalten Travel): no se pide — Llega en bus desde El Chaltén.
 - **OD017** · Bus Punta Arenas - Puerto Natales (Kupos): no se pide — Llega a Puerto Natales en bus desde El Calafate (data/traslados-tour.csv).
-- **OD017** · Optiona Transfer PNT Airport - PNT accommodation if requested (Patagonia Planet): no se pide — Llega en bus desde El Calafate.
+- **OD017** · Optional Transfer PNT Airport - PNT accommodation if requested (Patagonia Planet): no se pide — Llega en bus desde El Calafate.
 
 ### ARCH33 · Patagonia, Trekking Paradise with W-Trek (11 noches, 12 días)
 
@@ -233,6 +234,35 @@ Traslados en este tour (M1-08, detalle en M1-08-traslados.md):
 - **COMPUY03** · Bus Regular Montevideo Bus Station - Colonia Bus Station (COT online): se pide como “Bus regular Colonia - Montevideo (terminal de buses Tres Cruces)” — En este tour el bus va al revés: de Colonia a Montevideo (data/traslados-tour.csv).
 - **OD040** · Regular Transfer MVD Airport - hotel / hostel (Turismo Dcom): cambia de sentido: “Transfer regular alojamiento en Montevideo - aeropuerto de Carrasco (MVD)” — En este tour el traslado es de salida, del alojamiento al aeropuerto de Carrasco (data/traslados-tour.csv).
 
+### AR10 · Full Argentina Adventure – Route 40 (20 noches, 21 días)
+
+Empieza en Salta y termina en Ushuaia. Itinerario: Multi Destination Independent Tours 1 Jun 2026 - 31 Dec 2027.docx; códigos: RutasenBus, fila 96.
+
+| Día | Qué | Noches | Transfer / quién lo reserva |
+|---|---|---|---|
+| 1 | **OD027** Salta and Jujuy, Northwest Argentina (Salta) | 4 noches | transfer de llegada |
+| 5 | Bus Salta – Mendoza (nocturno, llega el día 6) | — | lo emite HI Travel (tarea manual) |
+| 6 | **OD019** Mendoza Mountains and Wineries (Mendoza) | 2 noches (1 noche menos que el paquete solo) | sin transfer |
+| 8 | Bus Mendoza – Bariloche (nocturno, llega el día 9) | — | lo emite HI Travel (tarea manual) |
+| 9 | **OD024** Bariloche, Patagonian Lakes (Bariloche) | 3 noches | sin transfer |
+| 12 | Bus Bariloche – El Chaltén (nocturno, llega el día 13) | — | lo emite HI Travel (tarea manual) |
+| 13 | **OD033** El Chalten Starter Package (El Chaltén) | 2 noches (1 noche menos que el paquete solo) | sin transfer |
+| 15 | **OD013** El Calafate & Torres del Paine. Glaciers in Patagonia (El Calafate) | 3 noches (1 noche menos que el paquete solo) | sin transfer |
+| 18 | Bus El Calafate – Río Gallegos (diurno) | — | lo emite HI Travel (tarea manual) |
+| 18 | Bus Río Gallegos – Ushuaia (diurno) | — | lo emite HI Travel (tarea manual) |
+| 18 | **OD022** Ushuaia, end of the World (Ushuaia) | 3 noches | transfer de salida |
+
+- “Bus from El Chalten to Calafate. Standard Service.”: lo trae el paquete OD033 (“Public Bus El Chalten Bus Station - El Calafate Bus Station. Booking Supplier: Chalten Travel”), no se carga aparte.
+
+Traslados en este tour (M1-08, detalle en M1-08-traslados.md):
+
+- **OD027** · Transfer SLA - Accommodation - SLA (La Cienaga): solo la llegada — Sale en bus a Mendoza.
+- **OD019** · Transfers: Remis Mendoza (Remis Mendoza): no se pide — Llega en bus desde Salta y sale en bus a Bariloche.
+- **OD024** · Transfer BRC - Accommodation - BRC (Turaccion): no se pide — Llega en bus desde Mendoza y sale en bus a El Chaltén.
+- **OD033** · Transfer El Calafate Airport to El Chalten (Chalten Travel / Transporte Las Lengas): no se pide — Llega en bus desde Bariloche.
+- **OD013** · Transfer Round Trip (Chalten Travel): no se pide — Llega en bus desde El Chaltén y sale en bus a Ushuaia.
+- **OD022** · Transfer Round Trip: Rumbo Sur (Rumbo Sur): solo la salida — Llega en bus desde El Calafate.
+
 ## Lo que necesito que confirmes
 
 **Buses.** Los buses entre destinos los cargué como pasajes que emite HI Travel (no se le escribe a nadie). Si alguno lo reserva un proveedor, sumalo a `data/tramos-con-proveedor.csv`, como el Uyuni – La Paz de Imperio Inca:
@@ -247,14 +277,7 @@ Traslados en este tour (M1-08, detalle en M1-08-traslados.md):
 - [ ] **ARCH33EXP**: El Calafate – Puerto Natales. En RutasenBus, las columnas sin código son: “W Trek EXP Refugio”, “FTE - PNT”.
 - [ ] **ARBR23**: Buenos Aires – Iguazú (nocturno); Iguazú – Río de Janeiro (nocturno). En RutasenBus, las columnas sin código son: “BUE IGR 1 nt”, “IGU RIO 1 nt”.
 - [ ] **ARUY01**: Ferry Buenos Aires – Colonia del Sacramento. En RutasenBus, las columnas sin código son: “Ferry Bue COL”.
-
-**El Word.** Le faltan encabezados “DAY N:” (el texto está, pero pegado al día anterior). No cambia el armado porque las noches salen del “Included”, pero conviene corregirlo:
-
-- [ ] **AR09**: días 3, 7.
-- [ ] **BRARCH26**: día 11.
-- [ ] **5C01**: día 13.
-- [ ] **ARBR23**: día 3.
-- [ ] **ARUY01**: día 3.
+- [ ] **AR10**: Salta – Mendoza (nocturno); Mendoza – Bariloche (nocturno); Bariloche – El Chaltén (nocturno); El Calafate – Río Gallegos; Río Gallegos – Ushuaia. En RutasenBus, las columnas sin código son: “BUS FTE RGL USH”, “BUS SLA MDZ”, “BUS MDZ BRC”, “BUS BRC CHA FTE”.
 
 ## Anexo: noches de cada paquete vendido solo
 
@@ -289,3 +312,5 @@ Las saqué del Excel de paquetes para controlar las anotaciones “(menos/mas N 
 | AR34 | 5 |
 | OD040 | 2 |
 | COMPUY03 | 1 |
+| OD027 | 4 |
+| OD024 | 3 |

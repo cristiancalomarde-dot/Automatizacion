@@ -1,9 +1,9 @@
 # Carga de los paquetes de los 7 tours (M1-04d)
 
-Cargué en el sistema los paquetes de un destino de los 7 tours desde **Construccion de Paquetes 2019 con 3 y 4 estrellas.xls** (2026-10-22). Cada servicio de cada paquete ya sabe a qué proveedor pedírselo, salvo los de la lista de abajo.
+Cargué en el sistema los paquetes de un destino de los 7 tours desde **Construccion de Paquetes 2019 con 3 y 4 estrellas.xls** (2026-10-26). Cada servicio de cada paquete ya sabe a qué proveedor pedírselo, salvo los de la lista de abajo.
 
-- Paquetes: 22. Servicios (cada opción de hotel o excursión cuenta una vez): 196.
-- Con proveedor y mail: **178**.
+- Paquetes: 24. Servicios (cada opción de hotel o excursión cuenta una vez): 216.
+- Con proveedor y mail: **198**.
 - Por WhatsApp (el pedido lo hace una persona): **10**.
 - Manuales, no se le escribe a nadie (se reservan a mano en el sistema de ellos: Kupos.cl, Buquebus, Transvipp): **5**.
 - Sin resolver: **3**.
@@ -24,7 +24,7 @@ Cargué en el sistema los paquetes de un destino de los 7 tours desde **Construc
 | OD030 | SPA | 6 | 3 | 2 | 1 | 0 | 0 |
 | OD031 | LPB | 4 | 3 | 1 | 0 | 0 | 0 |
 | OD032 | RIO | 9 | 7 | 2 | 0 | 0 | 0 |
-| OD033 | CHA | 12 | 12 | 0 | 0 | 0 | 0 |
+| OD033 | CHA | 13 | 13 | 0 | 0 | 0 | 0 |
 | CH10 | PNT | 9 | 9 | 0 | 0 | 0 | 0 |
 | COMPCH01 | VLP | 5 | 4 | 0 | 1 | 0 | 0 |
 | COMPBO20 | UYU | 1 | 1 | 0 | 0 | 0 | 0 |
@@ -34,6 +34,8 @@ Cargué en el sistema los paquetes de un destino de los 7 tours desde **Construc
 | AR34 | FTE | 19 | 19 | 0 | 0 | 0 | 0 |
 | OD040 | MVD | 5 | 3 | 0 | 0 | 2 | 0 |
 | COMPUY03 | COL | 4 | 3 | 0 | 1 | 0 | 0 |
+| OD027 | SLA | 9 | 9 | 0 | 0 | 0 | 0 |
+| OD024 | BRC | 10 | 10 | 0 | 0 | 0 | 0 |
 
 ## Lo que sigue sin resolver
 
@@ -42,6 +44,10 @@ Estos servicios todavía no saben a quién escribirle. Cuando completes el dato 
 - [ ] **COMPBR10** (fila 2671): O Hostel GRU → «O Hostel GRU». "O Hostel GRU" no está en el directorio ni en las equivalencias de SAO.
 - [ ] **OD040** (fila 1791): Hotel Oxford Montevideo → «Hotel Oxford Montevideo». Sin mail todavía: pedilo a mano. El owner lo agrega con su mail al Excel de proveedores (respuesta del owner, 2026-10-21).
 - [ ] **OD040** (fila 1791): Merit Montevideo → «Merit Hoteles». Merit Montevideo: sin mail todavía, pedilo a mano. El owner lo agrega con su mail al Excel de proveedores (respuesta del owner, 2026-10-21).
+
+## Otros puntos para revisar
+
+- [ ] OD027 (fila 325): no entendí el renglón “Las Marias Tilcara” (no calza con ningún patrón conocido); no lo cargué.
 
 ## Detalle: servicio → nivel → opción → a quién se le pide → contacto
 
@@ -84,7 +90,7 @@ Estos servicios todavía no saben a quién escribirle. Cuando completes el dato 
 |---|---|---|---|---|---|---|---|
 | 731 | alojamiento | Hostel | 1 | Puma Hostel | Puma Hostel | Puma House | info@pumahouse.com |
 | 731 | alojamiento | Hostel | 2 | Last Hope | Last Hope | Last Hope | hostel.last.hope@gmail.com |
-| 731 | alojamiento | Hostel | 3 | Factoria | Vertice | W trek VERTICE | ventas@vertice.travel |
+| 731 | alojamiento | Hostel | 3 | Factoria | Vertice | VERTICE Travel: W Trek Standard con Grey | ventas@vertice.travel |
 | 737 | alojamiento | Hotel 3* | 1 | Big Sur | Big Sur | Hotel big sur | reservas@hotelbigsur.cl |
 | 737 | alojamiento | Hotel 3* | 2 | Loreto Belen | Loreto Belen | LORETO BELEN | reservas@loretobelen.cl |
 | 737 | alojamiento | Hotel 3* | 3 | Darwin | CL Mundo | Cl mundo | gabriela@clmundo.cl, luzmaria@clmundo.cl |
@@ -237,6 +243,7 @@ Estos servicios todavía no saben a quién escribirle. Cuando completes el dato 
 | 1042 | traslado | — | 1 | El Calafate Airport to El Chalten | Chalten Travel | Chalten Travel | agencias@chaltentravel.com |
 | 1042 | traslado | — | 2 | El Calafate Airport to El Chalten | Transporte Las Lengas | Las Lengas | info@lengas.com |
 | 1043 | bus | — | 1 | El Chalten Bus Station - El Calafate Bus Station | Chalten Travel | Chalten Travel | agencias@chaltentravel.com |
+|  | alojamiento | Hotel 4* | 1 | Hotel 4* Destino Sur | Destino Sur | Destino Sur | info@hoteldestinosur.com |
 
 ### CH10 · W Trek Standard Self Guided + Puerto Natales (6 nights)
 
@@ -244,13 +251,13 @@ Estos servicios todavía no saben a quién escribirle. Cuando completes el dato 
 |---|---|---|---|---|---|---|---|
 | 1149 | alojamiento | Hostel | 1 | Puma Hostel | Puma Hostel | Puma House | info@pumahouse.com |
 | 1149 | alojamiento | Hostel | 2 | Last Hope | Last Hope | Last Hope | hostel.last.hope@gmail.com |
-| 1149 | alojamiento | Hostel | 3 | Factoria | Vertice | W trek VERTICE | ventas@vertice.travel |
+| 1149 | alojamiento | Hostel | 3 | Factoria | Vertice | VERTICE Travel: W Trek Standard con Grey | ventas@vertice.travel |
 | 1153 | alojamiento | Hotel 3* | 1 | Big Sur | Big Sur | Hotel big sur | reservas@hotelbigsur.cl |
 | 1153 | alojamiento | Hotel 3* | 2 | Loreto Belen | Loreto Belen | LORETO BELEN | reservas@loretobelen.cl |
 | 1153 | alojamiento | Hotel 3* | 3 | Darwin | CL Mundo | Cl mundo | gabriela@clmundo.cl, luzmaria@clmundo.cl |
 | 1153 | alojamiento | Hotel 3* | 4 | Pristine Patagonia | CL Mundo | Cl mundo | gabriela@clmundo.cl, luzmaria@clmundo.cl |
 | 1153 | alojamiento | Hotel 3* | 5 | Vendaval | Vendaval | Hotel Vendaval | oalarcon@hotelvendaval.com |
-| 1158 | otro | — | 1 | W Trek Standard | Las Torres | W trek LAS TORRES | carmen.munoz@lastorres.com |
+| 1158 | otro | — | 1 | W Trek Standard | Las Torres | LAS TORRES: W Trek Standard y W Trek Express | carmen.munoz@lastorres.com |
 
 ### COMPCH01 · Valparaiso Escapade
 
@@ -283,13 +290,13 @@ Estos servicios todavía no saben a quién escribirle. Cuando completes el dato 
 |---|---|---|---|---|---|---|---|
 | 1305 | alojamiento | Hostel | 1 | Puma Hostel | Puma Hostel | Puma House | info@pumahouse.com |
 | 1305 | alojamiento | Hostel | 2 | Last Hope | Last Hope | Last Hope | hostel.last.hope@gmail.com |
-| 1305 | alojamiento | Hostel | 3 | Factoria | Vertice | W trek VERTICE | ventas@vertice.travel |
+| 1305 | alojamiento | Hostel | 3 | Factoria | Vertice | VERTICE Travel: W Trek Standard con Grey | ventas@vertice.travel |
 | 1309 | alojamiento | Hotel 3* | 1 | Big Sur | Big Sur | Hotel big sur | reservas@hotelbigsur.cl |
 | 1309 | alojamiento | Hotel 3* | 2 | Loreto Belen | Loreto Belen | LORETO BELEN | reservas@loretobelen.cl |
 | 1309 | alojamiento | Hotel 3* | 3 | Darwin | CL Mundo | Cl mundo | gabriela@clmundo.cl, luzmaria@clmundo.cl |
 | 1309 | alojamiento | Hotel 3* | 4 | Pristine Patagonia | CL Mundo | Cl mundo | gabriela@clmundo.cl, luzmaria@clmundo.cl |
 | 1309 | alojamiento | Hotel 3* | 5 | Vendaval | Vendaval | Hotel Vendaval | oalarcon@hotelvendaval.com |
-| 1314 | otro | — | 1 | W Trek Express | Las Torres | W trek LAS TORRES | carmen.munoz@lastorres.com |
+| 1314 | otro | — | 1 | W Trek Express | Las Torres | LAS TORRES: W Trek Standard y W Trek Express | carmen.munoz@lastorres.com |
 
 ### OD014 · El Calafate & El Chalten full day
 
@@ -324,7 +331,7 @@ Estos servicios todavía no saben a quién escribirle. Cuando completes el dato 
 | 226 | alojamiento | Hotel 3* | 1 | Hotel 3* Poincenot | Chalten Travel | Chalten Travel | agencias@chaltentravel.com |
 | 226 | alojamiento | Hotel 3* | 1 | Hotel 3* Rincon del Calafate | Tremun | Rincon del calafate | reservas@rincondelcalafate.com.ar |
 | 226 | alojamiento | Hotel 3* | 2 | Hotel 3 * Sent Calafate | Tremun | Sent | reservas@sentcalafate.com.ar |
-| 231 | alojamiento | Hotel 4* | 1 | Hotel Destino Sur | Chalten Travel | Chalten Travel | agencias@chaltentravel.com |
+| 231 | alojamiento | Hotel 4* | 1 | Hotel Destino Sur | Destino Sur | Destino Sur | info@hoteldestinosur.com |
 | 231 | alojamiento | Hotel 4* | 1 | Hotel 4* Mirador del Lago | Tremun | Mirador del Lago | reservas@miradordellago.com.ar |
 | 231 | alojamiento | Hotel 4* | 2 | Hotel 4* Calafate Parque | Tremun | Calafate Parque | reservas@calafateparquehotel.com.ar |
 | 238 | traslado | — | 1 | El Calafate - FTE Airport | Chalten Travel | Chalten Travel | agencias@chaltentravel.com |
@@ -350,3 +357,32 @@ Estos servicios todavía no saben a quién escribirle. Cuando completes el dato 
 | 1851 | alojamiento | Hostel | 2 | Viajero B&B | Viajero Hostels | Viajero en Colonia. | natalyp@viajerohostels.com, dfarinati@viajerohostels.com |
 | 1855 | alojamiento | Hotel 3* | 1 | Viajero B&B superior Room | Viajero Hostels | Viajero en Colonia. | natalyp@viajerohostels.com, dfarinati@viajerohostels.com |
 | 1864 | bus | — | 1 | Regular Montevideo Bus Station - Colonia Bus Station | COT online | — | manual (no se le escribe) |
+
+### OD027 · Salta and Jujuy, Northwest Argentina
+
+| Fila | Servicio | Nivel | Opción | Hotel / servicio | Se le pide a | Proveedor del directorio | Contacto |
+|---|---|---|---|---|---|---|---|
+| 318 | alojamiento | Hostel | 1 | Trotamundos Salta | Trotamundos Salta | Trotamundos Hostel | trotamundoshostelsalta@gmail.com |
+| 322 | alojamiento | Hotel 3* | 1 | Hotel 3* Inkai | Hotel 3* Inkai | Inkai Hotel | info@hotelinkai.com |
+| 326 | alojamiento | Hotel 4* | 1 | Hotel 4* Brizo | Brizo Salta | Brizo Hotel | reservas.salta@brizohoteles.com |
+| 326 | alojamiento | Hotel 4* | 2 | Ho.tel 4*Design Suites | Design Suites Salta | Design Suites Salta | reservas.sla@gruposolanas.com |
+| 329 | alojamiento | Todos los niveles | 1 | Posta de Purmamarca | Posta de Purmamarca | Ecohotel Posta de Purmamarca | consultas@postadepurmamarca.com.ar |
+| 329 | alojamiento | Todos los niveles | 2 | Casa de Adobe | Casa de Adobe | Casa De Adobe | info@casadeadobe.com.ar |
+| 332 | excursion | — | 1 | Humahuaca | La Cienaga | la Cienaga | florencia@lacienagaturismo.com.ar |
+| 333 | excursion | — | 1 | Salinas y Purmamarca | La Cienaga | la Cienaga | florencia@lacienagaturismo.com.ar |
+| 334 | traslado | — | 1 | SLA - Accommodation - SLA | La Cienaga | la Cienaga | florencia@lacienagaturismo.com.ar |
+
+### OD024 · Bariloche, Patagonian Lakes
+
+| Fila | Servicio | Nivel | Opción | Hotel / servicio | Se le pide a | Proveedor del directorio | Contacto |
+|---|---|---|---|---|---|---|---|
+| 390 | alojamiento | Hostel | 1 | Periko´s | Periko´s | Periko´s youth Hostel | infoperikos@gmail.com, denalibarilochesrl@gmail.com |
+| 390 | alojamiento | Hostel | 2 | Achalay Hostel | Achalay Hostel | Achalay Hostel | info@hostelachalay.com |
+| 396 | alojamiento | Budget Hotel | 1 | Hotel Plaza Bariloche | Grupo Tierra Gaucha | Hotel Concept Bariloche | centralreservas@grupotierragaucha.com.ar |
+| 401 | alojamiento | Hotel 3* | 1 | Hotel 3* Kenton Palace | Kenton | Kenton palace | reservas@kentonpalace.com.ar |
+| 401 | alojamiento | Hotel 3* | 2 | Carlos V | Carlos V | Hotel Carlos V Patagonia | info@carlosvpatagonia.com.ar |
+| 404 | alojamiento | Hotel 4* | 1 | Design Bariloche | Design | Design Suites | reservas.brc@gruposolanas.com |
+| 404 | alojamiento | Hotel 4* | 2 | NH Edelweiss | NH Edelweiss | NH Edelweiss | rsvt.nhedelweiss@nh-hotels.com |
+| 410 | traslado | — | 1 | BRC - Accommodation - BRC | Turaccion | Turaccion | info@turaccion.com.ar |
+| 411 | excursion | — | 1 | Circuito Chico en ingles sin ticket al Campanario | Turaccion | Turaccion | info@turaccion.com.ar |
+| 412 | excursion | — | 1 | Isla victoria y bosque de arrayanes with transfers | Turaccion | Turaccion | info@turaccion.com.ar |

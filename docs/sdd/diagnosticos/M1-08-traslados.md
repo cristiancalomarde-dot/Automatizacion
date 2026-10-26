@@ -1,6 +1,6 @@
 # Los traslados de cada paquete según el tour (M1-08)
 
-Generado el 2026-10-22 por la carga de los tours. Dentro de un tour, entre un paquete y el siguiente se viaja en bus: al paquete al que se llega en bus no se le pide el traslado de llegada, y al que se sale en bus no se le pide el de salida. Un traslado de ida y vuelta queda solo del lado que corresponde. El primer paquete conserva la llegada y el último la salida. Iguazú conserva los suyos. Las excepciones que pediste están en `data/traslados-tour.csv` y le ganan a la regla.
+Generado el 2026-10-26 por la carga de los tours. Dentro de un tour, entre un paquete y el siguiente se viaja en bus: al paquete al que se llega en bus no se le pide el traslado de llegada, y al que se sale en bus no se le pide el de salida. Un traslado de ida y vuelta queda solo del lado que corresponde. El primer paquete conserva la llegada y el último la salida. Iguazú conserva los suyos. Las excepciones que pediste están en `data/traslados-tour.csv` y le ganan a la regla.
 
 El paquete vendido solo sigue con todos sus servicios. Esto vale solo dentro de cada tour.
 
@@ -20,7 +20,7 @@ Sin cambios: cada paquete pide sus traslados como se vende solo.
 
 - **OD016** · Transfer FTE Airport - El Calafate Accommodation (Chalten Travel): no se pide — Llega en bus desde El Chaltén.
 - **OD017** · Bus Punta Arenas - Puerto Natales (Kupos): no se pide — Llega a Puerto Natales en bus desde El Calafate (data/traslados-tour.csv).
-- **OD017** · Optiona Transfer PNT Airport - PNT accommodation if requested (Patagonia Planet): no se pide — Llega en bus desde El Calafate.
+- **OD017** · Optional Transfer PNT Airport - PNT accommodation if requested (Patagonia Planet): no se pide — Llega en bus desde El Calafate.
 
 ## ARCH33 · Patagonia, Trekking Paradise with W-Trek
 
@@ -97,6 +97,20 @@ Sin cambios: cada paquete pide sus traslados como se vende solo.
 **De un solo lado**
 
 - **OD018** · Transfer EZE o AEP - Hotel - EZE o AEP (Greeters): solo la llegada — Sale en ferry a Colonia del Sacramento (data/traslados-tour.csv).
+
+## AR10 · Full Argentina Adventure – Route 40
+
+**Se anulan**
+
+- **OD019** · Transfers: Remis Mendoza (Remis Mendoza): no se pide — Llega en bus desde Salta y sale en bus a Bariloche.
+- **OD024** · Transfer BRC - Accommodation - BRC (Turaccion): no se pide — Llega en bus desde Mendoza y sale en bus a El Chaltén.
+- **OD033** · Transfer El Calafate Airport to El Chalten (Chalten Travel / Transporte Las Lengas): no se pide — Llega en bus desde Bariloche.
+- **OD013** · Transfer Round Trip (Chalten Travel): no se pide — Llega en bus desde El Chaltén y sale en bus a Ushuaia.
+
+**De un solo lado**
+
+- **OD027** · Transfer SLA - Accommodation - SLA (La Cienaga): solo la llegada — Sale en bus a Mendoza.
+- **OD022** · Transfer Round Trip: Rumbo Sur (Rumbo Sur): solo la salida — Llega en bus desde El Calafate.
 
 ## Traslados sin sentido deducido
 
