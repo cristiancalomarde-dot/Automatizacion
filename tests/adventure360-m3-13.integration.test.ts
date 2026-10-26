@@ -101,7 +101,7 @@ const ELECCIONES = ["Choice of tour in Buenos Aires: bike tour", "Choice of tour
   }, 120_000);
 
   it("la carga de los códigos es re-ejecutable y el emparejado de la base da BRARCH26 por el nombre", async () => {
-    expect(await importarCodigosAgencias(admin, CSV)).toEqual({ creados: 0, actualizados: 0, sinCambios: 1 });
+    expect(await importarCodigosAgencias(admin, CSV)).toEqual({ creados: 0, actualizados: 0, sinCambios: 3 }); // + los 2 nombres de AR10 (M3-23)
     const catalogo = await cargarCatalogoParaEmparejar(admin);
     const r = await emparejarProducto({ nombre: "Rio de Janeiro to Santiago", codigo: null, fechaInicio: `2027-${MES}-02`, fechaFin: null }, { agencia: "Adventure360", catalogo });
     expect(r.producto?.codigo).toBe("BRARCH26");

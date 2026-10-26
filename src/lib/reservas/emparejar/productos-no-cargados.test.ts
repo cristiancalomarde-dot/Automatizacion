@@ -59,22 +59,23 @@ describe("data/productos-no-cargados.csv", () => {
 });
 
 describe("data/codigos-tourradar.csv", () => {
-  it("trae 150146 → AR09 y, desde M3-10, los tres que estaban en productos-no-cargados.csv", () => {
+  it("trae 150146 → AR09, desde M3-10 los tres que estaban en productos-no-cargados.csv y, desde M3-23, 152848 → AR10", () => {
     expect(leerCodigosTourRadarCsv(CODIGOS_TR)).toEqual([
       { codigo: "150146", nombre: "Patagonia Adventure Tour 16 Days", nuestroCodigo: "AR09" },
       { codigo: "275366", nombre: "", nuestroCodigo: "ARCH33EXP" },
       { codigo: "150104", nombre: "Buenos Aires to Rio de Janeiro 12 Days", nuestroCodigo: "ARBR23" },
       { codigo: "317766", nombre: "Argentina and Uruguay, heart of the River Plate (7 days)", nuestroCodigo: "ARUY01" },
+      { codigo: "152848", nombre: "Full Argentina Adventure – 21 Days", nuestroCodigo: "AR10" },
     ]);
   });
 
   it("la carga apunta a cada producto; si alguno no existe, falla sin escribir nada", () => {
     const filas = leerCodigosTourRadarCsv(CODIGOS_TR);
-    const ids = new Map([["AR09", "id-ar09"], ["ARCH33EXP", "id-exp"], ["ARBR23", "id-arbr23"], ["ARUY01", "id-aruy01"]]);
+    const ids = new Map([["AR09", "id-ar09"], ["ARCH33EXP", "id-exp"], ["ARBR23", "id-arbr23"], ["ARUY01", "id-aruy01"], ["AR10", "id-ar10"]]);
     expect(planCargaCodigosTourRadar(filas, ids)[0]).toEqual(
       { productoId: "id-ar09", agencia: "TourRadar", codigo: "150146", nombre: "Patagonia Adventure Tour 16 Days" },
     );
-    expect(planCargaCodigosTourRadar(filas, ids).map((c) => c.productoId)).toEqual(["id-ar09", "id-exp", "id-arbr23", "id-aruy01"]);
+    expect(planCargaCodigosTourRadar(filas, ids).map((c) => c.productoId)).toEqual(["id-ar09", "id-exp", "id-arbr23", "id-aruy01", "id-ar10"]);
     expect(planCargaCodigosTourRadar(filas, ids)[1].nombre).toBeNull();
     expect(() => planCargaCodigosTourRadar(filas, new Map())).toThrow(
       "codigos-tourradar.csv: el código HI Travel AR09 no existe en el catálogo (TourRadar 150146). No se cargó nada.",

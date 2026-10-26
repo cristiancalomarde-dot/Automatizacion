@@ -24,6 +24,7 @@ import {
   esDeJournaway,
   estadoServicio,
   ladosDeUnTraslado,
+  NIVEL_TODOS,
   normalizarTexto,
   pasosDelTour,
   queEs,
@@ -154,6 +155,11 @@ interface Estadia {
   desde: string;
   hasta: string;
   aConfirmar: boolean;
+}
+
+/** El alojamiento se pide con ese nivel: es el elegido o vale para todos (M3-23, Purmamarca en OD027). */
+function vaConElNivel(s: Servicio, nivel: string | null | undefined): boolean {
+  return s.nivel === NIVEL_TODOS || (nivel !== undefined && s.nivel === nivel);
 }
 
 const PENDIENTE = {
@@ -322,7 +328,10 @@ class Armado {
 
   /** El nivel de alojamiento que se pide del paquete; undefined si no se puede elegir. */
   private nivelElegido(b: Bloque): { nivel: string | null | undefined; niveles: Set<string | null>; hayAlojamiento: boolean } {
-    const alojamientos = agruparPorOrden(b.servicios).filter((g) => g[0].tipo === "alojamiento" && g[0].ajusteTour?.accion !== "anular");
+    // M3-23: un alojamiento de "Todos los niveles" (Purmamarca) se pide siempre: no es un nivel para elegir.
+    const alojamientos = agruparPorOrden(b.servicios).filter(
+      (g) => g[0].tipo === "alojamiento" && g[0].ajusteTour?.accion !== "anular" && g[0].nivel !== NIVEL_TODOS,
+    );
     const niveles = new Set(alojamientos.map((g) => g[0].nivel));
     const nivel = this.nivelEnElTour(b, nivelDeLaHabitacion(this.reserva.habitacion), niveles);
     const elegido = niveles.size === 1 ? [...niveles][0] : nivel && niveles.has(nivel) ? nivel : undefined;
@@ -359,17 +368,17 @@ class Armado {
       .map((h) => ({ hotel: h.nombre, ciudad: null, desde: h.desde!, hasta: h.hasta!, aConfirmar: false }));
     for (const b of bloques) {
       const { nivel } = this.nivelElegido(b);
-      if (nivel === undefined) continue;
       for (const grupo of agruparPorOrden(b.servicios)) {
         const [s] = this.opcionesDe(b, grupo).opciones;
-        if (s.tipo !== "alojamiento" || s.ajusteTour?.accion === "anular" || s.nivel !== nivel) continue;
+        if (s.tipo !== "alojamiento" || s.ajusteTour?.accion === "anular" || !vaConElNivel(s, nivel)) continue;
         if (s.opcional || s.aPedido === "a_pedido" || this.loReservaLaAgencia(s)) continue;
         for (const tramo of s.tramosNoches?.length ? s.tramosNoches : [null]) {
           const desde = b.inicio && tramo ? sumarDias(b.inicio, tramo.nocheDesde - 1) : b.inicio;
           const hasta = b.inicio && tramo ? sumarDias(b.inicio, tramo.nocheDesde - 1 + tramo.noches) : b.fin;
           if (!desde || !hasta) continue;
-          // En Iguazú el tramo dice de qué lado duerme (M3-12): "Foz do Iguaçu (lado brasileño)" → "Foz do Iguaçu".
-          const lugar = IGUAZU.has(b.destino ?? "") ? tramo?.lugar?.replace(/\s*\(.*\)\s*$/, "").trim() : null;
+          // El tramo dice dónde duerme: en Iguazú de qué lado (M3-12: "Foz do Iguaçu (lado brasileño)" → "Foz do
+          // Iguaçu"); M3-23: en OD027, Salta o Purmamarca.
+          const lugar = tramo?.lugar?.replace(/\s*\(.*\)\s*$/, "").trim();
           const ciudad = lugar || (b.destino ? (NOMBRE_DESTINO[b.destino] ?? null) : null);
           estadias.push({ hotel: s.serviceProviderNombre ?? queEs(s), ciudad, desde, hasta, aConfirmar: true });
         }
@@ -395,7 +404,7 @@ class Armado {
       const { opciones: grupo, segunHabitacion, segunPasajero } = this.opcionesDe(b, grupoDelExcel);
       const s = grupo[0];
       if (s.ajusteTour?.accion === "anular") continue;
-      if (s.tipo === "alojamiento" && (nivelElegido === undefined || s.nivel !== nivelElegido)) continue;
+      if (s.tipo === "alojamiento" && !vaConElNivel(s, nivelElegido)) continue;
       // Lo que eligió el pasajero (M3-13): el servicio se pide con el nombre de la regla.
       const elecciones = this.eleccionesDe(b, s.orden);
       const nombre = elecciones.find((r) => (r.accion === "elegir" && segunPasajero) || r.accion === "renombrar")?.servicio ?? this.nombre(s);
@@ -625,9 +634,20 @@ class Armado {
    */
   private diasPorNombre(b: Bloque, s: Servicio, nombre: string): DiaDeServicio[] {
     const texto = normalizarTexto(nombre);
-    return this.catalogo.dias
-      .filter((d) => d.servicio && d.codigo === b.codigo && d.orden === s.orden && texto.includes(normalizarTexto(d.servicio)))
+    return this.reglasDeDias(b, s)
+      .filter((d) => d.servicio && texto.includes(normalizarTexto(d.servicio)))
       .sort((x, y) => x.dia - y.dia);
+  }
+
+  /**
+   * Las reglas de `data/dias-servicio.csv` de ese servicio del componente. M3-23: si el componente
+   * está dentro de un tour con reglas propias para ese servicio (columna `tour`), valen esas; si
+   * no, las generales.
+   */
+  private reglasDeDias(b: Bloque, s: Servicio): DiaDeServicio[] {
+    const delServicio = this.catalogo.dias.filter((d) => d.codigo === b.codigo && d.orden === s.orden);
+    const delTour = delServicio.filter((d) => d.tour && b.tours.includes(d.tour));
+    return delTour.length ? delTour : delServicio.filter((d) => !d.tour);
   }
 
   private fechaDeExcursion(b: Bloque, s: Servicio, desde: string | null, hasta: string | null, diaFijo?: DiaDeServicio): string | null {
@@ -640,7 +660,7 @@ class Armado {
 
   /** La regla de `data/dias-servicio.csv` sin nombre de excursión para ese servicio del componente. */
   private diaDelServicio(b: Bloque, s: Servicio): DiaDeServicio | undefined {
-    return this.catalogo.dias.find((d) => !d.servicio && d.codigo === b.codigo && d.orden === s.orden);
+    return this.reglasDeDias(b, s).find((d) => !d.servicio);
   }
 
   /**
@@ -711,6 +731,14 @@ class Armado {
    */
   private pickUp(b: Bloque, fecha: string | null, dropOff = false): { renglon: string; pendientes: string[]; lugar: string | null } {
     if (b.pickUp) return { renglon: `Pick up: ${b.pickUp}`, pendientes: [], lugar: b.pickUp };
+    // M3-23: excursión de un día el día que cambia de alojamiento (Salta → Purmamarca en OD027): lo buscan donde
+    // durmió la noche anterior y lo dejan en el de esa noche.
+    const sale = dropOff && fecha ? this.estadias.find((x) => x.hasta === fecha) : undefined;
+    const entra = dropOff && fecha ? this.estadias.find((x) => x.desde === fecha) : undefined;
+    if (sale && entra && sale.hotel !== entra.hotel) {
+      const donde = (x: Estadia) => `${x.hotel}${x.ciudad ? ` (${x.ciudad})` : ""}${x.aConfirmar ? " · hotel a confirmar" : ""}`;
+      return { renglon: `Pick up: ${donde(sale)} · Drop off: ${donde(entra)}`, pendientes: [], lugar: `${sale.hotel}${sale.aConfirmar ? " (a confirmar)" : ""}` };
+    }
     const e = this.estadiaDe(fecha);
     // Excursión de un día: la dejan en el mismo alojamiento si esa noche sigue ahí (owner, 2026-10-20).
     const sigueAhi = !!e && !!fecha && e.desde <= fecha && fecha < e.hasta;
@@ -775,7 +803,7 @@ class Armado {
     excursiones.forEach((e, i) => {
       const lado = /argentin/i.test(e) ? "Lado argentino" : /brasil/i.test(e) ? "Lado brasileño" : e;
       // M3-17: el día de cada lado sale de data/dias-servicio.csv (por nombre); sin regla, uno tras otro desde el día 2.
-      const regla = this.catalogo.dias.find((d) => d.servicio && d.codigo === b.codigo && d.orden === s.orden && normalizarTexto(e).includes(normalizarTexto(d.servicio)));
+      const regla = this.reglasDeDias(b, s).find((d) => d.servicio && normalizarTexto(e).includes(normalizarTexto(d.servicio)));
       const fecha = regla ? this.diaDeLaEstadia(b, regla.dia) : b.inicio ? sumarDias(b.inicio, i + 1) : null;
       if (regla && b.inicio && !fecha) avisos.push(`Falta la fecha del ${lado.toLowerCase()}: completala antes de enviar.`);
       const mismoHotel = !fecha || this.estadiaDe(nocheAnterior(fecha)) === this.estadiaDe(fecha);

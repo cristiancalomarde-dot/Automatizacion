@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { normalizarNombre } from "@/lib/importador-proveedores/nombre";
+import { NIVEL_TODOS } from "@/lib/catalogo/reglas";
 import { leerCsv } from "./csv";
 
 /**
@@ -88,11 +89,14 @@ export function planNochesServicio(
 ): NochesDeServicio[] {
   const propias = filas.filter((f) => f.paquete === paquete);
   const plan: NochesDeServicio[] = [];
-  const alojamientos = [...new Set(servicios.filter((s) => s.tipo === "alojamiento").map((s) => s.orden))];
+  // M3-23: un alojamiento de "Todos los niveles" (Purmamarca en OD027) suma con cada nivel, como
+  // el W Trek de CH10: no es un nivel propio.
+  const deUnNivel = (s: ServicioDelPaquete) => s.tipo === "alojamiento" && s.nivel !== NIVEL_TODOS;
+  const alojamientos = [...new Set(servicios.filter(deUnNivel).map((s) => s.orden))];
   // El nivel de cada alojamiento (sin nivel cargado, cada servicio es su propio grupo, como en CH10).
   const grupoDe = new Map<number, string>();
   for (const s of servicios) {
-    if (s.tipo === "alojamiento" && !grupoDe.has(s.orden)) grupoDe.set(s.orden, s.nivel ?? `orden-${s.orden}`);
+    if (deUnNivel(s) && !grupoDe.has(s.orden)) grupoDe.set(s.orden, s.nivel ?? `orden-${s.orden}`);
   }
   const otrosConNoches = new Set<number>();
   for (const f of propias) {

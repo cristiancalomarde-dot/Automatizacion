@@ -113,11 +113,11 @@ interface Fila {
       }
     }, TIMEOUT);
 
-    it("#2 cargar las equivalencias del formato nuevo (92 desde M1-08, 95 desde M2-08, 104 desde M3-10) es idempotente", async () => {
+    it("#2 cargar las equivalencias del formato nuevo (92 desde M1-08, 95 desde M2-08, 104 desde M3-10, 113 desde M3-23) es idempotente", async () => {
       const texto = readFileSync(RUTA_EQUIVALENCIAS, "utf-8");
       await cargarEquivalencias({ admin, textoCsv: texto });
       const segunda = await cargarEquivalencias({ admin, textoCsv: texto });
-      expect(segunda).toMatchObject({ total: 104, creados: 0, actualizados: 0 });
+      expect(segunda).toMatchObject({ total: 113, creados: 0, actualizados: 0 });
       const { data } = await admin
         .from("proveedor_alias")
         .select("destino, modo, proveedor:proveedor_id(nombre, ciudad)")
@@ -133,11 +133,11 @@ interface Fila {
       expect((rumbo!.proveedor as unknown as { ciudad: string }).ciudad).toBe("USHUAIA");
     }, TIMEOUT);
 
-    it("#9 los 17 productos (22 desde M3-10) existen con servicios; una segunda corrida deja 0 filas nuevas", async () => {
+    it("#9 los 17 productos (22 desde M3-10, 24 desde M3-23) existen con servicios; una segunda corrida deja 0 filas nuevas", async () => {
       const primera = await cargar();
       importaciones.push(primera.importacionId);
       expect(primera.codigosNoEncontrados).toEqual([]);
-      expect(primera.productos).toHaveLength(22);
+      expect(primera.productos).toHaveLength(24);
       expect(primera.productos.every((p) => !p.bloqueParaRevisar && p.opciones > 0)).toBe(true);
       const tras = await conteos();
       const segunda = await cargar();
@@ -145,7 +145,7 @@ interface Fila {
       expect(segunda.creados).toEqual({ productos: 0, servicios: 0, codigos: 0 });
       expect(segunda.servicios).toMatchObject({ creados: 0, actualizados: 0, eliminados: 0 });
       expect(await conteos()).toEqual(tras);
-      expect(tras.productos).toBe(22);
+      expect(tras.productos).toBe(24);
       const { data } = await admin.from("importacion").select("tipo_corrida, filas_cargadas").eq("id", segunda.importacionId).single();
       expect(data).toEqual({ tipo_corrida: TIPO_CORRIDA_PAQUETES, filas_cargadas: 0 });
     }, TIMEOUT);
@@ -326,7 +326,12 @@ interface Fila {
       for (const resuelto of ["«Patagonia»", "«Nacionalinn»", "«Sooz Hotel»", "Tetris", "«Buquebus»", "«Transvipp»", "Don Tomas"]) {
         expect(lista, resuelto).not.toContain(resuelto);
       }
-      expect(md).not.toContain("## Otros puntos para revisar"); // categorías confirmadas por el owner (2026-10-05)
+      // Categorías confirmadas por el owner (2026-10-05). M3-23: el único punto es "Las Marias Tilcara" de OD027
+      // (sin "Accommodation:" ni proveedor; queda afuera, ver docs/sdd/diagnosticos/M3-23-diagnostico.md).
+      const otros = md.includes("## Otros puntos para revisar") ? md.slice(md.indexOf("## Otros puntos para revisar")).split("\n## ")[0] : "";
+      expect(otros.split("\n").filter((l) => l.startsWith("- "))).toEqual([
+        expect.stringMatching(/^- \[ \] OD027 \(fila \d+\): no entendí el renglón “Las Marias Tilcara”/),
+      ]);
     }, TIMEOUT);
   });
 });

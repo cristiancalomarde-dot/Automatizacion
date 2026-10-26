@@ -242,7 +242,8 @@ interface Fila {
         renglonesAgregadosYaEnElExcel: [],
       });
     }
-    expect(segundaPaquetes.bloquesQueNecesitanIA).toEqual([]);
+    // M3-23: OD027 trae "Las Marias Tilcara" (sin proveedor): sin IA queda afuera.
+    expect(segundaPaquetes.bloquesQueNecesitanIA).toEqual(["OD027"]);
   });
 
   it("fila 2: cada servicio de los paquetes nuevos tiene proveedor con mail, salvo los avisados (Oxford y Merit sin mail; COT online a mano)", async () => {
@@ -262,7 +263,7 @@ interface Fila {
   it("fila 2: proveedores de cada paquete nuevo (Uruguay según las respuestas del owner)", async () => {
     const quien = async (codigo: string) =>
       (await servicios(codigo)).filter((s) => s.prioridad === 1).map((s) => `${s.orden} ${s.tipo_servicio}${s.nivel ? ` ${s.nivel}` : ""}${s.opcional ? " opcional" : ""} → ${s.reserva_manual ? `a mano (${s.booking_supplier_nombre})` : (s.bs?.nombre.trim() ?? `sin directorio (${s.booking_supplier_nombre})`)}`);
-    expect(await quien("CH11")).toEqual(["1 alojamiento Hostel → Puma House", "2 alojamiento Hotel 3* → Hotel big sur", "3 otro → W trek LAS TORRES"]);
+    expect(await quien("CH11")).toEqual(["1 alojamiento Hostel → Puma House", "2 alojamiento Hotel 3* → Hotel big sur", "3 otro → LAS TORRES: W Trek Standard y W Trek Express"]);
     expect(await quien("OD014")).toEqual([
       "1 alojamiento Hostel → Del Glaciar / Juan Pablo",
       "2 alojamiento Budget Hotel → Del Glaciar / Juan Pablo",

@@ -69,3 +69,24 @@ describe("M3-13 fila 2 — data/codigos-agencias.csv", () => {
     expect(otra.producto).toBeNull();
   });
 });
+
+describe("M3-23 fila 4 — AR10 por el nombre de TourRadar", () => {
+  it("el statement ('Full Argentina Adventure – 21 Days') y las variantes se reconocen como AR10 (paso 2, sin IA)", async () => {
+    const { leerCodigosTourRadarCsv, planCargaCodigosTourRadar } = await import("./codigos-tourradar-csv");
+    const ids = new Map([["AR10", "id-ar10"], ["AR09", "id-ar09"], ["ARCH33EXP", "id-exp"], ["ARBR23", "id-arbr23"], ["ARUY01", "id-aruy01"], ["BRARCH26", "id-brarch26"]]);
+    const tr = planCargaCodigosTourRadar(leerCodigosTourRadarCsv(readFileSync(join(process.cwd(), "data", "codigos-tourradar.csv"), "utf-8")), ids);
+    const ag = planCargaCodigosAgencias(leerCodigosAgencias(CSV), ids);
+    const catalogo = armarCatalogo({
+      productos: [{ id: "id-ar10", codigo: "AR10", nombre: "Full Argentina Adventure – Route 40", ciudades: [], destino: null }],
+      codigos: [...tr, ...ag].map((c) => ({ producto_id: c.productoId, agencia: c.agencia, codigo: c.codigo, nombre_externo: c.nombre })),
+      componentes: [],
+      buses: [],
+    });
+    for (const nombre of ["Full Argentina Adventure – 21 Days", "Full Argentina Adventure ( 21 Days )", "Full Argentina Adventure - 21 Days"]) {
+      const r = await emparejarProducto({ nombre, codigo: null, fechaInicio: "2026-12-19", fechaFin: "2027-01-08" }, { agencia: "TourRadar", catalogo });
+      expect(r.producto?.codigo, nombre).toBe("AR10");
+    }
+    const porCodigo = await emparejarProducto({ nombre: "", codigo: "152848", fechaInicio: "2026-12-19", fechaFin: null }, { agencia: "TourRadar", catalogo });
+    expect(porCodigo.producto?.codigo).toBe("AR10");
+  });
+});

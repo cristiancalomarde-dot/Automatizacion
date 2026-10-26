@@ -103,12 +103,13 @@ export async function cargarReservaParaPedidos(cliente: SupabaseClient, id: stri
  * `data/dias-servicio.csv`: codigo,orden,dia,servicio,momento,nota (el día de un servicio dentro de
  * su paquete). `servicio` (M3-15) da el día a una excursión por su nombre cuando el renglón del
  * catálogo junta varias ("Bodegas half Day and Alta Montaña"); `momento` dice cuándo ese día
- * ("por la tarde"). Sigue leyendo el formato de antes (codigo,orden,dia,nota).
+ * ("por la tarde"). `tour` (M3-23) limita la regla a ese tour, donde reemplaza a la general del
+ * mismo servicio. Sigue leyendo el formato de antes (codigo,orden,dia,nota).
  */
 export function leerDiasServicio(contenido: string): DiaDeServicio[] {
   const cabecera = contenido.replace(/^﻿/, "").split(/\r?\n/)[0]?.trim() ?? "";
   if (!/^codigo,orden,dia\b/.test(cabecera)) {
-    throw new Error(`${ARCHIVO_DIAS}: la primera fila tiene que ser "codigo,orden,dia,servicio,momento,nota".`);
+    throw new Error(`${ARCHIVO_DIAS}: la primera fila tiene que ser "codigo,orden,dia,servicio,momento,tour,nota".`);
   }
   return leerCsv(contenido).map((f, i) => {
     const codigo = f.codigo?.trim();
@@ -119,7 +120,8 @@ export function leerDiasServicio(contenido: string): DiaDeServicio[] {
     }
     const servicio = f.servicio?.trim();
     const momento = f.momento?.trim();
-    return { codigo, orden: o, dia: d, ...(servicio ? { servicio } : {}), ...(momento ? { momento } : {}) };
+    const tour = f.tour?.trim();
+    return { codigo, orden: o, dia: d, ...(servicio ? { servicio } : {}), ...(momento ? { momento } : {}), ...(tour ? { tour } : {}) };
   });
 }
 

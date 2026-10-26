@@ -1,2 +1,4 @@
 agencia,codigo_agencia,nombre_agencia,codigo_hi_travel,nota
 Adventure360,,Rio de Janeiro to Santiago,BRARCH26,"Owner (2026-10-22, M3-13): Adventure360 vende solo BRARCH26 (From Rio de Janeiro to Santiago de Chile) y lo nombra ""Tour: Rio de Janeiro to Santiago"" (mail del 15/10). No manda código: se empareja por el nombre"
+TourRadar,,Full Argentina Adventure ( 21 Days ),AR10,"Owner (2026-10-26, M3-23): otra forma en que TourRadar nombra AR10 (listado de IDs de TourRadar, 152848). El nombre del statement está en data/codigos-tourradar.csv"
+TourRadar,,Full Argentina Adventure - 21 Days,AR10,"M3-23: el nombre del statement #1389186 con guion común en lugar de raya, por si el PDF lo trae así"

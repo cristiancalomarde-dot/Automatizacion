@@ -24,6 +24,9 @@ export const CIUDADES_POR_DESTINO: Record<string, string[]> = {
   // M2-08 (Journaway): Isla de Pascua y Punta Arenas.
   IPC: ["ISLA DE PASCUA"],
   PUQ: ["PUNTA ARENAS"],
+  // M3-23 (AR10): Salta y Purmamarca (OD027) y Bariloche (OD024).
+  SLA: ["SALTA", "PURMAMARCA"],
+  BRC: ["BARILOCHE"],
 };
 
 export interface CandidatoProveedor {

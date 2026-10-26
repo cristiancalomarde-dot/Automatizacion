@@ -120,3 +120,41 @@ OD010D,La Aldea,3,1,Puerto Iguazú,
     expect(() => planNochesServicio("OD010D", corto, OD010D, 3)).toThrow(/OD010D.*2 noches.*3/);
   });
 });
+
+describe("un alojamiento para todos los niveles (M3-23: Purmamarca en OD027)", () => {
+  // OD027: Salta en Hostel (1), Hotel 3* (2) o Hotel 4* (3), noches 1 y 3-4; Purmamarca (4) la noche 2 en todos los niveles.
+  const OD027: ServicioDelPaquete[] = [
+    { orden: 1, prioridad: 1, tipo: "alojamiento", serviceProviderNombre: "Trotamundos Salta", nivel: "Hostel" },
+    { orden: 2, prioridad: 1, tipo: "alojamiento", serviceProviderNombre: "Hotel 3* Inkai", nivel: "Hotel 3*" },
+    { orden: 3, prioridad: 1, tipo: "alojamiento", serviceProviderNombre: "Hotel 4* Brizo", nivel: "Hotel 4*" },
+    { orden: 4, prioridad: 1, tipo: "alojamiento", serviceProviderNombre: "Posta de Purmamarca", nivel: "Todos los niveles" },
+    { orden: 4, prioridad: 2, tipo: "alojamiento", serviceProviderNombre: "Casa de Adobe", nivel: "Todos los niveles" },
+  ];
+  const filas = parsearNochesServicio(`paquete,servicio,noche_desde,noches,lugar,nota
+OD027,Trotamundos Salta,1,1,Salta,
+OD027,Trotamundos Salta,3,2,Salta,
+OD027,Hotel 3* Inkai,1,1,Salta,
+OD027,Hotel 3* Inkai,3,2,Salta,
+OD027,Hotel 4* Brizo,1,1,Salta,
+OD027,Hotel 4* Brizo,3,2,Salta,
+OD027,Posta de Purmamarca,2,1,Purmamarca,
+`);
+
+  it("Purmamarca suma con cada nivel: 3 noches en Salta + 1 en Purmamarca = 4", () => {
+    const plan = planNochesServicio("OD027", filas, OD027, 4);
+    expect(plan.map((p) => [p.orden, p.nocheDesde, p.noches])).toEqual([
+      [1, 1, 1],
+      [1, 3, 2],
+      [2, 1, 1],
+      [2, 3, 2],
+      [3, 1, 1],
+      [3, 3, 2],
+      [4, 2, 1],
+    ]);
+  });
+
+  it("si Purmamarca pisa una noche de Salta, falla", () => {
+    const pisa = filas.map((f) => (f.servicio === "Posta de Purmamarca" ? { ...f, nocheDesde: 1 } : f));
+    expect(() => planNochesServicio("OD027", pisa, OD027, 4)).toThrow(/noche 1 está en más de un servicio/);
+  });
+});

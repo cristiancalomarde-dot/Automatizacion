@@ -88,10 +88,11 @@ describe("M3-17 — la fecha fija sale en el pedido (fila 2)", () => {
     expect(pp.avisos.join("\n")).not.toMatch(/Falta la fecha/);
   });
 
-  it("OD022: llegada el 1 → Beagle el 2 y Parque Nacional el 3", () => {
+  // Owner (2026-10-26, M3-23): la regla de Ushuaia estaba al revés.
+  it("OD022: llegada el 1 → Parque Nacional el 2 y Beagle (lobos marinos) el 3", () => {
     const rumbo = a(suelto(od022, "2027-03-01", "2027-03-04"), "reservas@rumbosur.test")!;
-    expect(rumbo.cuerpo).toContain("Excursión: Beagle Channel Boat Trip, 3 hours, no transfer to port\nFecha: 2 mar 2027\n");
-    expect(rumbo.cuerpo).toContain("Excursión: Tierra del Fuego National Park half Day\nFecha: 3 mar 2027\n");
+    expect(rumbo.cuerpo).toContain("Excursión: Tierra del Fuego National Park half Day\nFecha: 2 mar 2027\n");
+    expect(rumbo.cuerpo).toContain("Excursión: Beagle Channel Boat Trip, 3 hours, no transfer to port\nFecha: 3 mar 2027\n");
     expect(rumbo.cuerpo).not.toContain("a coordinar");
   });
 });
@@ -148,10 +149,13 @@ describe("M3-17 — dentro de un tour, desde el inicio de ese componente (fila 5
   it("Torres del Paine desde El Calafate el 6 abr (día 3 de El Calafate)", () => {
     expect(a(r, "reservas@southroad.test")!.cuerpo).toContain("Excursión: Torres del Paine Full Day from El Calafate\nFecha: 6 abr 2027\n");
   });
-  it("Beagle el 8 abr y Parque Nacional el 9 abr (días 2 y 3 de Ushuaia)", () => {
+  it("Perito Moreno el 5 abr (día 2 de El Calafate): la regla de AR10 no se aplica en AR09", () => {
+    expect(a(r, "agencias@chaltentravel.test")!.cuerpo).toContain("Excursión: Perito Moreno Glaciar Excursion\nFecha: 5 abr 2027\n");
+  });
+  it("Parque Nacional el 8 abr y Beagle el 9 abr (días 2 y 3 de Ushuaia; owner 2026-10-26)", () => {
     const rumbo = a(r, "reservas@rumbosur.test")!.cuerpo;
-    expect(rumbo).toContain("Excursión: Beagle Channel Boat Trip, 3 hours, no transfer to port\nFecha: 8 abr 2027\n");
-    expect(rumbo).toContain("Excursión: Tierra del Fuego National Park half Day\nFecha: 9 abr 2027\n");
+    expect(rumbo).toContain("Excursión: Tierra del Fuego National Park half Day\nFecha: 8 abr 2027\n");
+    expect(rumbo).toContain("Excursión: Beagle Channel Boat Trip, 3 hours, no transfer to port\nFecha: 9 abr 2027\n");
     expect(rumbo).not.toContain("a coordinar");
   });
 });
@@ -208,5 +212,48 @@ describe("M3-17 — Iguazú: lado argentino día 2 y brasileño día 3, desde da
     const c = cuerpo(iguazu("OD010D", 7), "2026-10-03", "2026-10-06").cuerpo;
     expect(renglon(c, "Lado brasileño")).toContain(": 4 oct 2026 ·");
     expect(renglon(c, "Lado argentino")).toContain(": 5 oct 2026 ·");
+  });
+});
+
+describe("M3-23 — regla de un tour: El Calafate dentro de AR10 (owner 2026-10-26)", () => {
+  // AR10 (sintético): El Calafate del 2 al 5 ene 2027 (días 15 a 18 del tour) y Ushuaia del 5 al 8.
+  const ar10 = producto("prod-ar10", "AR10", [], {
+    esTour: true,
+    componentes: [componente("c-od013", 1, 15, 3, od013), componente("c-od022", 2, 18, 3, od022)],
+  });
+  const r = ok(
+    armarPedidos(
+      reserva({
+        productoId: ar10.id,
+        habitacion: "Hostel Dorm",
+        fechaInicio: "2026-12-19",
+        fechaFin: "2027-01-08",
+        partes: [
+          parte({ id: "p1", orden: 1, tipo: "paquete", productoId: od013.id, productoComponenteId: "c-od013", fechaInicio: "2027-01-02", fechaFin: "2027-01-05" }),
+          parte({ id: "p2", orden: 2, tipo: "paquete", productoId: od022.id, productoComponenteId: "c-od022", fechaInicio: "2027-01-05", fechaFin: "2027-01-08" }),
+        ],
+      }),
+      catalogoCon([ar10, od013, od022], [], dias),
+      plantilla,
+    ),
+  );
+
+  it("Torres del Paine el 3 ene (día 16 del tour) y Perito Moreno el 4 ene (día 17)", () => {
+    expect(a(r, "reservas@southroad.test")!.cuerpo).toContain("Excursión: Torres del Paine Full Day from El Calafate\nFecha: 3 ene 2027\n");
+    expect(a(r, "agencias@chaltentravel.test")!.cuerpo).toContain("Excursión: Perito Moreno Glaciar Excursion\nFecha: 4 ene 2027\n");
+  });
+
+  it("Ushuaia con la regla general: Parque Nacional el 6 ene (día 19) y lobos marinos el 7 ene (día 20)", () => {
+    const rumbo = a(r, "reservas@rumbosur.test")!.cuerpo;
+    expect(rumbo).toContain("Excursión: Tierra del Fuego National Park half Day\nFecha: 6 ene 2027\n");
+    expect(rumbo).toContain("Excursión: Beagle Channel Boat Trip, 3 hours, no transfer to port\nFecha: 7 ene 2027\n");
+  });
+
+  it("la columna tour del archivo: una regla de tour solo vale dentro de ese tour", () => {
+    const reglas = leerDiasServicio("codigo,orden,dia,servicio,momento,tour,nota\nOD013,6,3,,,AR10,x\nOD013,6,2,,,,y\n");
+    expect(reglas).toEqual([
+      { codigo: "OD013", orden: 6, dia: 3, tour: "AR10" },
+      { codigo: "OD013", orden: 6, dia: 2 },
+    ]);
   });
 });

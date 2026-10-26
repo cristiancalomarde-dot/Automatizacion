@@ -169,7 +169,8 @@ interface Paso {
 
 // "night bus", "overnight bus" y el typo del Word "nigh bus" (AR09, día 8).
 // M3-10: "In the evening, departure to Puerto Iguazú by bus" (ARBR23, día 4).
-const NOCTURNO_DIA = /\b(over)?night?\s+bus\b|\bovernight\b|\bin the evening\b[^.]*\bby bus\b/i;
+// M3-23: "Night in the BUS" (AR10, día 12: Bariloche → El Chaltén).
+const NOCTURNO_DIA = /\b(over)?night?\s+bus\b|\bovernight\b|\bin the evening\b[^.]*\bby bus\b|\bnight in the bus\b/i;
 const DESTINOS_CON_TRANSFER = new Set(["IGR", "IGU"]);
 
 /** "PNT - PUQ" (encabezado de RutasenBus, en códigos) es la ruta de ese tramo, en cualquier sentido. */

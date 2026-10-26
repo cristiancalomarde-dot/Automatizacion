@@ -45,7 +45,7 @@ import { leerItinerario, type ItinerarioWord } from "./word";
 
 export const TIPO_CORRIDA_TOURS = "tours-compuestos";
 /** Los 7 tours top-seller del MVP (spec M1-05 §1) y los 3 que pidieron las agencias (spec M3-10). */
-export const TOURS_PILOTO = ["CHB31", "BOCHI04R", "ARCH31", "ARCH33", "AR09", "BRARCH26", "5C01", "ARCH33EXP", "ARBR23", "ARUY01"];
+export const TOURS_PILOTO = ["CHB31", "BOCHI04R", "ARCH31", "ARCH33", "AR09", "BRARCH26", "5C01", "ARCH33EXP", "ARBR23", "ARUY01", "AR10"];
 
 export interface DocumentoWord {
   archivo: string;

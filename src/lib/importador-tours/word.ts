@@ -165,6 +165,17 @@ function leerIncluidos(lineas: string[]): ItemIncluido[] {
 const DIA = /^\s*DAY\s+(\d+)\s*:\s*(.*)$/i;
 
 /**
+ * M3-23: un encabezado "DAY N:" pegado al final del párrafo anterior en el Word
+ * ("Back to town at 7 - 8 pmDAY 8: Mendoza-Bariloche", AR10) empieza su propio
+ * día. Solo en mayúsculas, como se escriben los encabezados: "see day 3: …" no es un día.
+ */
+const DIA_PEGADO = /(?<=\S)\s*(?=DAY\s+\d+\s*:)/;
+
+function separarDiasPegados(parrafos: string[]): string[] {
+  return parrafos.flatMap((p) => p.split(DIA_PEGADO));
+}
+
+/**
  * El itinerario de un tour, o null si ningún párrafo es su título. La sección
  * va desde el título hasta el título del tour siguiente.
  */
@@ -177,7 +188,7 @@ export function leerItinerario(parrafos: string[], codigo: string): ItinerarioWo
   if (inicio === -1) return null;
   let fin = parrafos.findIndex((p, i) => i > inicio && esTituloDeTour(p));
   if (fin === -1) fin = parrafos.length;
-  const seccion = parrafos.slice(inicio + 1, fin);
+  const seccion = separarDiasPegados(parrafos.slice(inicio + 1, fin));
   const titulo = parrafos[inicio].trim();
   const problemas: string[] = [];
 

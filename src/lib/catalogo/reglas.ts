@@ -54,6 +54,13 @@ export function esPendiente(servicio: Servicio): boolean {
 /** Los 4 niveles de precio estándar, en el orden en que se muestran. */
 export const NIVELES_ESTANDAR = ["Hostel", "Budget Hotel", "Hotel 3*", "Hotel 4*"] as const;
 
+/**
+ * M3-23: el nivel de un alojamiento que vale para todos los niveles del paquete (owner
+ * 2026-10-26: la noche en Purmamarca de OD027 es en el mismo hotel para todos). Lo pone
+ * `data/niveles-confirmados.csv`; se pide con cualquier nivel elegido, en sus noches.
+ */
+export const NIVEL_TODOS = "Todos los niveles";
+
 function porOrdenYPrioridad(a: Servicio, b: Servicio): number {
   return (a.orden ?? Number.MAX_SAFE_INTEGER) - (b.orden ?? Number.MAX_SAFE_INTEGER) || a.prioridad - b.prioridad;
 }

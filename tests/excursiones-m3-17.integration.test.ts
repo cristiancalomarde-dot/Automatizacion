@@ -78,8 +78,8 @@ const CASOS = [
       { excursion: NOMBRES["OD018#7"], componente: "OD018", dia: 3 },
       { excursion: NOMBRES["OD025#5"], componente: "OD025", dia: 2 },
       { excursion: NOMBRES["OD013#7"], componente: "OD013", dia: 3 },
-      { excursion: NOMBRES["OD022#5"], componente: "OD022", dia: 2 },
-      { excursion: NOMBRES["OD022#6"], componente: "OD022", dia: 3 },
+      { excursion: NOMBRES["OD022#5"], componente: "OD022", dia: 3 },
+      { excursion: NOMBRES["OD022#6"], componente: "OD022", dia: 2 },
     ],
   },
   {

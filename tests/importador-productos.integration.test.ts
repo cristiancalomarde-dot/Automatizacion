@@ -125,18 +125,18 @@ interface FilaServicioDB {
     // M1-08: 92 filas (Cuenca del Plata y Patagonian Group pasaron a resolverse hotel por hotel).
     // M2-08: 95 (Transvip sin doble p y Plataforma10 en PNT y PUQ, las tres manuales y sin proveedor).
     // M3-10: 104 (FTE para AR34, Uruguay: 6 con proveedor, Oxford y Merit sin mail, COT online a mano).
-    it("#1 cargar la lista real deja 104 alias; los 87 que nombran un proveedor apuntan a uno existente; una segunda carga deja 104", async () => {
+    it("#1 cargar la lista real deja 113 alias (104 + 9 de M3-23); los 96 que nombran un proveedor apuntan a uno existente; una segunda carga deja 113", async () => {
       const texto = readFileSync(RUTA_EQUIVALENCIAS, "utf-8");
       const primera = await cargarEquivalencias({ admin, textoCsv: texto });
-      expect(primera.total).toBe(104);
-      expect(await contarAlias()).toBe(104);
+      expect(primera.total).toBe(113);
+      expect(await contarAlias()).toBe(113);
 
       const { data, error } = await admin
         .from("proveedor_alias")
         .select("destino, alias, alias_normalizado, estado, nota, proveedor_id, proveedor:proveedor_id(id, nombre)");
       expect(error).toBeNull();
       const conId = data!.filter((a) => a.proveedor_id !== null);
-      expect(conId).toHaveLength(87);
+      expect(conId).toHaveLength(96);
       expect(conId.every((a) => a.proveedor !== null)).toBe(true); // apuntan a un proveedor existente
       expect(data!.filter((a) => a.destino === "IGR")).toHaveLength(21);
       const tetris = data!.find((a) => a.destino === "IGR" && a.alias_normalizado === "tetris")!;
@@ -150,8 +150,8 @@ interface FilaServicioDB {
       expect((pueblito.proveedor as unknown as { nombre: string }).nombre).toBe("El Pueblito, proveedor Cuenca del Plata");
 
       const segunda = await cargarEquivalencias({ admin, textoCsv: texto });
-      expect(segunda).toMatchObject({ total: 104, creados: 0, actualizados: 0, sinCambios: 104 });
-      expect(await contarAlias()).toBe(104);
+      expect(segunda).toMatchObject({ total: 113, creados: 0, actualizados: 0, sinCambios: 113 });
+      expect(await contarAlias()).toBe(113);
     }, TIMEOUT);
 
     it("#2 un CSV que nombra un proveedor inexistente falla con un mensaje claro: 0 proveedores y 0 alias nuevos", async () => {
@@ -418,7 +418,7 @@ interface FilaServicioDB {
       expect(data.detalle.proveedores_sin_resolver.length).toBe(resumen.proveedoresSinResolver.length);
       expect(data.detalle.proveedores_para_revisar).toHaveLength(0);
       expect(data.detalle.nombres_sin_resolver).toEqual([]);
-      expect(data.detalle.alias_cargados).toBe(104);
+      expect(data.detalle.alias_cargados).toBe(113);
       expect(data.detalle.bloques_que_necesitan_ia).toEqual(resumen.bloquesQueNecesitanIA);
     });
   });

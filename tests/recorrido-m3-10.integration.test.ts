@@ -223,7 +223,7 @@ interface ReservaCreada {
     expect(resumen.OD014.casillas).toEqual(["agencias@chaltentravel.com", "contacto@southroad.com.ar,bue@southroad.com.ar", "reservas@glaciar.com"]);
     expect(resumen.OD014.tareas).toEqual([]);
     expect(resumen.ARCH33EXP.tareas).toEqual(["emitir_boleto: Emitir boleto: El Calafate – Puerto Natales", "emitir_boleto: Emitir boleto: Bus Puerto Natales – Punta Arenas"]);
-    // M3-11: con "Double Room - Hostel" el hostel de Puerto Natales va a Factoria (W trek VERTICE), no a Puma.
+    // M3-11: con "Double Room - Hostel" el hostel de Puerto Natales va a Factoria (en el directorio, VERTICE Travel: W Trek Standard con Grey; owner 2026-10-23: renombrado), no a Puma.
     expect(resumen.ARCH33EXP.casillas).toEqual(["agencias@chaltentravel.com", "carmen.munoz@lastorres.com", "reservas@glaciar.com", "ventas@vertice.travel"]);
     expect(resumen.ARBR23.casillas).toEqual([
       "beerhotel@tangoinn.com,beerhotel@cervezaholy.com",

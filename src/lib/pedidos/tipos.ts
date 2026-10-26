@@ -88,6 +88,11 @@ export interface DiaDeServicio {
   servicio?: string;
   /** M3-15: cuándo ese día ("por la tarde (14:30 aprox.)"). */
   momento?: string;
+  /**
+   * M3-23: la regla vale solo dentro de ese tour (AR10: Torres del Paine antes que Perito Moreno) y
+   * ahí reemplaza a la general del mismo servicio. Sin tour, vale en todos lados.
+   */
+  tour?: string;
 }
 
 /**
