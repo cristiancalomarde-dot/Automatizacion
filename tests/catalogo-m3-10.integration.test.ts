@@ -280,7 +280,7 @@ interface Fila {
       "4 alojamiento Budget Hotel → Del Glaciar / Juan Pablo",
       "5 alojamiento Hotel 3* → Chalten Travel",
       "6 alojamiento Hotel 3* → Rincon del calafate",
-      "7 alojamiento Hotel 4* → Chalten Travel",
+      "7 alojamiento Hotel 4* → Destino Sur", // owner 2026-10-26: Destino Sur se reserva directo
       "8 alojamiento Hotel 4* → Mirador del Lago",
       "9 traslado → Chalten Travel",
       "10 excursion → Chalten Travel",
