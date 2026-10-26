@@ -3,6 +3,21 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
 
 # Dónde retomar
 
+- **2026-10-26: M3-23 (AR10 Full Argentina Adventure) cargada en la real y reserva TourRadar #1389186 leída.**
+  El statement le había llegado al owner (TourRadar Finance admite un solo mail): el owner cambia el mail a
+  sales@ y los revisa desde la casilla de ventas (Ferozo no permite reenvío con filtro). Un reenvío manual
+  a sales@ NO se lee (remitente propio + "Fwd:"). El PDF se pasó con un script de un solo uso por
+  `procesarMail` real → reserva AR10 "recibida", 2 pax Double Hostel, 19 dic (costo IA 0,027 USD).
+  - Carga en la real (owner con `!`): directorio de proveedores del Drive (7 altas, 3 renombres: Las Torres,
+    Vértice, Factoria), OD027 Salta, OD024 Bariloche, AR10, TR 152848. Ushuaia: PN día 2 y lobos día 3 en
+    todo; en AR10 TdP día 2 y Perito Moreno día 3 de El Calafate (columna `tour` en `dias-servicio.csv`).
+  - **Ojo:** `env -u ANTHROPIC_API_KEY` no apaga la IA de los importadores (cargan `.env.local` solos):
+    el directorio hizo 8 llamadas (centavos, 0 resueltas).
+  - **Insumos:** el Drive es la copia buena; la del clon se copia desde el Drive (no editar en el clon).
+  - **Abiertos:** Destino Sur directo o vía Chalten Travel (el owner le pregunta a Chalten Travel); el bus
+    Río Gallegos → Ushuaia del martes 5 ene en #1389186 (sale lun/mié/vie, la app no avisa); Bodegas 24/12 y
+    Alta Montaña 25/12 en Mendoza. Siguiente pieza: **M3-22 (Factoria aparte)**, en pausa.
+
 - **2026-10-23 (noche): M3-21 publicada** (habitación según los pax: hotel sin tipo 2 pax DBL / 1 pax SGL con aviso de revisar con el vendedor; hostel sin tipo a confirmar; W Trek carpa sin cantidad 2 pax Tent DBL, 1 pax a confirmar). Hostel vs hotel = nivel del catálogo ("Hostal Rio Amazonas" figura como hotel). Queda de la tanda 1: **Factoria aparte** (pedido de Factoria a su propio email).
 
 - **2026-10-23 (noche): M3-20 publicada** (buses de El Chaltén: bus regular aeropuerto FTE → terminal con horario según el vuelo, round trip de AR34 en dos renglones, vuelta 8:00 am, aviso interno si el vuelo llega después de las 17 hs; reglas en `data/buses-el-chalten.csv`). Vuelta de AR34 = día 4 (8 mar en DK1594177; el owner confirmó, el 10 del feedback era un error). Siguen: M3-21 (habitación según los pax + carpa del W Trek, reglas en el feedback) y Factoria aparte.
