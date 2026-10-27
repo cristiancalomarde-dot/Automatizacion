@@ -1,0 +1,12 @@
+feriado,donde,regla,desde,hasta,bus_desde,bus_hasta,nota
+Navidad,*,fija,12-24,12-25,12-25,12-25,"Owner 2026-10-26 (M3-24): 24 y 25 dic. Un bus avisa solo si sale el 25 (el 24 los buses salen)"
+Navidad,SAO COL MVD SCL VLP CJC SPA PNT PUQ IPC,nada,,,,,"Owner 2026-10-26 (M3-24): São Paulo, Uruguay y Chile, nada"
+Año Nuevo,*,fija,12-31,01-01,01-01,01-01,"Owner 2026-10-26 (M3-24): 31 dic y 1 ene. Un bus avisa solo si sale el 1 ene (el 31 los buses salen)"
+Año Nuevo,RIO,fija,12-28,01-02,01-01,01-01,"Word One Destination, OD032: ""Reveillon (28 Dec – 2 Jan)"". Owner 2026-10-26 (M3-24): Río con los rangos de los Word"
+Año Nuevo,SAO COL MVD SCL VLP CJC SPA PNT PUQ IPC,nada,,,,,"Owner 2026-10-26 (M3-24): São Paulo, Uruguay y Chile, nada"
+Carnaval,*,pascua,P-48,P-47,,,"Owner 2026-10-26 (M3-24): lunes y martes de Carnaval (48 y 47 días antes de Pascua). Los buses no avisan por Carnaval"
+Carnaval,RIO,pascua,P-52,P-41,,,"Word One Destination, OD032: ""Carnaval (04 Feb – 15 Feb)"" (2027 = 52 a 41 días antes de Pascua). Owner 2026-10-26 (M3-24)"
+Carnaval,SAO COL MVD SCL VLP CJC SPA PNT PUQ IPC,nada,,,,,"Owner 2026-10-26 (M3-24): São Paulo, Uruguay y Chile, nada"
+Semana Santa,*,pascua,P-3,P0,,,"Owner 2026-10-26 (M3-24): de jueves Santo a domingo de Pascua. Los buses no avisan por Semana Santa"
+Semana Santa,RIO,pascua,P-5,P0,,,"Word One Destination, OD032: ""Easter Holidays (23 to 28 March)"" (2027 = martes Santo a domingo de Pascua). Owner 2026-10-26 (M3-24)"
+Semana Santa,SAO COL MVD SCL VLP CJC SPA PNT PUQ IPC,nada,,,,,"Owner 2026-10-26 (M3-24): São Paulo, Uruguay y Chile, nada"

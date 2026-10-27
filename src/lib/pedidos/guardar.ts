@@ -19,6 +19,7 @@ import {
   cargarOpcionesPasajero,
   cargarProveedoresFichaCompleta,
   cargarAlojamientoSePideA,
+  cargarReglasItinerario,
   cargarBusesElChalten,
   cargarPuntosDeEncuentro,
   cargarReservaParaPedidos,
@@ -26,6 +27,7 @@ import {
 import { cargarPlantilla } from "./plantilla";
 import type { CategoriaTour } from "@/lib/importador-tours/datos";
 import type { AlojamientoSePideA, BusElChalten, DiaDeServicio, ExcursionConEntrada, HostelSegunHabitacion, OpcionDelPasajero, ProveedorFichaCompleta, PuntoDeEncuentro, PedidoArmado, Plantilla, ResultadoArmado, TareaArmada, TipoTarea } from "./tipos";
+import type { ReglasItinerario } from "./itinerario";
 
 export interface ConteoGuardado {
   insertados: number;
@@ -126,6 +128,8 @@ export interface OpcionesArmado {
   busesElChalten?: readonly BusElChalten[];
   /** M3-22: a quién se le pide el alojamiento (por defecto, data/alojamiento-se-pide-a.csv). */
   alojamientoSePideA?: readonly AlojamientoSePideA[];
+  /** M3-24: las reglas de los avisos del itinerario (por defecto, data/blackouts.csv, fechas-especiales.csv y dias-bus.csv). */
+  itinerario?: ReglasItinerario;
 }
 
 /** Lee la reserva y el catálogo, arma los borradores y los guarda. Una reserva que no está recibida no guarda nada. */
@@ -150,7 +154,7 @@ export async function armarYGuardarPedidos(cliente: SupabaseClient, reservaId: s
     opciones.busesElChalten ?? cargarBusesElChalten(),
     opciones.alojamientoSePideA ?? cargarAlojamientoSePideA(),
   );
-  const armado = armarPedidos(reserva, catalogo, plantilla);
+  const armado = armarPedidos(reserva, { ...catalogo, itinerario: opciones.itinerario ?? cargarReglasItinerario() }, plantilla);
   if (!armado.ok) return armado;
   const guardado = await guardarPedidosArmados(cliente, reservaId, armado);
   return { ...armado, guardado };

@@ -299,6 +299,13 @@ export const TEXTOS = {
     avisoLlegada: "Falta el vuelo o bus de llegada a Iguazú: pasárselo a Cuenca del Plata cuando llegue.",
     /** Owner 2026-10-16: encabezado del aviso "falta dato de llegada" (abajo va cada línea concreta). */
     avisoVuelo: "Falta dato de llegada. Lo demás se puede pedir ya.",
+    /** Spec M3-24: problemas de fechas del itinerario (blackouts, feriados, buses). Avisa, no frena. */
+    revisarAntes: {
+      titulo: "Revisar antes de pedir",
+      bajada: "Las fechas del itinerario chocan con lo que dicen los Word o la planilla de buses. Revisalo con el vendedor.",
+      error: "No pudimos revisar las fechas del itinerario.",
+      reintentar: "Revisar de nuevo",
+    },
     avisoPrueba: "Reserva de prueba. Se cargó para revisar cómo se leen los mails. No es una reserva real.",
     /** La marca del owner sobre una reserva de prueba (spec M2-06 fila 13). */
     revision: {

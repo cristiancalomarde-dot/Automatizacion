@@ -18,6 +18,7 @@ import { ChipEstado, MarcasReserva } from "./marcas";
 import { MailOriginal } from "./mail-original";
 import { ResponsableDeLaReserva } from "./responsable";
 import { RevisionPrueba } from "./revision-prueba";
+import { RevisarAntesDePedir, muestraRevisarAntes } from "./revisar-antes-de-pedir";
 import estilos from "./reservas.module.css";
 
 const T = TEXTOS.reserva;
@@ -101,6 +102,8 @@ function Detalle({
 
   return (
     <>
+      {/* Spec M3-24: los problemas de fechas del itinerario, arriba de todo. */}
+      {muestraRevisarAntes(reserva.estado) ? <RevisarAntesDePedir reservaId={reserva.id} /> : null}
       {reserva.dePrueba ? <Aviso tono="info">{T.avisoPrueba}</Aviso> : null}
       {avisosLlegada.length > 0 ? (
         <Aviso tono="aviso">

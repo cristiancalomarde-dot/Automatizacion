@@ -8,6 +8,7 @@
 import type { DetalleProducto, ProveedorResumen } from "@/lib/catalogo/tipos";
 import type { EstadoReserva, HotelDeLaAgencia, TipoComponenteReserva } from "@/lib/reservas/tipos";
 import type { CategoriaTour } from "@/lib/importador-tours/datos";
+import type { ReglasItinerario } from "./itinerario";
 
 /** Un pasajero como lo guarda la reserva (M2-02); los campos que no vinieron faltan. */
 export interface PasajeroDeReserva {
@@ -203,6 +204,8 @@ export interface CatalogoParaPedidos {
   puntosDeEncuentro?: readonly PuntoDeEncuentro[];
   /** Los buses de El Chaltén (M3-20, data/buses-el-chalten.csv; sin la lista, como antes). */
   busesElChalten?: readonly BusElChalten[];
+  /** M3-24: blackouts, fechas especiales y días de los buses (data/*.csv; sin las reglas, ningún aviso del itinerario). */
+  itinerario?: ReglasItinerario;
 }
 
 /** La plantilla del mail (`data/plantillas/pedido-proveedor.md`), ya separada en sus partes. */
@@ -245,7 +248,14 @@ export interface TareaArmada {
 }
 
 export type ResultadoArmado =
-  | { ok: true; pedidos: PedidoArmado[]; tareas: TareaArmada[]; avisos: string[] }
+  | {
+      ok: true;
+      pedidos: PedidoArmado[];
+      tareas: TareaArmada[];
+      avisos: string[];
+      /** M3-24: los avisos del itinerario ("Revisar antes de pedir"), en orden de fecha. También van en los borradores afectados. */
+      itinerario: string[];
+    }
   | { ok: false; error: string };
 
 /** El marcador de la firma: la base rechaza una firma sin él (0018). */

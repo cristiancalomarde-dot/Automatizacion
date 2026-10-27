@@ -1,0 +1,7 @@
+origen,destino,dias,nota
+RGL,USH,lun mié vie,"RutasenBus, hoja ""Buses para Tours"", fila 16: ""RGL - USH lu-mie-vie"". Owner 2026-10-26 (M3-24): Río Gallegos ↔ Ushuaia, lunes, miércoles y viernes"
+USH,RGL,lun mié vie,"Owner 2026-10-26 (M3-24): Río Gallegos ↔ Ushuaia, lunes, miércoles y viernes (ningún tour cargado hace este sentido)"
+BRC,CHA,,"Owner 2026-10-26 (M3-24): Bariloche ↔ El Chaltén tiene días por semana que se publican en octubre (suele ser día de por medio). Sin días hasta que llegue el timetable: no avisa"
+CHA,BRC,,"Owner 2026-10-26 (M3-24): ídem Bariloche ↔ El Chaltén, sin días hasta el timetable"
+PUQ,USH,impares,"Word Journaway 2027, BUS02: Punta Arenas → Ushuaia ""EVERY OTHER DAY Odd DAY DEPARTURES"". Owner 2026-10-26 (M3-24)"
+USH,PUQ,pares,"Word Journaway 2027, BUS02: Ushuaia → Punta Arenas ""EVERY OTHER DAY EVEN DAY DEPARTURES"". Owner 2026-10-26 (M3-24)"

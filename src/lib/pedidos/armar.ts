@@ -32,10 +32,11 @@ import {
   type PasoConLlegada,
 } from "@/lib/catalogo/reglas";
 import type { ComponenteTour, DetalleProducto, ProveedorResumen, Servicio, TipoServicio } from "@/lib/catalogo/tipos";
-import { NOMBRE_DESTINO } from "@/lib/importador-tours/ciudades";
+import { NOMBRE_DESTINO, nombreDestino } from "@/lib/importador-tours/ciudades";
 import { TRANSFER_PNT } from "@/lib/reservas/emparejar/componentes";
 import { lugarDelTraslado } from "@/lib/reservas/emparejar/vuelos-requeridos";
 import { llevaEntradas } from "./entradas";
+import { avisosDeBlackout, avisosDeDiasDeBus, avisosDeFechaEspecial, tramoDeLaRuta, type ServicioConDia } from "./itinerario";
 import { HOTEL_A_CONFIRMAR, fichasDePasajeros, lineaDeTour, llevaFichaCompleta, restriccionAlimentaria, type TourDeFicha } from "./ficha";
 import { completar, completarAsunto } from "./plantilla";
 import {
@@ -172,6 +173,10 @@ class Armado {
   readonly items: Item[] = [];
   readonly tareas: Array<TareaArmada & { fecha: string | null; seq: number }> = [];
   readonly avisos: string[] = [];
+  /** M3-24: los avisos del itinerario con su fecha (para ordenarlos). */
+  private readonly itinerario: Array<{ fecha: string | null; seq: number; texto: string }> = [];
+  /** M3-24: los blackouts por parte (null = la salida de la reserva: van en todos los borradores). */
+  private readonly blackouts = new Map<string | null, string[]>();
   private readonly whatsapp = new Map<string, { proveedor: ProveedorResumen; cosas: string[]; fecha: string | null; seq: number }>();
   private seq = 0;
   private estadias: Estadia[] = [];
@@ -186,6 +191,8 @@ class Armado {
   recorrer(): void {
     const r = this.reserva;
     const principal = r.productoId ? this.catalogo.detalles.get(r.productoId) ?? null : null;
+    // M3-24: la salida del producto vendido (tour o paquete suelto) contra sus blackouts.
+    if (principal) this.blackout(null, principal.codigo, r.fechaInicio);
     if (r.partes.length === 0) {
       if (!principal) {
         this.tarea("revisar", "Revisar a mano: la reserva no tiene un producto del catálogo, no se pueden armar los pedidos.", {}, null);
@@ -226,11 +233,13 @@ class Armado {
     if (parte.esTarea) {
       const ruta = parte.descripcionRuta ?? parte.textoAgencia ?? "bus";
       this.tarea("emitir_boleto", `Emitir boleto: ${ruta}${parte.fechaInicio ? `, ${fechaCorta(parte.fechaInicio)}` : ""}`, { parteId: parte.id, ruta }, parte.fechaInicio);
+      this.avisosDelItinerario([{ tipo: "bus", nombre: ruta, fecha: parte.fechaInicio, destino: null }]);
       return;
     }
     if (parte.tipo === "servicio") return this.parteServicio(parte);
     if (parte.tipo === "tramo_bus") {
       this.tarea("revisar", `Revisar a mano: ${parte.descripcionRuta ?? "un tramo de bus"} no dice quién lo reserva.`, { parteId: parte.id }, parte.fechaInicio);
+      if (parte.descripcionRuta) this.avisosDelItinerario([{ tipo: "bus", nombre: parte.descripcionRuta, fecha: parte.fechaInicio, destino: null }]);
       return;
     }
     if (!parte.productoId) {
@@ -243,6 +252,8 @@ class Armado {
       this.tarea("revisar", `Revisar a mano: no se encontró en el catálogo el producto de la parte ${parte.orden}.`, { parteId: parte.id }, parte.fechaInicio);
       return;
     }
+    // M3-24: el inicio de la parte contra los blackouts de su producto (OD013 dentro de AR09, SPAE05 dentro de SPAP02).
+    this.blackout(b.parteId, b.codigo, b.inicio);
     this.bloque(b);
   }
 
@@ -316,12 +327,14 @@ class Armado {
     if (que === TRANSFER_PNT) {
       const t = this.traslado("out", que, parte.fechaInicio, ["PNT"], false);
       const renglones = [`Traslado de salida: ${que}`, `Fecha: ${t.fecha ? fechaCorta(t.fecha) : "a confirmar"}`, t.dato];
-      this.agregar(proveedor, "traslado", renglones, t.fecha, cubre, false, [], t.pendientes, undefined, null);
+      const avisos = this.avisosDelItinerario([{ tipo: "traslado", nombre: que, fecha: t.fecha, destino: "PNT" }]);
+      this.agregar(proveedor, "traslado", renglones, t.fecha, cubre, false, avisos, t.pendientes, undefined, null);
       return;
     }
     const nocturno = !!parte.fechaInicio && !!parte.fechaFin && parte.fechaFin > parte.fechaInicio;
     const renglones = [`Bus: ${que}`, `Fecha: ${parte.fechaInicio ? fechaCorta(parte.fechaInicio) : "a confirmar"}${nocturno ? " (nocturno)" : ""}`];
-    this.agregar(proveedor, "bus", renglones, parte.fechaInicio, cubre, false, [], []);
+    const avisos = this.avisosDelItinerario([{ tipo: "bus", nombre: que, fecha: parte.fechaInicio, destino: null }]);
+    this.agregar(proveedor, "bus", renglones, parte.fechaInicio, cubre, false, avisos, []);
   }
 
   // --- Un paquete -------------------------------------------------------------------------
@@ -551,8 +564,10 @@ class Armado {
   }
 
   /** A quién va: mail, WhatsApp, a mano o sin proveedor. */
-  private destino(b: Bloque, s: Servicio, nombre: string, a: Renglones, avisos: string[]): void {
+  private destino(b: Bloque, s: Servicio, nombre: string, a: Renglones, avisosPrevios: string[]): void {
     const cuando = a.resumen;
+    // M3-24: las fechas especiales y los días de los buses de lo que se pide (vaya por mail, WhatsApp o a mano).
+    const avisos = [...avisosPrevios, ...this.avisosDelItinerario(this.conDia(b, s, nombre, a))];
     if (s.reservaManual) {
       const donde = s.bookingSupplierNombre ?? s.bookingSupplier?.nombre ?? "su sistema";
       if (s.tipo === "bus") {
@@ -810,7 +825,10 @@ class Armado {
       b.pickUp ? renglon : [renglon, ...partes.map(([que, fecha]) => `${que}: ${hotel(fecha)}`)].join(" · ");
     const nocheAnterior = (fecha: string | null) => (fecha ? sumarDias(fecha, -1) : null);
     const llegada = this.traslado("in", "", b.inicio, codigos, IGUAZU.has(b.destino ?? ""));
+    // M3-24: cada traslado y excursión del paquete con su día, para los avisos del itinerario.
+    const conDia: ServicioConDia[] = [];
     if (!b.omitir.includes("in")) {
+      conDia.push({ tipo: "traslado", nombre: `TRF IN (${titulo})`, fecha: llegada.fecha ?? b.inicio, destino: b.destino });
       renglones.push(
         conHotel(`TRF IN, ${regular}: ${b.inicio ? fechaCorta(llegada.fecha ?? b.inicio) : "a confirmar"} · ${llegada.dato}`, [["Drop off", b.inicio]]),
       );
@@ -831,6 +849,7 @@ class Armado {
       const regla = this.reglasDeDias(b, s).find((d) => d.servicio && normalizarTexto(e).includes(normalizarTexto(d.servicio)));
       const fecha = regla ? this.diaDeLaEstadia(b, regla.dia) : b.inicio ? sumarDias(b.inicio, i + 1) : null;
       if (regla && b.inicio && !fecha) avisos.push(`Falta la fecha del ${lado.toLowerCase()}: completala antes de enviar.`);
+      conDia.push({ tipo: "excursion", nombre: `${lado} (${titulo})`, fecha, destino: b.destino });
       const mismoHotel = !fecha || this.estadiaDe(nocheAnterior(fecha)) === this.estadiaDe(fecha);
       renglones.push(
         conHotel(
@@ -847,13 +866,14 @@ class Armado {
     });
     const salida = this.traslado("out", "", b.fin, codigos, IGUAZU.has(b.destino ?? ""));
     if (!b.omitir.includes("out")) {
+      conDia.push({ tipo: "traslado", nombre: `TRF OUT (${titulo})`, fecha: salida.fecha ?? b.fin, destino: b.destino });
       renglones.push(
         conHotel(`TRF OUT, ${regular}: ${b.fin ? fechaCorta(salida.fecha ?? b.fin) : "a confirmar"} · ${salida.dato}`, [["Pick up", nocheAnterior(b.fin)]]),
       );
       pendientes.push(...salida.pendientes);
     }
     if (b.pickUp) renglones.push(`Pick up: ${b.pickUp}`);
-    return { renglones, fecha: b.inicio, hasta: b.inicio ? b.fin : null, resumen: b.inicio && b.fin ? rangoCorto(b.inicio, b.fin) : "", queParaTarea: titulo, datosPax: true, avisos, pendientes };
+    return { renglones, fecha: b.inicio, hasta: b.inicio ? b.fin : null, resumen: b.inicio && b.fin ? rangoCorto(b.inicio, b.fin) : "", queParaTarea: titulo, datosPax: true, avisos, pendientes, conDia };
   }
 
   private traslados(b: Bloque, s: Servicio, nombre: string, desde: string | null, hasta: string | null): Renglones[] {
@@ -941,7 +961,7 @@ class Armado {
     const que = r.renglon ?? nombre;
     const conHorario = (fecha: string | null) => `Fecha: ${fecha ? fechaCorta(fecha) : "a confirmar"} · Horario: ${r.horario}`;
     if (r.tramo === "vuelta") {
-      return { renglones: [titulo, conHorario(base)], fecha: base, resumen: base ? `${fechaCorta(base)} · ${r.horario}` : "", queParaTarea: que, datosPax: false, avisos: [], pendientes: [] };
+      return { renglones: [titulo, conHorario(base)], fecha: base, resumen: base ? `${fechaCorta(base)} · ${r.horario}` : "", queParaTarea: que, datosPax: false, avisos: [], pendientes: [], esBus: true, ruta: que };
     }
     const t = this.traslado("in", nombre, base, r.aeropuerto ? [r.aeropuerto] : [], false);
     const tarde = !!r.aviso && !!r.vueloDespuesDe && !!t.hora && minutosDelDia(t.hora) > minutosDelDia(r.vueloDespuesDe);
@@ -953,6 +973,8 @@ class Armado {
       datosPax: false,
       avisos: tarde ? [r.aviso!] : [],
       pendientes: t.pendientes,
+      esBus: true,
+      ruta: que,
     };
   }
 
@@ -964,7 +986,7 @@ class Armado {
     if (regla) return this.busElChalten(b, nombre, regla, fecha);
     const nocturno = /nocturno|overnight|night bus/i.test(s.descripcion ?? "");
     const renglones = [`Bus: ${nombre}`, `Fecha: ${fecha ? fechaCorta(fecha) : "a confirmar"}${nocturno ? " (nocturno)" : ""}`];
-    return { renglones, fecha, resumen: fecha ? fechaCorta(fecha) : "", queParaTarea: nombre, datosPax: false, avisos: [], pendientes: [] };
+    return { renglones, fecha, resumen: fecha ? fechaCorta(fecha) : "", queParaTarea: nombre, datosPax: false, avisos: [], pendientes: [], esBus: true, ruta: nombre };
   }
 
   /** Los pax de la reserva: `pax` o, si no vino, la cantidad de pasajeros (M3-21). */
@@ -1005,6 +1027,70 @@ class Armado {
     return { renglones, fecha: desde, hasta: desde ? hasta : null, resumen: desde && hasta ? rangoCorto(desde, hasta) : desde ? fechaCorta(desde) : "", queParaTarea: nombre, datosPax: true, avisos, pendientes };
   }
 
+  // --- Avisos del itinerario (M3-24) -------------------------------------------------------------
+
+  /** Los blackouts del producto en que cae su salida (o el inicio de su parte), una vez cada uno. */
+  private blackout(parteId: string | null, codigo: string, fecha: string | null): void {
+    const reglas = this.catalogo.itinerario;
+    if (!reglas) return;
+    const avisos = avisosDeBlackout(reglas, codigo, fecha);
+    if (!avisos.length) return;
+    const yaEstan = new Set(this.itinerario.map((x) => x.texto));
+    const nuevos = avisos.filter((a) => !yaEstan.has(a));
+    for (const texto of nuevos) this.itinerario.push({ fecha, seq: this.seq++, texto });
+    this.blackouts.set(parteId, [...(this.blackouts.get(parteId) ?? []), ...nuevos]);
+  }
+
+  /** Los blackouts que van en un borrador: los de la salida y los de las partes que cubre. */
+  blackoutsDe(parteIds: ReadonlyArray<string | null>): string[] {
+    return [...(this.blackouts.get(null) ?? []), ...parteIds.flatMap((id) => (id ? (this.blackouts.get(id) ?? []) : []))];
+  }
+
+  /** Los servicios con día de lo que se pide: las excursiones con su fecha, los traslados y los buses. */
+  private conDia(b: Bloque, s: Servicio, nombre: string, a: Renglones): ServicioConDia[] {
+    if (a.conDia) return a.conDia.map((x) => ({ ...x, destino: x.destino ?? b.destino }));
+    if (a.esBus || s.tipo === "bus") return [{ tipo: "bus", nombre: a.ruta ?? nombre, fecha: a.fecha, destino: null }];
+    // La excursión sin fecha ("a coordinar") no se mira: su `fecha` es el inicio de la estadía.
+    // Con el nombre de la excursión del renglón (M3-15: "Bodegas half Day and Alta Montaña" sale en dos, cada una con el suyo).
+    if (s.tipo === "excursion" || s.tipo === "crucero") return a.tour ? [{ tipo: "excursion", nombre: a.tour.nombre, fecha: a.tour.fecha, destino: b.destino }] : [];
+    if (s.tipo === "traslado") return [{ tipo: "traslado", nombre, fecha: a.fecha, destino: b.destino }];
+    return [];
+  }
+
+  /**
+   * Los avisos de fecha especial y de días de bus de esos servicios: los guarda para el bloque
+   * "Revisar antes de pedir" y los devuelve para el borrador. Un bus se mira por su ciudad de salida.
+   */
+  private avisosDelItinerario(servicios: ServicioConDia[]): string[] {
+    const reglas = this.catalogo.itinerario;
+    if (!reglas) return [];
+    const avisos: string[] = [];
+    for (const s of servicios) {
+      if (!s.fecha) continue;
+      const nuevos =
+        s.tipo === "bus"
+          ? (() => {
+              const tramo = tramoDeLaRuta(s.nombre);
+              const ruta = tramo ? `${nombreDestino(tramo.origen)} → ${nombreDestino(tramo.destino)}` : s.nombre;
+              return [
+                ...avisosDeFechaEspecial(reglas, { ...s, nombre: ruta, destino: tramo?.origen ?? s.destino }),
+                ...avisosDeDiasDeBus(reglas, { ruta: s.nombre, fecha: s.fecha }),
+              ];
+            })()
+          : avisosDeFechaEspecial(reglas, s);
+      for (const texto of nuevos) {
+        if (!this.itinerario.some((x) => x.texto === texto)) this.itinerario.push({ fecha: s.fecha, seq: this.seq++, texto });
+        if (!avisos.includes(texto)) avisos.push(texto);
+      }
+    }
+    return avisos;
+  }
+
+  /** Los avisos del itinerario en orden de fecha. */
+  textosDelItinerario(): string[] {
+    return [...this.itinerario].sort((a, b) => (a.fecha ?? "9999").localeCompare(b.fecha ?? "9999") || a.seq - b.seq).map((x) => x.texto);
+  }
+
   // --- Salida -------------------------------------------------------------------------------
 
   tareasFinales(): TareaArmada[] {
@@ -1036,6 +1122,11 @@ interface Renglones {
   avisos: string[];
   pendientes: string[];
   tour?: TourDeFicha;
+  /** M3-24: es un bus (el regular de El Chaltén) y su ruta, para los avisos del itinerario. */
+  esBus?: boolean;
+  ruta?: string;
+  /** M3-24: los servicios con día que junta el renglón (el paquete con traslados de Iguazú). */
+  conDia?: ServicioConDia[];
 }
 
 /** "18:30" (o "18:30:00") → los minutos desde la medianoche; NaN si no es una hora. */
@@ -1217,10 +1308,23 @@ export function armarPedidos(reserva: ReservaParaPedidos, catalogo: CatalogoPara
         }),
         firma: plantilla.firma,
         sinDestinatario: g.sinDestinatario,
-        avisos: [...new Set(g.items.flatMap((it) => it.avisos))],
+        // M3-24: los blackouts de la salida y de las partes que cubre, antes que los avisos de cada servicio.
+        avisos: [...new Set([...armado.blackoutsDe(g.items.map((it) => it.cubre.parteId)), ...g.items.flatMap((it) => it.avisos)])],
       };
     });
 
-  return { ok: true, pedidos, tareas: armado.tareasFinales(), avisos: [...new Set(avisos)] };
+  return { ok: true, pedidos, tareas: armado.tareasFinales(), avisos: [...new Set(avisos)], itinerario: armado.textosDelItinerario() };
+}
+
+/**
+ * M3-24: los avisos del itinerario de una reserva ("Revisar antes de pedir", arriba del detalle), con
+ * el mismo recorrido que el armado pero sin armar ni guardar nada y en cualquier estado (una reserva
+ * para revisión también los muestra). Sin las reglas o sin producto, ninguno.
+ */
+export function itinerarioDeLaReserva(reserva: ReservaParaPedidos, catalogo: CatalogoParaPedidos): string[] {
+  if (!catalogo.itinerario) return [];
+  const armado = new Armado(reserva, catalogo);
+  armado.recorrer();
+  return armado.textosDelItinerario();
 }
 

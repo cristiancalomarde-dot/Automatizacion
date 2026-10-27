@@ -327,3 +327,27 @@ No se interpretan en esta pieza; entran como filas del CSV cuando se cargue el p
   - "AR10 en junio avisa / 19 dic no": `AR10,rango,04-01,09-30`.
   - "Can't begin Tuesdays en martes avisa": BRARCH26.
   - "Carnaval 2027 calculado bien": Argentina 8-9 feb; Río 4-15 feb.
+
+## Respuestas del owner (2026-10-26)
+
+1. **Río (OD032 y los rangos de ARBR23/BRARCH26):** los blackouts de Río son **"no puede empezar"**: el rango ya
+   está calculado para que, si la parte de Río no empieza adentro, las noches siguientes no pisen Carnaval /
+   Reveillon. Se mira solo el inicio de la parte de Río.
+2. **Temporadas (Validity):** sí, avisan si la salida cae fuera. **ARCH33 va del 1 oct** (el "1 November" del
+   Word es un error del Word; el owner lo corrige). Se carga 1 oct – 30 abr.
+3. **Festivals in Rio (1-20 September):** todos los años.
+4. **ARBR23:** el rango de Semana Santa está mal en el Word; el owner lo corrige en Word y Wetu. Se carga
+   corrido como los otros (12 – 20 March 2027).
+5. **Fechas especiales fuera de Argentina:** São Paulo, Uruguay y Chile: nada. **Iguazú (los dos lados): como
+   Argentina** (hay problemas de disponibilidad). El resto: Navidad, Año Nuevo y Semana Santa jueves–domingo,
+   Carnaval lunes–martes, como **aviso interno** (no cambia los Word ni lo que se vende; el owner no puede tocar
+   los Word hasta junio 2027).
+6. **Buses:** la mayoría de los buses que vendemos **sí salen el 24 y el 31 de diciembre**. Un bus no avisa por
+   Nochebuena ni por víspera de Año Nuevo; avisa solo si sale el 25 dic o el 1 ene (y por Carnaval/Semana Santa no).
+   Se mira solo el día de salida.
+7. **Días de los buses:** todos diarios salvo Río Gallegos ↔ Ushuaia (lu-mie-vie) y **Bariloche ↔ El Chaltén**,
+   que tiene días por semana que se publican en octubre (suele ser día de por medio; afecta AR10). El owner pide
+   el timetable; mientras tanto ese tramo queda sin días (no avisa) y el formato de la planilla tiene que admitir
+   días de semana y "día de por medio" / pares-impares.
+8. **Journaway:** sí, las cuatro (SPAE05 no opera 25/12, 31/12, 1/1; IGRE03 lu-mie-sá; W Trek 1 oct – 26 abr;
+   BUS02 pares/impares según el sentido).
