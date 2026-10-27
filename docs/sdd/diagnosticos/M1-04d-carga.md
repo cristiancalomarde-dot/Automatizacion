@@ -1,11 +1,11 @@
 # Carga de los paquetes de los 7 tours (M1-04d)
 
-Cargué en el sistema los paquetes de un destino de los 7 tours desde **Construccion de Paquetes 2019 con 3 y 4 estrellas.xls** (2026-10-26). Cada servicio de cada paquete ya sabe a qué proveedor pedírselo, salvo los de la lista de abajo.
+Cargué en el sistema los paquetes de un destino de los 7 tours desde **Construccion de Paquetes 2019 con 3 y 4 estrellas.xls** (2026-10-27). Cada servicio de cada paquete ya sabe a qué proveedor pedírselo, salvo los de la lista de abajo.
 
 - Paquetes: 24. Servicios (cada opción de hotel o excursión cuenta una vez): 216.
-- Con proveedor y mail: **198**.
+- Con proveedor y mail: **196**.
 - Por WhatsApp (el pedido lo hace una persona): **10**.
-- Manuales, no se le escribe a nadie (se reservan a mano en el sistema de ellos: Kupos.cl, Buquebus, Transvipp): **5**.
+- Manuales, no se le escribe a nadie (se reservan a mano en el sistema de ellos: Kupos.cl, Buquebus, Transvipp): **7**.
 - Sin resolver: **3**.
 
 ## Por paquete
@@ -15,9 +15,9 @@ Cargué en el sistema los paquetes de un destino de los 7 tours desde **Construc
 | OD013 | FTE | 12 | 12 | 0 | 0 | 0 | 0 |
 | OD016 | FTE | 11 | 11 | 0 | 0 | 0 | 0 |
 | OD017 | PNT | 12 | 11 | 0 | 1 | 0 | 0 |
-| OD018 | BUE | 14 | 14 | 0 | 0 | 0 | 0 |
+| OD018 | BUE | 14 | 13 | 0 | 1 | 0 | 0 |
 | OD019 | MDZ | 6 | 5 | 1 | 0 | 0 | 0 |
-| OD020 | BUE | 14 | 13 | 0 | 1 | 0 | 0 |
+| OD020 | BUE | 14 | 12 | 0 | 2 | 0 | 0 |
 | OD022 | USH | 11 | 10 | 1 | 0 | 0 | 0 |
 | OD025 | PMY | 10 | 8 | 2 | 0 | 0 | 0 |
 | OD029 | SCL | 7 | 7 | 0 | 0 | 0 | 0 |
@@ -117,7 +117,7 @@ Estos servicios todavía no saben a quién escribirle. Cuando completes el dato 
 | 492 | alojamiento | Hotel 4* | 3 | NH Buenos Aires City | NH City | Hotel Nh City | rsv.nhcity@nh-hotels.com, reservas@minor-hotels.com |
 | 498 | excursion | — | 1 | City Tour | Grupo Summa | Grupo Summa | reservas@gruposumma.tur.ar |
 | 498 | excursion | — | 2 | Bike Tour | La Bicicleta Naranja | La Bicicleta Naranja | info@labicicletanaranja.com.ar |
-| 499 | traslado | — | 1 | EZE o AEP - Hotel - EZE o AEP | Greeters | GREETERS | info@greetersba.com |
+| 499 | traslado | — | 1 | EZE o AEP - Hotel - EZE o AEP | Greeters | — | manual (no se le escribe) |
 | 500 | excursion | — | 1 | Tango Show with dinner, drinks and transfers | Madero Tango | Madero tango | reservas@maderotango.com.ar |
 
 ### OD019 · Mendoza Mountains and Wineries
@@ -147,7 +147,7 @@ Estos servicios todavía no saben a quién escribirle. Cuando completes el dato 
 | 492 | alojamiento | Hotel 4* | 3 | NH Buenos Aires City | NH City | Hotel Nh City | rsv.nhcity@nh-hotels.com, reservas@minor-hotels.com |
 | 498 | excursion | — | 1 | City Tour | Grupo Summa | Grupo Summa | reservas@gruposumma.tur.ar |
 | 498 | excursion | — | 2 | Bike Tour | La Bicicleta Naranja | La Bicicleta Naranja | info@labicicletanaranja.com.ar |
-| 499 | traslado | — | 1 | EZE o AEP - Hotel - EZE o AEP | Greeters | GREETERS | info@greetersba.com |
+| 499 | traslado | — | 1 | EZE o AEP - Hotel - EZE o AEP | Greeters | — | manual (no se le escribe) |
 | 500 | excursion | — | 1 | Colonia Day Trip Circuito Historico | Buquebus | — | manual (no se le escribe) |
 
 ### OD022 · Ushuaia, end of the World
