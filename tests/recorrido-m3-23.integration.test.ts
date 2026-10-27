@@ -155,7 +155,7 @@ interface Armado {
     for (const c of CASOS) expect(armados.get(c.clave), c.clave).toMatchObject({ producto: "AR10", estado: "recibida", motivos: [] });
   });
 
-  it("las únicas tareas son los boletos de bus que emite HI Travel (5, con su fecha) y, en Hostel, el WhatsApp de Lagares (Mendoza); ningún 'revisar a mano'", () => {
+  it("las únicas tareas son los boletos de bus que emite HI Travel (4, con su fecha; M3-25: Bariloche – El Chaltén va a Chalten Travel) y, en Hostel, el WhatsApp de Lagares (Mendoza); ningún 'revisar a mano'", () => {
     expect(armados.get("DBL Hostel")!.tareas.filter((t) => !t.startsWith("emitir_boleto"))).toEqual([
       "whatsapp: Contactar por WhatsApp a Hostel Lagares Mendoza: Lagares Hostel (doble), IN 24 dic 2026, OUT 26 dic 2026",
     ]);
@@ -164,7 +164,6 @@ interface Armado {
       expect(armados.get(c.clave)!.tareas.filter((t) => t.startsWith("emitir_boleto")), c.clave).toEqual([
         "emitir_boleto: Emitir boleto: Salta – Mendoza, 23 dic 2026",
         "emitir_boleto: Emitir boleto: Mendoza – Bariloche, 26 dic 2026",
-        "emitir_boleto: Emitir boleto: Bariloche – El Chaltén, 30 dic 2026",
         "emitir_boleto: Emitir boleto: El Calafate – Río Gallegos, 5 ene 2027",
         "emitir_boleto: Emitir boleto: Río Gallegos – Ushuaia, 5 ene 2027",
       ]);

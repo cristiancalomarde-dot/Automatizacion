@@ -36,6 +36,7 @@ import type {
   ProveedorFichaCompleta,
   PuntoDeEncuentro,
   ReservaParaPedidos,
+  TramoSePideA,
   VueloDeReserva,
 } from "./tipos";
 
@@ -48,6 +49,7 @@ export const ARCHIVO_CATEGORIAS_TOUR = join("data", "categorias-tour.csv");
 export const ARCHIVO_PUNTOS_DE_ENCUENTRO = join("data", "puntos-de-encuentro.csv");
 export const ARCHIVO_BUSES_EL_CHALTEN = join("data", "buses-el-chalten.csv");
 export const ARCHIVO_ALOJAMIENTO_SE_PIDE_A = join("data", "alojamiento-se-pide-a.csv");
+export const ARCHIVO_TRAMOS_SE_PIDEN_A = join("data", "tramos-se-piden-a.csv");
 
 /* eslint-disable @typescript-eslint/no-explicit-any -- filas crudas de PostgREST, se tipan al mapear */
 
@@ -235,6 +237,32 @@ export function cargarAlojamientoSePideA(raiz: string = process.cwd()): Alojamie
 }
 
 /**
+ * `data/tramos-se-piden-a.csv`: tour,ruta,proveedor,horario,nota (M3-25, owner 2026-10-27). El bus `ruta`
+ * ("A – B") del tour, que si no emite HI Travel (tarea), se le pide al proveedor (su nombre en el directorio),
+ * con su hora de salida en ese sentido (opcional).
+ */
+export function leerTramosSePidenA(contenido: string): TramoSePideA[] {
+  const cabecera = contenido.replace(/^\uFEFF/, "").split(/\r?\n/)[0]?.trim() ?? "";
+  if (!/^tour,ruta,proveedor\b/.test(cabecera)) {
+    throw new Error(`${ARCHIVO_TRAMOS_SE_PIDEN_A}: la primera fila tiene que ser "tour,ruta,proveedor,horario,nota".`);
+  }
+  return leerCsv(contenido).map((f, i) => {
+    const tour = f.tour?.trim();
+    const ruta = f.ruta?.trim();
+    const proveedor = f.proveedor?.trim();
+    if (!tour || !ruta || !proveedor || ruta.split(/\s+[–-]\s+/).length !== 2) {
+      throw new Error(`${ARCHIVO_TRAMOS_SE_PIDEN_A}, fila ${i + 2}: hace falta el tour, la ruta ("A – B") y el proveedor.`);
+    }
+    const horario = f.horario?.trim();
+    return { tour, ruta, proveedor, ...(horario ? { horario } : {}) };
+  });
+}
+
+export function cargarTramosSePidenA(raiz: string = process.cwd()): TramoSePideA[] {
+  return leerTramosSePidenA(readFileSync(join(raiz, ARCHIVO_TRAMOS_SE_PIDEN_A), "utf-8"));
+}
+
+/**
  * `data/opciones-pasajero.csv`: codigo,orden,eleccion,accion,servicio,proveedor,nota (M3-13, owner
  * 2026-10-22). `accion` es "elegir", "renombrar" o "agregar"; "agregar" lleva el proveedor (su
  * nombre en el directorio).
@@ -343,6 +371,11 @@ export function conProveedorDelAlojamiento(reglas: readonly AlojamientoSePideA[]
   return reglas.map((r) => ({ ...r, proveedorDelDirectorio: proveedores.find((p) => normalizarTexto(p.nombre) === normalizarTexto(r.proveedor)) ?? null }));
 }
 
+/** M3-25: las reglas de los tramos de bus con su proveedor del directorio (por nombre, sin mayúsculas ni acentos); null si no está. */
+export function conProveedorDelTramo(reglas: readonly TramoSePideA[], proveedores: readonly ProveedorResumen[]): TramoSePideA[] {
+  return reglas.map((r) => ({ ...r, proveedorDelDirectorio: proveedores.find((p) => normalizarTexto(p.nombre) === normalizarTexto(r.proveedor)) ?? null }));
+}
+
 /** Los proveedores de las reglas que tocan a estos productos, del directorio (una consulta por nombre). */
 async function proveedoresDeOpciones(cliente: SupabaseClient, reglas: readonly OpcionDelPasajero[], codigos: Set<string>): Promise<OpcionDelPasajero[]> {
   const propias = reglas.filter((r) => codigos.has(r.codigo));
@@ -387,6 +420,7 @@ export async function cargarCatalogoParaPedidos(
   puntosDeEncuentro: readonly PuntoDeEncuentro[] = [],
   busesElChalten: readonly BusElChalten[] = [],
   alojamientoSePideA: readonly AlojamientoSePideA[] = [],
+  tramosSePidenA: readonly TramoSePideA[] = [],
 ): Promise<CatalogoParaPedidos> {
   const ids = [...new Set([reserva.productoId, ...reserva.otrosProductos, ...reserva.partes.map((p) => p.productoId)].filter((x): x is string => !!x))];
   const detalles = new Map<string, DetalleProducto>(await Promise.all(ids.map(async (id) => [id, await cargarProducto(cliente, id)] as const)));
@@ -404,6 +438,9 @@ export async function cargarCatalogoParaPedidos(
   // M3-22: a quién se le pide el alojamiento (Factoria a Factoria), solo de los destinos de estos productos.
   const destinos = new Set([...detalles.values()].flatMap((d) => [d.destino ?? "", ...d.componentes.map((c) => c.producto?.destino ?? "")]).filter(Boolean));
   const alojamientos = alojamientoSePideA.length ? await proveedoresDeAlojamientos(cliente, alojamientoSePideA, destinos) : [];
+  // M3-25: los buses de estos tours que se le piden a un proveedor (Bariloche – El Chaltén de AR10 a Chalten Travel).
+  const tramosPropios = tramosSePidenA.filter((t) => codigos.has(t.tour));
+  const tramos = tramosPropios.length ? conProveedorDelTramo(tramosPropios, await proveedoresPorNombre(cliente, [...new Set(tramosPropios.map((t) => t.proveedor))])) : [];
   return {
     detalles,
     proveedores,
@@ -416,6 +453,7 @@ export async function cargarCatalogoParaPedidos(
     puntosDeEncuentro,
     busesElChalten,
     alojamientoSePideA: alojamientos,
+    tramosSePidenA: tramos,
   };
 }
 

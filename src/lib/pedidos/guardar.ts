@@ -19,6 +19,7 @@ import {
   cargarOpcionesPasajero,
   cargarProveedoresFichaCompleta,
   cargarAlojamientoSePideA,
+  cargarTramosSePidenA,
   cargarReglasItinerario,
   cargarBusesElChalten,
   cargarPuntosDeEncuentro,
@@ -26,7 +27,7 @@ import {
 } from "./cargar";
 import { cargarPlantilla } from "./plantilla";
 import type { CategoriaTour } from "@/lib/importador-tours/datos";
-import type { AlojamientoSePideA, BusElChalten, DiaDeServicio, ExcursionConEntrada, HostelSegunHabitacion, OpcionDelPasajero, ProveedorFichaCompleta, PuntoDeEncuentro, PedidoArmado, Plantilla, ResultadoArmado, TareaArmada, TipoTarea } from "./tipos";
+import type { AlojamientoSePideA, TramoSePideA, BusElChalten, DiaDeServicio, ExcursionConEntrada, HostelSegunHabitacion, OpcionDelPasajero, ProveedorFichaCompleta, PuntoDeEncuentro, PedidoArmado, Plantilla, ResultadoArmado, TareaArmada, TipoTarea } from "./tipos";
 import type { ReglasItinerario } from "./itinerario";
 
 export interface ConteoGuardado {
@@ -128,6 +129,8 @@ export interface OpcionesArmado {
   busesElChalten?: readonly BusElChalten[];
   /** M3-22: a quién se le pide el alojamiento (por defecto, data/alojamiento-se-pide-a.csv). */
   alojamientoSePideA?: readonly AlojamientoSePideA[];
+  /** M3-25: los buses de un tour que se le piden a un proveedor (por defecto, data/tramos-se-piden-a.csv). */
+  tramosSePidenA?: readonly TramoSePideA[];
   /** M3-24: las reglas de los avisos del itinerario (por defecto, data/blackouts.csv, fechas-especiales.csv y dias-bus.csv). */
   itinerario?: ReglasItinerario;
 }
@@ -153,6 +156,7 @@ export async function armarYGuardarPedidos(cliente: SupabaseClient, reservaId: s
     opciones.puntosDeEncuentro ?? cargarPuntosDeEncuentro(),
     opciones.busesElChalten ?? cargarBusesElChalten(),
     opciones.alojamientoSePideA ?? cargarAlojamientoSePideA(),
+    opciones.tramosSePidenA ?? cargarTramosSePidenA(),
   );
   const armado = armarPedidos(reserva, { ...catalogo, itinerario: opciones.itinerario ?? cargarReglasItinerario() }, plantilla);
   if (!armado.ok) return armado;

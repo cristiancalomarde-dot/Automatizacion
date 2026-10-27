@@ -226,24 +226,28 @@ interface ReservaCreada {
     // M3-11: con "Double Room - Hostel" el hostel de Puerto Natales va a Factoria, no a Puma. M3-22: se le pide a
     // Factoria (en el directorio, "Factoria (hostel de Vertice)"), no a Vértice.
     expect(resumen.ARCH33EXP.casillas).toEqual(["agencias@chaltentravel.com", "carmen.munoz@lastorres.com", "reservas@factoriapatagonia.com", "reservas@glaciar.com"]);
+    // M3-25 (owner, 2026-10-27): Greeters reserva por su sistema: su traslado de llegada queda a mano, sin mail.
     expect(resumen.ARBR23.casillas).toEqual([
       "beerhotel@tangoinn.com,beerhotel@cervezaholy.com",
       "buziostransfer@hotmail.com",
-      "info@greetersba.com",
       "melina@milhousehostel.com",
       "perez@local55.com",
       "reservas8@cuencadelplata.com",
       "reservas@gruposumma.tur.ar",
       "reservas@maderotango.com.ar",
     ]);
-    expect(resumen.ARBR23.tareas).toEqual(["emitir_boleto: Emitir boleto: Buenos Aires – Iguazú", "emitir_boleto: Emitir boleto: Iguazú – Río de Janeiro"]);
+    expect(resumen.ARBR23.tareas).toEqual([
+      "reservar_a_mano: Reservar a mano en Greeters: traslado de llegada Transfer in aeropuerto (EZE o AEP) → alojamiento",
+      "emitir_boleto: Emitir boleto: Buenos Aires – Iguazú",
+      "emitir_boleto: Emitir boleto: Iguazú – Río de Janeiro",
+    ]);
     expect(resumen.ARUY01.tareas).toEqual([
+      "reservar_a_mano: Reservar a mano en Greeters: traslado de llegada Transfer in aeropuerto (EZE o AEP) → alojamiento",
       "emitir_boleto: Emitir boleto: Ferry Buenos Aires – Colonia del Sacramento",
       "emitir_boleto: Emitir boleto: Bus regular Colonia - Montevideo (terminal de buses Tres Cruces)",
       "revisar: Pedir a mano: Hotel Oxford Montevideo (OD040)",
     ]);
     expect(resumen.ARUY01.casillas).toEqual([
-      "info@greetersba.com",
       "natalyp@viajerohostels.com,dfarinati@viajerohostels.com",
       "operaciones@dcomtravel.com,macarena.perez@dcomtravel.com",
       "reservas@dazzlermaipu.com",

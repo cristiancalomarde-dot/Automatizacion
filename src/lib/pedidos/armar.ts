@@ -68,6 +68,7 @@ import type {
   ReservaParaPedidos,
   ResultadoArmado,
   TareaArmada,
+  TramoSePideA,
   VueloDeReserva,
 } from "./tipos";
 
@@ -232,6 +233,7 @@ class Armado {
   private parte(parte: ParteParaPedidos): void {
     if (parte.esTarea) {
       const ruta = parte.descripcionRuta ?? parte.textoAgencia ?? "bus";
+      if (this.tramoAProveedor(parte, ruta)) return;
       this.tarea("emitir_boleto", `Emitir boleto: ${ruta}${parte.fechaInicio ? `, ${fechaCorta(parte.fechaInicio)}` : ""}`, { parteId: parte.id, ruta }, parte.fechaInicio);
       this.avisosDelItinerario([{ tipo: "bus", nombre: ruta, fecha: parte.fechaInicio, destino: null }]);
       return;
@@ -335,6 +337,38 @@ class Armado {
     const renglones = [`Bus: ${que}`, `Fecha: ${parte.fechaInicio ? fechaCorta(parte.fechaInicio) : "a confirmar"}${nocturno ? " (nocturno)" : ""}`];
     const avisos = this.avisosDelItinerario([{ tipo: "bus", nombre: que, fecha: parte.fechaInicio, destino: null }]);
     this.agregar(proveedor, "bus", renglones, parte.fechaInicio, cubre, false, avisos, []);
+  }
+
+  /**
+   * M3-25 (owner, 2026-10-27): el bus del tour que emitiría HI Travel, si `data/tramos-se-piden-a.csv` dice que
+   * en este tour se le pide a un proveedor (Bariloche – El Chaltén de AR10 a Chalten Travel), va en el pedido a
+   * ese proveedor, con su fecha y, si la regla está escrita en ese sentido, su horario. La regla vale en los dos
+   * sentidos. Si el proveedor no está en el directorio, queda la tarea de siempre, con un aviso. True si se pidió.
+   */
+  private tramoAProveedor(parte: ParteParaPedidos, ruta: string): boolean {
+    const tours = new Set(
+      [this.reserva.productoId, ...this.reserva.otrosProductos].map((id) => (id ? this.catalogo.detalles.get(id)?.codigo : undefined)).filter(Boolean),
+    );
+    const puntas = (r: string) => r.replace(/^\s*bus\s+/i, "").split(/\s+[–-]\s+/).map(normalizarTexto);
+    const [a, b] = puntas(ruta);
+    if (!a || !b) return false;
+    const reglas = (this.catalogo.tramosSePidenA ?? []).filter((t) => tours.has(t.tour));
+    const mismoSentido = (t: TramoSePideA) => puntas(t.ruta)[0] === a && puntas(t.ruta)[1] === b;
+    const regla = reglas.find(mismoSentido) ?? reglas.find((t) => puntas(t.ruta)[0] === b && puntas(t.ruta)[1] === a);
+    if (!regla) return false;
+    const proveedor = regla.proveedorDelDirectorio;
+    if (!proveedor) {
+      this.avisos.push(`"${regla.proveedor}" no está en el directorio de proveedores: el bus ${ruta} queda como boleto para emitir. Revisalo antes de enviar.`);
+      return false;
+    }
+    const horario = mismoSentido(regla) ? regla.horario : undefined;
+    const llega = parte.fechaFin && parte.fechaInicio && parte.fechaFin > parte.fechaInicio ? parte.fechaFin : null;
+    const cuando = parte.fechaInicio ? fechaCorta(parte.fechaInicio) : "a confirmar";
+    const fecha = horario ? `Fecha: ${cuando} · Horario: ${horario}${llega ? ` (llega el ${fechaCorta(llega)})` : ""}` : `Fecha: ${cuando}${llega ? " (nocturno)" : ""}`;
+    const avisos = this.avisosDelItinerario([{ tipo: "bus", nombre: ruta, fecha: parte.fechaInicio, destino: null }]);
+    const cubre: ParteCubierta = { parteId: parte.id, productoServicioId: null, producto: null, fecha: parte.fechaInicio };
+    this.agregar(proveedor, "bus", [`Bus: ${ruta}`, fecha], parte.fechaInicio, cubre, false, avisos, []);
+    return true;
   }
 
   // --- Un paquete -------------------------------------------------------------------------
@@ -742,10 +776,14 @@ class Armado {
     const entradas = this.esDeJournaway() && llevaEntradas(this.catalogo.entradas ?? [], b.codigo, `${nombre} ${s.descripcion ?? ""}`);
     renglones.push(`Servicio: ${regular} · Idioma: ${idioma}${entradas ? " · Con entradas" : ""}`);
     const punto = this.puntoDeEncuentro(b, s, nombre);
-    const pickUp = punto
+    // M3-25 (owner, 2026-10-27): la excursión "sin transfer" (el Beagle de OD022, "no transfer to port") no lleva pick up.
+    const sinTraslado = SIN_TRASLADOS.test(`${nombre} ${s.descripcion ?? ""}`);
+    const pickUp: { renglon: string | null; pendientes: string[]; lugar: string | null } = punto
       ? { renglon: `Punto de encuentro: ${punto} (el pasajero va directo)`, pendientes: [], lugar: punto }
-      : this.pickUp(b, variosDias ? desde : (fecha ?? desde), !variosDias);
-    renglones.push(pickUp.renglon);
+      : sinTraslado
+        ? { renglon: null, pendientes: [], lugar: null }
+        : this.pickUp(b, variosDias ? desde : (fecha ?? desde), !variosDias);
+    if (pickUp.renglon) renglones.push(pickUp.renglon);
     const resumen = variosDias ? rangoCorto(desde!, hasta!) : fecha ? `${fechaCorta(fecha)}${momento}` : "fecha a coordinar";
     const tour: TourDeFicha = {
       nombre,
@@ -895,10 +933,25 @@ class Armado {
         else return [this.unTraslado(b, s, nombre, null, desde)];
       }
     }
-    return lados
-      .filter((l) => !b.omitir.includes(l))
-      .filter((l) => !(l === "in" && b.llegaEnBus) && !(l === "out" && b.saleEnBus))
-      .map((l) => this.unTraslado(b, s, nombre, l, l === "in" ? desde : hasta));
+    const quedan = lados.filter((l) => !b.omitir.includes(l)).filter((l) => !(l === "in" && b.llegaEnBus) && !(l === "out" && b.saleEnBus));
+    const deUnLado = quedan.length === 1 ? this.nombreDeUnLado(b, s, nombre, quedan[0]) : nombre;
+    return quedan.map((l) => this.unTraslado(b, s, deUnLado, l, l === "in" ? desde : hasta));
+  }
+
+  /**
+   * M3-25 (owner, 2026-10-27, OD027 y OD022 en AR10): un traslado de ida y vuelta del que se pide un solo lado
+   * (llega o sigue en bus) no puede decir el round trip ("Transfer SLA - Accommodation - SLA"). Va el texto del
+   * ajuste del tour si lo tiene; si no, "Transfer in aeropuerto (SLA) → alojamiento" o "Transfer out alojamiento
+   * → aeropuerto (USH)", con los códigos de aeropuerto del renglón (o el destino del paquete). Un reemplazo
+   * (Iguazú) ya trae su propio texto.
+   */
+  private nombreDeUnLado(b: Bloque, s: Servicio, nombre: string, lado: Lado): string {
+    if (s.sentido !== "ida_y_vuelta" || s.ajusteTour?.accion === "reemplazar") return nombre;
+    if (s.ajusteTour?.texto) return s.ajusteTour.texto;
+    const enElTexto = [...new Set(`${s.descripcion ?? ""} ${nombre}`.match(/\b[A-Z]{3}\b/g) ?? [])];
+    const codigos = enElTexto.length ? enElTexto : b.destino ? [b.destino] : [];
+    const aeropuerto = codigos.length ? `aeropuerto (${codigos.join(" o ")})` : "aeropuerto";
+    return lado === "in" ? `Transfer in ${aeropuerto} → alojamiento` : `Transfer out alojamiento → ${aeropuerto}`;
   }
 
   private unTraslado(b: Bloque, s: Servicio, nombre: string, lado: Lado | null, fecha: string | null): Renglones {

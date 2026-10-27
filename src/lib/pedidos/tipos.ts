@@ -182,6 +182,21 @@ export interface AlojamientoSePideA {
   proveedorDelDirectorio?: ProveedorResumen | null;
 }
 
+/**
+ * Una fila de `data/tramos-se-piden-a.csv` (M3-25, owner 2026-10-27): el bus `ruta` ("Bariloche – El
+ * Chaltén") del tour `tour`, que si no emite HI Travel, se le pide a `proveedor` (su nombre en el
+ * directorio). Vale en los dos sentidos.
+ */
+export interface TramoSePideA {
+  tour: string;
+  ruta: string;
+  proveedor: string;
+  /** La hora de salida en ese sentido ("8:30 am"); solo vale si el bus va en el sentido de la ruta. */
+  horario?: string;
+  /** El proveedor del directorio (lo completa `cargar.ts`); null si no está. */
+  proveedorDelDirectorio?: ProveedorResumen | null;
+}
+
 export interface CatalogoParaPedidos {
   /** El detalle (`cargarProducto`) del producto de la reserva, de los otros productos y de cada parte. */
   detalles: ReadonlyMap<string, DetalleProducto>;
@@ -196,6 +211,8 @@ export interface CatalogoParaPedidos {
   hostelSegunHabitacion?: readonly HostelSegunHabitacion[];
   /** A quién se le pide un alojamiento (M3-22, Factoria a Factoria; sin la lista, al del Excel). */
   alojamientoSePideA?: readonly AlojamientoSePideA[];
+  /** Los buses de un tour que se le piden a un proveedor en vez de emitirlos HI Travel (M3-25; sin la lista, todos tarea). */
+  tramosSePidenA?: readonly TramoSePideA[];
   /** Las opciones que elige el pasajero (M3-13; sin la lista, como antes). */
   opcionesPasajero?: readonly OpcionDelPasajero[];
   /** Las categorías tour ↔ paquete (M3-14, data/categorias-tour.csv; sin la lista, la regla general). */

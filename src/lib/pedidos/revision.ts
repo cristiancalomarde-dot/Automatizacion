@@ -26,6 +26,7 @@ import {
   cargarOpcionesPasajero,
   cargarProveedoresFichaCompleta,
   cargarAlojamientoSePideA,
+  cargarTramosSePidenA,
   cargarReglasItinerario,
   cargarBusesElChalten,
   cargarPuntosDeEncuentro,
@@ -35,7 +36,7 @@ import { cargarPedidos, guardarPedidosArmados, type PedidoGuardado, type TareaGu
 import { avisosDeLaPantalla, loQuePidioLaAgencia, validarEdicion, type EdicionPedido, type LoQuePidio } from "./pantalla";
 import { cargarPlantilla } from "./plantilla";
 import type { CategoriaTour } from "@/lib/importador-tours/datos";
-import type { AlojamientoSePideA, BusElChalten, DiaDeServicio, ExcursionConEntrada, HostelSegunHabitacion, OpcionDelPasajero, ProveedorFichaCompleta, PuntoDeEncuentro, Plantilla } from "./tipos";
+import type { AlojamientoSePideA, TramoSePideA, BusElChalten, DiaDeServicio, ExcursionConEntrada, HostelSegunHabitacion, OpcionDelPasajero, ProveedorFichaCompleta, PuntoDeEncuentro, Plantilla } from "./tipos";
 import type { ReglasItinerario } from "./itinerario";
 import { enviarPedidosAprobados, type DependenciasEnvio, type PedidoDeEnvio, type ResultadoEnvio } from "./envio/enviar";
 
@@ -90,6 +91,8 @@ export interface OpcionesPreparar {
   busesElChalten?: readonly BusElChalten[];
   /** M3-22: a quién se le pide el alojamiento (por defecto, data/alojamiento-se-pide-a.csv). */
   alojamientoSePideA?: readonly AlojamientoSePideA[];
+  /** M3-25: los buses de un tour que se le piden a un proveedor (por defecto, data/tramos-se-piden-a.csv). */
+  tramosSePidenA?: readonly TramoSePideA[];
   /** M3-24: las reglas de los avisos del itinerario (por defecto, data/blackouts.csv, fechas-especiales.csv y dias-bus.csv). */
   itinerario?: ReglasItinerario;
 }
@@ -122,6 +125,7 @@ export async function prepararPedidos(cliente: SupabaseClient, reservaId: string
     opciones.puntosDeEncuentro ?? cargarPuntosDeEncuentro(),
     opciones.busesElChalten ?? cargarBusesElChalten(),
     opciones.alojamientoSePideA ?? cargarAlojamientoSePideA(),
+    opciones.tramosSePidenA ?? cargarTramosSePidenA(),
   );
   const armado = armarPedidos(reserva, { ...catalogo, itinerario: opciones.itinerario ?? cargarReglasItinerario() }, plantilla);
   if (!armado.ok) return armado;
