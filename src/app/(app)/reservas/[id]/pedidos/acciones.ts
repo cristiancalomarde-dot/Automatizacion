@@ -28,9 +28,13 @@ import { TEXTOS } from "@/lib/textos";
  */
 
 function motivo(e: unknown, porDefecto: string): string {
+  // Queda en los logs de Vercel: sin esto, un error inesperado no deja rastro.
+  console.error("[pedidos]", e);
   const m = e instanceof Error ? e.message : "";
   // Los errores de lib/pedidos ya vienen en castellano ("No se pudo leer la reserva: …"): se deja la primera parte.
-  return /^No se pud/.test(m) ? `${m.split(":")[0]}.` : porDefecto;
+  if (/^No se pud/.test(m)) return `${m.split(":")[0]}.`;
+  // Lo inesperado se muestra con su detalle, para poder diagnosticarlo desde la pantalla.
+  return m ? `${porDefecto} (Detalle: ${m.slice(0, 300)})` : porDefecto;
 }
 
 /** Arma y guarda los borradores (sin pisar los editados, salvo "Rearmar todo"). */
