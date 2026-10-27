@@ -9,8 +9,9 @@ const nextConfig: NextConfig = {
     // M3-08: el filtro por agencia de la lista lee data/agencias.csv en la server action.
     "/reservas": ["./data/agencias.csv"],
     // M3-11/M3-13: armar los pedidos lee data/*.csv (días, hostels, opciones del pasajero) y la plantilla del pedido.
-    "/reservas/[id]": ["./data/*.csv", "./data/plantillas/*.md"],
-    "/reservas/[id]/pedidos": ["./data/*.csv", "./data/plantillas/*.md"],
+    // Las claves son globs: "[id]" se lee como clase de caracteres y "/reservas/[id]/pedidos" no
+    // calzaba (en producción faltó data/blackouts.csv, M3-24). "/reservas/**" cubre el detalle y los pedidos.
+    "/reservas/**": ["./data/*.csv", "./data/plantillas/*.md"],
   },
 };
 
