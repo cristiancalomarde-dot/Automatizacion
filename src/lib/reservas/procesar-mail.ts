@@ -72,6 +72,11 @@ export interface OpcionesProceso {
    * un mail ya guardado nunca se reprocesa.
    */
   reintentar?: boolean;
+  /**
+   * M3-30 (el script de un solo uso que vuelve a leer un mail ya guardado): el mail se procesa
+   * aunque ya esté guardado, y sus reservas viejas (ya descartadas) no cuentan como "mismo intercambio".
+   */
+  reprocesar?: { excluirReservas: readonly string[] };
 }
 
 export type AccionPedido = "nueva" | "sumada" | "revision_ambigua" | "posible_duplicada";
@@ -147,6 +152,8 @@ interface ContextoMail {
   deps: DependenciasReservas;
   ahora: Date;
   alcance: readonly string[] | null;
+  /** M3-30: reservas que no cuentan como candidatas (las viejas de un mail que se reprocesa). */
+  excluir: readonly string[];
 }
 
 /** Los motivos de una reserva nueva, con lo que agrega el intercambio (filas 7, 8 y 9). */
@@ -293,7 +300,7 @@ async function sumarA(ctx: ContextoMail, armada: ReservaArmada, existente: Reser
 
 async function aplicarPedido(ctx: ContextoMail, armada: ReservaArmada, pedido: PedidoIntercambio): Promise<ResultadoPedido> {
   for (let intento = 0; ; intento++) {
-    const candidatas = await cargarCandidatas(ctx.admin, pedido, ctx.ahora, ctx.alcance);
+    const candidatas = (await cargarCandidatas(ctx.admin, pedido, ctx.ahora, ctx.alcance)).filter((r) => !ctx.excluir.includes(r.id));
     const decision = decidirPedido(pedido, candidatas, { ahora: ctx.ahora });
     if (decision.tipo === "sumar_a") return sumarA(ctx, armada, candidatas.find((r) => r.id === decision.reservaId)!);
     try {
@@ -320,7 +327,7 @@ export async function procesarMail(entrada: MailEntrada, opciones: OpcionesProce
   const dePrueba = opciones.dePrueba ?? entrada.dePrueba ?? false;
   const agencia = entrada.agencia ?? agenciaDelRemitente(entrada.remitente);
   const { mail, nuevo } = await guardarMailRecibido({ ...entrada, agencia, dePrueba }, admin);
-  if (!nuevo && !(opciones.reintentar && (await sePuedeReintentar(admin, mail)))) {
+  if (!nuevo && !opciones.reprocesar && !(opciones.reintentar && (await sePuedeReintentar(admin, mail)))) {
     return { estado: "ya_procesado", mailRecibidoId: mail.id, pedidos: [], costo: 0 };
   }
 
@@ -353,6 +360,7 @@ export async function procesarMail(entrada: MailEntrada, opciones: OpcionesProce
       deps,
       ahora: opciones.ahora?.() ?? new Date(),
       alcance: opciones.alcance ? [...opciones.alcance(), mail.id] : null,
+      excluir: opciones.reprocesar?.excluirReservas ?? [],
     };
 
     const pedidos: ResultadoPedido[] = [];

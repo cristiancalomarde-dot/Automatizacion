@@ -7,6 +7,7 @@
  *   teléfono). Si trae una dirección de HI Travel (operaciones3@…), se ignora.
  * - "Anrede: mr/mrs" antes de "Vorname" y "Nachname": Sr./Sra.
  * - "Attached you can find a copy of the travellers passports": trae pasaportes.
+ * - "Rooms: 1 DBL" (M3-30, mail Petzold): las habitaciones, tal cual.
  *
  * No guarda nada ni escribe en la consola.
  */
@@ -24,6 +25,7 @@ export interface DatosDelCuerpo {
   contacto: ContactoCliente | null;
   tratamientos: Array<{ nombre: string; apellido: string; tratamiento: Tratamiento | null }>;
   pasaportes: boolean;
+  habitacion: string | null;
 }
 
 const MAIL = /[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)+/;
@@ -99,5 +101,8 @@ export function leerCuerpoJournaway(texto: string): DatosDelCuerpo {
   }
 
   const pasaportes = /cop(y|ies) of the (travel+ers'?|passengers'?) passports?|reisepass/i.test(texto);
-  return { tripNumber, contacto, tratamientos, pasaportes };
+  const rooms = lineas.map((l) => /^(?:rooms?|zimmer)\s*:\s*(.+)$/i.exec(l)?.[1]?.trim()).find(Boolean);
+  const suelta = /\b\d+\s*x?\s*(?:DBL|TWN|SGL|TPL)\b/.exec(texto)?.[0];
+  const habitacion = rooms ?? suelta?.replace(/\s+/g, " ") ?? null;
+  return { tripNumber, contacto, tratamientos, pasaportes, habitacion };
 }

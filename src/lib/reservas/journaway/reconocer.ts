@@ -3,7 +3,7 @@ import { limpiarNombreJournaway } from "@/lib/importador-journaway/nombres";
 import { AGENCIA_JOURNAWAY } from "@/lib/catalogo/reglas";
 import type { CatalogoParaEmparejar, ProductoDeLista } from "../emparejar/catalogo";
 import { emparejarProducto, nochesEntre, UMBRAL_CONFIANZA_PRODUCTO, type ProponerProducto } from "../emparejar/emparejar";
-import type { FichaLectura } from "../esquema-ficha";
+import type { FichaLectura, ProductoIA } from "../esquema-ficha";
 import type { OrigenEmparejado } from "../tipos";
 import { codigosDelMail } from "./codigo";
 import { MOTIVOS_JOURNAWAY as M, NOTAS_JOURNAWAY as N } from "./motivos";
@@ -64,6 +64,36 @@ function nombreCorto(nombre: string): string {
   return t.trim();
 }
 
+/**
+ * M3-30 (fila 5): Journaway a veces escribe una fila por pasajero. Los renglones
+ * iguales (mismo servicio, mismas fechas) cuentan como uno si son tantos como
+ * los pax o menos (2 filas con 2 pax = un servicio para 2). Más copias que pax
+ * no se juntan: eso sí es raro y lo ve quien revisa.
+ */
+export function unaFilaPorServicio(productos: readonly ProductoIA[], pax: number | null): ProductoIA[] {
+  if (!pax || pax < 2) return [...productos];
+  const clave = (p: ProductoIA) => `${limpiarNombreJournaway(p.nombre)}|${p.fecha_inicio ?? ""}|${p.fecha_fin ?? ""}`;
+  const copias = new Map<string, number>();
+  for (const p of productos) copias.set(clave(p), (copias.get(clave(p)) ?? 0) + 1);
+  const vistos = new Map<string, ProductoIA>();
+  const salida: ProductoIA[] = [];
+  for (const p of productos) {
+    const k = clave(p);
+    const n = copias.get(k)!;
+    if (n < 2 || n > pax) {
+      salida.push(p);
+      continue;
+    }
+    const primero = vistos.get(k);
+    if (!primero) {
+      const copia = { ...p };
+      vistos.set(k, copia);
+      salida.push(copia);
+    } else if (!primero.punto_recogida && p.punto_recogida) primero.punto_recogida = p.punto_recogida;
+  }
+  return salida;
+}
+
 function indiceDeNombres(catalogo: CatalogoParaEmparejar): Map<string, ProductoDeLista | null> {
   const porId = new Map(catalogo.productos.map((p) => [p.id, p]));
   const indice = new Map<string, ProductoDeLista | null>();
@@ -118,16 +148,22 @@ function armarTayka(tours: TourJournaway[], ctx: Contexto): DecisionTayka {
   const overland = tours.filter(esOverland);
   const deSanPedro = new Set(paquetes.flatMap((p) => excursionesDe(p)).filter((id) => !overland.some((t) => t.producto?.id === id)));
   const sanPedro = tours.filter((t) => !esOverland(t) && t.producto && deSanPedro.has(t.producto.id));
-  const sueltos = tours.filter((t) => !overland.includes(t) && !sanPedro.includes(t));
+  // M3-30: el traslado del paquete que Journaway escribe como un renglón más ("Shared Transport: CJC - …")
+  // es parte del paquete; lo que no se reconoce (el "Night Bus Peru") no es de nadie: se consulta.
+  const deTraslado = new Set(paquetes.flatMap((p) => p.partes.filter((x) => x.esTraslado).map((x) => x.productoId)));
+  const traslados = tours.filter((t) => !esOverland(t) && t.producto && deTraslado.has(t.producto.id));
+  const ajenos = tours.filter((t) => !t.producto);
+  const sueltos = tours.filter((t) => !overland.includes(t) && !sanPedro.includes(t) && !traslados.includes(t) && !ajenos.includes(t));
   const motivos: string[] = [];
   const notas: string[] = [];
 
-  // Los 3 días del Overland, por su nombre.
+  // Los 3 días del Overland, por su nombre (cada día puede tener varios: en inglés y en alemán, M3-30).
   const fechaDia = new Map<number, string | null>();
-  for (const d of s.diasOverland) {
-    const t = overland.find((x) => limpiarNombreJournaway(x.nombre) === d.limpio);
-    if (t) fechaDia.set(d.dia, t.fecha);
-    else motivos.push(M.faltaDiaOverland(d.dia));
+  for (const dia of [...new Set(s.diasOverland.map((d) => d.dia))].sort((a, b) => a - b)) {
+    const nombres = s.diasOverland.filter((d) => d.dia === dia).map((d) => d.limpio);
+    const t = overland.find((x) => nombres.includes(limpiarNombreJournaway(x.nombre)));
+    if (t) fechaDia.set(dia, t.fecha);
+    else motivos.push(M.faltaDiaOverland(dia));
   }
   const arranque = [...fechaDia].filter(([, f]) => f).map(([dia, f]) => sumarDias(f!, -(dia - 1)))[0] ?? null;
 
@@ -174,10 +210,13 @@ function armarTayka(tours: TourJournaway[], ctx: Contexto): DecisionTayka {
     for (const t of libres) motivos.push(M.sobraTour(nombreCorto(t.nombre), elegido.codigo));
   }
 
-  const propios = tours.filter((t) => overland.includes(t) || sanPedro.includes(t));
+  // M3-30 (owner 2026-10-28): lo que no es del paquete no se pide; la reserva va a revisión para consultarlo.
+  const deAjenos = ajenos.map((t) => (elegido ? M.noEsParte(t.nombre, t.fecha, t.fechaFin ?? null, elegido.codigo) : M.tourNoReconocido(t.nombre)));
+
+  const propios = tours.filter((t) => overland.includes(t) || sanPedro.includes(t) || traslados.includes(t));
   const principal = motivos.length
-    ? revision(propios, motivos, { notas, sugerencia: elegido ? productoDe(ctx, elegido) : null })
-    : reserva(propios, { producto: productoDe(ctx, elegido!), paquete: elegido, notas });
+    ? revision(propios, [...motivos, ...deAjenos], { notas, sugerencia: elegido ? productoDe(ctx, elegido) : null })
+    : reserva(propios, { producto: productoDe(ctx, elegido!), paquete: elegido, notas, motivos: deAjenos });
   return { reservas: [principal, ...sueltos.map((t) => sueltoOPaquete([t], ctx))], paquete: elegido, noches };
 }
 
@@ -285,12 +324,18 @@ export async function reconocerJournaway(ficha: FichaLectura, texto: string, con
   let costo = 0;
   const nombres = indiceDeNombres(ctx.catalogo);
 
-  const tours: TourJournaway[] = ficha.productos.map((p, indice) => {
-    const producto = nombres.get(limpiarNombreJournaway(p.nombre)) ?? null;
+  const porCodigo = new Map(ctx.catalogo.productos.map((p) => [p.codigo, p]));
+  const parteDe = (nombre: string) => {
+    const s = ctx.senales.partesDe.find((x) => normal(nombre).includes(x.clave));
+    return s ? (porCodigo.get(s.codigo) ?? null) : null;
+  };
+  const tours: TourJournaway[] = unaFilaPorServicio(ficha.productos, ficha.pax.valor).map((p, indice) => {
+    const producto = nombres.get(limpiarNombreJournaway(p.nombre)) ?? parteDe(p.nombre);
     return {
       indice,
       nombre: p.nombre,
       fecha: p.fecha_inicio,
+      fechaFin: p.fecha_fin,
       pickUp: p.punto_recogida,
       producto,
       origen: producto ? "nombre" : null,
@@ -343,6 +388,11 @@ export async function reconocerJournaway(ficha: FichaLectura, texto: string, con
       ),
     );
   }
+
+  // M3-30: si lo reconocido ya es un Tayka (SPAP05/06), lo que falta no se le pregunta a la IA: no es
+  // parte del paquete y se consulta con Journaway (el "Night Bus Peru" de Petzold).
+  const conocidos = tours.filter((t) => t.producto);
+  if (conocidos.length < tours.length && esTayka(conocidos, ctx)) return terminar(armarDesdeTours(tours, ctx).reservas);
 
   // Fila 2: los tours que no están por nombre, a la IA (solo en una reserva nueva).
   const usarIA = ficha.tipo_mail.valor === "reserva_nueva" && !!ctx.proponer;

@@ -24,6 +24,12 @@ export const MOTIVOS_JOURNAWAY = {
   sinNoches: "No se sabe cuántas noches hay en San Pedro (no hay vuelo a Calama, ni tours de San Pedro, ni N/D en el título)",
   faltaTour: (codigo: string, nombre: string, paquete: string) => `Falta ${nombre} (${codigo}) para ${paquete}`,
   sobraTour: (nombre: string, paquete: string) => `Sobra '${nombre}' para ${paquete}`,
+  /** M3-30 (owner 2026-10-28): un renglón que no es parte del paquete no se pide; se consulta. */
+  noEsParte: (nombre: string, desde: string | null, hasta: string | null, paquete: string) => {
+    const dia = (iso: string) => `${iso.slice(8, 10)}.${iso.slice(5, 7)}`;
+    const fechas = desde ? ` (${dia(desde)}${hasta && hasta !== desde ? `–${dia(hasta)}` : ""})` : "";
+    return `Journaway pide '${nombre}'${fechas}, que no es parte de ${paquete}: consultarlo con Journaway`;
+  },
   /** Fila 9. */
   paxDistinto: (pax: number, pasajeros: number) => `Pax dice ${pax} y hay ${pasajeros} pasajeros`,
 } as const;

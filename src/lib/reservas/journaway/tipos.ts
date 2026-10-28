@@ -44,6 +44,8 @@ export interface TourJournaway {
   /** Tal cual lo escribe Journaway. */
   nombre: string;
   fecha: string | null;
+  /** M3-30: la fecha de fin del renglón (un hotel, un bus nocturno); null si no la trae. */
+  fechaFin?: string | null;
   /** "Pick up / Drop off" del tour, tal cual; null si el mail no lo trae. */
   pickUp: string | null;
   producto: ProductoDeLista | null;

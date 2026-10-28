@@ -13,6 +13,8 @@ import type { CatalogoParaEmparejar } from "../emparejar/catalogo";
  * - `titulo_noches`: el título con N/D que nombra un paquete ("Tayka Hotels 7N/8D" → SPAP05).
  * - `aeropuerto`: por dónde llegan y salen esos paquetes (CJC): fecha los traslados y cuenta las noches.
  * - `nota_tour`: una nota para la reserva cuando el tour dice ese texto y es ese producto.
+ * - `parte_de` (M3-30): un renglón del mail cuyo nombre dice ese texto es parte de ese producto
+ *   (los hoteles Tayka y el bus nocturno Uyuni - La Paz son parte del Overland): no se pide aparte.
  *
  * Solo lee y valida. Un código que no está en el catálogo frena con un
  * mensaje claro antes de procesar el mail (`verificarSenales`).
@@ -21,7 +23,7 @@ import type { CatalogoParaEmparejar } from "../emparejar/catalogo";
 export const ARCHIVO_SENALES_JOURNAWAY = "journaway-senales.csv";
 const RUTA = `data/${ARCHIVO_SENALES_JOURNAWAY}`;
 
-const SENALES = ["hotel_tayka", "dia_overland", "familia_tayka", "titulo_noches", "aeropuerto", "nota_tour"] as const;
+const SENALES = ["hotel_tayka", "dia_overland", "familia_tayka", "titulo_noches", "aeropuerto", "nota_tour", "parte_de"] as const;
 type Senal = (typeof SENALES)[number];
 
 export interface SenalesJournaway {
@@ -33,6 +35,8 @@ export interface SenalesJournaway {
   titulos: Array<{ clave: string; texto: string; codigo: string }>;
   aeropuertos: Array<{ iata: string; paquetes: string[] }>;
   notas: Array<{ clave: string; codigo: string; nota: string }>;
+  /** M3-30: `clave` normalizada (sin acentos, en minúscula). */
+  partesDe: Array<{ clave: string; codigo: string }>;
   /** Fila del CSV de cada código, para el mensaje de error. */
   filas: Array<{ fila: number; codigos: string[] }>;
 }
@@ -55,6 +59,7 @@ export function leerSenalesJournaway(texto: string): SenalesJournaway {
     titulos: [],
     aeropuertos: [],
     notas: [],
+    partesDe: [],
     filas: [],
   };
   leerCsv(texto).forEach((r, i) => {
@@ -96,6 +101,9 @@ export function leerSenalesJournaway(texto: string): SenalesJournaway {
       case "nota_tour":
         if (!(r.nota ?? "").trim()) throw error("falta la nota");
         s.notas.push({ clave: normal(valor), codigo: unCodigo(), nota: (r.nota ?? "").trim() });
+        break;
+      case "parte_de":
+        s.partesDe.push({ clave: normal(valor), codigo: unCodigo() });
         break;
     }
   });

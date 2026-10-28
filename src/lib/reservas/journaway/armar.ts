@@ -51,6 +51,8 @@ export interface PiezaJournaway {
   motivos: string[];
   avisos: string[];
   tripNumber: string | null;
+  /** M3-30: las habitaciones del cuerpo ("Rooms: 1 DBL"). */
+  habitacion: string | null;
   hotelesAgencia: HotelDeLaAgencia[];
   contactoCliente: ContactoDelCliente | null;
   notas: string[];
@@ -87,7 +89,13 @@ function componentesDe(r: ReservaJournaway, ficha: FichaLectura, senales: Senale
 
   const partes = r.paquete.partes.map((parte) => {
     const base: ComponenteEntrada = { tipo: "paquete", productoId: parte.productoId, productoComponenteId: parte.productoComponenteId, esTarea: false };
-    if (parte.esTraslado) return { parte, c: base, fecha: null as string | null };
+    if (parte.esTraslado) {
+      // M3-30: el traslado escrito como un renglón del mail ("Shared Transport: CJC - …") trae su fecha.
+      const escrito = libres.find((t) => t.producto?.id === parte.productoId && t.fecha);
+      if (!escrito) return { parte, c: base, fecha: null as string | null };
+      libres.splice(libres.indexOf(escrito), 1);
+      return { parte, fecha: escrito.fecha, c: { ...base, textoAgencia: escrito.nombre, fechaInicio: escrito.fecha, fechaFin: escrito.fecha } };
+    }
     const propios = overland.has(parte.codigo)
       ? libres.filter((t) => t.producto?.id === parte.productoId)
       : libres.filter((t) => t.producto?.id === parte.productoId).slice(0, 1);
@@ -227,6 +235,7 @@ export async function armarJournaway(
       motivos: unicos(motivos),
       avisos,
       tripNumber,
+      habitacion: cuerpo.habitacion,
       hotelesAgencia,
       contactoCliente: cuerpo.contacto,
       notas: unicos([...r.notas, ...notasDelMail]),
