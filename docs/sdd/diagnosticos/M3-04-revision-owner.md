@@ -41,7 +41,7 @@ Las otras 8 reservas de la lista.
 - **DK1597924 y DK1593775:** el mail a Cuenca dice "vuelo a confirmar" (y el cartel amarillo también) **aunque
   la agencia pasó los vuelos** en la reserva original. NO1595016: los datos del vuelo están ok.
 
-### W Trek: los refugios de cada variante (→ M3-30)
+### W Trek: los refugios de cada variante (→ M3-33; M3-30 quedó para las imágenes del mail)
 - Las Torres, W Express: "W Trek Express 3 noches: Central – Frances – Frances".
 - Las Torres, W Standard: "W Standard 4 noches: Central – Central – Frances – Paine Grande".
 - Vértice, W Standard con Grey: "W Clásica 4 noches: Central – Frances – Paine Grande – Grey".

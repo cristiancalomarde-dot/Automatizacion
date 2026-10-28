@@ -3,6 +3,19 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
 
 # Dónde retomar
 
+- **2026-10-28 (tarde): M3-30 publicada (la IA lee las imágenes del mail).** Primera reserva real de Journaway
+  (Petzold, Trip 65037, sales@ uid 16682) traía hoteles y actividades como imágenes `cid:` → ahora se guardan
+  en el bucket y van a la IA; nombres en alemán en `data/journaway-nombres.csv`; Petzold sale SPAP05 y el
+  "Night Bus Peru" (no es del paquete) la deja para revisión (el owner se lo pregunta a Journaway).
+  - **URGENTE en la real:** aplicar la migración 0024 (bucket acepta imágenes). Sin ella, un mail con imagen
+    falla al guardarse y la lectura de sales@ lo reintenta. Después: `npm run reprocesar:mail -- --uid 16682`
+    (seco) y con `--aplicar`. Los corre el owner con `!` desde el clon.
+  - A confirmar con el owner: transfer "Shared Transport: CJC - Accom. San Pedro" = SPAT01; Tayka y bus
+    Uyuni–La Paz dentro del Overland; al reprocesar la vieja queda "descartada".
+  - La fila W Trek refugios se renumeró a **M3-33** (choque de ID con M3-30).
+  - Suite completa con `--maxWorkers=2` (con más se queda sin memoria); 2 tests de catálogo vencen por tiempo
+    con la máquina cargada y pasan solos.
+
 - **2026-10-28: M3-24, M3-25 y M3-28 publicadas; Greeters manual cargado en la real.** **M3-26 (vuelos) también publicada** (vuelo completo; vuelo sin número de Kilroy → `npm run sumar:vuelos-sin-numero`, muestra y guarda solo con `--aplicar`; el owner lo aplicó: DK1597924 con sus 2 vuelos). Sigue la pasada rápida del owner → OK grande.
   - M3-24: aviso amarillo "Revisar antes de pedir" (blackouts, fechas especiales, días del bus; `data/*.csv`).
   - M3-25: AR10 BRC↔CHA a Chalten Travel (`data/tramos-se-piden-a.csv`), Greeters a mano.
