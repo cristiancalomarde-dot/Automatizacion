@@ -3,6 +3,16 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
 
 # Dónde retomar
 
+- **2026-10-28: M3-24, M3-25 y M3-28 publicadas; Greeters manual cargado en la real.** Sigue **M3-26 (vuelos)**.
+  - M3-24: aviso amarillo "Revisar antes de pedir" (blackouts, fechas especiales, días del bus; `data/*.csv`).
+  - M3-25: AR10 BRC↔CHA a Chalten Travel (`data/tramos-se-piden-a.csv`), Greeters a mano.
+  - M3-28: asunto "… x N …", Transvip, traslados Premium sin "regular", traslado de un lado con ciudad.
+  - **Ojo Vercel:** las claves de `outputFileTracingIncludes` son globs; `"/reservas/**"` (en producción
+    faltaba `data/blackouts.csv`). Al sumar un CSV, mirar el `.nft.json` de la ruta de pedidos.
+  - DK1595221: los códigos del asunto son borradores viejos de la reserva OD010A → "Rearmar todo" ahí.
+  - Plan acordado: después de M3-26 el owner da una pasada rápida → OK grande → primer envío real de UNA
+    reserva (`PEDIDOS_ENVIO_REAL` solo con su OK). M3-27 espera el detalle del bus BRC↔CHA.
+
 - **2026-10-26: M3-23 (AR10 Full Argentina Adventure) cargada en la real y reserva TourRadar #1389186 leída.**
   El statement le había llegado al owner (TourRadar Finance admite un solo mail): el owner cambia el mail a
   sales@ y los revisa desde la casilla de ventas (Ferozo no permite reenvío con filtro). Un reenvío manual
