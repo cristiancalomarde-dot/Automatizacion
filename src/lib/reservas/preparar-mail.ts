@@ -38,8 +38,8 @@ export const MIN_BYTES_IMAGEN = 2 * 1024;
 const MIN_PIXELES_IMAGEN = 20_000;
 /** La IA achica cada imagen a ~1,15 MP: ~1600 tokens como mucho (ancho × alto / 750). */
 const MAX_TOKENS_POR_IMAGEN = 1600;
-const TIPOS_IMAGEN = ["image/png", "image/jpeg", "image/gif", "image/webp"] as const;
-export type TipoImagen = (typeof TIPOS_IMAGEN)[number];
+/** Los tipos de imagen que lee la IA. */
+export type TipoImagen = "image/png" | "image/jpeg" | "image/gif" | "image/webp";
 
 export const MOTIVOS = {
   remitente: "remitente que no es de una agencia piloto",

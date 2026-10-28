@@ -153,7 +153,8 @@ function mailKilroy(extra: Partial<MailEntrada> = {}): MailEntrada {
       const [adjPdf, adjGif] = mail.adjuntos;
       expect(adjPdf).toMatchObject({ tipo: "application/pdf", tamano: pdf.byteLength });
       expect(adjPdf.ruta).toMatch(new RegExp(`^${mail.id}/`));
-      expect(adjGif).toEqual({ nombre: "logo.gif", tipo: "image/gif", tamano: 3, ruta: null });
+      // M3-30: las imágenes con contenido también se guardan en el bucket.
+      expect(adjGif).toEqual({ nombre: "logo.gif", tipo: "image/gif", tamano: 3, ruta: `${mail.id}/logo.gif` });
 
       const { data: archivo, error } = await admin.storage.from(BUCKET_ADJUNTOS).download(adjPdf.ruta!);
       expect(error).toBeNull();
