@@ -53,10 +53,14 @@ export function lugarDelTraslado(texto: string, destino: string | null): Lugar |
   return { ciudad: AEROPUERTOS[codigos[0]], codigos };
 }
 
+/**
+ * M3-26: un vuelo sin número (Kilroy: "Pax will be arriving at IGU airport at 20FEB2027 at 16:45")
+ * sirve si trae el aeropuerto y la hora de ese lado, igual que en el armado (`buscarVuelo`).
+ */
 function hayVuelo(vuelos: VueloIA[], lado: Lado, lugar: Lugar | null, fecha: string | null): boolean {
   return vuelos.some((v) => {
-    if (!v.numero) return false;
-    const aeropuerto = (lado === "in" ? v.destino : v.origen)?.toUpperCase() ?? null;
+    const aeropuerto = (lado === "in" ? v.destino : v.origen)?.trim().toUpperCase() || null;
+    if (!v.numero?.trim() && !aeropuerto) return false;
     const hora = lado === "in" ? v.hora_llegada : v.hora_salida;
     const dia = lado === "in" ? v.fecha_llegada : v.fecha_salida;
     if (!hora) return false;

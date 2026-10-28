@@ -157,7 +157,8 @@ describe("armarPedidos — qué lleva cada servicio (fila 3)", () => {
         plantilla,
       ),
     );
-    expect(r.pedidos[0].cuerpo).toContain("Vuelo: AR1850 (FTE) llegada 20:05 hs");
+    // M3-26 (owner, 2026-10-28): el vuelo completo, sale y llega.
+    expect(r.pedidos[0].cuerpo).toContain("Vuelo: AR1850 – sale Buenos Aires (AEP) – llega El Calafate (FTE) 24 ene 20:05 hs");
     expect(r.pedidos[0].cuerpo).not.toContain("pendiente");
   });
 
@@ -444,7 +445,8 @@ describe("armarPedidos — detalles", () => {
         plantilla,
       ),
     );
-    expect(r.pedidos[0].cuerpo).toContain("Traslado de salida: Transfer al aeropuerto de Puerto Natales (PNT)\nFecha: 9 mar 2027\nVuelo: JA1234 (PNT) salida 14:20 hs");
+    // M3-26 (owner, 2026-10-28): el vuelo completo, sale y llega.
+    expect(r.pedidos[0].cuerpo).toContain("Traslado de salida: Transfer al aeropuerto de Puerto Natales (PNT)\nFecha: 9 mar 2027\nVuelo: JA1234 – sale Puerto Natales (PNT) 9 mar 14:20 hs – llega Santiago de Chile (SCL)");
   });
 
   it("una excursión sin día conocido queda 'a coordinar' con un aviso", () => {

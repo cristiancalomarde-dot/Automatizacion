@@ -17,6 +17,13 @@ export function fechaCorta(fecha: string): string {
   return `${Number(m[3])} ${MESES[Number(m[2]) - 1]} ${m[1]}`;
 }
 
+/** M3-26: "2027-02-20" → "20 feb" (el día del vuelo, al lado de la fecha del servicio). */
+export function diaYMes(fecha: string): string {
+  const m = fecha.match(ISO);
+  if (!m) return fecha;
+  return `${Number(m[3])} ${MESES[Number(m[2]) - 1]}`;
+}
+
 /** "del 24 al 28 ene 2027" / "del 30 ene al 2 feb 2027" / "del 30 dic 2026 al 2 ene 2027". */
 export function rangoCorto(desde: string, hasta: string): string {
   const a = desde.match(ISO);

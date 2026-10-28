@@ -39,6 +39,7 @@ import { llevaEntradas } from "./entradas";
 import { avisosDeBlackout, avisosDeDiasDeBus, avisosDeFechaEspecial, tramoDeLaRuta, type ServicioConDia } from "./itinerario";
 import { HOTEL_A_CONFIRMAR, fichasDePasajeros, lineaDeTour, llevaFichaCompleta, restriccionAlimentaria, type TourDeFicha } from "./ficha";
 import { completar, completarAsunto } from "./plantilla";
+import { renglonDelVuelo } from "./renglon-vuelo";
 import {
   diasEntre,
   fechaCorta,
@@ -993,15 +994,16 @@ class Armado {
     };
   }
 
-  /** El vuelo del traslado (o "vuelo pendiente"; en Iguazú, "bus o vuelo pendiente"). */
+  /**
+   * El vuelo del traslado (o "vuelo pendiente"; en Iguazú, "bus o vuelo pendiente"). M3-26: el vuelo
+   * completo (sale y llega) o, sin número, el lado que trajo el mail ("Llegada: … (sin número de vuelo)").
+   */
   private traslado(lado: Lado, _nombre: string, fecha: string | null, codigos: string[], iguazu: boolean) {
     const vuelo = buscarVuelo(this.reserva.vuelos, lado, codigos, fecha);
     if (vuelo) {
-      const aeropuerto = (lado === "in" ? vuelo.destino : vuelo.origen)?.toUpperCase();
       const hora = lado === "in" ? vuelo.hora_llegada : vuelo.hora_salida;
       const dia = (lado === "in" ? vuelo.fecha_llegada : vuelo.fecha_salida) ?? fecha;
-      const dato = `Vuelo: ${vuelo.numero}${aeropuerto ? ` (${aeropuerto})` : ""} ${lado === "in" ? "llegada" : "salida"}${hora ? ` ${hora} hs` : ""}`;
-      return { dato, fecha: dia, pendientes: [] as string[], hora: hora ?? null };
+      return { dato: renglonDelVuelo(vuelo), fecha: dia, pendientes: [] as string[], hora: hora ?? null };
     }
     return iguazu
       ? { dato: "Bus o vuelo pendiente", fecha, pendientes: [PENDIENTE.busOVuelo], hora: null }
@@ -1200,11 +1202,15 @@ function minutosDelDia(hora: string): number {
   return m ? Number(m[1]) * 60 + Number(m[2]) : NaN;
 }
 
-/** El vuelo que llega (o sale) de uno de esos aeropuertos, el del día del traslado primero. */
+/**
+ * El vuelo que llega (o sale) de uno de esos aeropuertos, el del día del traslado primero. M3-26: un vuelo
+ * sin número sirve si trae el aeropuerto y la hora del lado del traslado (lo mismo que `hayVuelo`).
+ */
 export function buscarVuelo(vuelos: readonly VueloDeReserva[], lado: Lado, codigos: string[], fecha: string | null): VueloDeReserva | null {
   const candidatos = vuelos.filter((v) => {
-    if (!v.numero) return false;
-    const aeropuerto = (lado === "in" ? v.destino : v.origen)?.trim().toUpperCase() ?? null;
+    const aeropuerto = (lado === "in" ? v.destino : v.origen)?.trim().toUpperCase() || null;
+    const hora = lado === "in" ? v.hora_llegada : v.hora_salida;
+    if (!v.numero?.trim() && !(aeropuerto && hora?.trim())) return false;
     const dia = lado === "in" ? v.fecha_llegada : v.fecha_salida;
     if (aeropuerto && codigos.length) return codigos.includes(aeropuerto);
     return !!fecha && dia === fecha;

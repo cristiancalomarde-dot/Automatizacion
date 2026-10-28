@@ -166,7 +166,8 @@ const vuelo = (numero: string, fecha: string, hora: string) => ({
   it("ARCH33: bus regular desde el aeropuerto con el vuelo de las 18:30, public bus a las 8:00 am y el aviso solo en el borrador", () => {
     const p = chalten("ARCH33");
     console.log(`[M3-20] recorrido ARCH33 → Chalten Travel:\n${p.cuerpo}\n  avisos: ${JSON.stringify(p.avisos)}`);
-    expect(bloque(p.cuerpo, IDA)).toEqual([IDA, "Fecha: 23 feb 2027 · Horario: según la llegada del vuelo", "Vuelo: AR1840 (FTE) llegada 18:30 hs"]);
+    // M3-26 (owner, 2026-10-28): el renglón del vuelo va completo (sale y llega).
+    expect(bloque(p.cuerpo, IDA)).toEqual([IDA, "Fecha: 23 feb 2027 · Horario: según la llegada del vuelo", "Vuelo: AR1840 (Aerolíneas Argentinas) – sale Buenos Aires (AEP) 23 feb 05:30 hs – llega El Calafate (FTE) 23 feb 18:30 hs"]);
     expect(bloque(p.cuerpo, "Bus: Public Bus El Chalten Bus Station - El Calafate Bus Station")).toEqual([
       "Bus: Public Bus El Chalten Bus Station - El Calafate Bus Station",
       "Fecha: 26 feb 2027 · Horario: 8:00 am",
@@ -179,7 +180,7 @@ const vuelo = (numero: string, fecha: string, hora: string) => ({
   it("AR34: el round trip en dos renglones (ida 13 mar con su vuelo, vuelta 16 mar a las 8:00 am), sin aviso", () => {
     const p = chalten("AR34");
     console.log(`[M3-20] recorrido AR34 → Chalten Travel:\n${p.cuerpo}\n  avisos: ${JSON.stringify(p.avisos)}`);
-    expect(bloque(p.cuerpo, IDA)).toEqual([IDA, "Fecha: 13 mar 2027 · Horario: según la llegada del vuelo", "Vuelo: AR1842 (FTE) llegada 09:10 hs"]);
+    expect(bloque(p.cuerpo, IDA)).toEqual([IDA, "Fecha: 13 mar 2027 · Horario: según la llegada del vuelo", "Vuelo: AR1842 (Aerolíneas Argentinas) – sale Buenos Aires (AEP) 13 mar 05:30 hs – llega El Calafate (FTE) 13 mar 09:10 hs"]);
     expect(bloque(p.cuerpo, "Bus regular El Chaltén → El Calafate (ciudad)")).toEqual(["Bus regular El Chaltén → El Calafate (ciudad)", "Fecha: 16 mar 2027 · Horario: 8:00 am"]);
     expect(p.cuerpo).not.toContain("Round Trip FTE Airport");
     expect(p.avisos).not.toContain(AVISO);

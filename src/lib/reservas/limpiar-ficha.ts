@@ -1,4 +1,4 @@
-import type { Campo, DatoClave, FichaIA, FichaLectura } from "./esquema-ficha";
+import type { Campo, DatoClave, FichaIA, FichaLectura, VueloIA } from "./esquema-ficha";
 import { DATOS_CLAVE } from "./esquema-ficha";
 import { normalizarBookingId } from "./booking-id";
 
@@ -132,6 +132,60 @@ function diasEntre(desde: string, hasta: string): number {
   return Math.round((Date.parse(`${hasta}T00:00:00Z`) - Date.parse(`${desde}T00:00:00Z`)) / 86_400_000);
 }
 
+/**
+ * M3-26 (owner, 2026-10-28; DK1597924): Kilroy a veces escribe en "Extra Requests" solo el
+ * aeropuerto, el día y la hora, sin número de vuelo:
+ *   "Pax will be arriving at IGU airport at 20FEB2027 at 16:45"
+ *   "Pax will be departing from IGR airport at 23FEB2027 at 13:30"
+ * Reconocimiento fijo (sin IA, #3): cada renglón es un vuelo sin número de ese lado.
+ */
+const VUELO_SIN_NUMERO =
+  /\b([Aa]rriving|[Dd]eparting)\s+(?:at|from|to|in|into)\s+([A-Z]{3})\s+[Aa]irport\s+(?:at|on)\s+(\d{1,2}\s*[A-Za-z]{3,9}\.?\s*\d{2,4})\s+(?:at\s+)?(\d{1,2})[:.](\d{2})\b/g;
+
+export function vuelosSinNumeroDelTexto(texto: string): VueloIA[] {
+  const vuelos: VueloIA[] = [];
+  const vistos = new Set<string>();
+  for (const m of texto.matchAll(VUELO_SIN_NUMERO)) {
+    const fecha = normalizarFecha(m[3]);
+    const h = Number(m[4]);
+    if (!fecha || h > 23 || Number(m[5]) > 59) continue;
+    const hora = `${String(h).padStart(2, "0")}:${m[5]}`;
+    const llega = m[1].toLowerCase() === "arriving";
+    const clave = `${llega}|${m[2]}|${fecha}|${hora}`;
+    if (vistos.has(clave)) continue;
+    vistos.add(clave);
+    const lado = { aeropuerto: m[2], fecha, hora };
+    const nada = { aeropuerto: null, fecha: null, hora: null };
+    const [sale, entra] = llega ? [nada, lado] : [lado, nada];
+    vuelos.push({
+      numero: null,
+      aerolinea: null,
+      origen: sale.aeropuerto,
+      destino: entra.aeropuerto,
+      fecha_salida: sale.fecha,
+      hora_salida: sale.hora,
+      fecha_llegada: entra.fecha,
+      hora_llegada: entra.hora,
+      confianza: 1,
+    });
+  }
+  return vuelos;
+}
+
+/** Los vuelos sin número del texto que no están ya (mismo lado, con el mismo aeropuerto o el mismo día y hora). */
+export function vuelosSinNumeroQueFaltan(existentes: readonly VueloIA[], texto: string): VueloIA[] {
+  return vuelosSinNumeroDelTexto(texto).filter((n) => {
+    const llega = !!n.destino;
+    return !existentes.some((v) => {
+      const aeropuerto = (llega ? v.destino : v.origen)?.trim().toUpperCase();
+      const fecha = llega ? v.fecha_llegada : v.fecha_salida;
+      const hora = llega ? v.hora_llegada : v.hora_salida;
+      if (aeropuerto) return aeropuerto === (llega ? n.destino : n.origen);
+      return fecha === (llega ? n.fecha_llegada : n.fecha_salida) && !!hora;
+    });
+  });
+}
+
 export interface ContextoLimpieza {
   /** La agencia reconocida por el remitente (`agencias.csv`). */
   agencia: string;
@@ -239,6 +293,8 @@ export function limpiarFicha(
     }
     return r;
   });
+  // M3-26: lo que Kilroy escribe sin número de vuelo ("Pax will be arriving at IGU airport at …"), si la IA no lo trajo.
+  vuelos.push(...vuelosSinNumeroQueFaltan(vuelos, texto));
 
   const hoteles_agencia = ficha.hoteles_agencia.map((h) => {
     const entrada = normalizarFecha(h.fecha_entrada);

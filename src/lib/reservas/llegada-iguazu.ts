@@ -29,14 +29,22 @@ export function esIguazu(codigoProducto: string | null | undefined): boolean {
 
 export interface DatosDeLlegada {
   productoCodigo: string | null | undefined;
-  vuelos: ReadonlyArray<{ destino?: string | null; numero?: string | null }>;
+  vuelos: ReadonlyArray<{ destino?: string | null; numero?: string | null; hora_llegada?: string | null }>;
   pedidos: string | null | undefined;
 }
 
-/** True si la reserva es de Iguazú y todavía no hay vuelo de llegada ni se sabe que llegan en bus. */
+const aIguazu = (destino: string | null | undefined) => AEROPUERTOS_IGUAZU.has((destino ?? "").trim().toUpperCase());
+
+/**
+ * True si la reserva es de Iguazú y todavía no hay vuelo de llegada ni se sabe que llegan en bus.
+ * M3-26: una llegada sin número (Kilroy: "Pax will be arriving at IGU airport at …") cuenta si
+ * trae el aeropuerto de Iguazú y la hora, como en el armado.
+ */
 export function sinDatoDeLlegada(r: DatosDeLlegada): boolean {
   if (!esIguazu(r.productoCodigo)) return false;
-  const hayVuelo = r.vuelos.some((v) => !!v.numero && (!v.destino || AEROPUERTOS_IGUAZU.has(v.destino.trim().toUpperCase())));
+  const hayVuelo = r.vuelos.some((v) =>
+    v.numero?.trim() ? !v.destino || aIguazu(v.destino) : aIguazu(v.destino) && !!v.hora_llegada?.trim(),
+  );
   if (hayVuelo) return false;
   return !EN_BUS.test(r.pedidos ?? "");
 }

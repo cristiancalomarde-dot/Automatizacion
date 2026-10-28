@@ -1,3 +1,4 @@
+import { renglonDelVuelo } from "@/lib/pedidos/renglon-vuelo";
 import { TEXTOS } from "@/lib/textos";
 import type { VueloIA } from "../esquema-ficha";
 import type { VueloDeReserva } from "../tipos";
@@ -217,6 +218,12 @@ export function lineasDeVuelosDelMail(cuerpos: readonly string[]): string[] {
 /** El renglón del vuelo de un traslado en un pedido (`armar.ts`): "Vuelo: H2253 (CJC) salida 08:44 hs". */
 const RENGLON_VUELO = /^Vuelo: (\S+)(?: \(([A-Z]{3})\))? (llegada|salida)(?: (\d{2}:\d{2}) hs)?$/;
 const RENGLON_PENDIENTE = /^(Bus o vuelo|Vuelo) pendiente$/;
+/**
+ * M3-26: el renglón del vuelo completo ("Vuelo: AR 1234 – sale … – llega …") o sin número
+ * ("Llegada: Foz do Iguaçu (IGU) 20 feb 16:45 hs (sin número de vuelo)"). Sigue igual si alguno
+ * de los vuelos nuevos da exactamente ese renglón.
+ */
+const RENGLON_VUELO_COMPLETO = /^(Vuelo: \S|Vuelo sin número|(Llegada|Salida): .*\(sin número de vuelo\)$)/;
 
 const claveDeVuelos = (vuelos: readonly VueloIA[]) =>
   JSON.stringify(
@@ -259,7 +266,9 @@ export function pedidosAAvisar(
       return renglones.some((l) => {
         if (RENGLON_PENDIENTE.test(l)) return despues.length > 0;
         const r = RENGLON_VUELO.exec(l);
-        return r ? !sigueIgual(r, despues) : false;
+        if (r) return !sigueIgual(r, despues);
+        if (RENGLON_VUELO_COMPLETO.test(l)) return !despues.some((v) => renglonDelVuelo(v) === l);
+        return false;
       });
     })
     .map((p) => ({ pedidoId: p.id, proveedores: p.proveedores }));

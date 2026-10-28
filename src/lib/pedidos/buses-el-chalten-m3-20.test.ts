@@ -5,6 +5,7 @@
  * El Chalten" de OD033 sale como bus regular con el vuelo; la vuelta El Chaltén → El Calafate dice
  * "Horario: 8:00 am"; un vuelo que llega a FTE después de las 17 hs deja un aviso interno en el
  * borrador (no en el texto). Las reglas son las del archivo real `data/buses-el-chalten.csv`.
+ * M3-26 (owner, 2026-10-28): el renglón del vuelo va completo (sale y llega).
  */
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
@@ -67,7 +68,7 @@ function pedidoAr34(vuelos: VueloDeReserva[]) {
 describe("AR34: el round trip sale en dos renglones (filas 1 y 3)", () => {
   it("ida el 5 mar con el vuelo y horario según el vuelo; vuelta el día que sale de El Chaltén (8 mar) a las 8:00 am", () => {
     const p = pedidoAr34([vuelo("2027-03-05", "08:40")]);
-    expect(bloque(p.cuerpo, IDA)).toEqual([IDA, "Fecha: 5 mar 2027 · Horario: según la llegada del vuelo", "Vuelo: AR1840 (FTE) llegada 08:40 hs"]);
+    expect(bloque(p.cuerpo, IDA)).toEqual([IDA, "Fecha: 5 mar 2027 · Horario: según la llegada del vuelo", "Vuelo: AR1840 – sale Buenos Aires (AEP) 5 mar 05:30 hs – llega El Calafate (FTE) 5 mar 08:40 hs"]);
     expect(bloque(p.cuerpo, VUELTA)).toEqual([VUELTA, "Fecha: 8 mar 2027 · Horario: 8:00 am"]);
     expect(p.cuerpo).not.toContain("Round Trip FTE Airport");
     expect(p.cuerpo).not.toContain("Desde: 5 mar 2027 · Hasta: 10 mar 2027");
@@ -121,7 +122,7 @@ describe("OD033: la llegada desde el aeropuerto FTE es bus regular y la vuelta 8
     ["suelto", false],
   ])("%s: bus regular con el vuelo de DK1592913 (10 mar, AR1840 08:40); el public bus del 13 mar a las 8:00 am", (_, enTour) => {
     const p = pedidoOd033([vuelo("2027-03-10", "08:40")], enTour);
-    expect(bloque(p.cuerpo, IDA)).toEqual([IDA, "Fecha: 10 mar 2027 · Horario: según la llegada del vuelo", "Vuelo: AR1840 (FTE) llegada 08:40 hs"]);
+    expect(bloque(p.cuerpo, IDA)).toEqual([IDA, "Fecha: 10 mar 2027 · Horario: según la llegada del vuelo", "Vuelo: AR1840 – sale Buenos Aires (AEP) 10 mar 05:30 hs – llega El Calafate (FTE) 10 mar 08:40 hs"]);
     expect(p.cuerpo).not.toContain("Traslado de llegada");
     expect(bloque(p.cuerpo, "Bus: Public Bus El Chalten Bus Station - El Calafate Bus Station")).toEqual([
       "Bus: Public Bus El Chalten Bus Station - El Calafate Bus Station",
@@ -135,7 +136,7 @@ describe("aviso interno si el vuelo llega a FTE después de las 17 hs (fila 4)",
     const p = pedidoOd033([vuelo("2027-03-10", "18:30")]);
     expect(p.avisos).toContain(AVISO);
     expect(p.cuerpo).not.toContain("17 hs");
-    expect(bloque(p.cuerpo, IDA)).toContain("Vuelo: AR1840 (FTE) llegada 18:30 hs");
+    expect(bloque(p.cuerpo, IDA)).toContain("Vuelo: AR1840 – sale Buenos Aires (AEP) 10 mar 05:30 hs – llega El Calafate (FTE) 10 mar 18:30 hs");
   });
 
   it("también en AR34", () => {
@@ -159,13 +160,13 @@ describe("lo demás no cambia (fila 6)", () => {
       servicio({ productoId: "prod-od016", tipo: "traslado", orden: 5, sentido: "llegada", descripcion: "Transfer FTE Airport - El Calafate Accommodation. Booking Supplier: Chalten Travel", serviceProviderNombre: "FTE Airport - El Calafate Accommodation", bookingSupplier: P.chalten }),
     ], { destino: "FTE" });
     const r = ok(armarPedidos(reserva({ productoId: od016.id, fechaInicio: "2027-03-13", fechaFin: "2027-03-15", vuelos: [vuelo("2027-03-13", "18:30")] }), { ...catalogoCon([od016]), busesElChalten: buses }, plantilla));
-    expect(r.pedidos[0].cuerpo).toContain("Traslado de llegada: Transfer FTE Airport - El Calafate Accommodation\nFecha: 13 mar 2027\nVuelo: AR1840 (FTE) llegada 18:30 hs");
+    expect(r.pedidos[0].cuerpo).toContain("Traslado de llegada: Transfer FTE Airport - El Calafate Accommodation\nFecha: 13 mar 2027\nVuelo: AR1840 – sale Buenos Aires (AEP) 13 mar 05:30 hs – llega El Calafate (FTE) 13 mar 18:30 hs");
     expect(r.pedidos[0].avisos).not.toContain(AVISO);
   });
 
   it("sin las reglas, OD033 sale como antes", () => {
     const p = armarOd033([vuelo("2027-03-10", "08:40")], true, false).pedidos[0];
-    expect(p.cuerpo).toContain("Traslado de llegada: Transfer El Calafate Airport to El Chalten\nFecha: 10 mar 2027\nVuelo: AR1840 (FTE) llegada 08:40 hs");
+    expect(p.cuerpo).toContain("Traslado de llegada: Transfer El Calafate Airport to El Chalten\nFecha: 10 mar 2027\nVuelo: AR1840 – sale Buenos Aires (AEP) 10 mar 05:30 hs – llega El Calafate (FTE) 10 mar 08:40 hs");
     expect(p.cuerpo).toContain("Bus: Public Bus El Chalten Bus Station - El Calafate Bus Station\nFecha: 13 mar 2027");
     expect(p.cuerpo).not.toContain("Horario");
   });

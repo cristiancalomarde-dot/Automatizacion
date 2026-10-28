@@ -72,6 +72,7 @@ function bloque(cuerpo: string, primero: string): string[] {
   return l.slice(i, fin < 0 ? undefined : fin);
 }
 
+// M3-26 (owner, 2026-10-28): el renglón del vuelo va completo (sale y llega).
 const CASOS = [
   {
     nombre: "AR34 como DK1594177 (5 al 10 mar, AR1840 08:40)",
@@ -80,7 +81,7 @@ const CASOS = [
     inicio: "2027-03-05",
     fin: "2027-03-10",
     hora: "08:40",
-    ida: [IDA, "Fecha: 5 mar 2027 · Horario: según la llegada del vuelo", "Vuelo: AR1840 (FTE) llegada 08:40 hs"],
+    ida: [IDA, "Fecha: 5 mar 2027 · Horario: según la llegada del vuelo", "Vuelo: AR1840 (Aerolíneas Argentinas) – sale Buenos Aires (AEP) 5 mar 05:30 hs – llega El Calafate (FTE) 5 mar 08:40 hs"],
     vuelta: [VUELTA_AR34, "Fecha: 8 mar 2027 · Horario: 8:00 am"],
     aviso: false,
   },
@@ -91,7 +92,7 @@ const CASOS = [
     inicio: "2027-03-10",
     fin: null,
     hora: "08:40",
-    ida: [IDA, "Fecha: 10 mar 2027 · Horario: según la llegada del vuelo", "Vuelo: AR1840 (FTE) llegada 08:40 hs"],
+    ida: [IDA, "Fecha: 10 mar 2027 · Horario: según la llegada del vuelo", "Vuelo: AR1840 (Aerolíneas Argentinas) – sale Buenos Aires (AEP) 10 mar 05:30 hs – llega El Calafate (FTE) 10 mar 08:40 hs"],
     vuelta: [VUELTA_OD033, "Fecha: 13 mar 2027 · Horario: 8:00 am"],
     aviso: false,
   },
@@ -102,7 +103,7 @@ const CASOS = [
     inicio: "2027-04-10",
     fin: null,
     hora: "18:30",
-    ida: [IDA, "Fecha: 10 abr 2027 · Horario: según la llegada del vuelo", "Vuelo: AR1840 (FTE) llegada 18:30 hs"],
+    ida: [IDA, "Fecha: 10 abr 2027 · Horario: según la llegada del vuelo", "Vuelo: AR1840 (Aerolíneas Argentinas) – sale Buenos Aires (AEP) 10 abr 05:30 hs – llega El Calafate (FTE) 10 abr 18:30 hs"],
     vuelta: [VUELTA_OD033, "Fecha: 13 abr 2027 · Horario: 8:00 am"],
     aviso: true,
   },

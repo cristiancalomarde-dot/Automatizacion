@@ -488,6 +488,8 @@ export const TEXTOS = {
       historialVuelos: (persona: string, vuelos: string, nota: boolean) =>
         `${persona} corrigió los vuelos: ${vuelos}${nota ? " (y dejó una nota)" : ""}`,
       historialSinVuelos: "sin vuelos",
+      /** M3-26: quién "corrigió" los vuelos cuando los suma el script de los vuelos sin número. */
+      lecturaDelMail: "La lectura del mail",
       historialRevisado: (persona: string, dato: string) => `${persona} marcó como revisado: ${dato}`,
       historialCorregido: (persona: string, dato: string) => `${persona} corrigió: ${dato}`,
       /** Owner 2026-10-20: las partes del tour se corrieron con las fechas de la reserva. */
