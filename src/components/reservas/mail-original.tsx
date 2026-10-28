@@ -106,7 +106,7 @@ function BotonPdf({ pdf }: { pdf: PdfDelMail }) {
   return (
     <div className={estilos.pdf}>
       <button type="button" className={ui.botonSecundario} onClick={abrir} disabled={preparando}>
-        {T.abrirPdf}
+        {pdf.esImagen ? T.abrirImagen : T.abrirPdf}
       </button>
       <span className={ui.meta}>{pdf.nombre}</span>
       {error ? <Aviso tono="error">{T.errorPdf}</Aviso> : null}

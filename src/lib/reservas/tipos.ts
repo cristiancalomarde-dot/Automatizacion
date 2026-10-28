@@ -38,17 +38,19 @@ export interface AdjuntoEntrada {
   nombre: string;
   /** Tipo MIME ("application/pdf", "image/png"…). */
   tipo: string;
-  /** El contenido: solo se guarda si es un PDF. */
+  /** El contenido: se guarda si es un PDF o una imagen (M3-30). */
   contenido?: Uint8Array;
   /** Tamaño en bytes, si no viene el contenido. */
   tamano?: number;
+  /** M3-30: el Content-ID de una imagen pegada en el cuerpo (`<img src="cid:…">`), sin los `<>`. */
+  cid?: string | null;
 }
 
 export interface AdjuntoGuardado {
   nombre: string;
   tipo: string;
   tamano: number;
-  /** Ruta en el bucket `mail-adjuntos` (solo los PDF); null si no se subió. */
+  /** Ruta en el bucket `mail-adjuntos` (los PDF y, desde M3-30, las imágenes); null si no se subió. */
   ruta: string | null;
 }
 
@@ -371,6 +373,8 @@ export interface PdfDelMail {
   nombre: string;
   /** Ruta en el bucket privado `mail-adjuntos`. */
   ruta: string;
+  /** M3-30: una imagen del mail (se abre igual que el PDF). */
+  esImagen?: boolean;
 }
 
 export interface MailDeReserva {

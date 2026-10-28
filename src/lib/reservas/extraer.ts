@@ -29,7 +29,8 @@ export type { MailParaLeer } from "./preparar-mail";
 // v2 (2026-10-13): número de Journaway en el asunto y pax de TourRadar. v1 y v2 quedan como historia.
 /** v3 (2026-10-16): en Kilroy "3 bookings" son productos para los mismos pasajeros, no una duda de pax. */
 /** v4 (2026-10-22, M3-13): el formato de Adventure360, "TBC" queda vacío y las elecciones del pasajero van en pedidos especiales. */
-export const VERSION_INSTRUCCIONES = "lectura-mail.v4";
+/** v5 (2026-10-28, M3-30): las imágenes del mail son parte del mail (la marca [imagen N] dice dónde estaban). */
+export const VERSION_INSTRUCCIONES = "lectura-mail.v5";
 export type ClienteMensajesIA = Pick<Anthropic, "messages">;
 
 let instruccionesCache: string | null = null;
@@ -69,13 +70,14 @@ function sinDelimitadores(texto: string): string {
   return texto.replace(/<\s*\/?\s*mail\s*>/gi, "[mail]");
 }
 
-function textoDelMensaje(mail: MailParaLeer, cuerpo: string, pdfs: string[], noLeidos: string[]): string {
+function textoDelMensaje(mail: MailParaLeer, cuerpo: string, pdfs: string[], noLeidos: string[], imagenes = 0): string {
   const fecha = mail.fechaMail instanceof Date ? mail.fechaMail.toISOString() : (mail.fechaMail ?? "");
   const cabecera = [
     `Remitente: ${mail.remitente}`,
     `Asunto: ${mail.asunto ?? ""}`,
     `Fecha: ${fecha}`,
     pdfs.length ? `PDF adjunto (va como documento): ${pdfs.join(", ")}` : null,
+    imagenes ? `Imágenes del mail: ${imagenes} (van después del texto; cada una donde está su marca [imagen N] del cuerpo)` : null,
     noLeidos.length ? `Otros adjuntos (no se te mandan): ${noLeidos.length}` : null,
   ]
     .filter(Boolean)
@@ -126,8 +128,14 @@ export async function leerMailConIA(mail: MailParaLeer, opciones: OpcionesLectur
         preparado.cuerpo,
         preparado.pdfs.map((p) => p.nombre),
         preparado.adjuntosNoLeidos,
+        preparado.imagenes.length,
       ),
     },
+    // M3-30: cada imagen, con su marca, después del texto.
+    ...preparado.imagenes.flatMap((i): Anthropic.ContentBlockParam[] => [
+      { type: "text", text: i.adjunta ? `[imagen ${i.numero}] (adjunta al mail)` : `[imagen ${i.numero}]` },
+      { type: "image", source: { type: "base64", media_type: i.tipo, data: i.base64 } },
+    ]),
   ];
 
   let falloLaApi = false;
@@ -204,7 +212,8 @@ export async function leerMailConIA(mail: MailParaLeer, opciones: OpcionesLectur
     {
       agencia: preparado.agencia,
       textoVerificable: `${mail.asunto ?? ""}\n${preparado.cuerpoOriginal}`,
-      seMandoPdf: preparado.pdfs.length > 0,
+      // Lo que no está en el texto puede estar en el PDF o en una imagen (M3-30): no se puede chequear.
+      seMandoPdf: preparado.pdfs.length > 0 || preparado.imagenes.length > 0,
       adjuntosNoLeidos: preparado.adjuntosNoLeidos,
     },
     { version_instrucciones: VERSION_INSTRUCCIONES, modelo },

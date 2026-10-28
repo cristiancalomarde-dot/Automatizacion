@@ -13,7 +13,8 @@ import type { AdjuntoEntrada, MailEntrada } from "@/lib/reservas/tipos";
  * lector IMAP de M2-07, así el circuito de M2-02 a M2-04 es uno solo.
  *
  * - `.eml`: el mail tal cual (mailparser), con su remitente, asunto, fecha,
- *   cuerpo y adjuntos. Los PDF viajan con su contenido; del resto, solo nombre,
+ *   cuerpo y adjuntos. Los PDF y las imágenes (M3-30, con su `cid` si están
+ *   pegadas en el cuerpo) viajan con su contenido; del resto, solo nombre,
  *   tipo y tamaño.
  * - `.docx`: una copia de Outlook pegada en Word. Solo el texto de
  *   `word/document.xml` (las imágenes no se leen). El remitente, el asunto y la
@@ -234,9 +235,13 @@ export async function camposDeEml(
     const tipo = (a.contentType ?? "application/octet-stream").toLowerCase();
     const nombreAdjunto = a.filename ?? (tipo === "application/pdf" ? "adjunto.pdf" : "adjunto");
     const esPdf = tipo === "application/pdf" || /\.pdf$/i.test(nombreAdjunto);
-    return esPdf
-      ? { nombre: nombreAdjunto, tipo: "application/pdf", contenido: new Uint8Array(a.content) }
-      : { nombre: nombreAdjunto, tipo, tamano: a.size ?? a.content.byteLength };
+    if (esPdf) return { nombre: nombreAdjunto, tipo: "application/pdf", contenido: new Uint8Array(a.content) };
+    // M3-30: las imágenes viajan con su contenido y, si están pegadas en el cuerpo, con su Content-ID.
+    if (tipo.startsWith("image/")) {
+      const cid = a.cid?.trim().replace(/^<|>$/g, "") || null;
+      return { nombre: nombreAdjunto, tipo, contenido: new Uint8Array(a.content), cid };
+    }
+    return { nombre: nombreAdjunto, tipo, tamano: a.size ?? a.content.byteLength };
   });
   return {
     remitente: (de?.address ?? "").toLowerCase(),

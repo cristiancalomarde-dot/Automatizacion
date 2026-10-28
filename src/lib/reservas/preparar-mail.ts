@@ -12,8 +12,11 @@ const LARGO_ESQUEMA = JSON.stringify(ESQUEMA_FICHA_IA).length;
  * agencia es el mail, qué cuerpo y qué adjuntos viajan, si el PDF se puede
  * abrir y cuánto puede costar en el peor caso.
  *
- * - Solo viajan el cuerpo y el PDF de la reserva. Pasaportes, imágenes y
- *   cualquier otro adjunto se anotan por nombre y no se mandan.
+ * - Viajan el cuerpo, el PDF de la reserva y (M3-30) las imágenes del mail:
+ *   las pegadas en el cuerpo (`<img src="cid:…">`) en su lugar, marcadas
+ *   "[imagen N]", y las adjuntas después. Los íconos de la firma por http no
+ *   son imágenes del mail; las chiquitas (logos) y los tipos que la IA no lee
+ *   se anotan por nombre, como los demás adjuntos (pasaportes en PDF, etc.).
  * - Si el mail trae solo HTML (los "new booking" automáticos de Kilroy), se
  *   pasa a texto limpio, con las tablas en renglones "a | b | c".
  * - Del cuerpo se sacan la firma ("-- ") y los mails citados que repiten lo
@@ -26,6 +29,17 @@ export const MAX_CARACTERES_CUERPO = 30_000;
 export const MAX_PAGINAS_PDF = 10;
 export const MAX_BYTES_PDF = 5 * 1024 * 1024;
 const TOKENS_POR_PAGINA_PDF = 3000;
+
+/** M3-30 (#3): hasta cuántas imágenes y cuántos bytes de imágenes se leen por mail. */
+export const MAX_IMAGENES = 8;
+export const MAX_BYTES_IMAGENES = 5 * 1024 * 1024;
+/** Más chica que esto es un logo o un ícono: no se lee. */
+export const MIN_BYTES_IMAGEN = 2 * 1024;
+const MIN_PIXELES_IMAGEN = 20_000;
+/** La IA achica cada imagen a ~1,15 MP: ~1600 tokens como mucho (ancho × alto / 750). */
+const MAX_TOKENS_POR_IMAGEN = 1600;
+const TIPOS_IMAGEN = ["image/png", "image/jpeg", "image/gif", "image/webp"] as const;
+export type TipoImagen = (typeof TIPOS_IMAGEN)[number];
 
 export const MOTIVOS = {
   remitente: "remitente que no es de una agencia piloto",
@@ -110,8 +124,14 @@ export function revisarPdf(bytes: Uint8Array | undefined): { ok: true; paginas: 
   return { ok: true, paginas: Math.max(paginas, 1) };
 }
 
-export function estimarPeorCaso(opciones: { caracteres: number; paginasPdf: number; precios: PreciosModelo }): number {
-  const entrada = opciones.caracteres / 3 + TOKENS_POR_PAGINA_PDF * opciones.paginasPdf;
+export function estimarPeorCaso(opciones: {
+  caracteres: number;
+  paginasPdf: number;
+  precios: PreciosModelo;
+  /** M3-30: los tokens de las imágenes que viajan. */
+  tokensImagenes?: number;
+}): number {
+  const entrada = opciones.caracteres / 3 + TOKENS_POR_PAGINA_PDF * opciones.paginasPdf + (opciones.tokensImagenes ?? 0);
   return (entrada * opciones.precios.entradaPorMillon + MAX_TOKENS_LECTURA * opciones.precios.salidaPorMillon) / 1_000_000;
 }
 
@@ -119,6 +139,106 @@ export interface PdfParaLeer {
   nombre: string;
   base64: string;
   paginas: number;
+}
+
+// --- Imágenes (M3-30) -------------------------------------------------------------------
+
+export interface ImagenParaLeer {
+  /** La N de la marca "[imagen N]" del cuerpo. */
+  numero: number;
+  nombre: string;
+  tipo: TipoImagen;
+  base64: string;
+  /** Adjunta (no pegada en el cuerpo): va después del texto, sin lugar en el cuerpo. */
+  adjunta: boolean;
+  tokens: number;
+}
+
+/** El tipo y el tamaño en píxeles, por los primeros bytes (PNG, JPEG, GIF, WebP). */
+export function revisarImagen(bytes: Uint8Array): { tipo: TipoImagen; ancho: number | null; alto: number | null } | null {
+  const b = bytes;
+  const vista = new DataView(b.buffer, b.byteOffset, b.byteLength);
+  if (b.length >= 24 && b[0] === 0x89 && b[1] === 0x50 && b[2] === 0x4e && b[3] === 0x47) {
+    return { tipo: "image/png", ancho: vista.getUint32(16), alto: vista.getUint32(20) };
+  }
+  if (b.length >= 10 && b[0] === 0x47 && b[1] === 0x49 && b[2] === 0x46) {
+    return { tipo: "image/gif", ancho: vista.getUint16(6, true), alto: vista.getUint16(8, true) };
+  }
+  if (b.length >= 12 && b[0] === 0x52 && b[1] === 0x49 && b[2] === 0x46 && b[3] === 0x46 && b[8] === 0x57 && b[9] === 0x45 && b[10] === 0x42 && b[11] === 0x50) {
+    return { tipo: "image/webp", ancho: null, alto: null };
+  }
+  if (b.length >= 4 && b[0] === 0xff && b[1] === 0xd8) {
+    // Los marcadores SOF (C0-CF salvo C4, C8 y CC) llevan alto y ancho.
+    for (let i = 2; i + 9 < b.length; ) {
+      if (b[i] !== 0xff) {
+        i++;
+        continue;
+      }
+      const m = b[i + 1];
+      if (m >= 0xc0 && m <= 0xcf && ![0xc4, 0xc8, 0xcc].includes(m)) {
+        return { tipo: "image/jpeg", alto: vista.getUint16(i + 5), ancho: vista.getUint16(i + 7) };
+      }
+      if (m === 0xd8 || m === 0x01 || (m >= 0xd0 && m <= 0xd7) || m === 0xff) {
+        i += m === 0xff ? 1 : 2;
+        continue;
+      }
+      i += 2 + vista.getUint16(i + 2);
+    }
+    return { tipo: "image/jpeg", ancho: null, alto: null };
+  }
+  return null;
+}
+
+const esImagen = (a: AdjuntoEntrada) => a.tipo.toLowerCase().startsWith("image/") || /\.(png|jpe?g|gif|webp|bmp|tiff?|heic)$/i.test(a.nombre);
+const normalCid = (cid: string) => {
+  let c = cid.trim().replace(/^<|>$/g, "");
+  try {
+    c = decodeURIComponent(c);
+  } catch {
+    // un cid con un % suelto queda como vino
+  }
+  return c.toLowerCase();
+};
+const ETIQUETA_IMG = /<img\b[^>]*>/gi;
+const SRC_CID = /\bsrc\s*=\s*["']?\s*cid:([^"'\s>]+)/i;
+
+interface ImagenCandidata {
+  a: AdjuntoEntrada & { contenido: Uint8Array };
+  tipo: TipoImagen;
+  tokens: number;
+}
+
+/**
+ * Las imágenes que viajan, numeradas: primero las pegadas en el cuerpo, en el
+ * orden del HTML; después las adjuntas. Las que no se leen (sin contenido,
+ * chiquitas o de un tipo que la IA no lee) quedan afuera.
+ */
+function imagenesDelMail(mail: MailParaLeer): { candidatas: ImagenCandidata[]; html: string | null } {
+  const candidatas: ImagenCandidata[] = [];
+  for (const a of mail.adjuntos ?? []) {
+    if (!esImagen(a) || !a.contenido) continue;
+    const revision = revisarImagen(a.contenido);
+    const pixeles = revision?.ancho && revision.alto ? revision.ancho * revision.alto : null;
+    const chiquita = a.contenido.byteLength < MIN_BYTES_IMAGEN || (pixeles !== null && pixeles < MIN_PIXELES_IMAGEN);
+    if (!revision || chiquita) continue;
+    const tokens = pixeles ? Math.min(MAX_TOKENS_POR_IMAGEN, Math.ceil(pixeles / 750)) : MAX_TOKENS_POR_IMAGEN;
+    candidatas.push({ a: a as ImagenCandidata["a"], tipo: revision.tipo, tokens });
+  }
+  return { candidatas, html: mail.cuerpoHtml ?? null };
+}
+
+/** El HTML con cada `<img src="cid:…">` que viaja cambiado por "[imagen N]" (las demás `<img>` se van). */
+function ubicarImagenes(html: string, candidatas: ImagenCandidata[]): { html: string; orden: ImagenCandidata[] } {
+  const porCid = new Map(candidatas.filter((c) => c.a.cid).map((c) => [normalCid(c.a.cid!), c]));
+  const orden: ImagenCandidata[] = [];
+  const conMarcas = html.replace(ETIQUETA_IMG, (etiqueta) => {
+    const cid = SRC_CID.exec(etiqueta)?.[1];
+    const c = cid ? porCid.get(normalCid(cid)) : undefined;
+    if (!c) return "";
+    if (!orden.includes(c)) orden.push(c);
+    return `<br>[imagen ${orden.indexOf(c) + 1}]<br>`;
+  });
+  return { html: conMarcas, orden };
 }
 
 export type MailPreparado =
@@ -130,6 +250,8 @@ export type MailPreparado =
       /** El cuerpo entero en texto, para los controles literales. */
       cuerpoOriginal: string;
       pdfs: PdfParaLeer[];
+      /** M3-30: las imágenes que viajan, en el orden de sus marcas. */
+      imagenes: ImagenParaLeer[];
       adjuntosNoLeidos: string[];
       peorCaso: number;
     }
@@ -142,13 +264,33 @@ export function prepararMail(
   const agencia = agenciaDelRemitente(mail.remitente, opciones.agencias);
   if (agencia === AGENCIA_DESCONOCIDA) return { ok: false, motivo: MOTIVOS.remitente };
 
-  const cuerpoOriginal = cuerpoDelMail(mail);
+  // M3-30: si el HTML tiene imágenes pegadas que viajan, el cuerpo sale del HTML con sus marcas
+  // (el texto plano no dice dónde estaban); si no, como siempre.
+  const deImagenes = imagenesDelMail(mail);
+  const ubicadas = deImagenes.html ? ubicarImagenes(deImagenes.html, deImagenes.candidatas) : { html: "", orden: [] };
+  const cuerpoOriginal = ubicadas.orden.length ? htmlATexto(ubicadas.html) : cuerpoDelMail(mail);
   const cuerpo = limpiarCuerpo(cuerpoOriginal);
   if (cuerpo.length > MAX_CARACTERES_CUERPO) return { ok: false, motivo: MOTIVOS.grande };
+
+  const enOrden = [...ubicadas.orden, ...deImagenes.candidatas.filter((c) => !ubicadas.orden.includes(c))];
+  const imagenes: ImagenParaLeer[] = enOrden.map((c, i) => ({
+    numero: i + 1,
+    nombre: c.a.nombre,
+    tipo: c.tipo,
+    base64: Buffer.from(c.a.contenido).toString("base64"),
+    adjunta: i >= ubicadas.orden.length,
+    tokens: c.tokens,
+  }));
+  const bytesImagenes = enOrden.reduce((s, c) => s + c.a.contenido.byteLength, 0);
+  if (imagenes.length > MAX_IMAGENES || bytesImagenes > MAX_BYTES_IMAGENES) return { ok: false, motivo: MOTIVOS.grande };
 
   const pdfs: PdfParaLeer[] = [];
   const adjuntosNoLeidos: string[] = [];
   for (const a of mail.adjuntos ?? []) {
+    if (esImagen(a)) {
+      if (!enOrden.some((c) => c.a === a)) adjuntosNoLeidos.push(a.nombre);
+      continue;
+    }
     if (!esPdfDeReserva(a, agencia)) {
       adjuntosNoLeidos.push(a.nombre);
       continue;
@@ -165,8 +307,9 @@ export function prepararMail(
   if (paginasPdf > MAX_PAGINAS_PDF) return { ok: false, motivo: MOTIVOS.grande };
   const caracteres =
     opciones.instrucciones.length + LARGO_ESQUEMA + cuerpo.length + (mail.asunto ?? "").length + 200;
-  const peorCaso = estimarPeorCaso({ caracteres, paginasPdf, precios: opciones.precios });
+  const tokensImagenes = imagenes.reduce((s, i) => s + i.tokens, 0);
+  const peorCaso = estimarPeorCaso({ caracteres, paginasPdf, precios: opciones.precios, tokensImagenes });
   if (peorCaso > TOPE_POR_MAIL_USD) return { ok: false, motivo: MOTIVOS.grande };
 
-  return { ok: true, agencia, cuerpo, cuerpoOriginal, pdfs, adjuntosNoLeidos, peorCaso };
+  return { ok: true, agencia, cuerpo, cuerpoOriginal, pdfs, imagenes, adjuntosNoLeidos, peorCaso };
 }

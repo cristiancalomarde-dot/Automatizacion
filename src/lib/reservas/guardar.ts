@@ -6,6 +6,7 @@ import { direccionDelRemitente } from "./agencias";
 import { huellaDelMail } from "./huella";
 import {
   BUCKET_ADJUNTOS,
+  type AdjuntoEntrada,
   type AdjuntoGuardado,
   type EstadoReserva,
   type EventoReserva,
@@ -33,6 +34,86 @@ function esPdf(tipo: string, nombre: string): boolean {
   return tipo.toLowerCase() === "application/pdf" || /\.pdf$/i.test(nombre);
 }
 
+/** M3-30: las imágenes que acepta el bucket (migración 0024). */
+const TIPOS_IMAGEN_GUARDADA = ["image/png", "image/jpeg", "image/gif", "image/webp"];
+
+/** El tipo con que se sube: PDF o una imagen que el bucket acepta; null si no se sube. */
+function tipoParaSubir(a: { tipo: string; nombre: string }): string | null {
+  if (esPdf(a.tipo, a.nombre)) return "application/pdf";
+  const tipo = a.tipo.toLowerCase().replace("image/jpg", "image/jpeg");
+  return TIPOS_IMAGEN_GUARDADA.includes(tipo) ? tipo : null;
+}
+
+type Subida = { ruta: string; contenido: Uint8Array; tipo: string };
+
+/**
+ * Los adjuntos tal como quedan en `mail_recibido.adjuntos` y lo que hay que
+ * subir: los PDF y las imágenes con contenido van al bucket en
+ * `<id del mail>/<nombre>`; del resto queda nombre, tipo y tamaño.
+ */
+function planDeAdjuntos(id: string, entrada: readonly AdjuntoEntrada[], usados = new Set<string>()): { adjuntos: AdjuntoGuardado[]; subidas: Subida[] } {
+  const subidas: Subida[] = [];
+  const adjuntos: AdjuntoGuardado[] = entrada.map((a) => {
+    const tamano = a.contenido?.byteLength ?? a.tamano ?? 0;
+    const tipo = tipoParaSubir(a);
+    if (!tipo || !a.contenido) return { nombre: a.nombre, tipo: a.tipo, tamano, ruta: null };
+    let nombre = nombreParaStorage(a.nombre);
+    for (let n = 2; usados.has(nombre); n++) nombre = `${n}-${nombreParaStorage(a.nombre)}`;
+    usados.add(nombre);
+    const ruta = `${id}/${nombre}`;
+    subidas.push({ ruta, contenido: a.contenido, tipo });
+    return { nombre: a.nombre, tipo: a.tipo, tamano, ruta };
+  });
+  return { adjuntos, subidas };
+}
+
+async function subir(cliente: Cliente, subidas: Subida[]): Promise<void> {
+  const almacen = cliente.storage.from(BUCKET_ADJUNTOS);
+  for (const s of subidas) {
+    const { error } = await almacen.upload(s.ruta, s.contenido, { contentType: s.tipo, upsert: false });
+    if (error) {
+      await almacen.remove(subidas.map((x) => x.ruta));
+      throw new Error(`No se pudo guardar un adjunto del mail: ${error.message}`);
+    }
+  }
+}
+
+/**
+ * M3-30 (reprocesar un mail ya guardado): sube los PDF y las imágenes que el
+ * mail guardado todavía no tiene en el bucket y actualiza `adjuntos`. Lo que
+ * ya tenía ruta no se toca. Devuelve cuántos archivos subió.
+ */
+export async function completarAdjuntosDelMail(
+  mail: Pick<MailRecibido, "id" | "adjuntos">,
+  entrada: readonly AdjuntoEntrada[],
+  cliente: Cliente = clientePorDefecto(),
+): Promise<{ adjuntos: AdjuntoGuardado[]; subidos: number }> {
+  const guardados = mail.adjuntos ?? [];
+  const yaSubido = (a: AdjuntoEntrada) => guardados.some((g) => g.ruta && g.nombre === a.nombre);
+  const usados = new Set(guardados.filter((g) => g.ruta).map((g) => g.ruta!.split("/").pop()!));
+  const plan = planDeAdjuntos(mail.id, entrada.filter((a) => !yaSubido(a)), usados);
+  if (plan.subidas.length === 0) return { adjuntos: guardados, subidos: 0 };
+  await subir(cliente, plan.subidas);
+
+  // Cada adjunto viejo sin ruta toma la ruta del que se subió con su nombre; los demás se suman al final.
+  const nuevos = plan.adjuntos.filter((a) => a.ruta);
+  const tomados = new Set<AdjuntoGuardado>();
+  const adjuntos = guardados.map((g) => {
+    if (g.ruta) return g;
+    const n = nuevos.find((x) => !tomados.has(x) && x.nombre === g.nombre);
+    if (!n) return g;
+    tomados.add(n);
+    return n;
+  });
+  adjuntos.push(...nuevos.filter((n) => !tomados.has(n)));
+  const { error } = await cliente.from("mail_recibido").update({ adjuntos, updated_at: new Date().toISOString() }).eq("id", mail.id);
+  if (error) {
+    await cliente.storage.from(BUCKET_ADJUNTOS).remove(plan.subidas.map((s) => s.ruta));
+    throw new Error(`No se pudieron guardar los adjuntos del mail: ${error.message}`);
+  }
+  return { adjuntos, subidos: plan.subidas.length };
+}
+
 /** Nombre apto para una clave de Storage (sin `#`, acentos ni barras). */
 function nombreParaStorage(nombre: string): string {
   const limpio = nombre
@@ -51,9 +132,10 @@ async function buscarMailPorHuella(cliente: Cliente, huella: string): Promise<Ma
 
 /**
  * Guarda el mail original, una sola vez por huella (fila 2). Si ya existía,
- * devuelve el que estaba (`nuevo: false`) y no sube nada. Los PDF se suben al
- * bucket privado `mail-adjuntos` en `<id del mail>/<nombre>`; del resto de los
- * adjuntos queda solo nombre, tipo y tamaño.
+ * devuelve el que estaba (`nuevo: false`) y no sube nada. Los PDF y las
+ * imágenes (M3-30) se suben al bucket privado `mail-adjuntos` en
+ * `<id del mail>/<nombre>`; del resto de los adjuntos queda solo nombre, tipo
+ * y tamaño.
  */
 export async function guardarMailRecibido(
   entrada: MailEntrada,
@@ -73,27 +155,9 @@ export async function guardarMailRecibido(
   if (existente) return { mail: existente, nuevo: false };
 
   const id = randomUUID();
-  const usados = new Set<string>();
-  const subidas: Array<{ ruta: string; contenido: Uint8Array; tipo: string }> = [];
-  const adjuntos: AdjuntoGuardado[] = (entrada.adjuntos ?? []).map((a) => {
-    const tamano = a.contenido?.byteLength ?? a.tamano ?? 0;
-    if (!esPdf(a.tipo, a.nombre) || !a.contenido) return { nombre: a.nombre, tipo: a.tipo, tamano, ruta: null };
-    let nombre = nombreParaStorage(a.nombre);
-    for (let n = 2; usados.has(nombre); n++) nombre = `${n}-${nombreParaStorage(a.nombre)}`;
-    usados.add(nombre);
-    const ruta = `${id}/${nombre}`;
-    subidas.push({ ruta, contenido: a.contenido, tipo: "application/pdf" });
-    return { nombre: a.nombre, tipo: a.tipo, tamano, ruta };
-  });
-
+  const { adjuntos, subidas } = planDeAdjuntos(id, entrada.adjuntos ?? []);
   const almacen = cliente.storage.from(BUCKET_ADJUNTOS);
-  for (const s of subidas) {
-    const { error } = await almacen.upload(s.ruta, s.contenido, { contentType: s.tipo, upsert: false });
-    if (error) {
-      await almacen.remove(subidas.map((x) => x.ruta));
-      throw new Error(`No se pudo guardar un PDF adjunto: ${error.message}`);
-    }
-  }
+  await subir(cliente, subidas);
 
   const fecha = entrada.fechaMail ? new Date(entrada.fechaMail).toISOString() : null;
   const { data, error } = await cliente

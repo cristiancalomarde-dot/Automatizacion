@@ -515,6 +515,7 @@ export const TEXTOS = {
       sinCuerpo: "El mail no trae texto.",
       verMail: "Ver mail",
       abrirPdf: "Abrir el PDF",
+      abrirImagen: "Ver la imagen",
       errorPdf: "No se pudo abrir el PDF. Probá de nuevo.",
     },
     /**

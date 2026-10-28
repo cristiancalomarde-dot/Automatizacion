@@ -336,7 +336,12 @@ function aMail(m: any): MailDeReserva {
     cuerpo: cuerpoComoTexto({ cuerpoTexto: m.cuerpo_texto ?? null, cuerpoHtml: m.cuerpo_html ?? null }),
     pdfs: adjuntos
       .filter((a) => typeof a?.ruta === "string" && a.ruta)
-      .map((a) => ({ nombre: String(a.nombre ?? "adjunto.pdf"), ruta: a.ruta })),
+      .map((a) => ({
+        nombre: String(a.nombre ?? "adjunto.pdf"),
+        ruta: a.ruta,
+        // M3-30: las imágenes del mail se abren igual que el PDF.
+        ...(String(a.tipo ?? "").toLowerCase().startsWith("image/") ? { esImagen: true } : {}),
+      })),
   };
 }
 

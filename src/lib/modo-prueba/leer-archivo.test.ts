@@ -48,7 +48,7 @@ describe("leerArchivoDeMail (fila 2): los tres formatos terminan en el mismo 'ma
     expect(m.cuerpoTexto).toContain("KILROY Reference.:DK0000042/abcd");
   });
 
-  it(".eml con un PDF adjunto: el PDF viaja con su contenido; la imagen, sin contenido", async () => {
+  it(".eml con un PDF adjunto: el PDF y la imagen viajan con su contenido (la imagen desde M3-30)", async () => {
     const m = await leerArchivoDeMail(join(DIR, "tourradar-con-pdf.eml"));
     expect(m.remitente).toBe("system@sent-via.netsuite.com");
     expect(m.asunto).toBe("Booking Statement 0000042 - 00000042 - vendorbill");
@@ -56,8 +56,7 @@ describe("leerArchivoDeMail (fila 2): los tres formatos terminan en el mismo 'ma
     expect(pdf.nombre).toBe("Booking Statement 0000042.pdf");
     expect(Buffer.from(pdf.contenido!).subarray(0, 5).toString()).toBe("%PDF-");
     const imagen = m.adjuntos!.find((a) => a.tipo === "image/png")!;
-    expect(imagen.contenido).toBeUndefined();
-    expect(imagen.tamano).toBeGreaterThan(0);
+    expect(Buffer.from(imagen.contenido!).subarray(1, 4).toString()).toBe("PNG");
   });
 
   it(".docx: solo el texto, con el remitente y el asunto de la agencia que figura en la copia; sin imágenes", async () => {
