@@ -84,10 +84,11 @@ const renglon = (cuerpo: string, empieza: string) => cuerpo.split("\n").find((l)
     const c = guardados.pedidos.find((p) => p.cuerpo.includes("TRF IN"))!.cuerpo;
     const hotel = "Hotel 3* El Pueblito (Iguazú) · hotel a confirmar";
     expect(c).toContain("Paquete 105 Premium");
-    expect(renglon(c, "TRF IN")).toBe(`TRF IN, regular: 3 abr 2027 · Bus o vuelo pendiente · Drop off: ${hotel}`);
+    // M3-28 (owner, 2026-10-28): en el 105 Premium los transfers no dicen "regular".
+    expect(renglon(c, "TRF IN")).toBe(`TRF IN: 3 abr 2027 · Bus o vuelo pendiente · Drop off: ${hotel}`);
     expect(renglon(c, "Lado argentino")).toBe(`Lado argentino, Premium, en inglés: 4 abr 2027 · Pick up y drop off: ${hotel}`);
     expect(renglon(c, "Lado brasileño")).toBe(`Lado brasileño, Premium, en inglés: 5 abr 2027 · Pick up y drop off: ${hotel}`);
-    expect(renglon(c, "TRF OUT")).toBe(`TRF OUT, regular: 6 abr 2027 · Bus o vuelo pendiente · Pick up: ${hotel}`);
+    expect(renglon(c, "TRF OUT")).toBe(`TRF OUT: 6 abr 2027 · Bus o vuelo pendiente · Pick up: ${hotel}`);
     // El hotel El Pueblito va en el mismo borrador (misma casilla), como antes.
     expect(c).toContain("Alojamiento: Hotel 3* El Pueblito");
   });
@@ -103,10 +104,10 @@ const renglon = (cuerpo: string, empieza: string) => cuerpo.split("\n").find((l)
     const hotel = "Hotel 3* El Pueblito (Iguazú) · hotel a confirmar";
     expect(c).toContain("Paquete 105 Premium con transfer in desde la Rodoviaria de Foz");
     // OD010A arranca el día 5 del tour (5 may) y sale el 8.
-    expect(renglon(c, "TRF IN")).toBe(`TRF IN, regular: 5 may 2027 · Bus o vuelo pendiente · Drop off: ${hotel}`);
+    expect(renglon(c, "TRF IN")).toBe(`TRF IN: 5 may 2027 · Bus o vuelo pendiente · Drop off: ${hotel}`);
     expect(renglon(c, "Lado argentino")).toBe(`Lado argentino, Premium, en inglés: 6 may 2027 · Pick up y drop off: ${hotel}`);
     expect(renglon(c, "Lado brasileño")).toBe(`Lado brasileño, Premium, en inglés: 7 may 2027 · Pick up y drop off: ${hotel}`);
-    expect(renglon(c, "TRF OUT")).toBe(`TRF OUT, regular: 8 may 2027 · Bus o vuelo pendiente · Pick up: ${hotel}`);
+    expect(renglon(c, "TRF OUT")).toBe(`TRF OUT: 8 may 2027 · Bus o vuelo pendiente · Pick up: ${hotel}`);
     // Los otros pedidos del tour siguen saliendo (Río, Buenos Aires, ...), sin el texto de Iguazú.
     const otros = guardados.pedidos.filter((p) => !p.cuerpo.includes("TRF IN"));
     expect(otros.length).toBeGreaterThan(2);

@@ -165,20 +165,21 @@ const renglon = (cuerpo: string, empieza: string) => cuerpo.split("\n").find((l)
     const c = await pedidoCuenca("OD010B");
     const hotel = "Bambu Hostel Foz (Iguazú) · hotel a confirmar";
     expect(c).toContain("Paquete 105 Premium x Foz");
-    expect(renglon(c, "TRF IN")).toBe(`TRF IN, regular: 10 abr 2027 · Bus o vuelo pendiente · Drop off: ${hotel}`);
+    // M3-28 (owner, 2026-10-28): en el 105 Premium los transfers no dicen "regular".
+    expect(renglon(c, "TRF IN")).toBe(`TRF IN: 10 abr 2027 · Bus o vuelo pendiente · Drop off: ${hotel}`);
     expect(renglon(c, "Lado argentino")).toBe(`Lado argentino, Premium, en inglés: 11 abr 2027 · Pick up y drop off: ${hotel}`);
     expect(renglon(c, "Lado brasileño")).toBe(`Lado brasileño, Premium, en inglés: 12 abr 2027 · Pick up y drop off: ${hotel}`);
-    expect(renglon(c, "TRF OUT")).toBe(`TRF OUT, regular: 13 abr 2027 · Bus o vuelo pendiente · Pick up: ${hotel}`);
+    expect(renglon(c, "TRF OUT")).toBe(`TRF OUT: 13 abr 2027 · Bus o vuelo pendiente · Pick up: ${hotel}`);
   });
 
   it("OD010D: el día del cruce, pick up en Bambu Foz y drop off en Beer Hostel (Puerto Iguazú)", async () => {
     const c = await pedidoCuenca("OD010D");
     const foz = "Bambu Foz (Foz do Iguaçu) · hotel a confirmar";
     const beer = "Beer Hostel (Puerto Iguazú) · hotel a confirmar";
-    expect(renglon(c, "TRF IN")).toBe(`TRF IN, regular: 10 may 2027 · Bus o vuelo pendiente · Drop off: ${foz}`);
+    expect(renglon(c, "TRF IN")).toBe(`TRF IN: 10 may 2027 · Bus o vuelo pendiente · Drop off: ${foz}`);
     expect(renglon(c, "Lado brasileño")).toBe(`Lado brasileño, Premium, en inglés: 11 may 2027 · Pick up y drop off: ${foz}`);
     expect(renglon(c, "Lado argentino")).toBe(`Lado argentino, Premium, en inglés: 12 may 2027 · Pick up: ${foz} · Drop off: ${beer}`);
     expect(c).toContain("Ese día cruzan: el drop off es en el hotel de Argentina.");
-    expect(renglon(c, "TRF OUT")).toBe(`TRF OUT, regular: 13 may 2027 · Bus o vuelo pendiente · Pick up: ${beer}`);
+    expect(renglon(c, "TRF OUT")).toBe(`TRF OUT: 13 may 2027 · Bus o vuelo pendiente · Pick up: ${beer}`);
   });
 });

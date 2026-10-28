@@ -150,7 +150,8 @@ const conTexto = (cuerpo: string) => cuerpo.replace("reserva:\n\n", `reserva:\n\
     const pantalla = listo(await prepararPedidos(equipo, id));
     expect(pantalla.aMano).not.toBeNull();
     // M3-16: sin el número de la agencia; con las fechas de la reserva.
-    expect(pantalla.aMano!.asunto).toBe("Solicitud de reserva – Ana Prueba – 7 al 10 nov 2026");
+    // M3-28 (owner, 2026-10-28): el asunto lleva "x N" con los pax después del pasajero.
+    expect(pantalla.aMano!.asunto).toBe("Solicitud de reserva – Ana Prueba x 2 – 7 al 10 nov 2026");
     const armado = pantalla.pedidos.find((p) => p.destinatarios.length > 0)!;
     expect(armado).toBeDefined();
     const mail = armado.destinatarios[0];

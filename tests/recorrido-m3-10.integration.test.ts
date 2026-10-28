@@ -237,12 +237,13 @@ interface ReservaCreada {
       "reservas@maderotango.com.ar",
     ]);
     expect(resumen.ARBR23.tareas).toEqual([
-      "reservar_a_mano: Reservar a mano en Greeters: traslado de llegada Transfer in aeropuerto (EZE o AEP) → alojamiento",
+      // M3-28 (owner, 2026-10-28): el traslado de un solo lado, con el nombre de la ciudad y guion.
+      "reservar_a_mano: Reservar a mano en Greeters: traslado de llegada Transfer in Aeropuerto Buenos Aires - Alojamiento",
       "emitir_boleto: Emitir boleto: Buenos Aires – Iguazú",
       "emitir_boleto: Emitir boleto: Iguazú – Río de Janeiro",
     ]);
     expect(resumen.ARUY01.tareas).toEqual([
-      "reservar_a_mano: Reservar a mano en Greeters: traslado de llegada Transfer in aeropuerto (EZE o AEP) → alojamiento",
+      "reservar_a_mano: Reservar a mano en Greeters: traslado de llegada Transfer in Aeropuerto Buenos Aires - Alojamiento",
       "emitir_boleto: Emitir boleto: Ferry Buenos Aires – Colonia del Sacramento",
       "emitir_boleto: Emitir boleto: Bus regular Colonia - Montevideo (terminal de buses Tres Cruces)",
       "revisar: Pedir a mano: Hotel Oxford Montevideo (OD040)",

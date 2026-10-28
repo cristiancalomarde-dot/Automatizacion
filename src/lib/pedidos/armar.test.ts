@@ -161,12 +161,12 @@ describe("armarPedidos — qué lleva cada servicio (fila 3)", () => {
     expect(r.pedidos[0].cuerpo).not.toContain("pendiente");
   });
 
-  it("en Iguazú el traslado sin dato dice 'Bus o vuelo pendiente'", () => {
+  it("en Iguazú el traslado sin dato dice 'Bus o vuelo pendiente' (M3-28: en el Premium, sin 'regular')", () => {
     const p = ok(armarPedidos(reservaOd010b, catalogoCon([od010b]), plantilla)).pedidos[0];
-    expect(p.cuerpo).toContain("TRF IN, regular: 3 oct 2026 · Bus o vuelo pendiente");
+    expect(p.cuerpo).toContain("TRF IN: 3 oct 2026 · Bus o vuelo pendiente");
     expect(p.cuerpo).toContain("Lado argentino, Premium, en inglés: 4 oct 2026");
     expect(p.cuerpo).toContain("Lado brasileño, Premium, en inglés: 5 oct 2026");
-    expect(p.cuerpo).toContain("TRF OUT, regular: 6 oct 2026 · Bus o vuelo pendiente");
+    expect(p.cuerpo).toContain("TRF OUT: 6 oct 2026 · Bus o vuelo pendiente");
     expect(p.cuerpo).not.toContain("Ese día cruzan");
   });
 
@@ -211,34 +211,35 @@ describe("armarPedidos — los pasajeros (fila 4)", () => {
 });
 
 describe("armarPedidos — asunto (fila 5; M3-16: sin códigos internos)", () => {
-  it("'Solicitud de reserva – pasajero – fechas': sin el código del producto ni el número de la agencia", () => {
+  it("'Solicitud de reserva – pasajero x pax – fechas' (M3-28): sin el código del producto ni el número de la agencia", () => {
     const p = ok(armarPedidos(reservaOd010b, catalogoCon([od010b]), plantilla)).pedidos[0];
-    expect(p.asunto).toBe("Solicitud de reserva – Ana Gómez – 3 al 6 oct 2026");
+    // M3-28 (owner, 2026-10-28): el asunto lleva "x N" con los pax después del pasajero.
+    expect(p.asunto).toBe("Solicitud de reserva – Ana Gómez x 2 – 3 al 6 oct 2026");
     expect(p.asunto).not.toContain("OD010B");
     expect(p.asunto).not.toContain("DK1234567");
   });
   it("sin número, igual", () => {
     const p = ok(armarPedidos({ ...reservaOd010b, numero: null }, catalogoCon([od010b]), plantilla)).pedidos[0];
-    expect(p.asunto).toBe("Solicitud de reserva – Ana Gómez – 3 al 6 oct 2026");
+    expect(p.asunto).toBe("Solicitud de reserva – Ana Gómez x 2 – 3 al 6 oct 2026");
   });
   it("las fechas son las de ese pedido, no las de toda la reserva", () => {
     const r = ok(armarPedidos(reservaChb31, catalogoChb31, plantilla));
     for (const p of r.pedidos) {
-      expect(p.asunto).toMatch(/^Solicitud de reserva – Ana Gómez – \d/);
+      expect(p.asunto).toMatch(/^Solicitud de reserva – Ana Gómez x 2 – \d/);
       expect(p.asunto).not.toMatch(/CHB31|OD030|COMPBO20/);
     }
-    expect(r.pedidos.map((p) => p.asunto)).not.toContain("Solicitud de reserva – Ana Gómez – 18 al 24 ene 2027");
-    expect(pedidoA(r, "reservas@horizonte.test")!.asunto).toBe("Solicitud de reserva – Ana Gómez – 20 ene 2027");
-    expect(pedidoA(r, "reservas@imperioinca.test")!.asunto).toBe("Solicitud de reserva – Ana Gómez – 21 al 23 ene 2027");
+    expect(r.pedidos.map((p) => p.asunto)).not.toContain("Solicitud de reserva – Ana Gómez x 2 – 18 al 24 ene 2027");
+    expect(pedidoA(r, "reservas@horizonte.test")!.asunto).toBe("Solicitud de reserva – Ana Gómez x 2 – 20 ene 2027");
+    expect(pedidoA(r, "reservas@imperioinca.test")!.asunto).toBe("Solicitud de reserva – Ana Gómez x 2 – 21 al 23 ene 2027");
   });
   it("un solo día → esa fecha", () => {
     const exc = producto("prod-exc", "EXC01", [servicio({ productoId: "prod-exc", tipo: "excursion", descripcion: "Argentina Side of the Falls", bookingSupplier: P.cuencaArg })], { destino: "IGR" });
     const r = reserva({ productoId: exc.id, partes: [parte({ id: "a", orden: 1, tipo: "paquete", productoId: exc.id, fechaInicio: "2027-03-13", fechaFin: "2027-03-13" })] });
-    expect(ok(armarPedidos(r, catalogoCon([exc]), plantilla)).pedidos[0].asunto).toBe("Solicitud de reserva – Ana Gómez – 13 mar 2027");
+    expect(ok(armarPedidos(r, catalogoCon([exc]), plantilla)).pedidos[0].asunto).toBe("Solicitud de reserva – Ana Gómez x 2 – 13 mar 2027");
   });
   it("sin ninguna fecha conocida: sin el guion colgando", () => {
     const p = ok(armarPedidos({ ...reservaOd010b, fechaInicio: null, fechaFin: null, partes: [] }, catalogoCon([od010b]), plantilla)).pedidos[0];
-    expect(p.asunto).toBe("Solicitud de reserva – Ana Gómez");
+    expect(p.asunto).toBe("Solicitud de reserva – Ana Gómez x 2");
   });
 });
 
@@ -361,11 +362,11 @@ describe("armarPedidos — tareas en vez de mails (fila 8)", () => {
     expect(r.pedidos.flatMap((p) => p.proveedores.map((x) => x.id))).not.toContain(P.backpackers.id);
   });
 
-  it("un servicio de reserva manual (Transvip) da una tarea y nunca un mail", () => {
+  it("un servicio de reserva manual (Transvip) da una tarea y nunca un mail (M3-28: con una p, aunque el Excel diga Transvipp)", () => {
     const r = ok(armarPedidos(reservaChb31, catalogoChb31, plantilla));
     const manual = r.tareas.filter((t) => t.tipo === "reservar_a_mano");
     expect(manual).toHaveLength(1);
-    expect(manual[0].texto).toMatch(/^Reservar a mano en Transvipp: traslado de llegada .*CJC.*18 ene 2027 · Vuelo pendiente$/);
+    expect(manual[0].texto).toMatch(/^Reservar a mano en Transvip: traslado de llegada .*CJC.*18 ene 2027 · Vuelo pendiente$/);
     expect(r.pedidos.some((p) => p.cuerpo.includes("CJC"))).toBe(false);
   });
 });

@@ -30,7 +30,8 @@ describe("el borrador inicial de un pedido a mano (fila 3)", () => {
 
   it("sale de la plantilla del repo: asunto con pasajero y sin el número de la agencia (M3-16); saludo, espacio, pasajeros, cierre y la firma de siempre", () => {
     const b = borradorAMano(ARCH31, plantilla);
-    expect(b.asunto).toBe("Solicitud de reserva – Ana Prueba");
+    // M3-28 (owner, 2026-10-28): el asunto lleva "x N" con los pax después del pasajero.
+    expect(b.asunto).toBe("Solicitud de reserva – Ana Prueba x 2");
     expect(b.asunto).not.toContain("DK1592913");
     expect(b.firma).toBe(plantilla.firma);
     expect(b.firma).toContain(MARCA_NOMBRE);
@@ -58,14 +59,14 @@ describe("el borrador inicial de un pedido a mano (fila 3)", () => {
   });
 
   it("M3-16: con las fechas de la reserva si las hay (un día → esa fecha)", () => {
-    expect(borradorAMano({ ...ARCH31, fechaInicio: "2027-03-05", fechaFin: "2027-03-10" }, plantilla).asunto).toBe("Solicitud de reserva – Ana Prueba – 5 al 10 mar 2027");
-    expect(borradorAMano({ ...ARCH31, fechaInicio: "2027-03-13", fechaFin: null }, plantilla).asunto).toBe("Solicitud de reserva – Ana Prueba – 13 mar 2027");
-    expect(borradorAMano({ ...ARCH31, fechaInicio: "2027-03-13", fechaFin: "2027-03-13" }, plantilla).asunto).toBe("Solicitud de reserva – Ana Prueba – 13 mar 2027");
+    expect(borradorAMano({ ...ARCH31, fechaInicio: "2027-03-05", fechaFin: "2027-03-10" }, plantilla).asunto).toBe("Solicitud de reserva – Ana Prueba x 2 – 5 al 10 mar 2027");
+    expect(borradorAMano({ ...ARCH31, fechaInicio: "2027-03-13", fechaFin: null }, plantilla).asunto).toBe("Solicitud de reserva – Ana Prueba x 2 – 13 mar 2027");
+    expect(borradorAMano({ ...ARCH31, fechaInicio: "2027-03-13", fechaFin: "2027-03-13" }, plantilla).asunto).toBe("Solicitud de reserva – Ana Prueba x 2 – 13 mar 2027");
   });
 
   it("sin pax usa la cantidad de pasajeros; sin nombre, lo dice", () => {
     const b = borradorAMano({ numero: "  ", pax: null, pasajeros: [{ nombre: "" }, { nombre: "Eva" }] }, plantilla);
-    expect(b.asunto).toBe("Solicitud de reserva – Eva");
+    expect(b.asunto).toBe("Solicitud de reserva – Eva x 2");
     expect(borradorAMano({ numero: null, pax: null, pasajeros: [] }, plantilla).asunto).toBe("Solicitud de reserva – sin nombre");
     expect(borradorAMano({ numero: null, pax: null, pasajeros: [] }, plantilla).cuerpo).toContain("Pasajeros: a confirmar");
   });

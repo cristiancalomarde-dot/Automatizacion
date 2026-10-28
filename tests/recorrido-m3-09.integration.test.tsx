@@ -183,7 +183,8 @@ function soloLosAMano() {
     fireEvent.click(screen.getByRole("button", { name: A.agregar }));
     const form = screen.getByRole("form", { name: A.titulo });
     // M3-16: sin el número de la agencia; con las fechas de la reserva.
-    expect(within(form).getByLabelText(T.asunto)).toHaveValue("Solicitud de reserva – Ana Prueba – 10 al 17 ene 2027");
+    // M3-28 (owner, 2026-10-28): el asunto lleva "x N" con los pax después del pasajero.
+    expect(within(form).getByLabelText(T.asunto)).toHaveValue("Solicitud de reserva – Ana Prueba x 2 – 10 al 17 ene 2027");
     const texto = within(form).getByLabelText(T.texto) as HTMLTextAreaElement;
     expect(texto.value).toContain("pedirles la siguiente reserva:");
 
@@ -214,7 +215,7 @@ function soloLosAMano() {
     expect(smtp.mensajes).toHaveLength(1);
     expect(smtp.mensajes[0].para).toEqual([DESTINO_PRUEBA]);
     const leido = await simpleParser(smtp.mensajes[0].crudo);
-    expect(leido.subject).toBe("[PRUEBA] Solicitud de reserva – Ana Prueba – 10 al 17 ene 2027");
+    expect(leido.subject).toBe("[PRUEBA] Solicitud de reserva – Ana Prueba x 2 – 10 al 17 ene 2027");
     expect(leido.text).toContain(E.ibaPara(hotel.nombre, hotel.mails.join(", ")));
     expect(leido.text).toContain(NOCHE_EXTRA);
     expect(leido.text).toContain(firmante);

@@ -151,10 +151,11 @@ const tramosConChalten: TramoSePideA[] = tramosDelArchivo.map((t) => ({ ...t, pr
 const pedidoA = (r: ResultadoArmado & { ok: true }, mail: string) => r.pedidos.find((p) => p.destinatarios.includes(mail))!;
 
 describe("M3-25 fila 1 — OD027 en AR10: el traslado de La Ciénaga es solo de llegada", () => {
-  it("el renglón dice solo el in (aeropuerto → alojamiento), no el SLA – accommodation – SLA", () => {
+  // M3-28 (owner, 2026-10-28): "Transfer in Aeropuerto <ciudad> - Alojamiento", con guion y el nombre de la ciudad.
+  it("el renglón dice solo el in (aeropuerto - alojamiento), no el SLA – accommodation – SLA", () => {
     const cuerpo = pedidoA(armarAr10(), "cienaga@test").cuerpo;
-    expect(bloque(cuerpo, "Traslado de llegada: Transfer in aeropuerto (SLA) → alojamiento")).toEqual([
-      "Traslado de llegada: Transfer in aeropuerto (SLA) → alojamiento",
+    expect(bloque(cuerpo, "Traslado de llegada: Transfer in Aeropuerto Salta - Alojamiento")).toEqual([
+      "Traslado de llegada: Transfer in Aeropuerto Salta - Alojamiento",
       "Fecha: 19 dic 2026",
       "Vuelo pendiente",
     ]);
@@ -186,10 +187,11 @@ describe("M3-25 fila 1 — OD027 en AR10: el traslado de La Ciénaga es solo de 
 });
 
 describe("M3-25 fila 2 — OD022 en AR10: el traslado de Rumbo Sur es solo de salida", () => {
-  it("el renglón dice solo el out (alojamiento → aeropuerto), no el Round Trip", () => {
+  // M3-28 (owner, 2026-10-28): "Transfer out Alojamiento en <ciudad> - Aeropuerto <ciudad>" (el owner escribió USH; va la ciudad, parejo con el in).
+  it("el renglón dice solo el out (alojamiento - aeropuerto), no el Round Trip", () => {
     const cuerpo = pedidoA(armarAr10(), "rumbosur@test").cuerpo;
-    expect(bloque(cuerpo, "Traslado de salida: Transfer out alojamiento → aeropuerto (USH)")).toEqual([
-      "Traslado de salida: Transfer out alojamiento → aeropuerto (USH)",
+    expect(bloque(cuerpo, "Traslado de salida: Transfer out Alojamiento en Ushuaia - Aeropuerto Ushuaia")).toEqual([
+      "Traslado de salida: Transfer out Alojamiento en Ushuaia - Aeropuerto Ushuaia",
       "Fecha: 8 ene 2027",
       "Vuelo pendiente",
     ]);

@@ -25,7 +25,8 @@ export function borradorAMano(reserva: DatosParaAMano, plantilla: Plantilla): Bo
   const asunto = completarAsunto(plantilla.asunto, {
     pasajero: principal,
     fechas: fechasDelAsunto([reserva.fechaInicio, reserva.fechaFin]),
-    pax: String(pax ?? "?"),
+    // M3-28: sin cantidad, el asunto va sin "x N".
+    pax: pax ? String(pax) : "",
     producto: "",
     referencia: reserva.numero?.trim() ? ` · Ref. ${reserva.numero.trim()}` : "",
   });

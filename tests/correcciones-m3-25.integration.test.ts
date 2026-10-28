@@ -211,8 +211,9 @@ function bloque(cuerpo: string, primerRenglon: string): string[] {
 
     it("fila 1: La Ciénaga recibe solo el traslado de llegada", () => {
       const cuerpo = cuerpoDe("florencia@lacienagaturismo.com.ar");
-      expect(bloque(cuerpo, "Traslado de llegada: Transfer in aeropuerto (SLA) → alojamiento")).toEqual([
-        "Traslado de llegada: Transfer in aeropuerto (SLA) → alojamiento",
+      // M3-28 (owner, 2026-10-28): el traslado de un solo lado, con el nombre de la ciudad y guion.
+      expect(bloque(cuerpo, "Traslado de llegada: Transfer in Aeropuerto Salta - Alojamiento")).toEqual([
+        "Traslado de llegada: Transfer in Aeropuerto Salta - Alojamiento",
         "Fecha: 19 dic 2026",
         "Vuelo pendiente",
       ]);
@@ -222,8 +223,8 @@ function bloque(cuerpo: string, primerRenglon: string): string[] {
 
     it("filas 2 y 3: Rumbo Sur recibe solo el traslado de salida y el Beagle sin pick up", () => {
       const cuerpo = cuerpoDe("emiliao@rumbosur.com.ar");
-      expect(bloque(cuerpo, "Traslado de salida: Transfer out alojamiento → aeropuerto (USH)")).toEqual([
-        "Traslado de salida: Transfer out alojamiento → aeropuerto (USH)",
+      expect(bloque(cuerpo, "Traslado de salida: Transfer out Alojamiento en Ushuaia - Aeropuerto Ushuaia")).toEqual([
+        "Traslado de salida: Transfer out Alojamiento en Ushuaia - Aeropuerto Ushuaia",
         "Fecha: 8 ene 2027",
         "Vuelo pendiente",
       ]);

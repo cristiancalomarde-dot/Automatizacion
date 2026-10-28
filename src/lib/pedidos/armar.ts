@@ -91,6 +91,14 @@ const IGUAZU_COMBINED = new Set(["OD010C", "OD010D"]);
 const PAQUETE_105_PREMIUM = /\b105\s+Premium\b/i;
 const PREMIUM = /\bpremium\b/i;
 const PRIVADO = /\b(privad[oa]|private)\b/i;
+
+/**
+ * M3-28 (owner, 2026-10-28): los nombres como se escriben, aunque el Excel los traiga mal
+ * ("Transvipp" → "Transvip"). Para las tareas, los textos y los avisos de los pedidos.
+ */
+function comoSeEscribe(texto: string): string {
+  return texto.replace(/\bTransvipp\b/gi, "Transvip");
+}
 /** El servicio se hace en español (el Overland de Imperio Inca: "chofer de habla hispana, sin guía en inglés"). */
 const EN_ESPANOL = /habla hispana|spanish[- ]speaking|sin gu[ií]a en ingl[eé]s/i;
 /** Una excursión de varios días ("3 días en jeep", "3 days"). */
@@ -843,6 +851,8 @@ class Armado {
   private paqueteConTraslados(b: Bloque, s: Servicio, nombre: string, lista: string, regular: string, texto: string): Renglones {
     // El 105 Premium se pide como Premium, no como regular (owner, 2026-10-22, M3-12).
     const premium = PREMIUM.test(texto);
+    // M3-28 (owner, 2026-10-28): en el Premium los transfers no aclaran "regular" (se pide un paquete Premium).
+    const tipoTraslado = premium && regular === "regular" ? "" : `, ${regular}`;
     const sinReceptivo = nombre.replace(/^Paquete\s+Rece?pti?vo\s+/i, "Paquete ");
     const titulo =
       PAQUETE_105_PREMIUM.test(texto) && !/Paquete 105 Premium/i.test(sinReceptivo) ? `Paquete 105 Premium (${sinReceptivo})` : sinReceptivo;
@@ -868,7 +878,7 @@ class Armado {
     if (!b.omitir.includes("in")) {
       conDia.push({ tipo: "traslado", nombre: `TRF IN (${titulo})`, fecha: llegada.fecha ?? b.inicio, destino: b.destino });
       renglones.push(
-        conHotel(`TRF IN, ${regular}: ${b.inicio ? fechaCorta(llegada.fecha ?? b.inicio) : "a confirmar"} · ${llegada.dato}`, [["Drop off", b.inicio]]),
+        conHotel(`TRF IN${tipoTraslado}: ${b.inicio ? fechaCorta(llegada.fecha ?? b.inicio) : "a confirmar"} · ${llegada.dato}`, [["Drop off", b.inicio]]),
       );
       pendientes.push(...llegada.pendientes);
     }
@@ -906,7 +916,7 @@ class Armado {
     if (!b.omitir.includes("out")) {
       conDia.push({ tipo: "traslado", nombre: `TRF OUT (${titulo})`, fecha: salida.fecha ?? b.fin, destino: b.destino });
       renglones.push(
-        conHotel(`TRF OUT, ${regular}: ${b.fin ? fechaCorta(salida.fecha ?? b.fin) : "a confirmar"} · ${salida.dato}`, [["Pick up", nocheAnterior(b.fin)]]),
+        conHotel(`TRF OUT${tipoTraslado}: ${b.fin ? fechaCorta(salida.fecha ?? b.fin) : "a confirmar"} · ${salida.dato}`, [["Pick up", nocheAnterior(b.fin)]]),
       );
       pendientes.push(...salida.pendientes);
     }
@@ -941,17 +951,19 @@ class Armado {
   /**
    * M3-25 (owner, 2026-10-27, OD027 y OD022 en AR10): un traslado de ida y vuelta del que se pide un solo lado
    * (llega o sigue en bus) no puede decir el round trip ("Transfer SLA - Accommodation - SLA"). Va el texto del
-   * ajuste del tour si lo tiene; si no, "Transfer in aeropuerto (SLA) → alojamiento" o "Transfer out alojamiento
-   * → aeropuerto (USH)", con los códigos de aeropuerto del renglón (o el destino del paquete). Un reemplazo
-   * (Iguazú) ya trae su propio texto.
+   * ajuste del tour si lo tiene; si no, el lado con el nombre de la ciudad (M3-28, owner 2026-10-28):
+   * "Transfer in Aeropuerto Salta - Alojamiento" o "Transfer out Alojamiento en Ushuaia - Aeropuerto Ushuaia".
+   * La ciudad sale de los códigos del renglón (SLA, USH) o, si no nombra ninguna (EZE o AEP), del destino del
+   * paquete; sin ciudad, "Aeropuerto - Alojamiento". Un reemplazo (Iguazú) ya trae su propio texto.
    */
   private nombreDeUnLado(b: Bloque, s: Servicio, nombre: string, lado: Lado): string {
     if (s.sentido !== "ida_y_vuelta" || s.ajusteTour?.accion === "reemplazar") return nombre;
     if (s.ajusteTour?.texto) return s.ajusteTour.texto;
-    const enElTexto = [...new Set(`${s.descripcion ?? ""} ${nombre}`.match(/\b[A-Z]{3}\b/g) ?? [])];
-    const codigos = enElTexto.length ? enElTexto : b.destino ? [b.destino] : [];
-    const aeropuerto = codigos.length ? `aeropuerto (${codigos.join(" o ")})` : "aeropuerto";
-    return lado === "in" ? `Transfer in ${aeropuerto} → alojamiento` : `Transfer out alojamiento → ${aeropuerto}`;
+    const enElTexto = `${s.descripcion ?? ""} ${nombre}`.match(/\b[A-Z]{3}\b/g) ?? [];
+    const codigo = enElTexto.find((c) => NOMBRE_DESTINO[c]) ?? b.destino;
+    const ciudad = codigo ? (NOMBRE_DESTINO[codigo] ?? null) : null;
+    const en = (prefijo: string) => (ciudad ? `${prefijo}${ciudad}` : "");
+    return lado === "in" ? `Transfer in Aeropuerto${en(" ")} - Alojamiento` : `Transfer out Alojamiento${en(" en ")} - Aeropuerto${en(" ")}`;
   }
 
   private unTraslado(b: Bloque, s: Servicio, nombre: string, lado: Lado | null, fecha: string | null): Renglones {
@@ -1159,7 +1171,7 @@ class Armado {
     }
     return [...this.tareas]
       .sort((a, b) => (a.fecha ?? "9999").localeCompare(b.fecha ?? "9999") || a.seq - b.seq)
-      .map(({ tipo, texto, detalle }) => ({ tipo, texto, detalle }));
+      .map(({ tipo, texto, detalle }) => ({ tipo, texto: comoSeEscribe(texto), detalle }));
   }
 }
 
@@ -1313,7 +1325,8 @@ function asuntoYReferencia(reserva: ReservaParaPedidos, catalogo: CatalogoParaPe
     .filter((c): c is string => !!c);
   return {
     pasajero: principal,
-    pax: String(reserva.pax ?? (reserva.pasajeros.length || "?")),
+    // M3-28: "x N" con los pax de la reserva; sin cantidad, el asunto va sin "x N" (y con aviso).
+    pax: String(reserva.pax ?? (reserva.pasajeros.length || "")),
     producto: codigos.join(" + ") || "sin producto",
     referencia: reserva.numero?.trim() ? ` · Ref. ${reserva.numero.trim()}` : "",
   };
@@ -1336,6 +1349,7 @@ export function armarPedidos(reserva: ReservaParaPedidos, catalogo: CatalogoPara
   const datosAsunto = asuntoYReferencia(reserva, catalogo);
   const avisos = [...armado.avisos];
   if (datosAsunto.pasajero === "sin nombre") avisos.push("La reserva no trae el nombre del pasajero principal: completalo en el asunto y el texto.");
+  if (!datosAsunto.pax) avisos.push('La reserva no trae la cantidad de pasajeros: completala en el asunto ("x N") y en el texto.');
 
   const pedidos: PedidoArmado[] = agruparPorCasilla(armado.items)
     .map((g) => ({ ...g, items: [...g.items].sort(porFecha) }))
@@ -1354,19 +1368,21 @@ export function armarPedidos(reserva: ReservaParaPedidos, catalogo: CatalogoPara
         partes: g.items.map((it) => it.cubre),
         // M3-16: las fechas son las de los servicios de ESTE pedido, no las de toda la reserva.
         asunto: completarAsunto(plantilla.asunto, { ...datosAsunto, fechas: fechasDelAsunto(g.items.flatMap((it) => [it.fecha, it.hasta])) }),
-        cuerpo: completar(plantilla.cuerpo, {
-          servicios,
-          pasajeros,
-          pendientes,
-        }),
+        cuerpo: comoSeEscribe(
+          completar(plantilla.cuerpo, {
+            servicios,
+            pasajeros,
+            pendientes,
+          }),
+        ),
         firma: plantilla.firma,
         sinDestinatario: g.sinDestinatario,
         // M3-24: los blackouts de la salida y de las partes que cubre, antes que los avisos de cada servicio.
-        avisos: [...new Set([...armado.blackoutsDe(g.items.map((it) => it.cubre.parteId)), ...g.items.flatMap((it) => it.avisos)])],
+        avisos: [...new Set([...armado.blackoutsDe(g.items.map((it) => it.cubre.parteId)), ...g.items.flatMap((it) => it.avisos)].map(comoSeEscribe))],
       };
     });
 
-  return { ok: true, pedidos, tareas: armado.tareasFinales(), avisos: [...new Set(avisos)], itinerario: armado.textosDelItinerario() };
+  return { ok: true, pedidos, tareas: armado.tareasFinales(), avisos: [...new Set(avisos.map(comoSeEscribe))], itinerario: armado.textosDelItinerario() };
 }
 
 /**

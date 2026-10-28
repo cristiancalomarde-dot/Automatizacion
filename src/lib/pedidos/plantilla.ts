@@ -84,10 +84,12 @@ export function completar(texto: string, valores: Record<string, string>): strin
 
 /**
  * Completa el asunto (M3-16): como `completar`, y un dato vacío no deja su
- * separador colgando ("Solicitud de reserva – Ana –" → "Solicitud de reserva – Ana").
+ * separador colgando ("Solicitud de reserva – Ana –" → "Solicitud de reserva – Ana"). M3-28:
+ * sin cantidad de pax, tampoco queda la "x" de antes ("Ana x {{pax}}" → "Ana").
  */
 export function completarAsunto(texto: string, valores: Record<string, string>): string {
-  return completar(texto, valores)
+  const base = valores.pax === "" ? texto.replace(/\s*\bx\s*\{\{\s*pax\s*\}\}/g, "") : texto;
+  return completar(base, valores)
     .replace(/\s*([–·])(?:\s*[–·])+\s*/g, " $1 ")
     .replace(/^\s*[–·]\s*|\s*[–·]\s*$/g, "")
     .trim();

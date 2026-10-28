@@ -158,13 +158,14 @@ interface Armado {
 
   it("fila 1: a La Ciénaga, solo el traslado de llegada", () => {
     const cuerpo = cuerpoDe("florencia@lacienagaturismo.com.ar");
-    expect(cuerpo).toContain("Traslado de llegada: Transfer in aeropuerto (SLA) → alojamiento\nFecha: 19 dic 2026\nVuelo pendiente");
+    // M3-28 (owner, 2026-10-28): el traslado de un solo lado, con el nombre de la ciudad y guion.
+    expect(cuerpo).toContain("Traslado de llegada: Transfer in Aeropuerto Salta - Alojamiento\nFecha: 19 dic 2026\nVuelo pendiente");
     expect(cuerpo).not.toMatch(/Accommodation - SLA|Traslado de salida/);
   });
 
   it("filas 2 y 3: a Rumbo Sur, solo el traslado de salida y el Beagle sin datos de pick up", () => {
     const cuerpo = cuerpoDe("emiliao@rumbosur.com.ar");
-    expect(cuerpo).toContain("Traslado de salida: Transfer out alojamiento → aeropuerto (USH)\nFecha: 8 ene 2027\nVuelo pendiente");
+    expect(cuerpo).toContain("Traslado de salida: Transfer out Alojamiento en Ushuaia - Aeropuerto Ushuaia\nFecha: 8 ene 2027\nVuelo pendiente");
     expect(cuerpo).not.toMatch(/Round Trip|Traslado de llegada/);
     expect(cuerpo).toContain("Excursión: Beagle Channel Boat Trip, 3 hours, no transfer to port\nFecha: 7 ene 2027\nServicio: regular · Idioma: inglés\n\n");
   });

@@ -37,7 +37,8 @@ describe("M3-12 — Iguazú: el pedido a Cuenca del Plata lleva el hotel de cada
 
   it("1. TRF IN con el hotel de la primera noche (drop off)", () => {
     expect(renglon(p.cuerpo, "TRF IN")).toBe(
-      "TRF IN, regular: 3 oct 2026 · Bus o vuelo pendiente · Drop off: Hotel 3* El Pueblito (Iguazú) · hotel a confirmar",
+      // M3-28 (owner, 2026-10-28): en el 105 Premium los transfers no dicen "regular".
+      "TRF IN: 3 oct 2026 · Bus o vuelo pendiente · Drop off: Hotel 3* El Pueblito (Iguazú) · hotel a confirmar",
     );
   });
 
@@ -52,7 +53,7 @@ describe("M3-12 — Iguazú: el pedido a Cuenca del Plata lleva el hotel de cada
 
   it("4. TRF OUT con el hotel de la última noche (pick up)", () => {
     expect(renglon(p.cuerpo, "TRF OUT")).toBe(
-      "TRF OUT, regular: 6 oct 2026 · Bus o vuelo pendiente · Pick up: Hotel 3* El Pueblito (Iguazú) · hotel a confirmar",
+      "TRF OUT: 6 oct 2026 · Bus o vuelo pendiente · Pick up: Hotel 3* El Pueblito (Iguazú) · hotel a confirmar",
     );
   });
 
@@ -151,9 +152,9 @@ describe("M3-12 — Iguazú: el pedido a Cuenca del Plata lleva el hotel de cada
     );
     const c = pedidoCuenca(r).cuerpo;
     expect(c).toContain("Paquete 105 Premium con transfer in desde la Rodoviaria de Foz");
-    expect(renglon(c, "TRF IN")).toBe("TRF IN, regular: 5 mar 2027 · Bus o vuelo pendiente · Drop off: Hotel 3* El Pueblito (Iguazú) · hotel a confirmar");
+    expect(renglon(c, "TRF IN")).toBe("TRF IN: 5 mar 2027 · Bus o vuelo pendiente · Drop off: Hotel 3* El Pueblito (Iguazú) · hotel a confirmar");
     expect(renglon(c, "Lado argentino")).toBe("Lado argentino, Premium, en inglés: 6 mar 2027 · Pick up y drop off: Hotel 3* El Pueblito (Iguazú) · hotel a confirmar");
-    expect(renglon(c, "TRF OUT")).toBe("TRF OUT, regular: 8 mar 2027 · Bus o vuelo pendiente · Pick up: Hotel 3* El Pueblito (Iguazú) · hotel a confirmar");
+    expect(renglon(c, "TRF OUT")).toBe("TRF OUT: 8 mar 2027 · Bus o vuelo pendiente · Pick up: Hotel 3* El Pueblito (Iguazú) · hotel a confirmar");
   });
 
   it("si el paquete no es Premium, las excursiones quedan como hoy ('regular')", () => {
@@ -165,5 +166,8 @@ describe("M3-12 — Iguazú: el pedido a Cuenca del Plata lleva el hotel de cada
     expect(c).toContain("Paquete 104");
     expect(c).not.toContain("Premium");
     expect(renglon(c, "Lado argentino")).toMatch(/^Lado argentino, regular en inglés: 4 oct 2026 · /);
+    // M3-28: solo el Premium deja de decir "regular" en los transfers.
+    expect(renglon(c, "TRF IN")).toMatch(/^TRF IN, regular: /);
+    expect(renglon(c, "TRF OUT")).toMatch(/^TRF OUT, regular: /);
   });
 });
