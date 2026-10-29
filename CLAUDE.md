@@ -69,3 +69,13 @@ Cada etapa tiene su responsable. Nombralos al invocarlos.
 ## Documentos (leer bajo demanda)
 - **Alcance y milestones:** `docs/prd.md` · **Decisiones técnicas:** `docs/arquitectura/` (un doc por tema; índice en su README)
 - **El método y las plantillas:** `docs/sdd/README.md` · **Reglas numeradas:** `docs/sdd/constitucion.md`
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+# This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->
