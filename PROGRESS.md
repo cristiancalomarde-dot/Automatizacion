@@ -4,8 +4,9 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
 # Dónde retomar
 
 - **2026-10-29: MVP primero (owner).** Publicadas M3-35 (sin desayuno) y M3-36 (Iguazú AR → BR, drop off en
-  Brasil); M3-30 y M3-24 cerradas con OK del owner. Orden: **M3-32 (portugués) → M3-22 (Factoria) → M3-33
-  (refugios W Trek) → M3-04** (revisión de pedidos reales y primer envío real). En pausa M3-27/29/31/37.
+  Brasil); M3-30 y M3-24 cerradas con OK del owner. Orden: **M3-32 (portugués) → M3-27 (calendario bus BRC↔CHA,
+  Excel en Insumos) → M3-22 (Factoria) → M3-33 (refugios W Trek) → M3-04** (revisión de pedidos reales y
+  primer envío real). En pausa M3-29/31/37.
   - **Falta para que M3-36 se vea en la real:** cargar las 6 filas de noches de OD010C en la base real (solo
     esas, sin el importador completo que pide el Excel y usa IA) y después "Rearmar todo" en DK1593147. Script
     a medio armar en el scratchpad (tsx no resuelve `@supabase/supabase-js` desde ahí: ponerlo en `scripts/`
