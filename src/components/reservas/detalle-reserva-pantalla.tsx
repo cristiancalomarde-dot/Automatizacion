@@ -6,6 +6,7 @@ import { useConsulta } from "@/lib/catalogo/use-consulta";
 import { formatearFecha, formatearFechaHora, formatearHora, formatearRango } from "@/lib/formato";
 import { avisosDeLlegada } from "@/lib/reservas/avisos-vuelo";
 import { cargarReserva } from "@/lib/reservas/consultas";
+import { partesConElTrasladoEnElOverland } from "@/lib/reservas/hito-cajon";
 import { esIdDeReserva, lineasDeMotivos } from "@/lib/reservas/reglas";
 import type { DetalleReserva, EnvioDeReserva, HotelDeLaAgencia, ParteDeReserva, PedidoAManoEnHistorial, PedidoDeReservaVista, VueloDeReserva } from "@/lib/reservas/tipos";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
@@ -403,7 +404,9 @@ function fechasDeParte(p: ParteDeReserva): string {
 }
 
 /** Las partes de un tour compuesto, en el orden del tour (#8). Journaway suma el pick up de cada tour (M2-09 #11). */
-function Partes({ partes }: { partes: ParteDeReserva[] }) {
+function Partes({ partes: delTour }: { partes: ParteDeReserva[] }) {
+  // M3-38: el traslado San Pedro → Hito Cajón no va suelto: figura dentro del Overland.
+  const partes = partesConElTrasladoEnElOverland(delTour);
   const conPickUp = partes.some((p) => p.pickUp);
   return (
     <section className={ui.seccion}>
@@ -428,6 +431,7 @@ function Partes({ partes }: { partes: ParteDeReserva[] }) {
                         {p.producto.codigo}
                       </Link>{" "}
                       {p.producto.nombre}
+                      {p.incluye ? ` (${p.incluye})` : null}
                       {p.textoAgencia || p.descripcion ? (
                         <span className={ui.meta}>
                           {" "}

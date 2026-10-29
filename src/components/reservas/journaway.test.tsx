@@ -159,3 +159,27 @@ describe("una reserva de Journaway con varios productos (owner 2026-10-17)", () 
     expect(fila.textContent).toContain("+ SPAP03");
   });
 });
+
+describe("M3-38: el traslado San Pedro → Hito Cajón figura dentro del Overland", () => {
+  const petzold: DetalleReserva = {
+    ...spap05,
+    fechaInicio: "2027-05-22",
+    fechaFin: "2027-05-28",
+    partes: [
+      { orden: 5, tipo: "paquete", producto: producto("SPAE04", "El Tatio Geisers Tour (entrance fee)"), descripcion: null, fechaInicio: "2027-05-25", fechaFin: "2027-05-25", esTarea: false, pickUp: null },
+      { orden: 6, tipo: "paquete", producto: producto("SPAT02", "Transfer San Pedro - Hito Cajon regular"), descripcion: null, fechaInicio: "2027-05-26", fechaFin: "2027-05-26", esTarea: false, pickUp: null },
+      { orden: 7, tipo: "paquete", producto: producto("UYUO01", "Overland privado San Pedro – Uyuni en hoteles Tayka"), descripcion: null, fechaInicio: "2027-05-26", fechaFin: "2027-05-28", esTarea: false, pickUp: null },
+    ],
+  };
+
+  it("SPAP05: sin línea suelta de SPAT02; el Overland dice que incluye el traslado regular del 26 may 2027", async () => {
+    consultas.cargarReserva.mockResolvedValue(petzold);
+    render(<DetalleReservaPantalla id={IDS.kilroy} />);
+    const tabla = await screen.findByRole("table", { name: "Partes del tour" });
+    expect(within(tabla).queryByText("SPAT02")).toBeNull();
+    expect(within(tabla).getAllByRole("row")).toHaveLength(3);
+    const overland = within(tabla).getByText("UYUO01").closest("tr")!;
+    expect(overland).toHaveTextContent("incluye traslado regular San Pedro → Hito Cajón el 26 may 2027");
+    expect(overland.textContent!.match(/\(incluye [^)]*\)/)![0]).not.toMatch(/privad/i);
+  });
+});
