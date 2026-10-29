@@ -7,11 +7,11 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
   (Petzold, Trip 65037, sales@ uid 16682) traía hoteles y actividades como imágenes `cid:` → ahora se guardan
   en el bucket y van a la IA; nombres en alemán en `data/journaway-nombres.csv`; Petzold sale SPAP05 y el
   "Night Bus Peru" (no es del paquete) la deja para revisión (el owner se lo pregunta a Journaway).
-  - **URGENTE en la real:** aplicar la migración 0024 (bucket acepta imágenes). Sin ella, un mail con imagen
-    falla al guardarse y la lectura de sales@ lo reintenta. Después: `npm run reprocesar:mail -- --uid 16682`
-    (seco) y con `--aplicar`. Los corre el owner con `!` desde el clon.
-  - A confirmar con el owner: transfer "Shared Transport: CJC - Accom. San Pedro" = SPAT01; Tayka y bus
-    Uyuni–La Paz dentro del Overland; al reprocesar la vieja queda "descartada".
+  - Migración 0024 aplicada a la real por el owner (SQL Editor de Supabase, con su fila en
+    `supabase_migrations.schema_migrations`). Reproceso en seco OK (8 nombres, 3 imágenes, 1 reserva a
+    descartar); falta `npm run reprocesar:mail -- --uid 16682 --aplicar` (owner con `!`, rutas con `/`).
+  - Owner confirmó: transfer "Shared Transport: CJC - Accom. San Pedro" = SPAT01 (solo llegada, sigue el
+    Overland); Tayka y bus Uyuni–La Paz dentro del Overland (Imperio Inca); al reprocesar la vieja queda "descartada".
   - La fila W Trek refugios se renumeró a **M3-33** (choque de ID con M3-30).
   - Suite completa con `--maxWorkers=2` (con más se queda sin memoria); 2 tests de catálogo vencen por tiempo
     con la máquina cargada y pasan solos.
