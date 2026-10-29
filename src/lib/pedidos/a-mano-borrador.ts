@@ -4,6 +4,7 @@
  * Puro, pero importa `plantilla.ts` (que lee archivos): solo servidor y tests.
  */
 import { fechasDelAsunto, nombreDelPasajero } from "./formato";
+import { TEXTOS_DEL_PEDIDO, type Idioma } from "./idioma";
 import { completar, completarAsunto } from "./plantilla";
 import type { BorradorAMano, DatosParaAMano } from "./a-mano";
 import type { Plantilla } from "./tipos";
@@ -18,13 +19,13 @@ const ESPACIO = "\u0000";
  * un espacio en blanco donde van los servicios, la cantidad de pasajeros y el
  * cierre; la firma de siempre.
  */
-export function borradorAMano(reserva: DatosParaAMano, plantilla: Plantilla): BorradorAMano {
+export function borradorAMano(reserva: DatosParaAMano, plantilla: Plantilla, idioma: Idioma = "es"): BorradorAMano {
   const principal = reserva.pasajeros.map(nombreDelPasajero).find(Boolean) ?? "sin nombre";
   const pax = reserva.pax ?? (reserva.pasajeros.length || null);
   // Sin producto (o sin fechas), el separador que lo rodeaba no queda colgando.
   const asunto = completarAsunto(plantilla.asunto, {
     pasajero: principal,
-    fechas: fechasDelAsunto([reserva.fechaInicio, reserva.fechaFin]),
+    fechas: fechasDelAsunto([reserva.fechaInicio, reserva.fechaFin], idioma),
     // M3-28: sin cantidad, el asunto va sin "x N".
     pax: pax ? String(pax) : "",
     producto: "",
@@ -34,7 +35,8 @@ export function borradorAMano(reserva: DatosParaAMano, plantilla: Plantilla): Bo
     servicios: ESPACIO,
     // M3-34: el pedido a mano no sabe qué se pide; el renglón del horario no sale.
     horario: "",
-    pasajeros: `Pasajeros: ${pax ?? "a confirmar"}`,
+    // M3-32: con la plantilla pt (proveedor de Brasil), en portugués.
+    pasajeros: `${TEXTOS_DEL_PEDIDO[idioma].pasajeros}: ${pax ?? "a confirmar"}`,
     pendientes: "",
   }).replace(ESPACIO, "");
   return { asunto, cuerpo, firma: plantilla.firma };

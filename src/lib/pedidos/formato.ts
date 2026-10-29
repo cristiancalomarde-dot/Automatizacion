@@ -4,45 +4,52 @@
  * datos de los pasajeros. Puro, sin base.
  */
 import { normalizarTexto } from "@/lib/catalogo/reglas";
+import { TEXTOS_DEL_PEDIDO, traducir, type Idioma } from "./idioma";
 import type { PasajeroDeReserva } from "./tipos";
 
-const MESES = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
+/** M3-32: los meses en el idioma del pedido (castellano si no se dice). */
+const meses = (idioma: Idioma) => TEXTOS_DEL_PEDIDO[idioma].meses;
 
 const ISO = /^(\d{4})-(\d{2})-(\d{2})$/;
 
-/** "2026-10-03" → "3 oct 2026". Lo que no es una fecha se devuelve tal cual. */
-export function fechaCorta(fecha: string): string {
+/** "2026-10-03" → "3 oct 2026" (M3-32, en portugués "3 out 2026"). Lo que no es una fecha se devuelve tal cual. */
+export function fechaCorta(fecha: string, idioma: Idioma = "es"): string {
   const m = fecha.match(ISO);
   if (!m) return fecha;
-  return `${Number(m[3])} ${MESES[Number(m[2]) - 1]} ${m[1]}`;
+  return `${Number(m[3])} ${meses(idioma)[Number(m[2]) - 1]} ${m[1]}`;
 }
 
 /** M3-26: "2027-02-20" → "20 feb" (el día del vuelo, al lado de la fecha del servicio). */
-export function diaYMes(fecha: string): string {
+export function diaYMes(fecha: string, idioma: Idioma = "es"): string {
   const m = fecha.match(ISO);
   if (!m) return fecha;
-  return `${Number(m[3])} ${MESES[Number(m[2]) - 1]}`;
+  return `${Number(m[3])} ${meses(idioma)[Number(m[2]) - 1]}`;
 }
 
-/** "del 24 al 28 ene 2027" / "del 30 ene al 2 feb 2027" / "del 30 dic 2026 al 2 ene 2027". */
-export function rangoCorto(desde: string, hasta: string): string {
+/**
+ * "del 24 al 28 ene 2027" / "del 30 ene al 2 feb 2027" / "del 30 dic 2026 al 2 ene 2027". M3-32: en
+ * portugués, "de 30 jan a 2 fev 2027".
+ */
+export function rangoCorto(desde: string, hasta: string, idioma: Idioma = "es"): string {
+  const { desde: del, hasta: al } = TEXTOS_DEL_PEDIDO[idioma].rango;
   const a = desde.match(ISO);
   const b = hasta.match(ISO);
-  if (!a || !b) return `del ${fechaCorta(desde)} al ${fechaCorta(hasta)}`;
-  if (a[1] !== b[1]) return `del ${fechaCorta(desde)} al ${fechaCorta(hasta)}`;
-  if (a[2] !== b[2]) return `del ${Number(a[3])} ${MESES[Number(a[2]) - 1]} al ${fechaCorta(hasta)}`;
-  return `del ${Number(a[3])} al ${fechaCorta(hasta)}`;
+  if (!a || !b) return `${del} ${fechaCorta(desde, idioma)} ${al} ${fechaCorta(hasta, idioma)}`;
+  if (a[1] !== b[1]) return `${del} ${fechaCorta(desde, idioma)} ${al} ${fechaCorta(hasta, idioma)}`;
+  if (a[2] !== b[2]) return `${del} ${Number(a[3])} ${meses(idioma)[Number(a[2]) - 1]} ${al} ${fechaCorta(hasta, idioma)}`;
+  return `${del} ${Number(a[3])} ${al} ${fechaCorta(hasta, idioma)}`;
 }
 
 /**
  * Las fechas del asunto (M3-16): del primer al último día, en corto ("5 al 10 mar 2027");
  * un solo día, esa fecha; sin fechas, "". Lo que no es una fecha se ignora.
  */
-export function fechasDelAsunto(fechas: ReadonlyArray<string | null | undefined>): string {
+export function fechasDelAsunto(fechas: ReadonlyArray<string | null | undefined>, idioma: Idioma = "es"): string {
   const dias = fechas.filter((f): f is string => !!f && ISO.test(f)).sort();
   if (dias.length === 0) return "";
   const [desde, hasta] = [dias[0], dias[dias.length - 1]];
-  return desde === hasta ? fechaCorta(desde) : rangoCorto(desde, hasta).replace(/^del /, "");
+  const del = TEXTOS_DEL_PEDIDO[idioma].rango.desde;
+  return desde === hasta ? fechaCorta(desde, idioma) : rangoCorto(desde, hasta, idioma).slice(del.length + 1);
 }
 
 export function sumarDias(fecha: string, dias: number): string {
@@ -136,10 +143,11 @@ export function tipoDeHabitacion(habitacion: string | null): string | null {
  * SGL); "2 SGLs" → "2 SGL". Solo para el texto del pedido: para decidir se sigue usando
  * `tipoDeHabitacion`.
  */
-export function habitacionDelPedido(habitacion: string | null, contexto: ContextoDeHabitacion = { pax: null, hostel: false }): string {
-  // M3-35: en los alojamientos que no ofrecen desayuno, ninguna variante lo dice.
-  const con = contexto.desayuno === false ? "" : " con desayuno";
-  const coma = contexto.desayuno === false ? "" : ", con desayuno";
+export function habitacionDelPedido(habitacion: string | null, contexto: ContextoDeHabitacion = { pax: null, hostel: false }, idioma: Idioma = "es"): string {
+  // M3-35: en los alojamientos que no ofrecen desayuno, ninguna variante lo dice. M3-32: en el idioma del pedido.
+  const t = TEXTOS_DEL_PEDIDO[idioma];
+  const con = contexto.desayuno === false ? "" : ` ${t.conDesayuno}`;
+  const coma = contexto.desayuno === false ? "" : `, ${t.conDesayuno}`;
   const varias = variasHabitaciones(habitacion);
   if (varias) return `${varias} Standard${con}`;
   if (habitacionSinTipo(habitacion)) {
@@ -149,7 +157,7 @@ export function habitacionDelPedido(habitacion: string | null, contexto: Context
     return `Standard${con} (tipo a confirmar)`;
   }
   const tipo = tipoDeHabitacion(habitacion)!;
-  return SIGLA[tipo] ? `${SIGLA[tipo]} Standard${con}` : `${tipo}${coma}`;
+  return SIGLA[tipo] ? `${SIGLA[tipo]} Standard${con}` : `${traducir(t.tipos, tipo)}${coma}`;
 }
 
 /**
@@ -208,17 +216,18 @@ export function nombreDelPasajero(p: PasajeroDeReserva): string {
   return [texto(p.nombre), texto(p.apellido)].filter(Boolean).join(" ");
 }
 
-/** "PAX 1: Ana Gómez · Nacionalidad: Denmark · …", solo con lo que vino. Null si no hay ni el nombre. */
-export function renglonDelPasajero(p: PasajeroDeReserva, i: number): string | null {
+/** "PAX 1: Ana Gómez · Nacionalidad: Denmark · …", solo con lo que vino. Null si no hay ni el nombre. M3-32: en el idioma del pedido. */
+export function renglonDelPasajero(p: PasajeroDeReserva, i: number, idioma: Idioma = "es"): string | null {
   const nombre = nombreDelPasajero(p);
   if (!nombre) return null;
+  const t = TEXTOS_DEL_PEDIDO[idioma].pax;
   const datos = [
     `PAX ${i + 1}: ${[texto(p.tratamiento), nombre].filter(Boolean).join(" ")}`,
-    texto(p.nacionalidad) && `Nacionalidad: ${texto(p.nacionalidad)}`,
-    texto(p.fecha_nacimiento) && `Fecha de nacimiento: ${fechaDeNacimiento(texto(p.fecha_nacimiento)!)}`,
+    texto(p.nacionalidad) && `${t.nacionalidad}: ${texto(p.nacionalidad)}`,
+    texto(p.fecha_nacimiento) && `${t.nacimiento}: ${fechaDeNacimiento(texto(p.fecha_nacimiento)!)}`,
     // Siempre con lugar para el pasaporte, aunque llegue después (owner, 2026-10-20).
-    `Pasaporte: ${texto(p.pasaporte) ?? "pendiente"}`,
-    texto(p.telefono) && `Teléfono: ${texto(p.telefono)}`,
+    `${t.pasaporte}: ${texto(p.pasaporte) ?? t.pendiente}`,
+    texto(p.telefono) && `${t.telefono}: ${texto(p.telefono)}`,
   ].filter(Boolean);
   return datos.join(" · ");
 }

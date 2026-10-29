@@ -37,8 +37,8 @@ import { TRANSFER_PNT } from "@/lib/reservas/emparejar/componentes";
 import { lugarDelTraslado } from "@/lib/reservas/emparejar/vuelos-requeridos";
 import { esOverland, esTrasladoAHitoCajon, incluyeTrasladoAHitoCajon, overlandDelTraslado } from "@/lib/reservas/hito-cajon";
 import { esHotelDelOverland, hotelEnSanPedro, hotelEnSanPedroAConfirmar } from "@/lib/reservas/pick-up-overland";
-import { TEXTOS } from "@/lib/textos";
 import { llevaEntradas } from "./entradas";
+import { TEXTOS_DEL_PEDIDO, idiomaDeLaCiudad, traducir, type Idioma, type TextosDelPedido } from "./idioma";
 import { avisosDeBlackout, avisosDeDiasDeBus, avisosDeFechaEspecial, tramoDeLaRuta, type ServicioConDia } from "./itinerario";
 import { HOTEL_A_CONFIRMAR, fichasDePasajeros, lineaDeTour, llevaFichaCompleta, restriccionAlimentaria, type TourDeFicha } from "./ficha";
 import { completar, completarAsunto } from "./plantilla";
@@ -179,14 +179,17 @@ function vaConElNivel(s: Servicio, nivel: string | null | undefined): boolean {
   return s.nivel === NIVEL_TODOS || (nivel !== undefined && s.nivel === nivel);
 }
 
-const PENDIENTE = {
-  alojamiento: "Les pasamos el alojamiento para el pick up apenas lo tengamos.",
-  vuelo: "El vuelo todavía no lo tenemos: se lo pasamos apenas nos llegue.",
-  busOVuelo: "Todavía no sabemos si llegan en bus o en vuelo: se lo pasamos apenas nos llegue.",
-};
+/** M3-32: de qué idioma es un proveedor (sin la lista de ciudades o sin la plantilla pt, todos en castellano). */
+type IdiomaDe = (proveedor: ProveedorResumen | null | undefined) => Idioma;
 
 class Armado {
   readonly items: Item[] = [];
+  /**
+   * M3-32: el idioma de lo que va dentro del mail (los renglones, los pendientes), el del proveedor al que
+   * se le pide lo que se está armando. Lo interno (avisos, tareas, resúmenes) sigue en castellano.
+   */
+  private idioma: Idioma = "es";
+  private tx: TextosDelPedido = TEXTOS_DEL_PEDIDO.es;
   readonly tareas: Array<TareaArmada & { fecha: string | null; seq: number }> = [];
   readonly avisos: string[] = [];
   /** M3-24: los avisos del itinerario con su fecha (para ordenarlos). */
@@ -200,7 +203,21 @@ class Armado {
   constructor(
     private readonly reserva: ReservaParaPedidos,
     private readonly catalogo: CatalogoParaPedidos,
+    private readonly idiomaDe: IdiomaDe = () => "es",
   ) {}
+
+  /** M3-32: arma lo de adentro en el idioma de ese proveedor y vuelve al de antes. */
+  private enElIdiomaDe<T>(proveedor: ProveedorResumen | null | undefined, armar: () => T): T {
+    const antes = this.idioma;
+    this.idioma = this.idiomaDe(proveedor);
+    this.tx = TEXTOS_DEL_PEDIDO[this.idioma];
+    try {
+      return armar();
+    } finally {
+      this.idioma = antes;
+      this.tx = TEXTOS_DEL_PEDIDO[antes];
+    }
+  }
 
   // --- Recorrido -----------------------------------------------------------------------
 
@@ -341,15 +358,18 @@ class Armado {
       return;
     }
     const cubre: ParteCubierta = { parteId: parte.id, productoServicioId: parte.productoServicioId, producto: null, fecha: parte.fechaInicio };
+    // M3-32: el texto en el idioma del proveedor.
+    const id = this.idiomaDe(proveedor);
+    const tx = TEXTOS_DEL_PEDIDO[id];
     if (que === TRANSFER_PNT) {
-      const t = this.traslado("out", que, parte.fechaInicio, ["PNT"], false);
-      const renglones = [`Traslado de salida: ${que}`, `Fecha: ${t.fecha ? fechaCorta(t.fecha) : "a confirmar"}`, t.dato];
+      const t = this.enElIdiomaDe(proveedor, () => this.traslado("out", que, parte.fechaInicio, ["PNT"], false));
+      const renglones = [`${tx.traslado.out}: ${que}`, `${tx.fecha}: ${t.fecha ? fechaCorta(t.fecha, id) : "a confirmar"}`, t.dato];
       const avisos = this.avisosDelItinerario([{ tipo: "traslado", nombre: que, fecha: t.fecha, destino: "PNT" }]);
       this.agregar(proveedor, "traslado", renglones, t.fecha, cubre, false, avisos, t.pendientes, undefined, null);
       return;
     }
     const nocturno = !!parte.fechaInicio && !!parte.fechaFin && parte.fechaFin > parte.fechaInicio;
-    const renglones = [`Bus: ${que}`, `Fecha: ${parte.fechaInicio ? fechaCorta(parte.fechaInicio) : "a confirmar"}${nocturno ? " (nocturno)" : ""}`];
+    const renglones = [`${tx.bus}: ${que}`, `${tx.fecha}: ${parte.fechaInicio ? fechaCorta(parte.fechaInicio, id) : "a confirmar"}${nocturno ? ` (${tx.nocturno})` : ""}`];
     const avisos = this.avisosDelItinerario([{ tipo: "bus", nombre: que, fecha: parte.fechaInicio, destino: null }]);
     this.agregar(proveedor, "bus", renglones, parte.fechaInicio, cubre, false, avisos, []);
   }
@@ -378,11 +398,16 @@ class Armado {
     }
     const horario = mismoSentido(regla) ? regla.horario : undefined;
     const llega = parte.fechaFin && parte.fechaInicio && parte.fechaFin > parte.fechaInicio ? parte.fechaFin : null;
-    const cuando = parte.fechaInicio ? fechaCorta(parte.fechaInicio) : "a confirmar";
-    const fecha = horario ? `Fecha: ${cuando} · Horario: ${horario}${llega ? ` (llega el ${fechaCorta(llega)})` : ""}` : `Fecha: ${cuando}${llega ? " (nocturno)" : ""}`;
+    // M3-32: el texto en el idioma del proveedor.
+    const id = this.idiomaDe(proveedor);
+    const tx = TEXTOS_DEL_PEDIDO[id];
+    const cuando = parte.fechaInicio ? fechaCorta(parte.fechaInicio, id) : "a confirmar";
+    const fecha = horario
+      ? `${tx.fecha}: ${cuando} · ${tx.horario}: ${horario}${llega ? ` (${tx.llegaEl(fechaCorta(llega, id))})` : ""}`
+      : `${tx.fecha}: ${cuando}${llega ? ` (${tx.nocturno})` : ""}`;
     const avisos = this.avisosDelItinerario([{ tipo: "bus", nombre: ruta, fecha: parte.fechaInicio, destino: null }]);
     const cubre: ParteCubierta = { parteId: parte.id, productoServicioId: null, producto: null, fecha: parte.fechaInicio };
-    this.agregar(proveedor, "bus", [`Bus: ${ruta}`, fecha], parte.fechaInicio, cubre, false, avisos, []);
+    this.agregar(proveedor, "bus", [`${tx.bus}: ${ruta}`, fecha], parte.fechaInicio, cubre, false, avisos, []);
     return true;
   }
 
@@ -583,7 +608,8 @@ class Armado {
     for (const tramo of tramos) {
       const desde = b.inicio && tramo ? sumarDias(b.inicio, tramo.nocheDesde - 1) : b.inicio;
       const hasta = b.inicio && tramo ? sumarDias(b.inicio, tramo.nocheDesde - 1 + tramo.noches) : b.fin;
-      const armados = this.renglones(b, s, nombre, desde, hasta);
+      // M3-32: los renglones en el idioma del proveedor al que se le pide (portugués a los de Brasil).
+      const armados = this.enElIdiomaDe(s.bookingSupplier, () => this.renglones(b, s, nombre, desde, hasta));
       for (const a of armados) this.destino(b, s, nombre, a, avisos);
     }
   }
@@ -695,11 +721,12 @@ class Armado {
 
   private alojamiento(s: Servicio, desde: string | null, hasta: string | null): Renglones {
     const hotel = s.serviceProviderNombre ?? queEs(s);
-    const renglones = [`Alojamiento: ${hotel}`];
+    const { tx, idioma } = this;
+    const renglones = [`${tx.alojamiento}: ${hotel}`];
     const avisos: string[] = [];
     if (desde && hasta) {
       const noches = diasEntre(desde, hasta);
-      renglones.push(`IN: ${fechaCorta(desde)}`, `OUT: ${fechaCorta(hasta)} (${noches} ${noches === 1 ? "noche" : "noches"})`);
+      renglones.push(`IN: ${fechaCorta(desde, idioma)}`, `OUT: ${fechaCorta(hasta, idioma)} (${tx.noches(noches)})`);
     } else {
       renglones.push("IN / OUT: a confirmar");
       avisos.push(`Faltan las fechas de ${hotel}: completalas antes de enviar.`);
@@ -712,7 +739,7 @@ class Armado {
     const hostel = normalizarTexto(s.nivel ?? nivelDeLaHabitacion(this.reserva.habitacion) ?? "") === "hostel";
     // M3-35: los de data/alojamientos-sin-desayuno.csv no ofrecen desayuno; el pedido no lo dice.
     const desayuno = !sinDesayuno(hotel, this.catalogo.sinDesayuno);
-    renglones.push(`Habitación: ${habitacionDelPedido(this.reserva.habitacion, { pax, hostel, desayuno })}`);
+    renglones.push(`${tx.habitacion}: ${habitacionDelPedido(this.reserva.habitacion, { pax, hostel, desayuno }, idioma)}`);
     if (habitacionSinTipo(this.reserva.habitacion)) {
       if (hostel) avisos.push(`La reserva no dice si en ${hotel} es dorm, DBL o SGL: completalo antes de enviar y revisalo con el vendedor.`);
       else if (pax === 1 || pax === 2) avisos.push(`La reserva no dice el tipo de habitación: va ${pax === 2 ? "DBL" : "SGL"} por ${pax} pax. Revisalo con el vendedor.`);
@@ -779,27 +806,28 @@ class Armado {
     if (incluye) return this.paqueteConTraslados(b, s, nombre, incluye[1], regular, `${s.descripcion ?? ""} ${nombre}`);
 
     const idioma = EN_ESPANOL.test(s.descripcion ?? "") ? "español" : "inglés";
-    const renglones = [`Excursión: ${nombre}`];
+    const { tx, idioma: id } = this;
+    const renglones = [`${tx.excursion}: ${nombre}`];
     const avisos: string[] = [];
     // De varios días (el Overland de 3 días): va con sus fechas de punta a punta.
     const variosDias = VARIOS_DIAS.test(s.descripcion ?? "") && !!desde && !!hasta && desde !== hasta;
     const regla = diaFijo ?? this.diaDelServicio(b, s);
     const fecha = variosDias ? null : this.fechaDeExcursion(b, s, desde, hasta, regla);
     const momento = fecha && regla?.momento ? `, ${regla.momento}` : "";
-    if (variosDias) renglones.push(`Desde: ${fechaCorta(desde!)} · Hasta: ${fechaCorta(hasta!)}`);
-    else if (fecha) renglones.push(`Fecha: ${fechaCorta(fecha)}${momento}`);
+    if (variosDias) renglones.push(`${tx.desde}: ${fechaCorta(desde!, id)} · ${tx.hasta}: ${fechaCorta(hasta!, id)}`);
+    else if (fecha) renglones.push(`${tx.fecha}: ${fechaCorta(fecha, id)}${momento}`);
     else {
-      renglones.push(desde && hasta ? `Fecha: a coordinar (estadía ${rangoCorto(desde, hasta)})` : "Fecha: a coordinar");
+      renglones.push(desde && hasta ? `${tx.fecha}: ${tx.estadia(rangoCorto(desde, hasta, id))}` : `${tx.fecha}: ${tx.aCoordinar}`);
       avisos.push(`Falta la fecha de ${nombre}: completala antes de enviar.`);
     }
     // Solo Journaway: las excursiones de la lista van con las entradas a los parques (owner, 2026-10-19).
     const entradas = this.esDeJournaway() && llevaEntradas(this.catalogo.entradas ?? [], b.codigo, `${nombre} ${s.descripcion ?? ""}`);
-    renglones.push(`Servicio: ${regular} · Idioma: ${idioma}${entradas ? " · Con entradas" : ""}`);
+    renglones.push(`${tx.servicio}: ${traducir(tx.regular, regular)} · ${tx.idioma}: ${traducir(tx.idiomas, idioma)}${entradas ? ` · ${tx.conEntradas}` : ""}`);
     const punto = this.puntoDeEncuentro(b, s, nombre);
     // M3-25 (owner, 2026-10-27): la excursión "sin transfer" (el Beagle de OD022, "no transfer to port") no lleva pick up.
     const sinTraslado = SIN_TRASLADOS.test(`${nombre} ${s.descripcion ?? ""}`);
     const pickUp: { renglon: string | null; pendientes: string[]; lugar: string | null } = punto
-      ? { renglon: `Punto de encuentro: ${punto} (el pasajero va directo)`, pendientes: [], lugar: punto }
+      ? { renglon: tx.puntoDeEncuentro(punto), pendientes: [], lugar: punto }
       : sinTraslado
         ? { renglon: null, pendientes: [], lugar: null }
         : this.esOverlandConTayka(b, `${nombre} ${s.descripcion ?? ""}`)
@@ -842,9 +870,10 @@ class Armado {
     const e = this.estadiaDe(fecha);
     // Excursión de un día: la dejan en el mismo alojamiento si esa noche sigue ahí (owner, 2026-10-20).
     const sigueAhi = !!e && !!fecha && e.desde <= fecha && fecha < e.hasta;
-    if (!e) return { renglon: `${dropOff ? "Pick up y drop off" : "Pick up"}: alojamiento a confirmar`, pendientes: [PENDIENTE.alojamiento], lugar: null };
+    const tx = this.tx;
+    if (!e) return { renglon: `${dropOff ? tx.pickUpYDropOff : "Pick up"}: ${tx.alojamientoAConfirmar}`, pendientes: [tx.pendiente.alojamiento], lugar: null };
     return {
-      renglon: `${dropOff && sigueAhi ? "Pick up y drop off" : "Pick up"}: ${e.hotel}${e.ciudad ? ` (${e.ciudad})` : ""}${e.aConfirmar ? " · hotel a confirmar" : ""}`,
+      renglon: `${dropOff && sigueAhi ? tx.pickUpYDropOff : "Pick up"}: ${e.hotel}${e.ciudad ? ` (${e.ciudad})` : ""}${e.aConfirmar ? " · hotel a confirmar" : ""}`,
       pendientes: [],
       lugar: `${e.hotel}${e.aConfirmar ? " (a confirmar)" : ""}`,
     };
@@ -876,7 +905,7 @@ class Armado {
         lugar: `${noche.hotel}${noche.aConfirmar ? " (a confirmar)" : ""}`,
       };
     }
-    return { renglon: `Pick up: ${hotelEnSanPedroAConfirmar(this.reserva.agencia)}`, pendientes: [PENDIENTE.alojamiento], lugar: null };
+    return { renglon: `Pick up: ${hotelEnSanPedroAConfirmar(this.reserva.agencia)}`, pendientes: [this.tx.pendiente.alojamiento], lugar: null };
   }
 
   /** El alojamiento de esa noche o, si ese día es el OUT, el de la noche anterior. */
@@ -895,7 +924,9 @@ class Armado {
     // El 105 Premium se pide como Premium, no como regular (owner, 2026-10-22, M3-12).
     const premium = PREMIUM.test(texto);
     // M3-28 (owner, 2026-10-28): en el Premium los transfers no aclaran "regular" (se pide un paquete Premium).
-    const tipoTraslado = premium && regular === "regular" ? "" : `, ${regular}`;
+    // M3-32: lo que va en el mail, en el idioma del proveedor (los nombres de conDia y los avisos, en castellano).
+    const { tx, idioma: id } = this;
+    const tipoTraslado = premium && regular === "regular" ? "" : `, ${traducir(tx.regular, regular)}`;
     const sinReceptivo = nombre.replace(/^Paquete\s+Rece?pti?vo\s+/i, "Paquete ");
     const titulo =
       PAQUETE_105_PREMIUM.test(texto) && !/Paquete 105 Premium/i.test(sinReceptivo) ? `Paquete 105 Premium (${sinReceptivo})` : sinReceptivo;
@@ -907,8 +938,8 @@ class Armado {
     const hotel = (fecha: string | null): string => {
       const e = this.estadiaDe(fecha);
       if (!e) {
-        if (!pendientes.includes(PENDIENTE.alojamiento)) pendientes.push(PENDIENTE.alojamiento);
-        return "alojamiento a confirmar";
+        if (!pendientes.includes(tx.pendiente.alojamiento)) pendientes.push(tx.pendiente.alojamiento);
+        return tx.alojamientoAConfirmar;
       }
       return `${e.hotel}${e.ciudad ? ` (${e.ciudad})` : ""}${e.aConfirmar ? " · hotel a confirmar" : ""}`;
     };
@@ -921,7 +952,7 @@ class Armado {
     if (!b.omitir.includes("in")) {
       conDia.push({ tipo: "traslado", nombre: `TRF IN (${titulo})`, fecha: llegada.fecha ?? b.inicio, destino: b.destino });
       renglones.push(
-        conHotel(`TRF IN${tipoTraslado}: ${b.inicio ? fechaCorta(llegada.fecha ?? b.inicio) : "a confirmar"} · ${llegada.dato}`, [["Drop off", b.inicio]]),
+        conHotel(`TRF IN${tipoTraslado}: ${b.inicio ? fechaCorta(llegada.fecha ?? b.inicio, id) : "a confirmar"} · ${llegada.dato}`, [["Drop off", b.inicio]]),
       );
       pendientes.push(...llegada.pendientes);
     }
@@ -942,24 +973,22 @@ class Armado {
       if (regla && b.inicio && !fecha) avisos.push(`Falta la fecha del ${lado.toLowerCase()}: completala antes de enviar.`);
       conDia.push({ tipo: "excursion", nombre: `${lado} (${titulo})`, fecha, destino: b.destino });
       const mismoHotel = !fecha || this.estadiaDe(nocheAnterior(fecha)) === this.estadiaDe(fecha);
+      const ladoEnElMail = /argentin/i.test(e) ? tx.lado.argentino : /brasil/i.test(e) ? tx.lado.brasileno : e;
       renglones.push(
         conHotel(
-          `${lado}, ${premium ? "Premium, en inglés" : `${regular} en inglés`}: ${fecha ? fechaCorta(fecha) : "a coordinar"}`,
-          mismoHotel ? [["Pick up y drop off", fecha]] : [["Pick up", nocheAnterior(fecha)], ["Drop off", fecha]],
+          `${ladoEnElMail}, ${premium ? `Premium, ${tx.enIngles}` : `${traducir(tx.regular, regular)} ${tx.enIngles}`}: ${fecha ? fechaCorta(fecha, id) : tx.aCoordinar}`,
+          mismoHotel ? [[tx.pickUpYDropOff, fecha]] : [["Pick up", nocheAnterior(fecha)], ["Drop off", fecha]],
         ),
       );
       if (IGUAZU_COMBINED.has(b.codigo ?? "") && i === 1 && excursiones.length > 1) {
-        const destino = /brasil/i.test(e) ? "Brasil" : "Argentina";
-        renglones.push(
-          `Ese día cruzan: el drop off es en el hotel de ${destino}. Los pasajeros hacen check out y llevan el equipaje a la excursión (lo dejan en los lockers del parque nacional).`,
-        );
+        renglones.push(tx.cruce(/brasil/i.test(e) ? "Brasil" : "Argentina"));
       }
     });
     const salida = this.traslado("out", "", b.fin, codigos, IGUAZU.has(b.destino ?? ""));
     if (!b.omitir.includes("out")) {
       conDia.push({ tipo: "traslado", nombre: `TRF OUT (${titulo})`, fecha: salida.fecha ?? b.fin, destino: b.destino });
       renglones.push(
-        conHotel(`TRF OUT${tipoTraslado}: ${b.fin ? fechaCorta(salida.fecha ?? b.fin) : "a confirmar"} · ${salida.dato}`, [["Pick up", nocheAnterior(b.fin)]]),
+        conHotel(`TRF OUT${tipoTraslado}: ${b.fin ? fechaCorta(salida.fecha ?? b.fin, id) : "a confirmar"} · ${salida.dato}`, [["Pick up", nocheAnterior(b.fin)]]),
       );
       pendientes.push(...salida.pendientes);
     }
@@ -1014,21 +1043,23 @@ class Armado {
     const texto = s.ajusteTour?.texto ?? s.descripcion ?? nombre;
     const codigos = iguazu ? ["IGR", "IGU"] : (lugarDelTraslado(texto, b.destino)?.codigos ?? []);
     const titulo = lado === "in" ? "Traslado de llegada" : lado === "out" ? "Traslado de salida" : "Traslado";
-    const renglones = [`${titulo}: ${nombre}`];
+    // M3-32: en el mail, en el idioma del proveedor; la tarea (queParaTarea, resumen), en castellano.
+    const { tx, idioma: id } = this;
+    const renglones = [`${lado === "in" ? tx.traslado.in : lado === "out" ? tx.traslado.out : tx.traslado.suelto}: ${nombre}`];
     if (!lado) {
-      renglones.push(`Fecha: ${fecha ? fechaCorta(fecha) : "a confirmar"}`);
+      renglones.push(`${tx.fecha}: ${fecha ? fechaCorta(fecha, id) : "a confirmar"}`);
       return { renglones, fecha, resumen: fecha ? fechaCorta(fecha) : "", queParaTarea: `${titulo.toLowerCase()} ${nombre}`, datosPax: false, avisos: [], pendientes: [] };
     }
     // M3-20: el "Transfer El Calafate Airport to El Chalten" de OD033 no es traslado: es el bus regular.
     const bus = this.busesElChalten(b, s).find((r) => r.tramo === (lado === "in" ? "ida" : "vuelta"));
     if (bus) return this.busElChalten(b, nombre, bus, fecha);
     const t = this.traslado(lado, nombre, fecha, codigos, iguazu);
-    renglones.push(`Fecha: ${t.fecha ? fechaCorta(t.fecha) : "a confirmar"}`, t.dato);
+    renglones.push(`${tx.fecha}: ${t.fecha ? fechaCorta(t.fecha, id) : "a confirmar"}`, t.dato);
     if (b.pickUp && lado === "in") renglones.push(`Destino: ${b.pickUp}`);
     return {
       renglones,
       fecha: t.fecha,
-      resumen: `${t.fecha ? fechaCorta(t.fecha) : "fecha a confirmar"} · ${t.dato}`,
+      resumen: `${t.fecha ? fechaCorta(t.fecha) : "fecha a confirmar"} · ${t.datoEs}`,
       queParaTarea: `${titulo.toLowerCase()} ${nombre}`,
       datosPax: false,
       avisos: [],
@@ -1045,11 +1076,14 @@ class Armado {
     if (vuelo) {
       const hora = lado === "in" ? vuelo.hora_llegada : vuelo.hora_salida;
       const dia = (lado === "in" ? vuelo.fecha_llegada : vuelo.fecha_salida) ?? fecha;
-      return { dato: renglonDelVuelo(vuelo), fecha: dia, pendientes: [] as string[], hora: hora ?? null };
+      // M3-32: `dato` va en el mail (en el idioma del proveedor); `datoEs`, en las tareas.
+      return { dato: renglonDelVuelo(vuelo, this.idioma), datoEs: renglonDelVuelo(vuelo), fecha: dia, pendientes: [] as string[], hora: hora ?? null };
     }
+    const { tx } = this;
+    const es = TEXTOS_DEL_PEDIDO.es;
     return iguazu
-      ? { dato: "Bus o vuelo pendiente", fecha, pendientes: [PENDIENTE.busOVuelo], hora: null }
-      : { dato: "Vuelo pendiente", fecha, pendientes: [PENDIENTE.vuelo], hora: null };
+      ? { dato: tx.busOVueloPendiente, datoEs: es.busOVueloPendiente, fecha, pendientes: [tx.pendiente.busOVuelo], hora: null }
+      : { dato: tx.vueloPendiente, datoEs: es.vueloPendiente, fecha, pendientes: [tx.pendiente.vuelo], hora: null };
   }
 
   /** Las reglas de `data/buses-el-chalten.csv` (M3-20) de ese servicio del paquete, ida primero. */
@@ -1066,9 +1100,10 @@ class Armado {
    */
   private busElChalten(b: Bloque, nombre: string, r: BusElChalten, fechaDelServicio: string | null): Renglones {
     const base = r.dia && b.inicio ? sumarDias(b.inicio, r.dia - 1) : fechaDelServicio;
-    const titulo = r.renglon ?? `Bus: ${nombre}`;
+    const { tx, idioma: id } = this;
+    const titulo = r.renglon ?? `${tx.bus}: ${nombre}`;
     const que = r.renglon ?? nombre;
-    const conHorario = (fecha: string | null) => `Fecha: ${fecha ? fechaCorta(fecha) : "a confirmar"} · Horario: ${r.horario}`;
+    const conHorario = (fecha: string | null) => `${tx.fecha}: ${fecha ? fechaCorta(fecha, id) : "a confirmar"} · ${tx.horario}: ${r.horario}`;
     if (r.tramo === "vuelta") {
       return { renglones: [titulo, conHorario(base)], fecha: base, resumen: base ? `${fechaCorta(base)} · ${r.horario}` : "", queParaTarea: que, datosPax: false, avisos: [], pendientes: [], esBus: true, ruta: que };
     }
@@ -1077,7 +1112,7 @@ class Armado {
     return {
       renglones: [titulo, conHorario(t.fecha), t.dato],
       fecha: t.fecha,
-      resumen: `${t.fecha ? fechaCorta(t.fecha) : "fecha a confirmar"} · ${t.dato}`,
+      resumen: `${t.fecha ? fechaCorta(t.fecha) : "fecha a confirmar"} · ${t.datoEs}`,
       queParaTarea: que,
       datosPax: false,
       avisos: tarde ? [r.aviso!] : [],
@@ -1094,7 +1129,8 @@ class Armado {
     const regla = this.busesElChalten(b, s)[0];
     if (regla) return this.busElChalten(b, nombre, regla, fecha);
     const nocturno = /nocturno|overnight|night bus/i.test(s.descripcion ?? "");
-    const renglones = [`Bus: ${nombre}`, `Fecha: ${fecha ? fechaCorta(fecha) : "a confirmar"}${nocturno ? " (nocturno)" : ""}`];
+    const { tx, idioma: id } = this;
+    const renglones = [`${tx.bus}: ${nombre}`, `${tx.fecha}: ${fecha ? fechaCorta(fecha, id) : "a confirmar"}${nocturno ? ` (${tx.nocturno})` : ""}`];
     return { renglones, fecha, resumen: fecha ? fechaCorta(fecha) : "", queParaTarea: nombre, datosPax: false, avisos: [], pendientes: [], esBus: true, ruta: nombre };
   }
 
@@ -1106,8 +1142,9 @@ class Armado {
   private otro(b: Bloque, nombre: string, desde: string | null, hasta: string | null): Renglones {
     const renglones = [nombre];
     const pendientes: string[] = [];
-    if (desde && hasta && desde !== hasta) renglones.push(`Desde: ${fechaCorta(desde)} · Hasta: ${fechaCorta(hasta)}`);
-    else renglones.push(`Fecha: ${desde ? fechaCorta(desde) : "a confirmar"}`);
+    const { tx, idioma: id } = this;
+    if (desde && hasta && desde !== hasta) renglones.push(`${tx.desde}: ${fechaCorta(desde, id)} · ${tx.hasta}: ${fechaCorta(hasta, id)}`);
+    else renglones.push(`${tx.fecha}: ${desde ? fechaCorta(desde, id) : "a confirmar"}`);
     const avisos: string[] = [];
     if (/\bw[\s-]?trek\b/i.test(nombre)) {
       // M3-19 (owner, 2026-10-23): el tipo de alojamiento en el trek.
@@ -1376,12 +1413,13 @@ function conFichaCompleta(reserva: ReservaParaPedidos, items: Item[]): { servici
   return { servicios: partes.filter(Boolean).join("\n\n"), pasajeros: "" };
 }
 
-function bloquePasajeros(reserva: ReservaParaPedidos, conDatos: boolean): string {
+function bloquePasajeros(reserva: ReservaParaPedidos, conDatos: boolean, idioma: Idioma = "es"): string {
+  const tx = TEXTOS_DEL_PEDIDO[idioma];
   const pax = reserva.pax ?? (reserva.pasajeros.length || null);
-  const cantidad = `Pasajeros: ${pax ?? "a confirmar"}`;
+  const cantidad = `${tx.pasajeros}: ${pax ?? "a confirmar"}`;
   const principal = reserva.pasajeros.map(nombreDelPasajero).find(Boolean);
-  if (!conDatos) return principal ? `${cantidad} (pasajero principal: ${principal})` : cantidad;
-  const renglones = reserva.pasajeros.map(renglonDelPasajero).filter((r): r is string => !!r);
+  if (!conDatos) return principal ? `${cantidad} (${tx.pasajeroPrincipal}: ${principal})` : cantidad;
+  const renglones = reserva.pasajeros.map((p, i) => renglonDelPasajero(p, i, idioma)).filter((r): r is string => !!r);
   return [cantidad, ...renglones].join("\n");
 }
 
@@ -1407,11 +1445,17 @@ export function porQueNoSeArma(estado: ReservaParaPedidos["estado"]): string | n
   return null;
 }
 
-export function armarPedidos(reserva: ReservaParaPedidos, catalogo: CatalogoParaPedidos, plantilla: Plantilla): ResultadoArmado {
+/**
+ * M3-32: con la plantilla en portugués (`plantillaPt`) y la lista de ciudades de Brasil del catálogo, el
+ * pedido a un proveedor de Brasil sale en portugués (la plantilla pt y los renglones armados); sin alguna de
+ * las dos, todos en castellano, como antes.
+ */
+export function armarPedidos(reserva: ReservaParaPedidos, catalogo: CatalogoParaPedidos, plantilla: Plantilla, plantillaPt?: Plantilla): ResultadoArmado {
   const noSeArma = porQueNoSeArma(reserva.estado);
   if (noSeArma) return { ok: false, error: noSeArma };
 
-  const armado = new Armado(reserva, catalogo);
+  const idiomaDe: IdiomaDe = (p) => (plantillaPt ? idiomaDeLaCiudad(p?.ciudad, catalogo.ciudadesPortugues) : "es");
+  const armado = new Armado(reserva, catalogo, idiomaDe);
   armado.recorrer();
   const datosAsunto = asuntoYReferencia(reserva, catalogo);
   const avisos = [...armado.avisos];
@@ -1422,11 +1466,14 @@ export function armarPedidos(reserva: ReservaParaPedidos, catalogo: CatalogoPara
     .map((g) => ({ ...g, items: [...g.items].sort(porFecha) }))
     .sort((a, b) => porFecha(a.items[0], b.items[0]))
     .map((g) => {
+      // M3-32: el pedido va en portugués si es a un proveedor de Brasil (por grupo: una casilla).
+      const idioma: Idioma = plantillaPt && g.items.some((it) => idiomaDe(it.proveedor) === "pt") ? "pt" : "es";
+      const pl = idioma === "pt" && plantillaPt ? plantillaPt : plantilla;
       const ficha = g.items.some((it) => llevaFichaCompleta(catalogo.fichaCompleta ?? [], it.proveedor));
       const visibles = conElTrasladoEnElOverland(g.items);
       const { servicios, pasajeros } = ficha
         ? conFichaCompleta(reserva, visibles)
-        : { servicios: textoDeServicios(visibles), pasajeros: bloquePasajeros(reserva, g.items.some((it) => it.datosPax)) };
+        : { servicios: textoDeServicios(visibles), pasajeros: bloquePasajeros(reserva, g.items.some((it) => it.datosPax), idioma) };
       const pendientes = [...new Set(g.items.flatMap((it) => it.pendientes))].join("\n");
       const proveedores = [...new Map(g.items.map((it) => [it.proveedor.id, { id: it.proveedor.id, nombre: it.proveedor.nombre }])).values()];
       return {
@@ -1435,17 +1482,17 @@ export function armarPedidos(reserva: ReservaParaPedidos, catalogo: CatalogoPara
         proveedores,
         partes: g.items.map((it) => it.cubre),
         // M3-16: las fechas son las de los servicios de ESTE pedido, no las de toda la reserva.
-        asunto: completarAsunto(plantilla.asunto, { ...datosAsunto, fechas: fechasDelAsunto(g.items.flatMap((it) => [it.fecha, it.hasta])) }),
+        asunto: completarAsunto(pl.asunto, { ...datosAsunto, fechas: fechasDelAsunto(g.items.flatMap((it) => [it.fecha, it.hasta]), idioma) }),
         cuerpo: comoSeEscribe(
-          completar(plantilla.cuerpo, {
+          completar(pl.cuerpo, {
             servicios,
             // M3-34: con al menos una excursión, que reconfirmen el horario.
-            horario: TEXTOS.pedidoProveedor.horarioExcursiones(g.items.reduce((n, it) => n + it.excursiones, 0)),
+            horario: TEXTOS_DEL_PEDIDO[idioma].horarioExcursiones(g.items.reduce((n, it) => n + it.excursiones, 0)),
             pasajeros,
             pendientes,
           }),
         ),
-        firma: plantilla.firma,
+        firma: pl.firma,
         sinDestinatario: g.sinDestinatario,
         // M3-24: los blackouts de la salida y de las partes que cubre, antes que los avisos de cada servicio.
         avisos: [...new Set([...armado.blackoutsDe(g.items.map((it) => it.cubre.parteId)), ...g.items.flatMap((it) => it.avisos)].map(comoSeEscribe))],

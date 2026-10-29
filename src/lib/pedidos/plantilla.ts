@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
+import type { Idioma } from "./idioma";
 import { MARCA_NOMBRE, type Plantilla } from "./tipos";
 
 /**
@@ -14,6 +15,8 @@ import { MARCA_NOMBRE, type Plantilla } from "./tipos";
  */
 
 export const ARCHIVO_PLANTILLA = join("data", "plantillas", "pedido-proveedor.md");
+/** M3-32: la de los proveedores de Brasil, en portugués (mismo formato y mismos datos). */
+export const ARCHIVO_PLANTILLA_PT = join("data", "plantillas", "pedido-proveedor-pt.md");
 
 /** Los datos que completa la app, por parte de la plantilla. */
 export const DATOS_PLANTILLA = {
@@ -65,8 +68,9 @@ export function leerPlantilla(texto: string): Plantilla {
 }
 
 /** Lee la plantilla del archivo del repo (solo servidor y scripts). */
-export function cargarPlantilla(raiz: string = process.cwd()): Plantilla {
-  return leerPlantilla(readFileSync(join(raiz, ARCHIVO_PLANTILLA), "utf-8"));
+export function cargarPlantilla(raiz: string = process.cwd(), idioma: Idioma = "es"): Plantilla {
+  // M3-32: "pt", la de los proveedores de Brasil.
+  return leerPlantilla(readFileSync(join(raiz, idioma === "pt" ? ARCHIVO_PLANTILLA_PT : ARCHIVO_PLANTILLA), "utf-8"));
 }
 
 /**

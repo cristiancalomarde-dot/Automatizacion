@@ -28,6 +28,7 @@ import type {
   AlojamientoSinDesayuno,
   BusElChalten,
   CatalogoParaPedidos,
+  CiudadEnPortugues,
   DiaDeServicio,
   ExcursionConEntrada,
   HostelSegunHabitacion,
@@ -52,6 +53,7 @@ export const ARCHIVO_BUSES_EL_CHALTEN = join("data", "buses-el-chalten.csv");
 export const ARCHIVO_ALOJAMIENTO_SE_PIDE_A = join("data", "alojamiento-se-pide-a.csv");
 export const ARCHIVO_TRAMOS_SE_PIDEN_A = join("data", "tramos-se-piden-a.csv");
 export const ARCHIVO_ALOJAMIENTOS_SIN_DESAYUNO = join("data", "alojamientos-sin-desayuno.csv");
+export const ARCHIVO_CIUDADES_PORTUGUES = join("data", "ciudades-portugues.csv");
 
 /* eslint-disable @typescript-eslint/no-explicit-any -- filas crudas de PostgREST, se tipan al mapear */
 
@@ -259,6 +261,27 @@ export function cargarAlojamientosSinDesayuno(raiz: string = process.cwd()): Alo
 }
 
 /**
+ * `data/ciudades-portugues.csv`: ciudad,nota (M3-32, owner 2026-10-28). Las ciudades de Brasil del
+ * directorio de proveedores: a esos proveedores el pedido les sale en portugués. El owner suma filas
+ * editando el CSV.
+ */
+export function leerCiudadesPortugues(contenido: string): CiudadEnPortugues[] {
+  const cabecera = contenido.replace(/^﻿/, "").split(/\r?\n/)[0]?.trim() ?? "";
+  if (!/^ciudad,nota\b/.test(cabecera)) {
+    throw new Error(`${ARCHIVO_CIUDADES_PORTUGUES}: la primera fila tiene que ser "ciudad,nota".`);
+  }
+  return leerCsv(contenido).map((f, i) => {
+    const ciudad = f.ciudad?.trim();
+    if (!ciudad) throw new Error(`${ARCHIVO_CIUDADES_PORTUGUES}, fila ${i + 2}: hace falta la ciudad.`);
+    return { ciudad, nota: f.nota?.trim() || null };
+  });
+}
+
+export function cargarCiudadesPortugues(raiz: string = process.cwd()): CiudadEnPortugues[] {
+  return leerCiudadesPortugues(readFileSync(join(raiz, ARCHIVO_CIUDADES_PORTUGUES), "utf-8"));
+}
+
+/**
  * `data/tramos-se-piden-a.csv`: tour,ruta,proveedor,horario,nota (M3-25, owner 2026-10-27). El bus `ruta`
  * ("A – B") del tour, que si no emite HI Travel (tarea), se le pide al proveedor (su nombre en el directorio),
  * con su hora de salida en ese sentido (opcional).
@@ -417,9 +440,9 @@ async function proveedoresPorNombre(cliente: SupabaseClient, nombres: readonly s
   for (const nombre of nombres) {
     // Sin comodines: el nombre exacto, sin mayúsculas.
     const patron = nombre.replace(/[\\%_]/g, (c) => `\\${c}`);
-    const filas = verificar(await cliente.from("proveedor").select("id,nombre,mails,canal,telefono").ilike("nombre", patron), "los proveedores") as any[];
+    const filas = verificar(await cliente.from("proveedor").select("id,nombre,mails,canal,telefono,ciudad").ilike("nombre", patron), "los proveedores") as any[];
     for (const f of filas) {
-      encontrados.push({ id: f.id, nombre: f.nombre, mails: f.mails ?? [], canal: (f.canal ?? null) as Canal, telefono: f.telefono ?? null });
+      encontrados.push({ id: f.id, nombre: f.nombre, mails: f.mails ?? [], canal: (f.canal ?? null) as Canal, telefono: f.telefono ?? null, ciudad: f.ciudad ?? null });
     }
   }
   return encontrados;
@@ -449,9 +472,9 @@ export async function cargarCatalogoParaPedidos(
   const idsProveedores = [...new Set(reserva.partes.map((p) => p.proveedorId).filter((x): x is string => !!x))];
   const proveedores = new Map<string, ProveedorResumen>();
   if (idsProveedores.length) {
-    const filas = verificar(await cliente.from("proveedor").select("id,nombre,mails,canal,telefono").in("id", idsProveedores), "los proveedores") as any[];
+    const filas = verificar(await cliente.from("proveedor").select("id,nombre,mails,canal,telefono,ciudad").in("id", idsProveedores), "los proveedores") as any[];
     for (const f of filas) {
-      proveedores.set(f.id, { id: f.id, nombre: f.nombre, mails: f.mails ?? [], canal: (f.canal ?? null) as Canal, telefono: f.telefono ?? null });
+      proveedores.set(f.id, { id: f.id, nombre: f.nombre, mails: f.mails ?? [], canal: (f.canal ?? null) as Canal, telefono: f.telefono ?? null, ciudad: f.ciudad ?? null });
     }
   }
   // M3-13: las opciones del pasajero de estos paquetes (sueltos o dentro de un tour), con su proveedor.

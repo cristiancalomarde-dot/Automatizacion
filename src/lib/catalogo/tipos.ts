@@ -14,6 +14,8 @@ export interface ProveedorResumen {
   mails: string[];
   canal: Canal;
   telefono: string | null;
+  /** M3-32: la ciudad del directorio (decide el idioma del pedido). Ausente = sin dato. */
+  ciudad?: string | null;
 }
 
 export type SentidoTraslado = "llegada" | "salida" | "ida_y_vuelta" | "sin_sentido";

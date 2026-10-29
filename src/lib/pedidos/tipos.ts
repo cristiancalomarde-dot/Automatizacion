@@ -206,6 +206,12 @@ export interface AlojamientoSinDesayuno {
   nota: string | null;
 }
 
+/** M3-32: una ciudad de `data/ciudades-portugues.csv` (sus proveedores reciben los pedidos en portugués). */
+export interface CiudadEnPortugues {
+  ciudad: string;
+  nota: string | null;
+}
+
 export interface CatalogoParaPedidos {
   /** El detalle (`cargarProducto`) del producto de la reserva, de los otros productos y de cada parte. */
   detalles: ReadonlyMap<string, DetalleProducto>;
@@ -220,6 +226,8 @@ export interface CatalogoParaPedidos {
   hostelSegunHabitacion?: readonly HostelSegunHabitacion[];
   /** Los alojamientos que no ofrecen desayuno (M3-35; sin la lista, todos con desayuno). */
   sinDesayuno?: readonly AlojamientoSinDesayuno[];
+  /** M3-32: las ciudades de Brasil (sus proveedores, en portugués; sin la lista, todo en castellano). */
+  ciudadesPortugues?: readonly CiudadEnPortugues[];
   /** A quién se le pide un alojamiento (M3-22, Factoria a Factoria; sin la lista, al del Excel). */
   alojamientoSePideA?: readonly AlojamientoSePideA[];
   /** Los buses de un tour que se le piden a un proveedor en vez de emitirlos HI Travel (M3-25; sin la lista, todos tarea). */

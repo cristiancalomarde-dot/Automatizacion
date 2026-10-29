@@ -11,6 +11,7 @@
  */
 import { AEROPUERTOS } from "@/lib/reservas/emparejar/vuelos-requeridos";
 import { diaYMes } from "./formato";
+import { TEXTOS_DEL_PEDIDO, type Idioma } from "./idioma";
 import type { VueloDeReserva } from "./tipos";
 
 const limpio = (s: string | null | undefined) => (s ?? "").trim();
@@ -22,23 +23,25 @@ function hora(h: string): string {
 }
 
 /** "Buenos Aires (AEP) 18 mar 08:30 hs"; vacío si no hay nada de ese lado. */
-function extremo(aeropuerto: string | null | undefined, fecha: string | null | undefined, h: string | null | undefined): string {
+function extremo(aeropuerto: string | null | undefined, fecha: string | null | undefined, h: string | null | undefined, idioma: Idioma): string {
   const codigo = limpio(aeropuerto).toUpperCase();
   const lugar = codigo ? (AEROPUERTOS[codigo] ? `${AEROPUERTOS[codigo]} (${codigo})` : codigo) : "";
-  const dia = limpio(fecha) ? diaYMes(limpio(fecha)) : "";
-  const cuando = limpio(h) ? `${hora(limpio(h))} hs` : "";
+  const dia = limpio(fecha) ? diaYMes(limpio(fecha), idioma) : "";
+  const cuando = limpio(h) ? `${hora(limpio(h))}${TEXTOS_DEL_PEDIDO[idioma].vuelo.horas}` : "";
   return [lugar, dia, cuando].filter(Boolean).join(" ");
 }
 
-export function renglonDelVuelo(v: VueloDeReserva): string {
-  const sale = extremo(v.origen, v.fecha_salida, v.hora_salida);
-  const llega = extremo(v.destino, v.fecha_llegada, v.hora_llegada);
+/** M3-32: en el idioma del pedido ("Voo: … – sai … – chega …" en portugués). */
+export function renglonDelVuelo(v: VueloDeReserva, idioma: Idioma = "es"): string {
+  const t = TEXTOS_DEL_PEDIDO[idioma].vuelo;
+  const sale = extremo(v.origen, v.fecha_salida, v.hora_salida, idioma);
+  const llega = extremo(v.destino, v.fecha_llegada, v.hora_llegada, idioma);
   const numero = limpio(v.numero);
   if (!numero) {
-    if (llega && !sale) return `Llegada: ${llega} (sin número de vuelo)`;
-    if (sale && !llega) return `Salida: ${sale} (sin número de vuelo)`;
+    if (llega && !sale) return `${t.llegada}: ${llega} (${t.sinNumeroDeVuelo})`;
+    if (sale && !llega) return `${t.salida}: ${sale} (${t.sinNumeroDeVuelo})`;
   }
   const aerolinea = limpio(v.aerolinea);
-  const cabeza = numero ? `Vuelo: ${numero}${aerolinea ? ` (${aerolinea})` : ""}` : `Vuelo sin número${aerolinea ? ` (${aerolinea})` : ""}`;
-  return [cabeza, sale && `sale ${sale}`, llega && `llega ${llega}`].filter(Boolean).join(" – ");
+  const cabeza = numero ? `${t.vuelo}: ${numero}${aerolinea ? ` (${aerolinea})` : ""}` : `${t.sinNumero}${aerolinea ? ` (${aerolinea})` : ""}`;
+  return [cabeza, sale && `${t.sale} ${sale}`, llega && `${t.llega} ${llega}`].filter(Boolean).join(" – ");
 }

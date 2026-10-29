@@ -28,7 +28,7 @@ import type {
   TramoNoches,
 } from "./tipos";
 
-const CAMPOS_PROVEEDOR = "id,nombre,mails,canal,telefono";
+const CAMPOS_PROVEEDOR = "id,nombre,mails,canal,telefono,ciudad";
 const CAMPOS_SERVICIO =
   "id,producto_id,tipo_servicio,nivel,orden,prioridad,descripcion,opcional,reserva_manual," +
   "proveedor_sin_resolver,proveedor_para_revisar,proveedor_nota,fila_excel," +
@@ -51,6 +51,7 @@ function aProveedor(fila: any): ProveedorResumen | null {
     mails: fila.mails ?? [],
     canal: (fila.canal ?? null) as Canal,
     telefono: fila.telefono ?? null,
+    ciudad: fila.ciudad ?? null,
   };
 }
 
