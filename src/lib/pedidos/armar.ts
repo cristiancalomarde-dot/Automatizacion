@@ -35,6 +35,7 @@ import type { ComponenteTour, DetalleProducto, ProveedorResumen, Servicio, TipoS
 import { NOMBRE_DESTINO, nombreDestino } from "@/lib/importador-tours/ciudades";
 import { TRANSFER_PNT } from "@/lib/reservas/emparejar/componentes";
 import { lugarDelTraslado } from "@/lib/reservas/emparejar/vuelos-requeridos";
+import { esOverland, esTrasladoAHitoCajon, incluyeTrasladoAHitoCajon, overlandDelTraslado } from "@/lib/reservas/hito-cajon";
 import { TEXTOS } from "@/lib/textos";
 import { llevaEntradas } from "./entradas";
 import { avisosDeBlackout, avisosDeDiasDeBus, avisosDeFechaEspecial, tramoDeLaRuta, type ServicioConDia } from "./itinerario";
@@ -1289,6 +1290,25 @@ const porFecha = (a: Item, b: Item) => (a.fecha ?? "9999").localeCompare(b.fecha
 
 // --- El texto del pedido ------------------------------------------------------------------------
 
+/**
+ * M3-38 (owner, 2026-10-28): el traslado San Pedro → Hito Cajón va dentro del renglón del Overland
+ * del mismo pedido ("… (incluye traslado regular San Pedro → Hito Cajón el 26 may 2027)"), no suelto.
+ * Siempre regular, aunque el Overland sea privado. Sin Overland en el pedido, queda como estaba.
+ * Solo cambia el texto: el pedido sigue cubriendo la parte del traslado.
+ */
+function conElTrasladoEnElOverland(items: Item[]): Item[] {
+  let quedan = [...items];
+  for (const trf of items.filter((it) => it.tipo === "traslado" && esTrasladoAHitoCajon(it.renglones[0] ?? ""))) {
+    const otros = quedan.filter((it) => it !== trf);
+    const i = overlandDelTraslado(otros, trf.fecha, (it) => it.tipo !== "traslado" && esOverland(it.renglones[0] ?? ""), (it) => it.fecha);
+    if (i < 0) continue;
+    const [titulo, ...resto] = otros[i].renglones;
+    otros[i] = { ...otros[i], renglones: [`${titulo} (${incluyeTrasladoAHitoCajon(trf.fecha)})`, ...resto] };
+    quedan = otros;
+  }
+  return quedan;
+}
+
 /** Los servicios del pedido, numerados si son más de uno. */
 function textoDeServicios(items: Item[]): string {
   const numerar = items.length > 1;
@@ -1368,9 +1388,10 @@ export function armarPedidos(reserva: ReservaParaPedidos, catalogo: CatalogoPara
     .sort((a, b) => porFecha(a.items[0], b.items[0]))
     .map((g) => {
       const ficha = g.items.some((it) => llevaFichaCompleta(catalogo.fichaCompleta ?? [], it.proveedor));
+      const visibles = conElTrasladoEnElOverland(g.items);
       const { servicios, pasajeros } = ficha
-        ? conFichaCompleta(reserva, g.items)
-        : { servicios: textoDeServicios(g.items), pasajeros: bloquePasajeros(reserva, g.items.some((it) => it.datosPax)) };
+        ? conFichaCompleta(reserva, visibles)
+        : { servicios: textoDeServicios(visibles), pasajeros: bloquePasajeros(reserva, g.items.some((it) => it.datosPax)) };
       const pendientes = [...new Set(g.items.flatMap((it) => it.pendientes))].join("\n");
       const proveedores = [...new Map(g.items.map((it) => [it.proveedor.id, { id: it.proveedor.id, nombre: it.proveedor.nombre }])).values()];
       return {

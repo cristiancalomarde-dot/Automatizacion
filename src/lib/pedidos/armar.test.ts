@@ -580,3 +580,84 @@ describe("armarPedidos — Journaway: excursiones con entrada (owner, 2026-10-19
     expect(p.cuerpo).not.toMatch(/entradas/i);
   });
 });
+
+describe("armarPedidos — M3-38: el traslado San Pedro → Hito Cajón va dentro del Overland", () => {
+  const OVERLAND = "Overland privado San Pedro – Uyuni, 3 días en jeep 4x4 desde Hito Cajón, con chofer de habla hispana (sin guía en inglés)";
+  const uyuo01 = producto("prod-m338-uyuo01", "UYUO01", [
+    servicio({ productoId: "prod-m338-uyuo01", tipo: "excursion", orden: 1, descripcion: OVERLAND, bookingSupplier: P.imperio }),
+    servicio({ productoId: "prod-m338-uyuo01", tipo: "alojamiento", orden: 2, serviceProviderNombre: "Tayka del Desierto", descripcion: "Tayka del Desierto, habitación doble, noche 1 del Overland", bookingSupplier: P.imperio, tramosNoches: [{ nocheDesde: 1, noches: 1, lugar: null }] }),
+    servicio({ productoId: "prod-m338-uyuo01", tipo: "alojamiento", orden: 3, serviceProviderNombre: "Tayka de Sal", descripcion: "Tayka de Sal, habitación doble, noche 2 del Overland", bookingSupplier: P.imperio, tramosNoches: [{ nocheDesde: 2, noches: 1, lugar: null }] }),
+    servicio({ productoId: "prod-m338-uyuo01", tipo: "bus", orden: 4, descripcion: "Bus nocturno Uyuni – La Paz, sale la noche del día 3 del Overland desde la terminal de Uyuni", bookingSupplier: P.imperio }),
+  ], { destino: "UYU" });
+  const spat02 = producto("prod-m338-spat02", "SPAT02", [
+    servicio({ productoId: "prod-m338-spat02", tipo: "traslado", orden: 1, sentido: "sin_sentido", descripcion: "Transfer San Pedro - Hito Cajon regular", bookingSupplier: P.imperio }),
+  ], { destino: "SPA" });
+
+  /** SPAP05 (Petzold: día 1 = 22 may 2027, traslado y Overland el día 5) o SPAP06 (un día más en San Pedro). */
+  function armarSpap(codigo: "SPAP05" | "SPAP06") {
+    const dia = codigo === "SPAP05" ? 5 : 6;
+    const inicio = codigo === "SPAP05" ? "2027-05-26" : "2027-05-27";
+    const fin = codigo === "SPAP05" ? "2027-05-28" : "2027-05-29";
+    const spap = producto(`prod-m338-${codigo}`, codigo, [], {
+      esTour: true,
+      codigosExternos: [{ agencia: "Journaway", codigo: "san pedro + uyuni", nombreExterno: null }],
+      componentes: [componente("c-trf", 6, dia, 0, spat02), componente("c-uyu", 7, dia, 2, uyuo01)],
+    });
+    return ok(
+      armarPedidos(
+        reserva({
+          agencia: "Journaway",
+          habitacion: "1 DBL",
+          productoId: spap.id,
+          fechaInicio: "2027-05-22",
+          fechaFin: fin,
+          partes: [
+            parte({ id: "t", orden: 6, tipo: "paquete", productoId: spat02.id, productoComponenteId: "c-trf", fechaInicio: inicio, fechaFin: inicio }),
+            parte({ id: "u", orden: 7, tipo: "paquete", productoId: uyuo01.id, productoComponenteId: "c-uyu", fechaInicio: inicio, fechaFin: fin }),
+          ],
+        }),
+        catalogoCon([spap, spat02, uyuo01]),
+        plantilla,
+      ),
+    );
+  }
+
+  it("SPAP05 (Petzold): un solo renglón con el Overland y el traslado regular del 26 may 2027; sin 'Traslado:' suelto", () => {
+    const r = armarSpap("SPAP05");
+    expect(r.pedidos).toHaveLength(1);
+    const p = r.pedidos[0];
+    expect(p.cuerpo).toContain(`1) Excursión: ${OVERLAND} (incluye traslado regular San Pedro → Hito Cajón el 26 may 2027)\nDesde: 26 may 2027 · Hasta: 28 may 2027`);
+    expect(p.cuerpo).not.toMatch(/Traslado:/);
+    expect(p.cuerpo).not.toContain("Hito Cajon regular");
+    // Lo que ya decía el renglón del Overland, igual.
+    expect(p.cuerpo).toContain("Servicio: privado · Idioma: español");
+    // Las demás cosas del Overland siguen como estaban.
+    expect(p.cuerpo).toContain("2) Alojamiento: Tayka del Desierto");
+    expect(p.cuerpo).toContain("Bus: Bus nocturno Uyuni – La Paz");
+    // El pedido sigue cubriendo la parte del traslado.
+    expect(p.partes.map((x) => x.parteId)).toContain("t");
+  });
+
+  it("SPAP06: igual, con su fecha (27 may 2027)", () => {
+    const p = armarSpap("SPAP06").pedidos[0];
+    expect(p.cuerpo).toContain(`1) Excursión: ${OVERLAND} (incluye traslado regular San Pedro → Hito Cajón el 27 may 2027)`);
+    expect(p.cuerpo).not.toMatch(/Traslado:/);
+  });
+
+  it("'privado' nunca califica al traslado: solo al Overland", () => {
+    for (const codigo of ["SPAP05", "SPAP06"] as const) {
+      const cuerpo = armarSpap(codigo).pedidos[0].cuerpo;
+      const incluye = cuerpo.match(/\(incluye [^)]*\)/)![0];
+      expect(incluye).toContain("traslado regular");
+      expect(incluye).not.toMatch(/privad/i);
+      expect(cuerpo).not.toMatch(/privad[oa][^\n]{0,40}traslado|traslado[^\n]{0,40}privad/i);
+    }
+  });
+
+  it("CHB31: su Overland no tiene un traslado aparte en el catálogo (lo buscan en el hostel): el renglón queda igual", () => {
+    const p = ok(armarPedidos(reservaChb31, catalogoChb31, plantilla)).pedidos.find((x) => x.cuerpo.includes("Overland"))!;
+    expect(p.cuerpo).toContain("1) Overland San Pedro de Atacama to Uyuni\nDesde: 21 ene 2027 · Hasta: 23 ene 2027\nServicio: tour regular");
+    expect(p.cuerpo).not.toContain("Hito Caj");
+    expect(p.cuerpo).not.toMatch(/Traslado:/);
+  });
+});
