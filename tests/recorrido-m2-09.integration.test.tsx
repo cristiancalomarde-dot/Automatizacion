@@ -147,8 +147,10 @@ const registroMes = (): RegistroUsoIA => ({ gastoDelMes: async () => 0, sumar: a
     expect(within(hoteles).getAllByRole("row")).toHaveLength(9);
     for (const h of ["Hub Providencia", "Our Habitas Atacama", "Saska Boutique"]) expect(within(hoteles).getByText(h)).toBeInTheDocument();
     const partes = screen.getByRole("table", { name: "Partes del tour" });
-    expect(within(partes).getAllByText("Our Habitas Atacama")).toHaveLength(4);
-    expect(within(partes).getByText("Tayka del Desierto Hotel / Tayka del Sal Hotel")).toBeInTheDocument();
+    // M3-41: el Overland (UYUO01) sale del hotel de San Pedro, no del Tayka que manda Journaway (eso queda guardado).
+    expect(within(partes).getAllByText("Our Habitas Atacama")).toHaveLength(5);
+    expect(within(partes).queryByText(/Tayka del Desierto Hotel/)).toBeNull();
+    expect(within(partes).getByText("UYUO01").closest("tr")).toHaveTextContent("Our Habitas Atacama");
     const vuelos = screen.getByRole("table", { name: "Vuelos" });
     expect(within(vuelos).getByText("LA148")).toBeInTheDocument();
     expect(screen.getByTestId("encabezado-reserva").textContent).toContain("Journaway no mandó número de viaje");

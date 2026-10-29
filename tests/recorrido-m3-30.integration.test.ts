@@ -166,5 +166,16 @@ const registroMes = (): RegistroUsoIA => ({ gastoDelMes: async () => 0, sumar: a
       expect(armado.pedidos.length).toBeGreaterThan(0);
       for (const p of armado.pedidos) expect(`${p.asunto}\n${p.cuerpo}`).not.toMatch(/Night Bus Peru|Peru/i);
     });
+
+    it("M3-41: el pick up del Overland es el hotel de San Pedro; el mail no lo trae → a confirmar, lo informa Journaway, con el pendiente", async () => {
+      const armado = await armarYGuardarPedidos(admin, reservaId);
+      expect(armado.ok).toBe(true);
+      if (!armado.ok) return;
+      const overland = armado.pedidos.find((p) => /Overland/.test(p.cuerpo))!;
+      const pickUps = overland.cuerpo.split("\n").filter((l) => l.startsWith("Pick up"));
+      expect(pickUps).toContain("Pick up: hotel en San Pedro de Atacama a confirmar (lo informa Journaway)");
+      for (const l of pickUps) expect(l).not.toMatch(/tayka|habitas|don raul/i);
+      expect(overland.cuerpo).toContain("Les pasamos el alojamiento para el pick up apenas lo tengamos.");
+    });
   },
 );
