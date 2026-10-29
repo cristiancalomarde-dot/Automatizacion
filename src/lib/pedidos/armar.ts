@@ -35,6 +35,7 @@ import type { ComponenteTour, DetalleProducto, ProveedorResumen, Servicio, TipoS
 import { NOMBRE_DESTINO, nombreDestino } from "@/lib/importador-tours/ciudades";
 import { TRANSFER_PNT } from "@/lib/reservas/emparejar/componentes";
 import { lugarDelTraslado } from "@/lib/reservas/emparejar/vuelos-requeridos";
+import { TEXTOS } from "@/lib/textos";
 import { llevaEntradas } from "./entradas";
 import { avisosDeBlackout, avisosDeDiasDeBus, avisosDeFechaEspecial, tramoDeLaRuta, type ServicioConDia } from "./itinerario";
 import { HOTEL_A_CONFIRMAR, fichasDePasajeros, lineaDeTour, llevaFichaCompleta, restriccionAlimentaria, type TourDeFicha } from "./ficha";
@@ -127,6 +128,8 @@ interface Item {
   pendientes: string[];
   /** La excursión como la lista el proveedor con ficha completa ("FECHAS Y TOURS"). */
   tour?: TourDeFicha;
+  /** M3-34: cuántas excursiones pide (el paquete 105 de Iguazú, una por lado), para pedir el horario. */
+  excursiones: number;
 }
 
 /** Un paquete (o producto suelto) de la reserva, con sus fechas y su lugar en el tour. */
@@ -634,7 +637,9 @@ class Armado {
       return;
     }
     const cubre: ParteCubierta = { parteId: b.parteId, productoServicioId: s.id, producto: b.codigo, fecha: a.fecha };
-    this.agregar(proveedor, s.tipo, a.renglones, a.fecha, cubre, a.datosPax, [...avisos, ...a.avisos], a.pendientes, a.tour, a.hasta ?? null);
+    // M3-34: el paquete con traslados (105 de Iguazú) cuenta sus excursiones; una excursión suelta, una.
+    const excursiones = a.conDia ? a.conDia.filter((x) => x.tipo === "excursion").length : s.tipo === "excursion" ? 1 : 0;
+    this.agregar(proveedor, s.tipo, a.renglones, a.fecha, cubre, a.datosPax, [...avisos, ...a.avisos], a.pendientes, a.tour, a.hasta ?? null, excursiones);
   }
 
   private agregar(
@@ -648,8 +653,9 @@ class Armado {
     pendientes: string[],
     tour?: TourDeFicha,
     hasta: string | null = null,
+    excursiones = 0,
   ): void {
-    this.items.push({ proveedor, tipo, renglones, fecha, hasta, seq: this.seq++, cubre, datosPax, avisos, pendientes, tour });
+    this.items.push({ proveedor, tipo, renglones, fecha, hasta, seq: this.seq++, cubre, datosPax, avisos, pendientes, tour, excursiones });
   }
 
   private tarea(tipo: TareaArmada["tipo"], texto: string, detalle: Record<string, unknown>, fecha: string | null): void {
@@ -1377,6 +1383,8 @@ export function armarPedidos(reserva: ReservaParaPedidos, catalogo: CatalogoPara
         cuerpo: comoSeEscribe(
           completar(plantilla.cuerpo, {
             servicios,
+            // M3-34: con al menos una excursión, que reconfirmen el horario.
+            horario: TEXTOS.pedidoProveedor.horarioExcursiones(g.items.reduce((n, it) => n + it.excursiones, 0)),
             pasajeros,
             pendientes,
           }),

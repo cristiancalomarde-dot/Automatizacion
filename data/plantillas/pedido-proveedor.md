@@ -11,8 +11,9 @@
 >   no sale, y tampoco el guion de antes). El asunto no lleva el código del producto ni el número
 >   de reserva de la agencia: son internos y el proveedor no los usa.
 > - En el cuerpo: {{servicios}} (lo que se pide, con fechas), {{pasajeros}} (cuántos son y, si el
->   pedido los necesita, sus datos) y {{pendientes}} (lo que todavía falta, como el vuelo; si no
->   falta nada, no sale).
+>   pedido los necesita, sus datos), {{pendientes}} (lo que todavía falta, como el vuelo; si no
+>   falta nada, no sale) y {{horario}} (si el pedido tiene excursiones: "¿Nos confirman el
+>   horario de la excursión, por favor?", o "de las excursiones" si son varias; si no, no sale).
 > - En la firma: {{nombre_de_quien_envia}} es obligatorio: ahí va el nombre de la persona que
 >   aprueba el envío. Sin eso la app no arma el pedido.
 
@@ -27,6 +28,8 @@ Solicitud de reserva – {{pasajero}} x {{pax}} – {{fechas}}
 Les escribimos desde HI Travel para pedirles la siguiente reserva:
 
 {{servicios}}
+
+{{horario}}
 
 {{pasajeros}}
 

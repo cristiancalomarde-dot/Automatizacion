@@ -32,6 +32,8 @@ export function borradorAMano(reserva: DatosParaAMano, plantilla: Plantilla): Bo
   });
   const cuerpo = completar(plantilla.cuerpo, {
     servicios: ESPACIO,
+    // M3-34: el pedido a mano no sabe qué se pide; el renglón del horario no sale.
+    horario: "",
     pasajeros: `Pasajeros: ${pax ?? "a confirmar"}`,
     pendientes: "",
   }).replace(ESPACIO, "");

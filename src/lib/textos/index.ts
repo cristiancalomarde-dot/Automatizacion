@@ -662,6 +662,12 @@ export const TEXTOS = {
       dia: (dia: string, hora: string) => `el ${dia} ${hora}`,
     },
   },
+  /** Renglones del texto del pedido que dependen de lo que se pide (el resto, en data/plantillas/pedido-proveedor.md). */
+  pedidoProveedor: {
+    /** M3-34 (staff, 2026-10-28): con al menos una excursión, que reconfirmen el horario; sin excursiones, nada. */
+    horarioExcursiones: (n: number) =>
+      n <= 0 ? "" : n === 1 ? "¿Nos confirman el horario de la excursión, por favor?" : "¿Nos confirman el horario de las excursiones, por favor?",
+  },
   /** Revisión y envío de los pedidos a proveedores (spec M3-02, user-flow.md §5.4). */
   pedidos: {
     titulo: "Pedidos a proveedores",

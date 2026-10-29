@@ -19,7 +19,8 @@ export const ARCHIVO_PLANTILLA = join("data", "plantillas", "pedido-proveedor.md
 export const DATOS_PLANTILLA = {
   // M3-16: la plantilla usa {{pasajero}} y {{fechas}}; los viejos se siguen aceptando.
   asunto: ["pasajero", "fechas", "pax", "producto", "referencia"],
-  cuerpo: ["servicios", "pasajeros", "pendientes"],
+  // M3-34: {{horario}} pide reconfirmar el horario si el pedido tiene excursiones.
+  cuerpo: ["servicios", "horario", "pasajeros", "pendientes"],
   firma: ["nombre_de_quien_envia"],
 } as const satisfies Record<keyof Plantilla, readonly string[]>;
 
