@@ -164,12 +164,12 @@ const renglon = (texto: string, empieza: string) => texto.split("\n").find((l) =
     expect(renglon(c, "TRF OUT")).toBe(`TRF OUT: 2 feb 2027 · Bus o vuelo pendiente · Pick up: ${bambu}`);
   });
 
-  it("los hostels se piden por sus noches: Beer del 30 ene al 1 feb y Bambu del 1 al 2 feb (en el idioma de hoy)", async () => {
+  it("los hostels se piden por sus noches: Beer del 30 ene al 1 feb y Bambu del 1 al 2 feb (M3-32: Bambu, de Foz, en portugués)", async () => {
     const lista = await pedidos();
     const beer = lista.find((x) => x.cuerpo.includes("Alojamiento: Beer"))!.cuerpo;
     expect(beer).toContain("IN: 30 ene 2027\nOUT: 1 feb 2027 (2 noches)");
-    const bambu = lista.find((x) => x.cuerpo.includes("Alojamiento: Bambu"))!.cuerpo;
-    expect(bambu).toContain("IN: 1 feb 2027\nOUT: 2 feb 2027 (1 noche)");
-    expect(bambu).toContain("Les escribimos desde HI Travel");
+    const bambu = lista.find((x) => x.cuerpo.includes("Hospedagem: Bambu"))!.cuerpo;
+    expect(bambu).toContain("IN: 1 fev 2027\nOUT: 2 fev 2027 (1 noite)");
+    expect(bambu).toContain("Escrevemos da HI Travel");
   });
 });
