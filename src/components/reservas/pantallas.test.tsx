@@ -15,6 +15,8 @@ const consultas = vi.hoisted(() => ({
 }));
 const push = vi.hoisted(() => vi.fn());
 vi.mock("@/app/(app)/reservas/[id]/acciones", () => ({ marcarReservaDePrueba: vi.fn() }));
+// M3-24 "Revisar antes de pedir": sin avisos (si no, la acción real falla y su "Revisar de nuevo" depende del tiempo).
+vi.mock("@/app/(app)/reservas/[id]/acciones-itinerario", () => ({ avisosDelItinerario: async () => ({ ok: true, avisos: [] }) }));
 
 vi.mock("@/lib/reservas/consultas", () => consultas);
 // M3-08: la lista llega del servidor (server action); acá, de la consulta reemplazada. "Hoy" antes de los viajes de los fixtures: ninguno terminó.
@@ -52,8 +54,9 @@ const nunca = () => new Promise(() => {});
 // "para revisión"); el detalle en sí sigue sin editar nada. M3-06: lo único que cambia
 // es quién lleva la reserva ("Tomar esta reserva", "Pasarla a otro"), no sus datos. M3-07:
 // "Corregir vuelos" abre un formulario aparte (cerrado, el detalle sigue sin campos).
+// M3-39: "Marcar como resuelto" en cada motivo, igual (cerrado, sin campos).
 const BOTONES_PERMITIDOS =
-  /^(Reintentar|Ver mail|Abrir el PDF|Armar pedidos a proveedores|Tomar esta reserva|Pasarla a otro|Corregir vuelos|(Estado|Agencia|Número de la agencia|Producto|Fechas del viaje|Pasajeros|Responsable|Llegó)( [↑↓])?)$/;
+  /^(Reintentar|Ver mail|Abrir el PDF|Armar pedidos a proveedores|Tomar esta reserva|Pasarla a otro|Corregir vuelos|Marcar como resuelto|(Estado|Agencia|Número de la agencia|Producto|Fechas del viaje|Pasajeros|Responsable|Llegó)( [↑↓])?)$/;
 
 function sinControlesDeEdicion() {
   // La caja de búsqueda (owner 2026-10-16) y el filtro por responsable (M3-06) filtran la lista: no editan nada.
@@ -264,7 +267,9 @@ describe("detalle: encabezado, marcas y motivos (#4, #5, #6)", () => {
     consultas.cargarReserva.mockResolvedValue(reservaRevision);
     render(<DetalleReservaPantalla id={IDS.revision} />);
     const motivos = await screen.findByTestId("motivos-revision");
-    expect(within(motivos).getAllByRole("listitem").map((li) => li.textContent)).toEqual([
+    // M3-39: cada renglón lleva al final su "Marcar como resuelto".
+    expect(within(motivos).getAllByRole("button", { name: /^Marcar como resuelto: / })).toHaveLength(3);
+    expect(within(motivos).getAllByRole("listitem").map((li) => li.textContent?.replace(/ Marcar como resuelto$/, ""))).toEqual([
       "Faltan los datos de vuelo, y el producto incluye traslados. Vuelo de llegada a Puerto Iguazú (IGR), para el traslado de OD019.",
       "No se pudo reconocer el producto con seguridad. Revisá el mail para confirmar cuál es. La agencia lo pide como Iguazu. Podría ser OD010A.",
       "Esta reserva necesita que alguien la revise.",

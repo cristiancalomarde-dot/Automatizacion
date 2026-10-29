@@ -3,9 +3,11 @@
 import {
   corregirDato,
   corregirVuelos,
+  marcarResuelto,
   revisarDato,
   type EntradaCorregirDato,
   type EntradaCorregirVuelos,
+  type EntradaMarcarResuelto,
   type EntradaRevisarDato,
   type ResultadoCorregir,
 } from "@/lib/reservas/corregir/corregir";
@@ -41,6 +43,15 @@ export async function marcarDatoRevisado(entrada: EntradaRevisarDato): Promise<R
 export async function corregirDatoDeReserva(entrada: EntradaCorregirDato): Promise<ResultadoCorregir> {
   try {
     return await corregirDato(await createSupabaseServerClient(), entrada);
+  } catch {
+    return FALLA;
+  }
+}
+
+/** Spec M3-39: "Marcar como resuelto" un motivo de revisión, con la nota de cómo se resolvió. */
+export async function marcarMotivoResuelto(entrada: EntradaMarcarResuelto): Promise<ResultadoCorregir> {
+  try {
+    return await marcarResuelto(await createSupabaseServerClient(), entrada);
   } catch {
     return FALLA;
   }

@@ -6,7 +6,7 @@ import { useConsulta } from "@/lib/catalogo/use-consulta";
 import { formatearFecha, formatearFechaHora, formatearHora, formatearRango } from "@/lib/formato";
 import { avisosDeLlegada } from "@/lib/reservas/avisos-vuelo";
 import { cargarReserva } from "@/lib/reservas/consultas";
-import { esIdDeReserva, frasesDeMotivos } from "@/lib/reservas/reglas";
+import { esIdDeReserva, lineasDeMotivos } from "@/lib/reservas/reglas";
 import type { DetalleReserva, EnvioDeReserva, HotelDeLaAgencia, ParteDeReserva, PedidoAManoEnHistorial, PedidoDeReservaVista, VueloDeReserva } from "@/lib/reservas/tipos";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { TEXTOS } from "@/lib/textos";
@@ -16,6 +16,7 @@ import { ConfirmarProducto, puedeConfirmarProducto } from "./confirmar-producto"
 import { AvisoCambioDeVuelo, CorregirVuelos, DatosDudosos, HistorialDeCorrecciones, puedeCorregir } from "./corregir-vuelos";
 import { ChipEstado, MarcasReserva } from "./marcas";
 import { MailOriginal } from "./mail-original";
+import { MarcarResuelto, puedeMarcarResuelto } from "./marcar-resuelto";
 import { ResponsableDeLaReserva } from "./responsable";
 import { RevisionPrueba } from "./revision-prueba";
 import { RevisarAntesDePedir, muestraRevisarAntes } from "./revisar-antes-de-pedir";
@@ -96,7 +97,7 @@ function Detalle({
   // Spec M3-07: el formulario de vuelos se abre desde el recuadro de vuelos o desde "La IA no está segura de: vuelos".
   const [corrigiendoVuelos, setCorrigiendoVuelos] = useState(false);
   const corregible = puedeCorregir(reserva);
-  const frases = reserva.estado === "para_revision" || reserva.posibleDuplicada ? frasesDeMotivos(reserva.motivos) : [];
+  const frases = reserva.estado === "para_revision" || reserva.posibleDuplicada ? lineasDeMotivos(reserva.motivos) : [];
   const avisosLlegada = avisosDeLlegada(reserva);
   const notas = reserva.notas ?? [];
 
@@ -163,6 +164,13 @@ function Detalle({
                   <>
                     {" "}
                     <span className={estilos.detalleMotivo}>{f.detalle}</span>
+                  </>
+                ) : null}
+                {/* Spec M3-39: los motivos sin arreglo propio se marcan como resueltos, con una nota. */}
+                {puedeMarcarResuelto(reserva, f) ? (
+                  <>
+                    {" "}
+                    <MarcarResuelto reserva={reserva} linea={f} onListo={onConfirmado} onRecargar={onRecargar} />
                   </>
                 ) : null}
               </li>

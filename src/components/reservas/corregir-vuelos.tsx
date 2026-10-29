@@ -16,7 +16,7 @@ import {
   type VueloCorregido,
 } from "@/lib/reservas/corregir/vuelos";
 import type { DatoClave } from "@/lib/reservas/esquema-ficha";
-import { frasesDeMotivos } from "@/lib/reservas/reglas";
+import { frasesDeMotivos, motivoResueltoEnHistorial } from "@/lib/reservas/reglas";
 import type { CorreccionDeReserva, DetalleReserva } from "@/lib/reservas/tipos";
 import { TEXTOS } from "@/lib/textos";
 import { Aviso } from "@/components/ui/estados";
@@ -34,7 +34,7 @@ export function puedeCorregir(reserva: DetalleReserva): boolean {
 }
 
 /** Lo que vio la pantalla: si al guardar la reserva ya no está igual, no se pisa (fila 8). */
-const versionDe = (r: DetalleReserva) =>
+export const versionDe = (r: DetalleReserva) =>
   versionParaCorregir({
     estado: r.estado,
     motivos: r.motivos,
@@ -63,7 +63,7 @@ type Estado =
   | { tipo: "error"; mensaje: string; cambio: boolean };
 
 /** Lo común a los tres guardados: "Guardando…", el "Listo" arriba o el error con "Reintentar" / "Volver a cargar". */
-function useGuardar(reserva: DetalleReserva, onListo: (mensaje: string) => void) {
+export function useGuardar(reserva: DetalleReserva, onListo: (mensaje: string) => void) {
   const [estado, setEstado] = useState<Estado>({ tipo: "nada" });
   async function guardar(accion: () => Promise<ResultadoCorregir>): Promise<ResultadoCorregir> {
     setEstado({ tipo: "guardando" });
@@ -79,7 +79,7 @@ function useGuardar(reserva: DetalleReserva, onListo: (mensaje: string) => void)
   return { estado, guardar, limpiar: () => setEstado({ tipo: "nada" }) };
 }
 
-function ErrorAlGuardar({ estado, onReintentar, onRecargar }: { estado: Estado; onReintentar: () => void; onRecargar: () => void }) {
+export function ErrorAlGuardar({ estado, onReintentar, onRecargar }: { estado: Estado; onReintentar: () => void; onRecargar: () => void }) {
   if (estado.tipo !== "error") return null;
   return (
     <Aviso tono="error">
@@ -464,6 +464,7 @@ function lineaDeCorreccion(c: CorreccionDeReserva): string {
       : T.historialSinVuelos;
     return T.historialVuelos(persona, vuelos, c.nota);
   }
+  if (c.tipo === "resuelto") return T.historialResuelto(persona, motivoResueltoEnHistorial(c.resueltos ?? []) || SIN_DATO, c.explicacion ?? SIN_DATO);
   const dato = c.dato && c.dato in ETIQUETAS ? ETIQUETAS[c.dato as DatoClave] : (c.dato ?? SIN_DATO);
   if (c.tipo === "revisado") return T.historialRevisado(persona, dato);
   const corregido = T.historialCorregido(persona, dato);
