@@ -466,7 +466,13 @@ export const TEXTOS = {
         notaLarga: (max: number) => `La nota tiene que ser corta (hasta ${max} letras)`,
         fechasOrden: "La fecha de fin no puede ser antes que la de inicio",
         pax: "La cantidad de pasajeros tiene que ser un número de 1 a 99",
+        /** M3-39: "Marcar como resuelto" pide una nota corta. */
+        faltaNota: "Contá en una nota corta cómo se resolvió",
       },
+      /** M3-39: "Marcar como resuelto" en cada motivo de revisión. */
+      marcarResuelto: "Marcar como resuelto",
+      notaResuelto: "¿Cómo se resolvió?",
+      notaResueltoAyuda: "Por ejemplo «Journaway confirmó que era un error». Queda en el historial de la reserva.",
       listoRecibida: "Listo: la reserva quedó recibida.",
       listoSigue: (motivos: string) => `Listo: sigue para revisión por: ${motivos}`,
       listo: "Listo: quedó guardado.",
@@ -481,6 +487,7 @@ export const TEXTOS = {
         descartada: "la reserva está descartada.",
         cancelada: "la agencia la canceló.",
         noEsDudoso: "ese dato ya no está marcado como dudoso.",
+        yaResuelto: "ese motivo ya está resuelto. Volvé a cargar la reserva.",
         datos: "algún dato no es válido.",
         conexion: "falló la conexión con la base. Probá de nuevo en un rato.",
       },
@@ -492,6 +499,8 @@ export const TEXTOS = {
       lecturaDelMail: "La lectura del mail",
       historialRevisado: (persona: string, dato: string) => `${persona} marcó como revisado: ${dato}`,
       historialCorregido: (persona: string, dato: string) => `${persona} corrigió: ${dato}`,
+      /** M3-39: "<persona> marcó como resuelto: <motivo> — <nota>". */
+      historialResuelto: (persona: string, motivo: string, nota: string) => `${persona} marcó como resuelto: ${motivo} — ${nota}`,
       /** Owner 2026-10-20: las partes del tour se corrieron con las fechas de la reserva. */
       historialCorrio: (dias: number) => {
         const n = Math.abs(dias);

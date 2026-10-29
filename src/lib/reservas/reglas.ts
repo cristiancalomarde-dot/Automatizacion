@@ -162,17 +162,38 @@ export function fraseDeMotivo(motivo: string): string {
   return detalle ? `${frase} ${detalle}` : frase;
 }
 
+/** M3-39: un renglón de motivos en pantalla, con los motivos guardados que lleva (para marcarlo como resuelto). */
+export interface LineaDeMotivo extends MotivoEnPantalla {
+  categoria: CategoriaMotivo;
+  motivos: string[];
+}
+
+/** Los renglones de motivos de una reserva, sin repetir iguales (cada vuelo que falta tiene el suyo). */
+export function lineasDeMotivos(motivos: string[]): LineaDeMotivo[] {
+  const porClave = new Map<string, LineaDeMotivo>();
+  for (const motivo of motivos) {
+    const m = motivoEnPantalla(motivo);
+    const clave = `${m.frase}\u0000${m.detalle ?? ""}`;
+    const linea = porClave.get(clave);
+    if (!linea) porClave.set(clave, { ...m, categoria: categoriaDeMotivo(motivo), motivos: [motivo] });
+    else if (!linea.motivos.includes(motivo)) linea.motivos.push(motivo);
+  }
+  return [...porClave.values()];
+}
+
 /** Los motivos de una reserva, sin repetir renglones iguales (cada vuelo que falta tiene el suyo). */
 export function frasesDeMotivos(motivos: string[]): MotivoEnPantalla[] {
-  const vistos = new Set<string>();
-  const salida: MotivoEnPantalla[] = [];
-  for (const m of motivos.map(motivoEnPantalla)) {
-    const clave = `${m.frase}\u0000${m.detalle ?? ""}`;
-    if (vistos.has(clave)) continue;
-    vistos.add(clave);
-    salida.push(m);
-  }
-  return salida;
+  return lineasDeMotivos(motivos).map(({ frase, detalle }) => ({ frase, detalle }));
+}
+
+/**
+ * M3-39: cómo se dice en el historial el motivo que se marcó como resuelto.
+ * Con frase propia, la frase; sin frase (los de Journaway, que ya se guardan
+ * en llano), tal como se guardó.
+ */
+export function motivoResueltoEnHistorial(motivos: string[]): string {
+  const textos = motivos.map((m) => (categoriaDeMotivo(m) === "generico" && m.trim() ? m.trim() : fraseDeMotivo(m)));
+  return [...new Set(textos)].join("; ");
 }
 
 /** La que llegó más recientemente, arriba. */

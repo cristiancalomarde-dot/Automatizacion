@@ -86,7 +86,9 @@ export type Cambio =
   | { vuelos: VueloIA[] }
   | { revisado: DatoClave }
   | { fechas: { fechaInicio: string; fechaFin: string } }
-  | { pax: number };
+  | { pax: number }
+  /** M3-39: los motivos guardados que se marcaron como resueltos. */
+  | { resueltos: string[] };
 
 export interface Decision {
   estado: EstadoReserva;
@@ -125,7 +127,8 @@ function vuelosQueFaltan(
  * dudosos, los "Falta el vuelo" guardados como motivo y "Llegaron vuelos…
  * revisar", y se recalculan los vuelos que pide el producto (lo que falta es
  * aviso). "Está bien así" saca ese dato; corregir las fechas saca "fechas" (y
- * "no trae la fecha de inicio"); corregir el pax saca "pax". Si la reserva
+ * "no trae la fecha de inicio"); corregir el pax saca "pax"; "Marcar como
+ * resuelto" (M3-39) saca esos motivos guardados. Si la reserva
  * está para revisión y no queda ningún motivo, pasa a recibida. En otro
  * estado, el estado y los motivos no cambian.
  */
@@ -147,6 +150,8 @@ export function decidirCorreccion(
     motivos = quitarDudosos(motivos, [cambio.revisado]);
   } else if ("fechas" in cambio) {
     motivos = quitarDudosos(motivos, ["fechas"]).filter((m) => m !== M.sinFechaInicio);
+  } else if ("resueltos" in cambio) {
+    motivos = motivos.filter((m) => !cambio.resueltos.includes(m));
   } else {
     motivos = quitarDudosos(motivos, ["pax"]);
   }

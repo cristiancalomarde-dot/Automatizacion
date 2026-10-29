@@ -61,7 +61,13 @@ export interface EntradaRevisarDato extends Base {
   dato: DatoClave;
 }
 
-export type EntradaCorregirDato = Base & ({ dato: "fechas"; fechaInicio: string; fechaFin: string } | { dato: "pax"; pax: number });
+/** M3-39: los motivos guardados de un renglón de la pantalla y la nota de cómo se resolvió. */
+export interface EntradaMarcarResuelto extends Base {
+  motivos: string[];
+  nota: string;
+}
+
+export type EntradaCorregirDato =Base & ({ dato: "fechas"; fechaInicio: string; fechaFin: string } | { dato: "pax"; pax: number });
 
 export type ResultadoCorregir =
   | {
@@ -242,6 +248,29 @@ export function revisarDato(cliente: SupabaseClient, entrada: EntradaRevisarDato
     if (!(DATOS_CLAVE as readonly string[]).includes(entrada.dato)) return fallo(R.datos);
     if (!datosDudosos(l.reserva.motivos).includes(entrada.dato)) return fallo(R.noEsDudoso);
     return { cambio: { revisado: entrada.dato }, cambios: {}, evento: { tipo: "dato_revisado", detalle: { dato: entrada.dato } } };
+  });
+}
+
+/**
+ * Spec M3-39: "Marcar como resuelto" un motivo de revisión, con una nota
+ * corta obligatoria. Sin migración: el evento es un `dato_revisado` con los
+ * motivos resueltos y la nota (`resueltos`, `explicacion`); la nota queda en el
+ * historial, no en las notas de la reserva. Solo si la reserva sigue para
+ * revisión y el motivo sigue estando.
+ */
+export function marcarResuelto(cliente: SupabaseClient, entrada: EntradaMarcarResuelto): Promise<ResultadoCorregir> {
+  return corregir(cliente, entrada, async (l) => {
+    const motivos = Array.isArray(entrada.motivos) ? [...new Set(entrada.motivos)] : [];
+    if (motivos.length === 0 || motivos.some((m) => typeof m !== "string" || !m.trim())) return fallo(R.datos);
+    const nota = typeof entrada.nota === "string" ? entrada.nota.trim() : "";
+    if (!nota) return fallo(T.errores.faltaNota);
+    if (nota.length > MAXIMO_NOTA) return fallo(T.errores.notaLarga(MAXIMO_NOTA));
+    if (l.reserva.estado !== "para_revision" || motivos.some((m) => !l.reserva.motivos.includes(m))) return fallo(R.yaResuelto);
+    return {
+      cambio: { resueltos: motivos },
+      cambios: {},
+      evento: { tipo: "dato_revisado", detalle: { resueltos: motivos, explicacion: nota } },
+    };
   });
 }
 

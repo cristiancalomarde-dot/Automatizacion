@@ -198,7 +198,13 @@ function aCorreccion(e: any): CorreccionDeReserva {
       hora: texto(v.hora),
     }));
   const diasCorridos = typeof d.dias_corridos === "number" && d.dias_corridos !== 0 ? d.dias_corridos : null;
-  return { tipo: TIPO_CORRECCION[e.tipo], fecha: e.created_at, persona: texto(d.persona) ?? "", vuelos, dato: texto(d.dato), nota: d.nota === true, diasCorridos };
+  const base = { fecha: e.created_at, persona: texto(d.persona) ?? "", vuelos, dato: texto(d.dato), nota: d.nota === true, diasCorridos };
+  // M3-39: "Marcar como resuelto" es un `dato_revisado` con los motivos resueltos y la nota.
+  if (e.tipo === "dato_revisado" && Array.isArray(d.resueltos)) {
+    const resueltos = d.resueltos.filter((m: unknown): m is string => typeof m === "string");
+    return { ...base, tipo: "resuelto", resueltos, explicacion: texto(d.explicacion) };
+  }
+  return { ...base, tipo: TIPO_CORRECCION[e.tipo] };
 }
 
 /** M3-07 fila 6: a qué proveedores hay que avisarles que el vuelo cambió después de enviarles el pedido. */

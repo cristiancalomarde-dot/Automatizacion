@@ -432,7 +432,8 @@ export interface PedidoAManoEnHistorial {
 
 /** M3-07 fila 7: una corrección del historial (sin datos de pasajeros). */
 export interface CorreccionDeReserva {
-  tipo: "vuelos" | "revisado" | "corregido";
+  /** M3-39: "resuelto" = se marcó como resuelto un motivo de revisión. */
+  tipo: "vuelos" | "revisado" | "corregido" | "resuelto";
   fecha: string;
   persona: string;
   /** Los vuelos como quedaron (solo en "vuelos"). */
@@ -443,6 +444,10 @@ export interface CorreccionDeReserva {
   nota: boolean;
   /** Owner 2026-10-20: al corregir las fechas, cuántos días se corrieron las partes del tour (null si no se corrieron). */
   diasCorridos?: number | null;
+  /** M3-39: los motivos guardados que se marcaron como resueltos (solo en "resuelto"). */
+  resueltos?: string[];
+  /** M3-39: cómo se resolvió (la nota obligatoria, solo en "resuelto"). */
+  explicacion?: string | null;
 }
 
 /** M3-06 fila 8: una entrada del historial del responsable (los nombres, como quedaron en ese momento). */
