@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { MOTIVOS_EMPAREJADO as ME } from "./emparejar/motivos";
 import { MOTIVOS_INTERCAMBIO as MI } from "./intercambio";
+import { MOTIVOS_JOURNAWAY as MJ } from "./journaway/motivos";
 import { MOTIVOS as MP } from "./preparar-mail";
 import {
   CATEGORIAS_MOTIVO,
@@ -140,6 +141,60 @@ describe("frase de cada motivo de revisión (#6)", () => {
       { frase: "Faltan los datos de vuelo, y el producto incluye traslados.", detalle: "Vuelo de salida, para el traslado de A." },
       { frase: "Esta reserva se parece a otra (misma agencia, producto y fechas). Revisala antes de seguir.", detalle: null },
     ]);
+  });
+});
+
+// Spec M3-40: los motivos de Journaway ya se guardan en llano; se muestran tal cual.
+const EJEMPLOS_JOURNAWAY: Record<keyof typeof MJ, string[]> = {
+  codigoNoEsta: [MJ.codigoNoEsta("SPAP09")],
+  codigoContradice: [MJ.codigoContradice(["SPAP05"], "SPAP06"), MJ.codigoContradice(["SPAP05", "BOCHI04R"], "SPAP06 + BOCHI04R")],
+  tourNoReconocido: [MJ.tourNoReconocido("Night Bus Peru")],
+  sinTours: [MJ.sinTours],
+  sobran: [MJ.sobran(["Night Bus Peru"]), MJ.sobran(["Night Bus Peru", "City Tour Lima"])],
+  ningunPaquete: [MJ.ningunPaquete],
+  variasCombinaciones: [MJ.variasCombinaciones(["SPAP05", "SPAP06"])],
+  faltaDiaOverland: [MJ.faltaDiaOverland(3)],
+  nochesFuera: [MJ.nochesFuera(5, [{ codigo: "SPAP05", noches: 3 }, { codigo: "SPAP06", noches: 4 }])],
+  sinNoches: [MJ.sinNoches],
+  faltaTour: [MJ.faltaTour("BOCHI04R", "Valle de la Luna", "SPAP05")],
+  sobraTour: [MJ.sobraTour("Night Bus Peru", "SPAP05")],
+  noEsParte: [
+    MJ.noEsParte("Night Bus Peru", "2027-05-31", "2027-06-01", "SPAP05"),
+    MJ.noEsParte("Night Bus Peru", "2027-05-31", "2027-05-31", "SPAP05"),
+    MJ.noEsParte("Night Bus Peru", null, null, "SPAP05"),
+  ],
+  paxDistinto: [MJ.paxDistinto(2, 3)],
+};
+
+describe("M3-40 — los motivos de Journaway se leen tal cual en pantalla", () => {
+  const PETZOLD = "Journaway pide 'Night Bus Peru' (31.05–01.06), que no es parte de SPAP05: consultarlo con Journaway";
+
+  it("el motivo de Petzold sale con su texto, no con la genérica", () => {
+    expect(MJ.noEsParte("Night Bus Peru", "2027-05-31", "2027-06-01", "SPAP05")).toBe(PETZOLD);
+    expect(frasesDeMotivos([PETZOLD])).toEqual([{ frase: PETZOLD, detalle: null }]);
+  });
+
+  it("un texto interno desconocido sigue saliendo con la genérica", () => {
+    expect(frasesDeMotivos(["codigo_nuevo_sin_frase", "Journaway dijo algo raro"])).toEqual([{ frase: GENERICO, detalle: null }]);
+    expect(fraseDeMotivo("journaway")).toBe(GENERICO);
+  });
+
+  it("los ejemplos cubren todos los motivos de Journaway (si se suma uno, hay que reconocerlo)", () => {
+    expect(Object.keys(EJEMPLOS_JOURNAWAY).sort()).toEqual(Object.keys(MJ).sort());
+  });
+
+  const todosJ = Object.entries(EJEMPLOS_JOURNAWAY).flatMap(([nombre, ejemplos]) => ejemplos.map((m) => [nombre, m] as const));
+
+  it.each(todosJ)("%s se muestra tal como se guardó", (_nombre, motivo) => {
+    expect(categoriaDeMotivo(motivo)).toBe("journaway");
+    expect(frasesDeMotivos([motivo])).toEqual([{ frase: motivo, detalle: null }]);
+    for (const p of PROHIBIDO) expect(motivo, `${motivo} contiene ${p}`).not.toMatch(p);
+  });
+
+  it("los motivos de M2-01 a M2-04 que Journaway también usa no cambian de frase", () => {
+    expect(categoriaDeMotivo(ME.sinFechaInicio)).toBe("sin_fecha_inicio");
+    expect(categoriaDeMotivo(ME.dudosos(["pax"]))).toBe("datos_dudosos");
+    expect(categoriaDeMotivo(ME.faltaVuelo("in", null, "el traslado de SPAP05"))).toBe("falta_vuelo");
   });
 });
 

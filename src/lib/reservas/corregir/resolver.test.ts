@@ -61,10 +61,12 @@ describe("M3-39 fila 1 — cada renglón de motivos sabe qué motivos guardados 
     const vuelo = M.faltaVuelo("in", null, "el traslado de A");
     const lineas = lineasDeMotivos([NIGHT_BUS, vuelo, MI.posibleDuplicada, vuelo, MI.posibleDuplicada]);
     expect(lineas.map((l) => [l.categoria, l.motivos])).toEqual([
-      ["generico", [NIGHT_BUS]],
+      ["journaway", [NIGHT_BUS]],
       ["falta_vuelo", [vuelo]],
       ["posible_duplicada", [MI.posibleDuplicada]],
     ]);
+    // M3-40: el de Journaway se lee tal cual se guardó.
+    expect(lineas[0]).toMatchObject({ frase: NIGHT_BUS, detalle: null });
     expect(lineas[1]).toMatchObject({ frase: "Faltan los datos de vuelo, y el producto incluye traslados.", detalle: "Vuelo de llegada, para el traslado de A." });
   });
 });

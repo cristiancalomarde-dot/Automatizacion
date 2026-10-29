@@ -34,6 +34,7 @@ export const CATEGORIAS_MOTIVO = [
   "cargo_extra",
   "datos_distintos",
   "llegaron_vuelos",
+  "journaway",
 ] as const;
 export type CategoriaMotivo = (typeof CATEGORIAS_MOTIVO)[number] | "generico";
 
@@ -64,6 +65,23 @@ const PATRONES: Array<[RegExp, (typeof CATEGORIAS_MOTIVO)[number]]> = [
   [/^TourRadar mandó un cargo extra/i, "cargo_extra"],
   [/^La agencia mandó datos distintos/i, "datos_distintos"],
   [/^Llegaron vuelos/i, "llegaron_vuelos"],
+  // M3-40: los motivos de Journaway (`journaway/motivos.ts`) ya se guardan en
+  // llano para quien revisa: se reconocen por su forma y se muestran tal cual.
+  // Van al final para que los de arriba ganen; `reglas.test.ts` falla si
+  // alguno queda sin reconocer.
+  [/^El código \S+ no está en el catálogo$/, "journaway"],
+  [/^El mail dice .+, pero los tours dan .+$/, "journaway"],
+  [/^No se reconoce el tour '.+'$/, "journaway"],
+  [/^El mail no dice qué tours se reservan$/, "journaway"],
+  [/^Estos tours no arman ningún paquete conocido(: sobra .+)?$/, "journaway"],
+  [/^Estos tours arman más de un paquete: pueden ser .+$/, "journaway"],
+  [/^Falta el día \d+ del Overland$/, "journaway"],
+  [/^Son \d+ noches en San Pedro: no es .+$/, "journaway"],
+  [/^No se sabe cuántas noches hay en San Pedro/, "journaway"],
+  [/^Falta .+ \(\S+\) para \S+$/, "journaway"],
+  [/^Sobra '.+' para \S+$/, "journaway"],
+  [/^Journaway pide '.+'( \([^)]+\))?, que no es parte de \S+: consultarlo con Journaway$/, "journaway"],
+  [/^Pax dice \d+ y hay \d+ pasajeros$/, "journaway"],
 ];
 
 export function categoriaDeMotivo(motivo: string): CategoriaMotivo {
@@ -90,6 +108,9 @@ function fraseDeCategoria(texto: string, categoria: CategoriaMotivo): string {
       const datos = /^La IA no está segura de:\s*(.+)$/i.exec(texto)?.[1];
       return M.datos_dudosos(datos ?? "algunos datos");
     }
+    case "journaway":
+      // M3-40: el texto guardado ya está en llano (solo si tiene la forma de uno de Journaway).
+      return texto === categoria ? M.generico : texto;
     case "cargo_extra":
       return M.cargo_extra(/^TourRadar mandó un cargo extra \(([^)]+)\)/i.exec(texto)?.[1] ?? null);
     default: {
@@ -188,8 +209,8 @@ export function frasesDeMotivos(motivos: string[]): MotivoEnPantalla[] {
 
 /**
  * M3-39: cómo se dice en el historial el motivo que se marcó como resuelto.
- * Con frase propia, la frase; sin frase (los de Journaway, que ya se guardan
- * en llano), tal como se guardó.
+ * Con frase propia, la frase (los de Journaway, desde M3-40, su texto tal cual
+ * se guardó); sin frase, tal como se guardó.
  */
 export function motivoResueltoEnHistorial(motivos: string[]): string {
   const textos = motivos.map((m) => (categoriaDeMotivo(m) === "generico" && m.trim() ? m.trim() : fraseDeMotivo(m)));

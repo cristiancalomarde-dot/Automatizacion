@@ -38,7 +38,6 @@ import { TEXTOS } from "@/lib/textos";
 import { DetalleReservaPantalla } from "./detalle-reserva-pantalla";
 
 const T = TEXTOS.reserva.corregir;
-const GENERICO = TEXTOS.reserva.motivos.generico;
 const DUPLICADA = TEXTOS.reserva.motivos.posible_duplicada;
 const ID = "77777777-7777-4777-8777-777777777739";
 const NIGHT_BUS = J.noEsParte("Night Bus Peru", "2027-05-31", "2027-06-01", "SPAP05");
@@ -59,8 +58,8 @@ async function abrir(r: DetalleReserva = reserva()) {
 describe("M3-39 fila 1 — 'Marcar como resuelto' en cada motivo, con nota obligatoria", () => {
   it("el botón está en el motivo; sin nota no guarda y dice qué falta", async () => {
     const motivos = await abrir();
-    fireEvent.click(within(motivos).getByRole("button", { name: `${T.marcarResuelto}: ${GENERICO}` }));
-    const form = within(motivos).getByRole("group", { name: `${T.marcarResuelto}: ${GENERICO}` });
+    fireEvent.click(within(motivos).getByRole("button", { name: `${T.marcarResuelto}: ${NIGHT_BUS}` }));
+    const form = within(motivos).getByRole("group", { name: `${T.marcarResuelto}: ${NIGHT_BUS}` });
     fireEvent.click(within(form).getByRole("button", { name: T.guardar }));
     expect(within(form).getByText(T.errores.faltaNota)).toBeInTheDocument();
     expect(within(form).getByLabelText(T.notaResuelto)).toHaveAttribute("aria-invalid", "true");
@@ -69,7 +68,7 @@ describe("M3-39 fila 1 — 'Marcar como resuelto' en cada motivo, con nota oblig
 
   it("una nota larga tampoco se guarda", async () => {
     const motivos = await abrir();
-    fireEvent.click(within(motivos).getByRole("button", { name: `${T.marcarResuelto}: ${GENERICO}` }));
+    fireEvent.click(within(motivos).getByRole("button", { name: `${T.marcarResuelto}: ${NIGHT_BUS}` }));
     fireEvent.change(within(motivos).getByLabelText(T.notaResuelto), { target: { value: "x".repeat(201) } });
     fireEvent.click(within(motivos).getByRole("button", { name: T.guardar }));
     expect(within(motivos).getByText(T.errores.notaLarga(200))).toBeInTheDocument();
@@ -80,7 +79,7 @@ describe("M3-39 fila 1 — 'Marcar como resuelto' en cada motivo, con nota oblig
     acciones.marcarMotivoResuelto.mockResolvedValue({ ok: true, estado: "recibida", motivos: [], avisos: [] });
     const r = reserva({ motivos: [NIGHT_BUS, MI.posibleDuplicada] });
     const motivos = await abrir(r);
-    fireEvent.click(within(motivos).getByRole("button", { name: `${T.marcarResuelto}: ${GENERICO}` }));
+    fireEvent.click(within(motivos).getByRole("button", { name: `${T.marcarResuelto}: ${NIGHT_BUS}` }));
     fireEvent.change(within(motivos).getByLabelText(T.notaResuelto), { target: { value: `  ${NOTA} ` } });
     fireEvent.click(within(motivos).getByRole("button", { name: T.guardar }));
     expect(await screen.findByTestId("producto-confirmado")).toHaveTextContent(T.listoRecibida);
@@ -95,7 +94,7 @@ describe("M3-39 fila 1 — 'Marcar como resuelto' en cada motivo, con nota oblig
   it("si falla, lo dice en llano y se puede reintentar", async () => {
     acciones.marcarMotivoResuelto.mockResolvedValue({ ok: false, error: T.error(T.motivos.descartada) });
     const motivos = await abrir();
-    fireEvent.click(within(motivos).getByRole("button", { name: `${T.marcarResuelto}: ${GENERICO}` }));
+    fireEvent.click(within(motivos).getByRole("button", { name: `${T.marcarResuelto}: ${NIGHT_BUS}` }));
     fireEvent.change(within(motivos).getByLabelText(T.notaResuelto), { target: { value: NOTA } });
     fireEvent.click(within(motivos).getByRole("button", { name: T.guardar }));
     expect(await within(motivos).findByText(T.error(T.motivos.descartada))).toBeInTheDocument();

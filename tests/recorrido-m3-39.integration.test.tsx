@@ -38,7 +38,6 @@ vi.mock("next/navigation", () => ({
 import { DetalleReservaPantalla } from "@/components/reservas/detalle-reserva-pantalla";
 
 const T = TEXTOS.reserva.corregir;
-const GENERICO = TEXTOS.reserva.motivos.generico;
 const ESPERA = { timeout: 60_000 };
 const PREFIJO = "[test M3-39 recorrido]";
 const NIGHT_BUS = J.noEsParte("Night Bus Peru", "2027-05-31", "2027-06-01", "SPAP05");
@@ -125,7 +124,7 @@ const guardarMailRecibido = registro.conMail(guardarMailRecibidoReal);
     expect(screen.getByRole("button", { name: TEXTOS.reserva.armarPedidos })).toBeDisabled();
 
     // Sin nota no guarda.
-    fireEvent.click(within(motivos).getByRole("button", { name: `${T.marcarResuelto}: ${GENERICO}` }));
+    fireEvent.click(within(motivos).getByRole("button", { name: `${T.marcarResuelto}: ${NIGHT_BUS}` }));
     fireEvent.click(within(motivos).getByRole("button", { name: T.guardar }));
     expect(within(motivos).getByText(T.errores.faltaNota)).toBeInTheDocument();
     expect((await leer(id)).estado).toBe("para_revision");
@@ -145,7 +144,7 @@ const guardarMailRecibido = registro.conMail(guardarMailRecibidoReal);
     const id = await reserva({ motivosRevision: [NIGHT_BUS, MI.posibleDuplicada] });
     render(<DetalleReservaPantalla id={id} />);
     const antes = await screen.findByTestId("motivos-revision", {}, ESPERA);
-    fireEvent.click(within(antes).getByRole("button", { name: `${T.marcarResuelto}: ${GENERICO}` }));
+    fireEvent.click(within(antes).getByRole("button", { name: `${T.marcarResuelto}: ${NIGHT_BUS}` }));
     fireEvent.change(within(antes).getByLabelText(T.notaResuelto), { target: { value: NOTA } });
     fireEvent.click(within(antes).getByRole("button", { name: T.guardar }));
 
@@ -153,7 +152,7 @@ const guardarMailRecibido = registro.conMail(guardarMailRecibidoReal);
     expect((await leer(id)).motivos_revision).toEqual([MI.posibleDuplicada]);
     const motivos = await screen.findByTestId("motivos-revision", {}, ESPERA);
     expect(await within(motivos).findByText(TEXTOS.reserva.motivos.posible_duplicada, {}, ESPERA)).toBeInTheDocument();
-    await waitFor(() => expect(within(screen.getByTestId("motivos-revision")).queryByText(GENERICO)).toBeNull(), ESPERA);
+    await waitFor(() => expect(within(screen.getByTestId("motivos-revision")).queryByText(NIGHT_BUS)).toBeNull(), ESPERA);
     expect(screen.getByRole("button", { name: TEXTOS.reserva.armarPedidos })).toBeDisabled();
   });
 });
