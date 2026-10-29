@@ -7,6 +7,7 @@ import { formatearFecha, formatearFechaHora, formatearHora, formatearRango } fro
 import { avisosDeLlegada } from "@/lib/reservas/avisos-vuelo";
 import { cargarReserva } from "@/lib/reservas/consultas";
 import { partesConElTrasladoEnElOverland } from "@/lib/reservas/hito-cajon";
+import { partesConElPickUpDelOverland } from "@/lib/reservas/pick-up-overland";
 import { esIdDeReserva, lineasDeMotivos } from "@/lib/reservas/reglas";
 import type { DetalleReserva, EnvioDeReserva, HotelDeLaAgencia, ParteDeReserva, PedidoAManoEnHistorial, PedidoDeReservaVista, VueloDeReserva } from "@/lib/reservas/tipos";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
@@ -220,7 +221,7 @@ function Detalle({
       <div className={estilos.columnas}>
         <div className={estilos.columna}>
           <Producto reserva={reserva} />
-          {reserva.partes.length > 0 ? <Partes partes={reserva.partes} /> : null}
+          {reserva.partes.length > 0 ? <Partes partes={reserva.partes} hoteles={reserva.hotelesAgencia ?? []} agencia={reserva.agencia} /> : null}
           <Datos reserva={reserva} />
           <Vuelos vuelos={reserva.vuelos}>
             {corregible ? (
@@ -404,9 +405,10 @@ function fechasDeParte(p: ParteDeReserva): string {
 }
 
 /** Las partes de un tour compuesto, en el orden del tour (#8). Journaway suma el pick up de cada tour (M2-09 #11). */
-function Partes({ partes: delTour }: { partes: ParteDeReserva[] }) {
+function Partes({ partes: delTour, hoteles, agencia }: { partes: ParteDeReserva[]; hoteles: HotelDeLaAgencia[]; agencia: string | null }) {
   // M3-38: el traslado San Pedro → Hito Cajón no va suelto: figura dentro del Overland.
-  const partes = partesConElTrasladoEnElOverland(delTour);
+  // M3-41: el pick up del Overland es el hotel de San Pedro, nunca el Tayka que manda Journaway.
+  const partes = partesConElTrasladoEnElOverland(partesConElPickUpDelOverland(delTour, hoteles, agencia));
   const conPickUp = partes.some((p) => p.pickUp);
   return (
     <section className={ui.seccion}>

@@ -91,8 +91,9 @@ describe("detalle de una reserva de Journaway (spec M2-09 §4)", () => {
     render(<DetalleReservaPantalla id={IDS.kilroy} />);
     const tabla = await screen.findByRole("table", { name: "Partes del tour" });
     expect(within(tabla).getByText("Pick up / drop off")).toBeInTheDocument();
-    expect(within(tabla).getByText("Our Habitas Atacama")).toBeInTheDocument();
-    expect(within(tabla).getByText("Tayka del Desierto Hotel / Tayka del Sal Hotel")).toBeInTheDocument();
+    expect(within(tabla).getAllByText("Our Habitas Atacama").length).toBeGreaterThan(0);
+    // M3-41: el Tayka que manda Journaway en el Overland no es su pick up: es el hotel de San Pedro.
+    expect(within(tabla).queryByText(/Tayka del Desierto Hotel/)).toBeNull();
     expect(within(tabla).getByText(/Astronomy Tour in the Atacama Desert/)).toBeInTheDocument();
   });
 
@@ -181,5 +182,36 @@ describe("M3-38: el traslado San Pedro → Hito Cajón figura dentro del Overlan
     const overland = within(tabla).getByText("UYUO01").closest("tr")!;
     expect(overland).toHaveTextContent("incluye traslado regular San Pedro → Hito Cajón el 26 may 2027");
     expect(overland.textContent!.match(/\(incluye [^)]*\)/)![0]).not.toMatch(/privad/i);
+  });
+});
+
+describe("M3-41: en el detalle, el pick up del Overland es el hotel de San Pedro", () => {
+  const overland = async (reserva: DetalleReserva) => {
+    consultas.cargarReserva.mockResolvedValue(reserva);
+    render(<DetalleReservaPantalla id={IDS.kilroy} />);
+    const tabla = await screen.findByRole("table", { name: "Partes del tour" });
+    return within(tabla).getByText("UYUO01").closest("tr")!;
+  };
+
+  it("SPAP05 con las excursiones de San Pedro en Our Habitas: el Overland sale de Our Habitas, no del Tayka", async () => {
+    const fila = await overland(spap05);
+    expect(fila).toHaveTextContent("Our Habitas Atacama");
+    expect(fila.lastElementChild!.textContent).not.toMatch(/tayka/i);
+  });
+
+  it("Petzold (sin hotel de San Pedro en el mail): a confirmar, lo informa Journaway, sin nombre de hotel", async () => {
+    const petzold: DetalleReserva = {
+      ...spap05,
+      fechaInicio: "2027-05-22",
+      fechaFin: "2027-05-28",
+      hotelesAgencia: [],
+      partes: [
+        { orden: 5, tipo: "paquete", producto: producto("SPAE04", "El Tatio Geisers Tour (entrance fee)"), descripcion: null, fechaInicio: "2027-05-25", fechaFin: "2027-05-25", esTarea: false, pickUp: null },
+        { orden: 7, tipo: "paquete", producto: producto("UYUO01", "Overland privado San Pedro – Uyuni en hoteles Tayka"), descripcion: null, fechaInicio: "2027-05-26", fechaFin: "2027-05-28", esTarea: false, pickUp: "Tayka del Desierto Hotel" },
+      ],
+    };
+    const fila = await overland(petzold);
+    expect(fila.lastElementChild).toHaveTextContent("hotel en San Pedro de Atacama a confirmar (lo informa Journaway)");
+    expect(fila.lastElementChild!.textContent).not.toMatch(/tayka|habitas|don raul/i);
   });
 });

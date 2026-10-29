@@ -36,6 +36,7 @@ import { NOMBRE_DESTINO, nombreDestino } from "@/lib/importador-tours/ciudades";
 import { TRANSFER_PNT } from "@/lib/reservas/emparejar/componentes";
 import { lugarDelTraslado } from "@/lib/reservas/emparejar/vuelos-requeridos";
 import { esOverland, esTrasladoAHitoCajon, incluyeTrasladoAHitoCajon, overlandDelTraslado } from "@/lib/reservas/hito-cajon";
+import { esHotelDelOverland, hotelEnSanPedro, hotelEnSanPedroAConfirmar } from "@/lib/reservas/pick-up-overland";
 import { TEXTOS } from "@/lib/textos";
 import { llevaEntradas } from "./entradas";
 import { avisosDeBlackout, avisosDeDiasDeBus, avisosDeFechaEspecial, tramoDeLaRuta, type ServicioConDia } from "./itinerario";
@@ -798,7 +799,9 @@ class Armado {
       ? { renglon: `Punto de encuentro: ${punto} (el pasajero va directo)`, pendientes: [], lugar: punto }
       : sinTraslado
         ? { renglon: null, pendientes: [], lugar: null }
-        : this.pickUp(b, variosDias ? desde : (fecha ?? desde), !variosDias);
+        : this.esOverlandConTayka(b, `${nombre} ${s.descripcion ?? ""}`)
+          ? this.pickUpDelOverland(b, desde)
+          : this.pickUp(b, variosDias ? desde : (fecha ?? desde), !variosDias);
     if (pickUp.renglon) renglones.push(pickUp.renglon);
     const resumen = variosDias ? rangoCorto(desde!, hasta!) : fecha ? `${fechaCorta(fecha)}${momento}` : "fecha a coordinar";
     const tour: TourDeFicha = {
@@ -842,6 +845,35 @@ class Armado {
       pendientes: [],
       lugar: `${e.hotel}${e.aConfirmar ? " (a confirmar)" : ""}`,
     };
+  }
+
+  /** M3-41: el Overland San Pedro → Uyuni que duerme en los Tayka (UYUO01 de SPAP05/06). */
+  private esOverlandConTayka(b: Bloque, texto: string): boolean {
+    if (!esOverland(texto)) return false;
+    return esHotelDelOverland(b.pickUp) || b.servicios.some((x) => x.tipo === "alojamiento" && esHotelDelOverland(`${x.serviceProviderNombre ?? ""} ${x.descripcion ?? ""}`));
+  }
+
+  /**
+   * M3-41 (owner, 2026-10-29): al Overland lo buscan en el hotel de San Pedro que reserva la agencia,
+   * nunca en un Tayka (son sus noches). Sale del pick up que manda la agencia para lo de San Pedro o
+   * del alojamiento de la noche anterior; si la reserva no lo trae, a confirmar. Nunca se inventa.
+   */
+  private pickUpDelOverland(b: Bloque, desde: string | null): { renglon: string; pendientes: string[]; lugar: string | null } {
+    const deLaAgencia = b.pickUp && !esHotelDelOverland(b.pickUp) ? b.pickUp : null;
+    const pickUps = this.reserva.partes
+      .filter((p) => p.id !== b.parteId && p.pickUp && this.bloqueDeParte(p)?.destino === "SPA")
+      .map((p) => ({ pickUp: p.pickUp, fecha: p.fechaInicio }));
+    const hotel = deLaAgencia ?? hotelEnSanPedro(desde, pickUps);
+    if (hotel) return { renglon: `Pick up: ${hotel}`, pendientes: [], lugar: hotel };
+    const noche = desde ? this.estadias.find((x) => x.hasta === desde && !esHotelDelOverland(x.hotel)) : undefined;
+    if (noche) {
+      return {
+        renglon: `Pick up: ${noche.hotel}${noche.ciudad ? ` (${noche.ciudad})` : ""}${noche.aConfirmar ? " · hotel a confirmar" : ""}`,
+        pendientes: [],
+        lugar: `${noche.hotel}${noche.aConfirmar ? " (a confirmar)" : ""}`,
+      };
+    }
+    return { renglon: `Pick up: ${hotelEnSanPedroAConfirmar(this.reserva.agencia)}`, pendientes: [PENDIENTE.alojamiento], lugar: null };
   }
 
   /** El alojamiento de esa noche o, si ese día es el OUT, el de la noche anterior. */

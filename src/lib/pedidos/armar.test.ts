@@ -594,14 +594,34 @@ describe("armarPedidos — M3-38: el traslado San Pedro → Hito Cajón va dentr
   ], { destino: "SPA" });
 
   /** SPAP05 (Petzold: día 1 = 22 may 2027, traslado y Overland el día 5) o SPAP06 (un día más en San Pedro). */
-  function armarSpap(codigo: "SPAP05" | "SPAP06") {
+  // M3-41: una excursión de San Pedro de otro proveedor (el pick up que manda Journaway sale de acá).
+  const spae04 = producto("prod-m341-spae04", "SPAE04", [
+    servicio({ productoId: "prod-m341-spae04", tipo: "excursion", orden: 1, descripcion: "El Tatio Geisers Tour (entrance fee)", bookingSupplier: P.horizonte }),
+  ], { destino: "SPA" });
+
+  /** M3-41: lo que puede traer la reserva sobre el hotel de San Pedro. */
+  interface ConSanPedro {
+    /** El pick up que manda Journaway en el renglón del Overland ("Tayka del Desierto Hotel"). */
+    pickUpOverland?: string | null;
+    /** El pick up de la excursión de San Pedro del día anterior (SPAE04); undefined = sin esa excursión. */
+    pickUpSanPedro?: string | null;
+    hotelesAgencia?: Array<{ nombre: string; desde: string; hasta: string }>;
+  }
+
+  function armarSpap(codigo: "SPAP05" | "SPAP06", con: ConSanPedro = {}) {
     const dia = codigo === "SPAP05" ? 5 : 6;
     const inicio = codigo === "SPAP05" ? "2027-05-26" : "2027-05-27";
     const fin = codigo === "SPAP05" ? "2027-05-28" : "2027-05-29";
+    const antes = codigo === "SPAP05" ? "2027-05-25" : "2027-05-26";
+    const conExcursion = con.pickUpSanPedro !== undefined;
     const spap = producto(`prod-m338-${codigo}`, codigo, [], {
       esTour: true,
       codigosExternos: [{ agencia: "Journaway", codigo: "san pedro + uyuni", nombreExterno: null }],
-      componentes: [componente("c-trf", 6, dia, 0, spat02), componente("c-uyu", 7, dia, 2, uyuo01)],
+      componentes: [
+        ...(conExcursion ? [componente("c-tatio", 5, dia - 1, 0, spae04)] : []),
+        componente("c-trf", 6, dia, 0, spat02),
+        componente("c-uyu", 7, dia, 2, uyuo01),
+      ],
     });
     return ok(
       armarPedidos(
@@ -611,16 +631,51 @@ describe("armarPedidos — M3-38: el traslado San Pedro → Hito Cajón va dentr
           productoId: spap.id,
           fechaInicio: "2027-05-22",
           fechaFin: fin,
+          hotelesAgencia: con.hotelesAgencia ?? [],
           partes: [
+            ...(conExcursion
+              ? [parte({ id: "e", orden: 5, tipo: "paquete", productoId: spae04.id, productoComponenteId: "c-tatio", fechaInicio: antes, fechaFin: antes, pickUp: con.pickUpSanPedro ?? null })]
+              : []),
             parte({ id: "t", orden: 6, tipo: "paquete", productoId: spat02.id, productoComponenteId: "c-trf", fechaInicio: inicio, fechaFin: inicio }),
-            parte({ id: "u", orden: 7, tipo: "paquete", productoId: uyuo01.id, productoComponenteId: "c-uyu", fechaInicio: inicio, fechaFin: fin }),
+            parte({ id: "u", orden: 7, tipo: "paquete", productoId: uyuo01.id, productoComponenteId: "c-uyu", fechaInicio: inicio, fechaFin: fin, pickUp: con.pickUpOverland ?? null }),
           ],
         }),
-        catalogoCon([spap, spat02, uyuo01]),
+        catalogoCon([spap, spat02, uyuo01, spae04]),
         plantilla,
       ),
     );
   }
+
+  /** El pedido a Imperio Inca (el del Overland) y su línea de pick up. */
+  const delOverland = (r: ReturnType<typeof armarSpap>) => r.pedidos.find((p) => p.cuerpo.includes("Overland"))!;
+  const lineaPickUp = (cuerpo: string) => cuerpo.split("\n").find((l) => l.startsWith("Pick up"));
+
+  it("M3-41 #1: SPAP05 con la excursión de San Pedro con pick up en Our Habitas → el Overland sale de Our Habitas, nunca de un Tayka", () => {
+    const p = delOverland(armarSpap("SPAP05", { pickUpOverland: "Tayka del Desierto Hotel", pickUpSanPedro: "Our Habitas Atacama" }));
+    expect(p.cuerpo).toContain("Servicio: privado · Idioma: español\nPick up: Our Habitas Atacama\n");
+    expect(lineaPickUp(p.cuerpo)).not.toMatch(/tayka/i);
+    expect(p.cuerpo).not.toContain("Les pasamos el alojamiento para el pick up");
+  });
+
+  it("M3-41 #1: sin pick up en las excursiones, el hotel de San Pedro de la agencia (la noche anterior al Overland)", () => {
+    const p = delOverland(
+      armarSpap("SPAP06", { pickUpOverland: "Tayka del Desierto Hotel", hotelesAgencia: [{ nombre: "Hotel Don Raul", desde: "2027-05-22", hasta: "2027-05-27" }] }),
+    );
+    expect(lineaPickUp(p.cuerpo)).toBe("Pick up: Hotel Don Raul");
+  });
+
+  it("M3-41 #2/#4: Petzold (el mail no trae el hotel de San Pedro) → a confirmar, lo informa Journaway, con el pendiente y sin nombre de hotel", () => {
+    const casos: ConSanPedro[] = [{}, { pickUpOverland: "Tayka del Desierto Hotel" }, { pickUpOverland: "Tayka del Desierto Hotel", pickUpSanPedro: null }];
+    for (const con of casos) {
+      const p = delOverland(armarSpap("SPAP05", con));
+      expect(lineaPickUp(p.cuerpo)).toBe("Pick up: hotel en San Pedro de Atacama a confirmar (lo informa Journaway)");
+      expect(p.cuerpo).not.toMatch(/Don Raul|Habitas/i);
+      expect(p.cuerpo).toContain("Les pasamos el alojamiento para el pick up apenas lo tengamos.");
+      // #5: las noches en los Tayka siguen en sus renglones de alojamiento.
+      expect(p.cuerpo).toContain("Alojamiento: Tayka del Desierto");
+      expect(p.cuerpo).toContain("Alojamiento: Tayka de Sal");
+    }
+  });
 
   it("SPAP05 (Petzold): un solo renglón con el Overland y el traslado regular del 26 may 2027; sin 'Traslado:' suelto", () => {
     const r = armarSpap("SPAP05");
