@@ -20,6 +20,7 @@ import {
   cargarProveedoresFichaCompleta,
   cargarAlojamientoSePideA,
   cargarAlojamientosSinDesayuno,
+  cargarCiudadesPortugues,
   cargarTramosSePidenA,
   cargarReglasItinerario,
   cargarBusesElChalten,
@@ -28,7 +29,7 @@ import {
 } from "./cargar";
 import { cargarPlantilla } from "./plantilla";
 import type { CategoriaTour } from "@/lib/importador-tours/datos";
-import type { AlojamientoSePideA, AlojamientoSinDesayuno, TramoSePideA, BusElChalten, DiaDeServicio, ExcursionConEntrada, HostelSegunHabitacion, OpcionDelPasajero, ProveedorFichaCompleta, PuntoDeEncuentro, PedidoArmado, Plantilla, ResultadoArmado, TareaArmada, TipoTarea } from "./tipos";
+import type { AlojamientoSePideA, AlojamientoSinDesayuno, CiudadEnPortugues, TramoSePideA, BusElChalten, DiaDeServicio, ExcursionConEntrada, HostelSegunHabitacion, OpcionDelPasajero, ProveedorFichaCompleta, PuntoDeEncuentro, PedidoArmado, Plantilla, ResultadoArmado, TareaArmada, TipoTarea } from "./tipos";
 import type { ReglasItinerario } from "./itinerario";
 
 export interface ConteoGuardado {
@@ -134,6 +135,10 @@ export interface OpcionesArmado {
   tramosSePidenA?: readonly TramoSePideA[];
   /** M3-35: los alojamientos que no ofrecen desayuno (por defecto, data/alojamientos-sin-desayuno.csv). */
   sinDesayuno?: readonly AlojamientoSinDesayuno[];
+  /** M3-32: las ciudades de Brasil (por defecto, data/ciudades-portugues.csv). */
+  ciudadesPortugues?: readonly CiudadEnPortugues[];
+  /** M3-32: la plantilla de los proveedores de Brasil (por defecto, data/plantillas/pedido-proveedor-pt.md). */
+  plantillaPt?: Plantilla;
   /** M3-24: las reglas de los avisos del itinerario (por defecto, data/blackouts.csv, fechas-especiales.csv y dias-bus.csv). */
   itinerario?: ReglasItinerario;
 }
@@ -163,8 +168,14 @@ export async function armarYGuardarPedidos(cliente: SupabaseClient, reservaId: s
   );
   const armado = armarPedidos(
     reserva,
-    { ...catalogo, itinerario: opciones.itinerario ?? cargarReglasItinerario(), sinDesayuno: opciones.sinDesayuno ?? cargarAlojamientosSinDesayuno() },
+    {
+      ...catalogo,
+      itinerario: opciones.itinerario ?? cargarReglasItinerario(),
+      sinDesayuno: opciones.sinDesayuno ?? cargarAlojamientosSinDesayuno(),
+      ciudadesPortugues: opciones.ciudadesPortugues ?? cargarCiudadesPortugues(),
+    },
     plantilla,
+    opciones.plantillaPt ?? cargarPlantilla(undefined, "pt"),
   );
   if (!armado.ok) return armado;
   const guardado = await guardarPedidosArmados(cliente, reservaId, armado);

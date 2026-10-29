@@ -27,6 +27,7 @@ import {
   cargarProveedoresFichaCompleta,
   cargarAlojamientoSePideA,
   cargarAlojamientosSinDesayuno,
+  cargarCiudadesPortugues,
   cargarTramosSePidenA,
   cargarReglasItinerario,
   cargarBusesElChalten,
@@ -35,9 +36,10 @@ import {
 } from "./cargar";
 import { cargarPedidos, guardarPedidosArmados, type PedidoGuardado, type TareaGuardada } from "./guardar";
 import { avisosDeLaPantalla, loQuePidioLaAgencia, validarEdicion, type EdicionPedido, type LoQuePidio } from "./pantalla";
+import { idiomaDeLaCiudad } from "./idioma";
 import { cargarPlantilla } from "./plantilla";
 import type { CategoriaTour } from "@/lib/importador-tours/datos";
-import type { AlojamientoSePideA, AlojamientoSinDesayuno, TramoSePideA, BusElChalten, DiaDeServicio, ExcursionConEntrada, HostelSegunHabitacion, OpcionDelPasajero, ProveedorFichaCompleta, PuntoDeEncuentro, Plantilla } from "./tipos";
+import type { AlojamientoSePideA, AlojamientoSinDesayuno, CiudadEnPortugues, TramoSePideA, BusElChalten, DiaDeServicio, ExcursionConEntrada, HostelSegunHabitacion, OpcionDelPasajero, ProveedorFichaCompleta, PuntoDeEncuentro, Plantilla } from "./tipos";
 import type { ReglasItinerario } from "./itinerario";
 import { enviarPedidosAprobados, type DependenciasEnvio, type PedidoDeEnvio, type ResultadoEnvio } from "./envio/enviar";
 
@@ -70,6 +72,10 @@ export interface PantallaPedidos {
   pidio?: LoQuePidio | null;
   /** M3-09: el borrador con que arranca un pedido a mano; null si en esta reserva no se agregan (cancelada). */
   aMano?: BorradorAMano | null;
+  /** M3-32: el mismo borrador en portugués, para cuando el proveedor elegido es de Brasil. */
+  aManoPt?: BorradorAMano | null;
+  /** M3-32: los pedidos (ids) a proveedores de Brasil: la tarjeta dice "En portugués". */
+  enPortugues?: string[];
 }
 
 export type ResultadoPantalla = ({ ok: true } & PantallaPedidos) | Rechazo;
@@ -96,6 +102,10 @@ export interface OpcionesPreparar {
   tramosSePidenA?: readonly TramoSePideA[];
   /** M3-35: los alojamientos que no ofrecen desayuno (por defecto, data/alojamientos-sin-desayuno.csv). */
   sinDesayuno?: readonly AlojamientoSinDesayuno[];
+  /** M3-32: las ciudades de Brasil (por defecto, data/ciudades-portugues.csv). */
+  ciudadesPortugues?: readonly CiudadEnPortugues[];
+  /** M3-32: la plantilla de los proveedores de Brasil (por defecto, data/plantillas/pedido-proveedor-pt.md). */
+  plantillaPt?: Plantilla;
   /** M3-24: las reglas de los avisos del itinerario (por defecto, data/blackouts.csv, fechas-especiales.csv y dias-bus.csv). */
   itinerario?: ReglasItinerario;
 }
@@ -115,6 +125,9 @@ export async function prepararPedidos(cliente: SupabaseClient, reservaId: string
   if (noSeArma) return { ok: false, error: noSeArma };
 
   const plantilla = opciones.plantilla ?? cargarPlantilla();
+  // M3-32: los proveedores de Brasil, en portugués.
+  const plantillaPt = opciones.plantillaPt ?? cargarPlantilla(undefined, "pt");
+  const ciudades = opciones.ciudadesPortugues ?? cargarCiudadesPortugues();
   const dias = opciones.dias ?? cargarDiasServicio();
   const catalogo = await cargarCatalogoParaPedidos(
     cliente,
@@ -132,8 +145,14 @@ export async function prepararPedidos(cliente: SupabaseClient, reservaId: string
   );
   const armado = armarPedidos(
     reserva,
-    { ...catalogo, itinerario: opciones.itinerario ?? cargarReglasItinerario(), sinDesayuno: opciones.sinDesayuno ?? cargarAlojamientosSinDesayuno() },
+    {
+      ...catalogo,
+      itinerario: opciones.itinerario ?? cargarReglasItinerario(),
+      sinDesayuno: opciones.sinDesayuno ?? cargarAlojamientosSinDesayuno(),
+      ciudadesPortugues: ciudades,
+    },
     plantilla,
+    plantillaPt,
   );
   if (!armado.ok) return armado;
 
@@ -161,7 +180,22 @@ export async function prepararPedidos(cliente: SupabaseClient, reservaId: string
     avisos: avisosDeLaPantalla(reserva, armado),
     pidio: loQuePidioLaAgencia(reserva),
     aMano: seAgregan ? borradorAMano(reserva, plantilla) : null,
+    aManoPt: seAgregan ? borradorAMano(reserva, plantillaPt, "pt") : null,
+    enPortugues: await pedidosEnPortugues(cliente, guardados.pedidos, ciudades),
   };
+}
+
+/**
+ * M3-32: los pedidos (sus ids) que van a un proveedor de Brasil, para que la tarjeta diga "En portugués".
+ * Por la ciudad de sus proveedores en el directorio (una consulta); un pedido a mano sin proveedor, no.
+ */
+async function pedidosEnPortugues(cliente: SupabaseClient, pedidos: readonly PedidoGuardado[], ciudades: readonly CiudadEnPortugues[]): Promise<string[]> {
+  const ids = [...new Set(pedidos.flatMap((p) => p.proveedor_ids ?? []))];
+  if (!ids.length || !ciudades.length) return [];
+  const { data, error } = await cliente.from("proveedor").select("id,ciudad").in("id", ids);
+  if (error) throw new Error(`No se pudieron leer los proveedores: ${error.message}`);
+  const enPt = new Set(((data ?? []) as Array<{ id: string; ciudad: string | null }>).filter((p) => idiomaDeLaCiudad(p.ciudad, ciudades) === "pt").map((p) => p.id));
+  return pedidos.filter((p) => (p.proveedor_ids ?? []).some((id) => enPt.has(id))).map((p) => p.id);
 }
 
 // --- Pedidos a mano (spec M3-09) -----------------------------------------------------------------
@@ -214,7 +248,7 @@ function motivoAMano(code: string | undefined, mensaje: string): Rechazo {
  * ("A mano", casilla propia). El texto inicial y la firma salen de la
  * plantilla (en el servidor); el nombre del proveedor lo pone la base.
  */
-export async function agregarPedidoAMano(cliente: SupabaseClient, entrada: EntradaAMano, opciones: { plantilla?: Plantilla } = {}): Promise<ResultadoAMano> {
+export async function agregarPedidoAMano(cliente: SupabaseClient, entrada: EntradaAMano, opciones: { plantilla?: Plantilla; plantillaPt?: Plantilla } = {}): Promise<ResultadoAMano> {
   if (!(await usuarioDelEquipo(cliente))) return SIN_SESION;
   if (!entrada || typeof entrada.reservaId !== "string" || !esIdDeReserva(entrada.reservaId)) return { ok: false, error: "No existe la reserva." };
 
@@ -225,6 +259,9 @@ export async function agregarPedidoAMano(cliente: SupabaseClient, entrada: Entra
   const plantilla = opciones.plantilla ?? cargarPlantilla();
   const v = validarPedidoAMano(entrada, borradorAMano(reserva, plantilla));
   if (!v.ok) return v;
+  // M3-32: tampoco el borrador en portugués sin tocar (el de un proveedor de Brasil).
+  const vPt = validarPedidoAMano(entrada, borradorAMano(reserva, opciones.plantillaPt ?? cargarPlantilla(undefined, "pt"), "pt"));
+  if (!vPt.ok) return vPt;
 
   const { data, error } = await cliente.rpc("agregar_pedido_a_mano", {
     p_reserva: v.pedido.reservaId,
@@ -257,6 +294,8 @@ export interface ProveedorEncontrado {
   nombre: string;
   ciudad: string | null;
   mails: string[];
+  /** M3-32: es de Brasil (su ciudad está en data/ciudades-portugues.csv): el pedido a mano arranca en portugués. */
+  enPortugues?: boolean;
 }
 
 export type ResultadoBusqueda = { ok: true; proveedores: ProveedorEncontrado[] } | Rechazo;
@@ -272,6 +311,7 @@ export async function buscarEnElDirectorio(cliente: SupabaseClient, texto: strin
   const patron = `%${q.replace(/[\\%_]/g, (c) => `\\${c}`)}%`;
   const { data, error } = await cliente.from("proveedor").select("id,nombre,ciudad,mails").ilike("nombre", patron).order("nombre").limit(MAX_RESULTADOS);
   if (error) return { ok: false, error: `No se pudo buscar en el directorio: ${error.message}` };
+  const ciudades = cargarCiudadesPortugues();
   return {
     ok: true,
     proveedores: ((data ?? []) as Array<{ id: string; nombre: string; ciudad: string | null; mails: string[] | null }>).map((p) => ({
@@ -279,6 +319,7 @@ export async function buscarEnElDirectorio(cliente: SupabaseClient, texto: strin
       nombre: p.nombre,
       ciudad: p.ciudad ?? null,
       mails: (p.mails ?? []).filter((m) => typeof m === "string" && !!m.trim()),
+      enPortugues: idiomaDeLaCiudad(p.ciudad, ciudades) === "pt",
     })),
   };
 }

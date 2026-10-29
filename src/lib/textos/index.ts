@@ -707,6 +707,9 @@ export const TEXTOS = {
     sinMail: "Sin mail",
     completarDirectorio: "Completar en el directorio",
     destinatarioAyuda: "El destinatario se cambia en el directorio de proveedores.",
+    /** M3-32: el pedido va a un proveedor de Brasil y su texto está en portugués. */
+    enPortugues: "En portugués",
+    enPortuguesAyuda: "El proveedor es de Brasil: el pedido está escrito en portugués.",
     guardando: "Guardando…",
     guardado: "Cambios guardados.",
     errorGuardar: "No se pudo guardar. Probá de nuevo: lo que escribiste sigue acá.",

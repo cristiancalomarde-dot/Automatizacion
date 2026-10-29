@@ -295,6 +295,7 @@ function Revision({
             <TarjetaPedido
               key={p.id}
               pedido={p}
+              enPortugues={(datos.enPortugues ?? []).includes(p.id)}
               cc={envio.cc}
               firmante={firmante}
               incluido={!excluidos.has(p.casilla)}
@@ -321,6 +322,7 @@ function Revision({
         <NuevoPedidoAMano
           reservaId={reservaId}
           borrador={borradorAMano}
+          borradorPt={datos.aManoPt ?? null}
           firmante={firmante}
           cc={envio.cc}
           onCancelar={() => setEscribiendo(false)}
@@ -433,6 +435,7 @@ type Guardado = { tipo: "nada" } | { tipo: "guardando" } | { tipo: "guardado" } 
 
 function TarjetaPedido({
   pedido,
+  enPortugues = false,
   cc,
   firmante,
   incluido,
@@ -447,6 +450,8 @@ function TarjetaPedido({
   onSacar,
 }: {
   pedido: PedidoGuardado;
+  /** M3-32: va a un proveedor de Brasil (el texto está en portugués). */
+  enPortugues?: boolean;
   cc: string[];
   firmante: string;
   incluido: boolean;
@@ -531,7 +536,17 @@ function TarjetaPedido({
         {!sinMail ? (
           <>
             <dt>{T.para}</dt>
-            <dd title={aMano ? undefined : T.destinatarioAyuda}>{pedido.destinatarios.join(", ")}</dd>
+            <dd title={aMano ? undefined : T.destinatarioAyuda}>
+              {pedido.destinatarios.join(", ")}
+              {enPortugues ? (
+                <>
+                  {" "}
+                  <span title={T.enPortuguesAyuda}>
+                    <Chip tono="info">{T.enPortugues}</Chip>
+                  </span>
+                </>
+              ) : null}
+            </dd>
           </>
         ) : null}
         <dt>{T.cc}</dt>
@@ -793,6 +808,7 @@ const ESPERA_BUSQUEDA_MS = 250;
 function NuevoPedidoAMano({
   reservaId,
   borrador,
+  borradorPt = null,
   firmante,
   cc,
   onCancelar,
@@ -801,6 +817,8 @@ function NuevoPedidoAMano({
 }: {
   reservaId: string;
   borrador: BorradorAMano;
+  /** M3-32: el mismo borrador en portugués (si el proveedor elegido es de Brasil). */
+  borradorPt?: BorradorAMano | null;
   firmante: string;
   cc: string[];
   onCancelar: () => void;
@@ -856,11 +874,21 @@ function NuevoPedidoAMano({
     setBusqueda(p.nombre);
     setMails(p.mails.join(", "));
     setEncontrados({ tipo: "nada" });
+    // M3-32: un proveedor de Brasil arranca con la plantilla en portugués (y otro, con la de castellano),
+    // solo si el texto todavía es el del borrador: lo que la persona ya escribió no se pisa.
+    const nuevo = p.enPortugues && borradorPt ? borradorPt : borrador;
+    const sinTocar = [borrador, borradorPt].some((b) => b && asunto === b.asunto && cuerpo === b.cuerpo);
+    if (sinTocar) {
+      setAsunto(nuevo.asunto);
+      setCuerpo(nuevo.cuerpo);
+    }
   }
 
   async function guardar() {
     const entrada = { reservaId, proveedorId: proveedor?.id ?? null, mails, asunto, cuerpo };
-    const v = validarPedidoAMano(entrada, borrador);
+    // M3-32: tampoco se guarda el borrador en portugués sin tocar.
+    const conEs = validarPedidoAMano(entrada, borrador);
+    const v = conEs.ok && borradorPt ? validarPedidoAMano(entrada, borradorPt) : conEs;
     if (!v.ok) {
       setGuardando({ tipo: "invalido", mensaje: v.error });
       return;
