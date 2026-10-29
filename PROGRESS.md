@@ -3,6 +3,17 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
 
 # Dónde retomar
 
+- **2026-10-29: MVP primero (owner).** Publicadas M3-35 (sin desayuno) y M3-36 (Iguazú AR → BR, drop off en
+  Brasil); M3-30 y M3-24 cerradas con OK del owner. Orden: **M3-32 (portugués) → M3-22 (Factoria) → M3-33
+  (refugios W Trek) → M3-04** (revisión de pedidos reales y primer envío real). En pausa M3-27/29/31/37.
+  - **Falta para que M3-36 se vea en la real:** cargar las 6 filas de noches de OD010C en la base real (solo
+    esas, sin el importador completo que pide el Excel y usa IA) y después "Rearmar todo" en DK1593147. Script
+    a medio armar en el scratchpad (tsx no resuelve `@supabase/supabase-js` desde ahí: ponerlo en `scripts/`
+    del clon); en seco primero, `--aplicar` lo corre el owner.
+  - Los "RE:" de Journaway (vuelos/pasaportes de Petzold) fallan por la clave única con la reserva descartada:
+    el owner decidió que el equipo los carga a mano (no se arregla). Las 5 "nuevas" de hoy son de Kilroy (OK).
+  - Flujo de publicar: commit en el clon → en el Drive `git pull --ff-only <clon> main` → `git push`.
+
 - **2026-10-28 (tarde): M3-30 publicada (la IA lee las imágenes del mail).** Primera reserva real de Journaway
   (Petzold, Trip 65037, sales@ uid 16682) traía hoteles y actividades como imágenes `cid:` → ahora se guardan
   en el bucket y van a la IA; nombres en alemán en `data/journaway-nombres.csv`; Petzold sale SPAP05 y el
