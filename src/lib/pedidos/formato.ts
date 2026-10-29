@@ -137,22 +137,50 @@ export function tipoDeHabitacion(habitacion: string | null): string | null {
  * `tipoDeHabitacion`.
  */
 export function habitacionDelPedido(habitacion: string | null, contexto: ContextoDeHabitacion = { pax: null, hostel: false }): string {
+  // M3-35: en los alojamientos que no ofrecen desayuno, ninguna variante lo dice.
+  const con = contexto.desayuno === false ? "" : " con desayuno";
+  const coma = contexto.desayuno === false ? "" : ", con desayuno";
   const varias = variasHabitaciones(habitacion);
-  if (varias) return `${varias} Standard con desayuno`;
+  if (varias) return `${varias} Standard${con}`;
   if (habitacionSinTipo(habitacion)) {
-    if (contexto.hostel) return "a confirmar (dorm / DBL / SGL), con desayuno";
-    if (contexto.pax === 2) return "DBL Standard con desayuno";
-    if (contexto.pax === 1) return "SGL Standard con desayuno";
-    return "Standard con desayuno (tipo a confirmar)";
+    if (contexto.hostel) return `a confirmar (dorm / DBL / SGL)${coma}`;
+    if (contexto.pax === 2) return `DBL Standard${con}`;
+    if (contexto.pax === 1) return `SGL Standard${con}`;
+    return `Standard${con} (tipo a confirmar)`;
   }
   const tipo = tipoDeHabitacion(habitacion)!;
-  return SIGLA[tipo] ? `${SIGLA[tipo]} Standard con desayuno` : `${tipo}, con desayuno`;
+  return SIGLA[tipo] ? `${SIGLA[tipo]} Standard${con}` : `${tipo}${coma}`;
 }
 
-/** Para decidir la habitación sin tipo (M3-21): cuántos pax y si el alojamiento es un hostel. */
+/**
+ * Para decidir la habitación sin tipo (M3-21): cuántos pax y si el alojamiento es un hostel.
+ * M3-35: `desayuno: false` si el alojamiento no lo ofrece (sin decirlo, con desayuno).
+ */
 export interface ContextoDeHabitacion {
   pax: number | null;
   hostel: boolean;
+  desayuno?: boolean;
+}
+
+/**
+ * M3-35: la clave para reconocer un alojamiento por su nombre: sin mayúsculas ni acentos, sin las
+ * palabras que cambian entre el catálogo y la lista ("Hostel", "Hostal", "Foz"), cada palabra en
+ * singular y en cualquier orden ("Backpacker San Pedro Hostel" = "San Pedro Backpackers"). Vacía si
+ * no queda nada (un "Hostel" suelto no es ningún alojamiento).
+ */
+function claveDelAlojamiento(nombre: string): string {
+  return normalizarTexto(nombre)
+    .split(/[^a-z0-9]+/)
+    .filter((p) => p && !/^(hostel|hostal|foz)$/.test(p))
+    .map((p) => (p.length > 3 ? p.replace(/s$/, "") : p))
+    .sort()
+    .join(" ");
+}
+
+/** M3-35: el alojamiento está en `data/alojamientos-sin-desayuno.csv` (con las variantes del nombre). */
+export function sinDesayuno(alojamiento: string | null, lista: readonly { alojamiento: string }[] = []): boolean {
+  const clave = claveDelAlojamiento(alojamiento ?? "");
+  return !!clave && lista.some((f) => claveDelAlojamiento(f.alojamiento) === clave);
 }
 
 /** M3-21: la habitación no dice el tipo: vacía o solo el nivel ("Budget Hotel", "Hotel 3*", "Hostel"). */

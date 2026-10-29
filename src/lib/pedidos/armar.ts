@@ -55,6 +55,7 @@ import {
   habitacionDelOverland,
   habitacionDelPedido,
   habitacionSinTipo,
+  sinDesayuno,
   alojamientoDelTrek,
   trekDeUnPax,
   TREK_A_CONFIRMAR,
@@ -709,7 +710,9 @@ class Armado {
     // Hostel = el nivel del servicio en el catálogo o, si no tiene, el que dice la habitación.
     const pax = this.paxDeLaReserva();
     const hostel = normalizarTexto(s.nivel ?? nivelDeLaHabitacion(this.reserva.habitacion) ?? "") === "hostel";
-    renglones.push(`Habitación: ${habitacionDelPedido(this.reserva.habitacion, { pax, hostel })}`);
+    // M3-35: los de data/alojamientos-sin-desayuno.csv no ofrecen desayuno; el pedido no lo dice.
+    const desayuno = !sinDesayuno(hotel, this.catalogo.sinDesayuno);
+    renglones.push(`Habitación: ${habitacionDelPedido(this.reserva.habitacion, { pax, hostel, desayuno })}`);
     if (habitacionSinTipo(this.reserva.habitacion)) {
       if (hostel) avisos.push(`La reserva no dice si en ${hotel} es dorm, DBL o SGL: completalo antes de enviar y revisalo con el vendedor.`);
       else if (pax === 1 || pax === 2) avisos.push(`La reserva no dice el tipo de habitación: va ${pax === 2 ? "DBL" : "SGL"} por ${pax} pax. Revisalo con el vendedor.`);

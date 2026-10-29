@@ -197,6 +197,15 @@ export interface TramoSePideA {
   proveedorDelDirectorio?: ProveedorResumen | null;
 }
 
+/**
+ * Una fila de `data/alojamientos-sin-desayuno.csv` (M3-35, owner 2026-10-28): el alojamiento (su
+ * nombre en el catálogo) no ofrece desayuno; el pedido no dice "con desayuno".
+ */
+export interface AlojamientoSinDesayuno {
+  alojamiento: string;
+  nota: string | null;
+}
+
 export interface CatalogoParaPedidos {
   /** El detalle (`cargarProducto`) del producto de la reserva, de los otros productos y de cada parte. */
   detalles: ReadonlyMap<string, DetalleProducto>;
@@ -209,6 +218,8 @@ export interface CatalogoParaPedidos {
   fichaCompleta?: readonly ProveedorFichaCompleta[];
   /** El hostel según la habitación (M3-11; sin la lista, el orden del Excel). */
   hostelSegunHabitacion?: readonly HostelSegunHabitacion[];
+  /** Los alojamientos que no ofrecen desayuno (M3-35; sin la lista, todos con desayuno). */
+  sinDesayuno?: readonly AlojamientoSinDesayuno[];
   /** A quién se le pide un alojamiento (M3-22, Factoria a Factoria; sin la lista, al del Excel). */
   alojamientoSePideA?: readonly AlojamientoSePideA[];
   /** Los buses de un tour que se le piden a un proveedor en vez de emitirlos HI Travel (M3-25; sin la lista, todos tarea). */

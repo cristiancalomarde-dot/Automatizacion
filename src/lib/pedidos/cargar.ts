@@ -25,6 +25,7 @@ import {
 } from "./itinerario";
 import type {
   AlojamientoSePideA,
+  AlojamientoSinDesayuno,
   BusElChalten,
   CatalogoParaPedidos,
   DiaDeServicio,
@@ -50,6 +51,7 @@ export const ARCHIVO_PUNTOS_DE_ENCUENTRO = join("data", "puntos-de-encuentro.csv
 export const ARCHIVO_BUSES_EL_CHALTEN = join("data", "buses-el-chalten.csv");
 export const ARCHIVO_ALOJAMIENTO_SE_PIDE_A = join("data", "alojamiento-se-pide-a.csv");
 export const ARCHIVO_TRAMOS_SE_PIDEN_A = join("data", "tramos-se-piden-a.csv");
+export const ARCHIVO_ALOJAMIENTOS_SIN_DESAYUNO = join("data", "alojamientos-sin-desayuno.csv");
 
 /* eslint-disable @typescript-eslint/no-explicit-any -- filas crudas de PostgREST, se tipan al mapear */
 
@@ -234,6 +236,26 @@ export function leerAlojamientoSePideA(contenido: string): AlojamientoSePideA[] 
 
 export function cargarAlojamientoSePideA(raiz: string = process.cwd()): AlojamientoSePideA[] {
   return leerAlojamientoSePideA(readFileSync(join(raiz, ARCHIVO_ALOJAMIENTO_SE_PIDE_A), "utf-8"));
+}
+
+/**
+ * `data/alojamientos-sin-desayuno.csv`: alojamiento,nota (M3-35, owner 2026-10-28). Los alojamientos
+ * (su nombre en el catálogo) que no ofrecen desayuno. El owner suma filas editando el CSV.
+ */
+export function leerAlojamientosSinDesayuno(contenido: string): AlojamientoSinDesayuno[] {
+  const cabecera = contenido.replace(/^﻿/, "").split(/\r?\n/)[0]?.trim() ?? "";
+  if (!/^alojamiento,nota\b/.test(cabecera)) {
+    throw new Error(`${ARCHIVO_ALOJAMIENTOS_SIN_DESAYUNO}: la primera fila tiene que ser "alojamiento,nota".`);
+  }
+  return leerCsv(contenido).map((f, i) => {
+    const alojamiento = f.alojamiento?.trim();
+    if (!alojamiento) throw new Error(`${ARCHIVO_ALOJAMIENTOS_SIN_DESAYUNO}, fila ${i + 2}: hace falta el alojamiento.`);
+    return { alojamiento, nota: f.nota?.trim() || null };
+  });
+}
+
+export function cargarAlojamientosSinDesayuno(raiz: string = process.cwd()): AlojamientoSinDesayuno[] {
+  return leerAlojamientosSinDesayuno(readFileSync(join(raiz, ARCHIVO_ALOJAMIENTOS_SIN_DESAYUNO), "utf-8"));
 }
 
 /**

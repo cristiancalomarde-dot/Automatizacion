@@ -19,6 +19,7 @@ import {
   cargarOpcionesPasajero,
   cargarProveedoresFichaCompleta,
   cargarAlojamientoSePideA,
+  cargarAlojamientosSinDesayuno,
   cargarTramosSePidenA,
   cargarReglasItinerario,
   cargarBusesElChalten,
@@ -27,7 +28,7 @@ import {
 } from "./cargar";
 import { cargarPlantilla } from "./plantilla";
 import type { CategoriaTour } from "@/lib/importador-tours/datos";
-import type { AlojamientoSePideA, TramoSePideA, BusElChalten, DiaDeServicio, ExcursionConEntrada, HostelSegunHabitacion, OpcionDelPasajero, ProveedorFichaCompleta, PuntoDeEncuentro, PedidoArmado, Plantilla, ResultadoArmado, TareaArmada, TipoTarea } from "./tipos";
+import type { AlojamientoSePideA, AlojamientoSinDesayuno, TramoSePideA, BusElChalten, DiaDeServicio, ExcursionConEntrada, HostelSegunHabitacion, OpcionDelPasajero, ProveedorFichaCompleta, PuntoDeEncuentro, PedidoArmado, Plantilla, ResultadoArmado, TareaArmada, TipoTarea } from "./tipos";
 import type { ReglasItinerario } from "./itinerario";
 
 export interface ConteoGuardado {
@@ -131,6 +132,8 @@ export interface OpcionesArmado {
   alojamientoSePideA?: readonly AlojamientoSePideA[];
   /** M3-25: los buses de un tour que se le piden a un proveedor (por defecto, data/tramos-se-piden-a.csv). */
   tramosSePidenA?: readonly TramoSePideA[];
+  /** M3-35: los alojamientos que no ofrecen desayuno (por defecto, data/alojamientos-sin-desayuno.csv). */
+  sinDesayuno?: readonly AlojamientoSinDesayuno[];
   /** M3-24: las reglas de los avisos del itinerario (por defecto, data/blackouts.csv, fechas-especiales.csv y dias-bus.csv). */
   itinerario?: ReglasItinerario;
 }
@@ -158,7 +161,11 @@ export async function armarYGuardarPedidos(cliente: SupabaseClient, reservaId: s
     opciones.alojamientoSePideA ?? cargarAlojamientoSePideA(),
     opciones.tramosSePidenA ?? cargarTramosSePidenA(),
   );
-  const armado = armarPedidos(reserva, { ...catalogo, itinerario: opciones.itinerario ?? cargarReglasItinerario() }, plantilla);
+  const armado = armarPedidos(
+    reserva,
+    { ...catalogo, itinerario: opciones.itinerario ?? cargarReglasItinerario(), sinDesayuno: opciones.sinDesayuno ?? cargarAlojamientosSinDesayuno() },
+    plantilla,
+  );
   if (!armado.ok) return armado;
   const guardado = await guardarPedidosArmados(cliente, reservaId, armado);
   return { ...armado, guardado };
