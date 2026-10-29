@@ -14,6 +14,8 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { crearRegistroLlamadasSupabase } from "@/lib/ia/registro-llamadas-supabase";
 import { armarYGuardarPedidos, cargarPedidos } from "@/lib/pedidos/guardar";
+import { cargarAlojamientosSinDesayuno } from "@/lib/pedidos/cargar";
+import { sinDesayuno } from "@/lib/pedidos/formato";
 import { cargarDependenciasReservas, crearReservasDelMail } from "@/lib/reservas/emparejar/reservas-del-mail";
 import { fichaDePrueba } from "@/lib/reservas/emparejar/__fixtures__/cargar";
 import type { FichaLectura } from "@/lib/reservas/esquema-ficha";
@@ -25,6 +27,7 @@ import { credencialesSupabaseDisponibles } from "./helpers/entorno-supabase";
 import { crearRegistroDePrueba } from "./helpers/registro-de-prueba";
 
 const PREFIJO = "[test M3-21]";
+const SIN_DESAYUNO = cargarAlojamientosSinDesayuno();
 const registro = crearRegistroDePrueba();
 const guardarMailRecibido = registro.conMail(guardarMailRecibidoReal);
 const SUFIJO = String(Date.now()).slice(-2);
@@ -138,7 +141,8 @@ const CASOS: Caso[] = [
       console.log(`[M3-21] ${caso.producto} «${caso.habitacion}» ${caso.pax} pax: ${habs.map(([h, x]) => `${h} → ${x}`).join(" | ")}\n  avisos: ${[...new Set(pedidos.flatMap((p) => p.avisos))].join(" | ")}`);
       expect(habs.length).toBeGreaterThan(0);
       for (const [hotel, x] of habs) {
-        expect(x).toBe(caso.hab);
+        // M3-35: los alojamientos sin desayuno (Puma Hostel) piden lo mismo sin "con desayuno".
+        expect(x).toBe(sinDesayuno(hotel, SIN_DESAYUNO) ? caso.hab.replace(/,? con desayuno/, "") : caso.hab);
         if (caso.aviso) expect(avisos).toContain(caso.aviso(hotel));
       }
       if (!caso.aviso) expect(avisos.filter((a) => /tipo de habitación|dorm, DBL o SGL/.test(a))).toEqual([]);

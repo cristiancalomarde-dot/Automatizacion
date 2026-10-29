@@ -12,6 +12,8 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { crearRegistroLlamadasSupabase } from "@/lib/ia/registro-llamadas-supabase";
 import { armarYGuardarPedidos, cargarPedidos } from "@/lib/pedidos/guardar";
+import { cargarAlojamientosSinDesayuno } from "@/lib/pedidos/cargar";
+import { sinDesayuno } from "@/lib/pedidos/formato";
 import { cargarDependenciasReservas, crearReservasDelMail } from "@/lib/reservas/emparejar/reservas-del-mail";
 import { fichaDePrueba } from "@/lib/reservas/emparejar/__fixtures__/cargar";
 import type { FichaLectura } from "@/lib/reservas/esquema-ficha";
@@ -23,6 +25,7 @@ import { credencialesSupabaseDisponibles } from "./helpers/entorno-supabase";
 import { crearRegistroDePrueba } from "./helpers/registro-de-prueba";
 
 const PREFIJO = "[test M3-18]";
+const SIN_DESAYUNO = cargarAlojamientosSinDesayuno();
 const registro = crearRegistroDePrueba();
 const guardarMailRecibido = registro.conMail(guardarMailRecibidoReal);
 const SUFIJO = String(Date.now()).slice(-2);
@@ -113,7 +116,8 @@ const CASOS = [
       console.log(`[M3-18] ${caso.tour} ${caso.habitacion}: ${habs.map(([h, r]) => `${h} → ${r}`).join(" | ")}`);
       // En CHB31 el hostel de San Pedro va por WhatsApp (tarea, no pedido): puede no haber alojamiento por mail.
       if (caso.tour !== "CHB31") expect(habs.length).toBeGreaterThan(0);
-      for (const [, r] of habs) expect(r).toBe(caso.esperado);
+      // M3-35: los alojamientos sin desayuno (Puma Hostel en ARCH31) piden lo mismo sin "con desayuno".
+      for (const [hotel, r] of habs) expect(r).toBe(sinDesayuno(hotel, SIN_DESAYUNO) ? caso.esperado.replace(/,? con desayuno/, "") : caso.esperado);
       // La tarea interna no cambia: sin "Standard" ni "desayuno".
       for (const t of tareas) expect(t.texto).not.toMatch(/Standard con desayuno/);
       if (caso.tour === "CHB31") {

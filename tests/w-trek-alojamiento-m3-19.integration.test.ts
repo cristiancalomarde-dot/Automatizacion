@@ -12,6 +12,8 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { crearRegistroLlamadasSupabase } from "@/lib/ia/registro-llamadas-supabase";
 import { armarYGuardarPedidos, cargarPedidos } from "@/lib/pedidos/guardar";
+import { cargarAlojamientosSinDesayuno } from "@/lib/pedidos/cargar";
+import { sinDesayuno } from "@/lib/pedidos/formato";
 import { cargarDependenciasReservas, crearReservasDelMail } from "@/lib/reservas/emparejar/reservas-del-mail";
 import { fichaDePrueba } from "@/lib/reservas/emparejar/__fixtures__/cargar";
 import type { FichaLectura } from "@/lib/reservas/esquema-ficha";
@@ -21,6 +23,7 @@ import { credencialesSupabaseDisponibles } from "./helpers/entorno-supabase";
 import { crearRegistroDePrueba } from "./helpers/registro-de-prueba";
 
 const PREFIJO = "[test M3-19]";
+const SIN_DESAYUNO = cargarAlojamientosSinDesayuno();
 const registro = crearRegistroDePrueba();
 const guardarMailRecibido = registro.conMail(guardarMailRecibidoReal);
 const SUFIJO = String(Date.now()).slice(-2);
@@ -55,12 +58,12 @@ function ficha(numero: string, codigoKilroy: string, fecha_inicio: string, habit
 const lineas = (cuerpo: string) => cuerpo.split("\n").map((x) => x.replace(/^\d+\) /, ""));
 const renglonesTrek = (cuerpos: string[]) => cuerpos.flatMap(lineas).filter((l) => l.startsWith("Alojamiento en el trek:"));
 /** "Alojamiento: X" → su renglón "Habitación: …". */
-function habitaciones(cuerpos: string[]): string[] {
-  const r: string[] = [];
+function habitaciones(cuerpos: string[]): Array<[string, string]> {
+  const r: Array<[string, string]> = [];
   for (const c of cuerpos) {
     const l = lineas(c);
     l.forEach((x, i) => {
-      if (x.startsWith("Alojamiento: ")) r.push(l.slice(i + 1, i + 5).find((y) => y.startsWith("Habitación:")) ?? "(sin renglón)");
+      if (x.startsWith("Alojamiento: ")) r.push([x.replace("Alojamiento: ", ""), l.slice(i + 1, i + 5).find((y) => y.startsWith("Habitación:")) ?? "(sin renglón)"]);
     });
   }
   return r;
@@ -110,16 +113,17 @@ const CASOS = [
       const cuerpos = pedidos.map((p) => p.cuerpo);
       const trekPedido = pedidos.find((p) => /W[\s-]?Trek/i.test(p.cuerpo))!;
       const bloque = trekPedido.cuerpo.slice(trekPedido.cuerpo.search(/W[\s-]?Trek/i)).split("\n\n")[0];
-      console.log(`[M3-19] ${caso.producto} ${caso.habitacion}:\n${bloque}\n  Puerto Natales/otros: ${habitaciones(cuerpos).join(" | ")}`);
+      console.log(`[M3-19] ${caso.producto} ${caso.habitacion}:\n${bloque}\n  Puerto Natales/otros: ${habitaciones(cuerpos).map(([a, h]) => `${a} → ${h}`).join(" | ")}`);
       // Un solo W Trek por paquete: un solo renglón, y es el esperado.
       expect(renglonesTrek(cuerpos)).toEqual([caso.trek]);
       expect(bloque).toContain(caso.trek);
       if (caso.trek === A_CONFIRMAR) expect(trekPedido.avisos.some((a) => /^Falta el tipo de alojamiento del W[\s-]?Trek/i.test(a))).toBe(true);
       else expect(trekPedido.avisos.filter((a) => /alojamiento del W/i.test(a))).toEqual([]);
-      // Los alojamientos (Puerto Natales y los demás del tour) siguen como en M3-18.
+      // Los alojamientos (Puerto Natales y los demás del tour) siguen como en M3-18; M3-35: los sin
+      // desayuno (Puma Hostel) piden lo mismo sin "con desayuno".
       const habs = habitaciones(cuerpos);
       expect(habs.length).toBeGreaterThan(0);
-      for (const h of habs) expect(h).toBe(caso.hab);
+      for (const [hotel, h] of habs) expect(h).toBe(sinDesayuno(hotel, SIN_DESAYUNO) ? caso.hab.replace(/,? con desayuno/, "") : caso.hab);
     });
   });
 

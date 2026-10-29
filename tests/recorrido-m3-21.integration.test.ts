@@ -17,6 +17,8 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { crearRegistroLlamadasSupabase } from "@/lib/ia/registro-llamadas-supabase";
 import { armarYGuardarPedidos, cargarPedidos, type PedidoGuardado } from "@/lib/pedidos/guardar";
+import { cargarAlojamientosSinDesayuno } from "@/lib/pedidos/cargar";
+import { sinDesayuno } from "@/lib/pedidos/formato";
 import { clienteFalso, fichaGrabada, registroFalso, respuestaCon } from "@/lib/reservas/__fixtures__/cargar";
 import { importarCodigosAgencias } from "@/lib/reservas/emparejar/codigos-agencias";
 import { cargarDependenciasReservas, type DependenciasReservas } from "@/lib/reservas/emparejar/reservas-del-mail";
@@ -32,6 +34,7 @@ const registro = crearRegistroDePrueba();
 const procesarMail = registro.conMailRecibido(procesarMailReal);
 const RAIZ = join(__dirname, "..");
 const BASE = String(Date.now()).slice(-4);
+const SIN_DESAYUNO = cargarAlojamientosSinDesayuno();
 const TREK_A_CONFIRMAR = "Alojamiento en el trek: a confirmar (Refugio Dorm a compartir / Tent DBL / Tent SGL)";
 const AVISO_1_PAX = /^Falta el tipo de alojamiento del W[\s-]?Trek.*\(1 pax\): Tent SGL es mucho más caro que el Refugio Dorm; revisalo con el vendedor\.$/;
 
@@ -147,15 +150,16 @@ interface Corrida {
 
   it("los dorm del tour y el Overland no cambian", () => {
     for (const pax of [2, 1]) {
-      const habs: string[] = [];
+      const habs: Array<[string, string]> = [];
       for (const p of de(pax, "ARCH33")) {
         const l = lineas(p.cuerpo);
         l.forEach((x, i) => {
-          if (x.startsWith("Alojamiento: ")) habs.push(l.slice(i + 1, i + 5).find((y) => y.startsWith("Habitación:")) ?? "(sin renglón)");
+          if (x.startsWith("Alojamiento: ")) habs.push([x.replace("Alojamiento: ", ""), l.slice(i + 1, i + 5).find((y) => y.startsWith("Habitación:")) ?? "(sin renglón)"]);
         });
       }
       expect(habs.length).toBeGreaterThan(0);
-      for (const h of habs) expect(h).toBe("Habitación: dorm compartido, con desayuno");
+      // M3-35: los sin desayuno (Puma Hostel) piden el dorm sin "con desayuno".
+      for (const [hotel, h] of habs) expect(h).toBe(sinDesayuno(hotel, SIN_DESAYUNO) ? "Habitación: dorm compartido" : "Habitación: dorm compartido, con desayuno");
       const c = de(pax, "CHB31").map((p) => p.cuerpo).find((x) => x.includes("Overland"))!;
       expect(c.slice(c.indexOf("Overland")).split("\n\n")[0]).toContain("Habitación: DBL con baño compartido");
     }
