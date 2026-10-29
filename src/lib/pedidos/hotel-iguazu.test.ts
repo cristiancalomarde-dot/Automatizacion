@@ -87,6 +87,38 @@ describe("M3-12 — Iguazú: el pedido a Cuenca del Plata lleva el hotel de cada
     expect(renglon(c, "TRF OUT")).toContain("· Pick up: El Pueblito (Puerto Iguazú) · hotel a confirmar");
   });
 
+  it("M3-36. combinado al revés (OD010C, Argentina → Brasil): el día del cruce pick up en el hotel de Argentina y drop off en el de Brasil", () => {
+    const id = "prod-od010c";
+    const od010c = producto(id, "OD010C", [
+      servicio({
+        productoId: id, tipo: "alojamiento", nivel: "Hostel", orden: 1, serviceProviderNombre: "Beer", bookingSupplier: P.ajiVerde,
+        tramosNoches: [{ nocheDesde: 1, noches: 2, lugar: "Puerto Iguazú (lado argentino)" }],
+      }),
+      servicio({
+        productoId: id, tipo: "alojamiento", nivel: "Hostel", orden: 2, serviceProviderNombre: "Bambu", bookingSupplier: P.dannInn,
+        tramosNoches: [{ nocheDesde: 3, noches: 1, lugar: "Foz do Iguaçu (lado brasileño)" }],
+      }),
+      servicio({ productoId: id, tipo: "excursion", orden: 7, descripcion: PAQUETE_105, serviceProviderNombre: "Paquete Receptvo 105 Premium", bookingSupplier: P.cuenca }),
+    ], { destino: "IGR" });
+    const r = ok(
+      armarPedidos(
+        reservaOd010a({ productoId: id, fechaInicio: "2027-01-30", fechaFin: "2027-02-02", habitacion: "Double Room - Hostel" }),
+        catalogoCon([od010c]),
+        plantilla,
+      ),
+    );
+    const c = pedidoCuenca(r).cuerpo;
+    const beer = "Beer (Puerto Iguazú) · hotel a confirmar";
+    const bambu = "Bambu (Foz do Iguaçu) · hotel a confirmar";
+    expect(renglon(c, "TRF IN")).toBe(`TRF IN: 30 ene 2027 · Bus o vuelo pendiente · Drop off: ${beer}`);
+    expect(renglon(c, "Lado argentino")).toBe(`Lado argentino, Premium, en inglés: 31 ene 2027 · Pick up y drop off: ${beer}`);
+    expect(renglon(c, "Lado brasileño")).toBe(`Lado brasileño, Premium, en inglés: 1 feb 2027 · Pick up: ${beer} · Drop off: ${bambu}`);
+    expect(c).toContain("Ese día cruzan: el drop off es en el hotel de Brasil. Los pasajeros hacen check out y llevan el equipaje");
+    expect(c).not.toContain("el drop off es en el hotel de Argentina");
+    expect(c.indexOf("Ese día cruzan")).toBeGreaterThan(c.indexOf("Lado brasileño"));
+    expect(renglon(c, "TRF OUT")).toBe(`TRF OUT: 2 feb 2027 · Bus o vuelo pendiente · Pick up: ${bambu}`);
+  });
+
   it("5a. hotel que reserva la agencia: sale sin 'a confirmar'", () => {
     const r = ok(
       armarPedidos(

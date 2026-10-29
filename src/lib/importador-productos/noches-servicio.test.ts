@@ -119,6 +119,31 @@ OD010D,La Aldea,3,1,Puerto Iguazú,
     const corto = parsearNochesServicio(CSV_OD010D.replace("OD010D,El Pueblito,3,1,Puerto Iguazú,\n", ""));
     expect(() => planNochesServicio("OD010D", corto, OD010D, 3)).toThrow(/OD010D.*2 noches.*3/);
   });
+
+  // M3-36 (owner, 2026-10-28, DK1593147): el combinado al revés, Argentina → Brasil. Los servicios
+  // como están cargados en el catálogo ("Accommodation 2 Nights Beer + 1 night Bambu").
+  const OD010C: ServicioDelPaquete[] = [
+    { orden: 1, prioridad: 1, tipo: "alojamiento", nivel: "Hostel", serviceProviderNombre: "Beer" },
+    { orden: 2, prioridad: 1, tipo: "alojamiento", nivel: "Hostel", serviceProviderNombre: "Bambu" },
+    { orden: 3, prioridad: 1, tipo: "alojamiento", nivel: "Hotel 3*", serviceProviderNombre: "El Pueblito" },
+    { orden: 4, prioridad: 1, tipo: "alojamiento", nivel: "Hotel 3*", serviceProviderNombre: "Nacional inn Foz" },
+    { orden: 5, prioridad: 1, tipo: "alojamiento", nivel: "Hotel 4*", serviceProviderNombre: "La Aldea" },
+    { orden: 6, prioridad: 1, tipo: "alojamiento", nivel: "Hotel 4*", serviceProviderNombre: "Taroba" },
+    { orden: 7, prioridad: 1, tipo: "excursion", nivel: null, serviceProviderNombre: "Paquete Receptvo 105 Premium" },
+  ];
+
+  it("M3-36: el archivo real tiene OD010C por lado (noches 1-2 en Puerto Iguazú y 3 en Foz)", () => {
+    const filas = parsearNochesServicio(readFileSync("data/noches-servicio.csv", "utf-8"));
+    const plan = planNochesServicio("OD010C", filas, OD010C, 3);
+    expect(plan.map((p) => `${p.orden}:${p.nocheDesde}+${p.noches} ${p.lugar}`)).toEqual([
+      "1:1+2 Puerto Iguazú (lado argentino)",
+      "2:3+1 Foz do Iguaçu (lado brasileño)",
+      "3:1+2 Puerto Iguazú (lado argentino)",
+      "4:3+1 Foz do Iguaçu (lado brasileño)",
+      "5:1+2 Puerto Iguazú (lado argentino)",
+      "6:3+1 Foz do Iguaçu (lado brasileño)",
+    ]);
+  });
 });
 
 describe("un alojamiento para todos los niveles (M3-23: Purmamarca en OD027)", () => {
