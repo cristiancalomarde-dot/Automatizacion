@@ -115,6 +115,27 @@ export function alojamientoDelTrek(habitacion: string | null, pax: number | null
 }
 
 /**
+ * M3-33: la clave de una variante del W Trek para compararla con `data/w-trek-refugios.csv`: sin
+ * mayúsculas, acentos, guiones ni el sufijo "N nights / N days" ("W-Trek Express 3 nights / 4 days"
+ * → "w trek express").
+ */
+export function claveDelWTrek(nombre: string): string {
+  return normalizarTexto(nombre)
+    .replace(/\(?\s*\d+\s*nights?\s*\/\s*\d+\s*days?\s*\)?/g, " ")
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+
+/**
+ * M3-33: el renglón de los refugios, una noche por refugio desde el inicio del trek: "Refugios: Central
+ * (1 mar) – Francés (2 mar) – Francés (3 mar)". Sin la fecha de inicio, solo los refugios.
+ */
+export function renglonDeRefugios(refugios: readonly string[], desde: string | null, idioma: Idioma = "es"): string {
+  const noches = refugios.map((r, i) => (desde ? `${r} (${diaYMes(sumarDias(desde, i), idioma)})` : r));
+  return `Refugios: ${noches.join(" – ")}`;
+}
+
+/**
  * M3-21: el W Trek quedó a confirmar y es de 1 pax (por la reserva o porque la habitación es
  * single): el aviso dice que Tent SGL es mucho más caro que el Refugio Dorm.
  */

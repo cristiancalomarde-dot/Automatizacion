@@ -57,6 +57,8 @@ import {
   habitacionSinTipo,
   sinDesayuno,
   alojamientoDelTrek,
+  claveDelWTrek,
+  renglonDeRefugios,
   trekDeUnPax,
   TREK_A_CONFIRMAR,
   tipoDeHabitacion,
@@ -714,7 +716,7 @@ class Armado {
         const buses = this.busesElChalten(b, s);
         return buses.length
           ? buses.map((r) => this.busElChalten(b, nombre, r, r.tramo === "ida" ? desde : hasta))
-          : [this.otro(b, nombre, desde, hasta)];
+          : [this.otro(b, nombre, desde, hasta, s)];
       }
     }
   }
@@ -1139,7 +1141,7 @@ class Armado {
     return this.reserva.pax ?? (this.reserva.pasajeros.length || null);
   }
 
-  private otro(b: Bloque, nombre: string, desde: string | null, hasta: string | null): Renglones {
+  private otro(b: Bloque, nombre: string, desde: string | null, hasta: string | null, s?: Servicio): Renglones {
     const renglones = [nombre];
     const pendientes: string[] = [];
     const { tx, idioma: id } = this;
@@ -1158,6 +1160,14 @@ class Armado {
             ? `Falta el tipo de alojamiento del ${nombre} (1 pax): Tent SGL es mucho más caro que el Refugio Dorm; revisalo con el vendedor.`
             : `Falta el tipo de alojamiento del ${nombre}: completalo antes de enviar.`,
         );
+      }
+      // M3-33 (owner, 2026-10-28): dónde duerme cada noche, según la variante (data/w-trek-refugios.csv).
+      const lista = this.catalogo.wTrekRefugios;
+      if (lista) {
+        const variante = s?.serviceProviderNombre ?? nombre;
+        const regla = lista.find((r) => claveDelWTrek(r.servicio) === claveDelWTrek(variante));
+        if (regla) renglones.push(renglonDeRefugios(regla.refugios, desde, this.idioma));
+        else avisos.push(`Refugios del W Trek sin cargar para ${variante}: completarlos a mano`);
       }
     }
     if (/overland/i.test(nombre)) {

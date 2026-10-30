@@ -206,6 +206,16 @@ export interface AlojamientoSinDesayuno {
   nota: string | null;
 }
 
+/**
+ * Una fila de `data/w-trek-refugios.csv` (M3-33, owner 2026-10-28): la variante del W Trek (el nombre
+ * del servicio en el catálogo) y dónde duerme cada noche, en orden.
+ */
+export interface WTrekRefugios {
+  servicio: string;
+  refugios: string[];
+  nota: string | null;
+}
+
 /** M3-32: una ciudad de `data/ciudades-portugues.csv` (sus proveedores reciben los pedidos en portugués). */
 export interface CiudadEnPortugues {
   ciudad: string;
@@ -228,6 +238,8 @@ export interface CatalogoParaPedidos {
   sinDesayuno?: readonly AlojamientoSinDesayuno[];
   /** M3-32: las ciudades de Brasil (sus proveedores, en portugués; sin la lista, todo en castellano). */
   ciudadesPortugues?: readonly CiudadEnPortugues[];
+  /** M3-33: los refugios de cada variante del W Trek (sin la lista, el pedido no los dice ni avisa). */
+  wTrekRefugios?: readonly WTrekRefugios[];
   /** A quién se le pide un alojamiento (M3-22, Factoria a Factoria; sin la lista, al del Excel). */
   alojamientoSePideA?: readonly AlojamientoSePideA[];
   /** Los buses de un tour que se le piden a un proveedor en vez de emitirlos HI Travel (M3-25; sin la lista, todos tarea). */

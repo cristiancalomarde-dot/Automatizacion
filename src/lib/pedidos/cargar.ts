@@ -42,6 +42,7 @@ import type {
   ReservaParaPedidos,
   TramoSePideA,
   VueloDeReserva,
+  WTrekRefugios,
 } from "./tipos";
 
 export const ARCHIVO_DIAS = join("data", "dias-servicio.csv");
@@ -56,6 +57,7 @@ export const ARCHIVO_ALOJAMIENTO_SE_PIDE_A = join("data", "alojamiento-se-pide-a
 export const ARCHIVO_TRAMOS_SE_PIDEN_A = join("data", "tramos-se-piden-a.csv");
 export const ARCHIVO_ALOJAMIENTOS_SIN_DESAYUNO = join("data", "alojamientos-sin-desayuno.csv");
 export const ARCHIVO_CIUDADES_PORTUGUES = join("data", "ciudades-portugues.csv");
+export const ARCHIVO_W_TREK_REFUGIOS = join("data", "w-trek-refugios.csv");
 
 /* eslint-disable @typescript-eslint/no-explicit-any -- filas crudas de PostgREST, se tipan al mapear */
 
@@ -281,6 +283,29 @@ export function leerCiudadesPortugues(contenido: string): CiudadEnPortugues[] {
 
 export function cargarCiudadesPortugues(raiz: string = process.cwd()): CiudadEnPortugues[] {
   return leerCiudadesPortugues(readFileSync(join(raiz, ARCHIVO_CIUDADES_PORTUGUES), "utf-8"));
+}
+
+/**
+ * `data/w-trek-refugios.csv`: servicio,refugios,nota (M3-33, owner 2026-10-28). Cada variante del W Trek
+ * (su nombre en el catálogo) con sus refugios en orden, una noche cada uno, separados por " – " (o " - ").
+ * El owner la edita si cambia.
+ */
+export function leerWTrekRefugios(contenido: string): WTrekRefugios[] {
+  const cabecera = contenido.replace(/^﻿/, "").split(/\r?\n/)[0]?.trim() ?? "";
+  if (!/^servicio,refugios,nota\b/.test(cabecera)) {
+    throw new Error(`${ARCHIVO_W_TREK_REFUGIOS}: la primera fila tiene que ser "servicio,refugios,nota".`);
+  }
+  return leerCsv(contenido).map((f, i) => {
+    const servicio = f.servicio?.trim();
+    const refugios = (f.refugios ?? "").split(/\s+[–-]\s+/).map((x) => x.trim()).filter(Boolean);
+    if (!servicio) throw new Error(`${ARCHIVO_W_TREK_REFUGIOS}, fila ${i + 2}: hace falta el servicio.`);
+    if (!refugios.length) throw new Error(`${ARCHIVO_W_TREK_REFUGIOS}, fila ${i + 2}: hacen falta los refugios.`);
+    return { servicio, refugios, nota: f.nota?.trim() || null };
+  });
+}
+
+export function cargarWTrekRefugios(raiz: string = process.cwd()): WTrekRefugios[] {
+  return leerWTrekRefugios(readFileSync(join(raiz, ARCHIVO_W_TREK_REFUGIOS), "utf-8"));
 }
 
 /**

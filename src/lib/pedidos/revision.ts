@@ -28,6 +28,7 @@ import {
   cargarAlojamientoSePideA,
   cargarAlojamientosSinDesayuno,
   cargarCiudadesPortugues,
+  cargarWTrekRefugios,
   cargarTramosSePidenA,
   cargarReglasItinerario,
   cargarBusesElChalten,
@@ -39,7 +40,7 @@ import { avisosDeLaPantalla, loQuePidioLaAgencia, validarEdicion, type EdicionPe
 import { idiomaDeLaCiudad } from "./idioma";
 import { cargarPlantilla } from "./plantilla";
 import type { CategoriaTour } from "@/lib/importador-tours/datos";
-import type { AlojamientoSePideA, AlojamientoSinDesayuno, CiudadEnPortugues, TramoSePideA, BusElChalten, DiaDeServicio, ExcursionConEntrada, HostelSegunHabitacion, OpcionDelPasajero, ProveedorFichaCompleta, PuntoDeEncuentro, Plantilla } from "./tipos";
+import type { AlojamientoSePideA, AlojamientoSinDesayuno, CiudadEnPortugues, WTrekRefugios, TramoSePideA, BusElChalten, DiaDeServicio, ExcursionConEntrada, HostelSegunHabitacion, OpcionDelPasajero, ProveedorFichaCompleta, PuntoDeEncuentro, Plantilla } from "./tipos";
 import type { ReglasItinerario } from "./itinerario";
 import { enviarPedidosAprobados, type DependenciasEnvio, type PedidoDeEnvio, type ResultadoEnvio } from "./envio/enviar";
 
@@ -104,6 +105,8 @@ export interface OpcionesPreparar {
   sinDesayuno?: readonly AlojamientoSinDesayuno[];
   /** M3-32: las ciudades de Brasil (por defecto, data/ciudades-portugues.csv). */
   ciudadesPortugues?: readonly CiudadEnPortugues[];
+  /** M3-33: los refugios de cada variante del W Trek (por defecto, data/w-trek-refugios.csv). */
+  wTrekRefugios?: readonly WTrekRefugios[];
   /** M3-32: la plantilla de los proveedores de Brasil (por defecto, data/plantillas/pedido-proveedor-pt.md). */
   plantillaPt?: Plantilla;
   /** M3-24: las reglas de los avisos del itinerario (por defecto, data/blackouts.csv, fechas-especiales.csv y dias-bus.csv). */
@@ -150,6 +153,7 @@ export async function prepararPedidos(cliente: SupabaseClient, reservaId: string
       itinerario: opciones.itinerario ?? cargarReglasItinerario(),
       sinDesayuno: opciones.sinDesayuno ?? cargarAlojamientosSinDesayuno(),
       ciudadesPortugues: ciudades,
+      wTrekRefugios: opciones.wTrekRefugios ?? cargarWTrekRefugios(),
     },
     plantilla,
     plantillaPt,
