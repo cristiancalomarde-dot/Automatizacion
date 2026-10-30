@@ -9,6 +9,8 @@
  *   Nuevo, Carnaval o Semana Santa del destino; un bus, solo si sale el 25 dic o el 1 ene.
  * - **Días de un bus** (`data/dias-bus.csv`): el tramo sale solo algunos días de la semana o días
  *   pares / impares.
+ * - **Salidas de un bus por fecha** (`data/salidas-bus.csv`, M3-27): el calendario de un tramo
+ *   (Bariloche ↔ El Chaltén) entre dos fechas; fuera de lo cargado, avisa que hay que confirmar.
  *
  * Las fechas van como "AAAA-MM-DD". Los rangos fijos van como "MM-DD" (inclusive; pueden cruzar el
  * año: 12-27 → 01-03). Los relativos a la Pascua, como "P-52" … "P0" (días desde el domingo de Pascua
@@ -16,11 +18,12 @@
  */
 import { leerCsv } from "@/lib/importador-productos/csv";
 import { NOMBRE_DESTINO, ciudadesEnTexto } from "@/lib/importador-tours/ciudades";
-import { fechaCorta, rangoCorto, sumarDias } from "./formato";
+import { diasEntre, fechaCorta, rangoCorto, sumarDias } from "./formato";
 
 export const ARCHIVO_BLACKOUTS = "data/blackouts.csv";
 export const ARCHIVO_FECHAS_ESPECIALES = "data/fechas-especiales.csv";
 export const ARCHIVO_DIAS_BUS = "data/dias-bus.csv";
+export const ARCHIVO_SALIDAS_BUS = "data/salidas-bus.csv";
 
 export interface Blackout {
   producto: string;
@@ -53,13 +56,28 @@ export interface DiasDeBus {
   dias: DiasQueSale | null;
 }
 
+/** M3-27: qué días sale el bus entre `desde` y `hasta` (inclusive). */
+export type ReglaDeSalidas = { tipo: "todos" } | { tipo: "dia_por_medio" } | { tipo: "fechas"; dias: number[] };
+
+export interface SalidasDeBus {
+  origen: string;
+  destino: string;
+  desde: string;
+  hasta: string;
+  regla: ReglaDeSalidas;
+  /** A quién confirmar fuera de lo cargado. */
+  proveedor: string;
+}
+
 export interface ReglasItinerario {
   blackouts: readonly Blackout[];
   fechasEspeciales: readonly FechaEspecial[];
   diasBus: readonly DiasDeBus[];
+  /** M3-27: los calendarios por fecha (`data/salidas-bus.csv`). */
+  salidasBus: readonly SalidasDeBus[];
 }
 
-export const SIN_REGLAS: ReglasItinerario = { blackouts: [], fechasEspeciales: [], diasBus: [] };
+export const SIN_REGLAS: ReglasItinerario = { blackouts: [], fechasEspeciales: [], diasBus: [], salidasBus: [] };
 
 // --- Fechas -------------------------------------------------------------------------------------
 
@@ -197,15 +215,69 @@ function saleEseDia(d: DiasQueSale, fecha: string): boolean {
   return d.dias.includes(diaSemana(fecha));
 }
 
-/** El tramo de bus cae un día en que no sale, según `data/dias-bus.csv`. */
+/** M3-27: la fila del calendario sale ese día (la fecha ya cae entre desde y hasta). */
+function saleSegunLaFila(fila: SalidasDeBus, fecha: string): boolean {
+  if (fila.regla.tipo === "todos") return true;
+  if (fila.regla.tipo === "dia_por_medio") return diasEntre(fila.desde, fecha) % 2 === 0;
+  return fila.regla.dias.includes(Number(fecha.slice(8, 10)));
+}
+
+const filasDelTramo = (reglas: ReglasItinerario, origen: string, destino: string) =>
+  reglas.salidasBus.filter((f) => f.origen === origen && f.destino === destino);
+
+/** M3-27: las fechas en que sale el tramo según `data/salidas-bus.csv`, ordenadas. */
+export function salidasDelBus(reglas: ReglasItinerario, origen: string, destino: string): string[] {
+  const fechas = new Set<string>();
+  for (const fila of filasDelTramo(reglas, origen, destino)) {
+    for (let f = fila.desde; f <= fila.hasta; f = sumarDias(f, 1)) if (saleSegunLaFila(fila, f)) fechas.add(f);
+  }
+  return [...fechas].sort();
+}
+
+/** "3, 6, 9 nov" / "30 nov, 2, 3 dic": los días juntos por mes, sin el año. */
+function diasPorMes(fechas: string[]): string {
+  const grupos: { mes: string; dias: number[] }[] = [];
+  for (const f of fechas) {
+    const mes = fechaCorta(f).split(" ")[1];
+    const ultimo = grupos[grupos.length - 1];
+    if (ultimo && ultimo.mes === mes) ultimo.dias.push(Number(f.slice(8, 10)));
+    else grupos.push({ mes, dias: [Number(f.slice(8, 10))] });
+  }
+  return grupos.map((g) => `${g.dias.join(", ")} ${g.mes}`).join(", ");
+}
+
+const fechaConDiaCorto = (fecha: string) => `${DIAS_CORTOS[diaSemana(fecha)]} ${fechaCorta(fecha)}`;
+
+/** M3-27: el tramo con calendario por fecha cae un día sin salida, o fuera de lo cargado. */
+function avisosDeSalidasDeBus(reglas: ReglasItinerario, tramo: { origen: string; destino: string }, fecha: string): string[] {
+  const filas = filasDelTramo(reglas, tramo.origen, tramo.destino);
+  if (!filas.length) return [];
+  const nombre = (c: string) => NOMBRE_DESTINO[c] ?? c;
+  const fila = filas.find((f) => f.desde <= fecha && fecha <= f.hasta);
+  if (!fila) {
+    // El par se nombra como en su primera fila del CSV, sea cual sea el sentido.
+    const par =
+      reglas.salidasBus.find(
+        (f) => (f.origen === tramo.origen && f.destino === tramo.destino) || (f.origen === tramo.destino && f.destino === tramo.origen),
+      ) ?? filas[0];
+    return [`Calendario del bus ${nombre(par.origen)} ↔ ${nombre(par.destino)} sin cargar para el ${fechaConDiaCorto(fecha)}: confirmar con ${filas[0].proveedor}.`];
+  }
+  if (saleSegunLaFila(fila, fecha)) return [];
+  const siguientes = salidasDelBus(reglas, tramo.origen, tramo.destino).filter((f) => f > fecha);
+  const cuales = siguientes.length ? ` (sale ${diasPorMes(siguientes.slice(0, 3))}${siguientes.length > 3 ? "…" : ""})` : "";
+  return [`El bus ${nombre(tramo.origen)} → ${nombre(tramo.destino)} cae el ${fechaConDiaCorto(fecha)} y ese día no sale${cuales}.`];
+}
+
+/** El tramo de bus cae un día en que no sale, según `data/dias-bus.csv` y `data/salidas-bus.csv` (M3-27). */
 export function avisosDeDiasDeBus(reglas: ReglasItinerario, bus: { ruta: string; fecha: string | null }): string[] {
   if (!bus.fecha || !ISO.test(bus.fecha)) return [];
   const tramo = tramoDeLaRuta(bus.ruta);
   if (!tramo) return [];
+  const porFecha = avisosDeSalidasDeBus(reglas, tramo, bus.fecha);
   const regla = reglas.diasBus.find((r) => r.origen === tramo.origen && r.destino === tramo.destino);
-  if (!regla?.dias || saleEseDia(regla.dias, bus.fecha)) return [];
+  if (!regla?.dias || saleEseDia(regla.dias, bus.fecha)) return porFecha;
   const nombre = (c: string) => NOMBRE_DESTINO[c] ?? c;
-  return [`El bus ${nombre(tramo.origen)} → ${nombre(tramo.destino)} cae ${fechaLarga(bus.fecha)}; según la planilla sale ${textoDeDias(regla.dias)}.`];
+  return [`El bus ${nombre(tramo.origen)} → ${nombre(tramo.destino)} cae ${fechaLarga(bus.fecha)}; según la planilla sale ${textoDeDias(regla.dias)}.`, ...porFecha];
 }
 
 // --- Lectura de los CSV -------------------------------------------------------------------------
@@ -289,5 +361,33 @@ export function leerDiasDeBus(contenido: string): DiasDeBus[] {
     const lista = dias(texto);
     if (!lista) throw error();
     return { origen, destino, dias: { tipo: "semana", dias: lista } };
+  });
+}
+
+/**
+ * M3-27 — `data/salidas-bus.csv`: origen,destino,desde,hasta,regla,proveedor,nota. `desde`/`hasta`
+ * como 2026-11-01 (inclusive). `regla`: "todos los días", "día por medio" (contando desde `desde`) o
+ * los días del mes en que sale ("3 6 9 12").
+ */
+export function leerSalidasDeBus(contenido: string): SalidasDeBus[] {
+  cabecera(contenido, ARCHIVO_SALIDAS_BUS, "origen,destino,desde,hasta,regla,proveedor");
+  return leerCsv(contenido).map((f, i) => {
+    const origen = f.origen?.trim().toUpperCase() ?? "";
+    const destino = f.destino?.trim().toUpperCase() ?? "";
+    const desde = f.desde?.trim() ?? "";
+    const hasta = f.hasta?.trim() ?? "";
+    const texto = sinAcentos(f.regla ?? "");
+    const proveedor = f.proveedor?.trim() ?? "";
+    const error = () =>
+      new Error(
+        `${ARCHIVO_SALIDAS_BUS}, fila ${i + 2}: hace falta el origen y el destino (códigos), el proveedor, desde y hasta como 2026-11-01 (desde antes que hasta) y una regla válida ("todos los días", "día por medio" o los días del mes, como "3 6 9 12").`,
+      );
+    if (!origen || !destino || !proveedor || !ISO.test(desde) || !ISO.test(hasta) || desde > hasta) throw error();
+    const fila = { origen, destino, desde, hasta, proveedor };
+    if (texto === "todos los dias" || texto === "todos") return { ...fila, regla: { tipo: "todos" } };
+    if (texto === "dia por medio") return { ...fila, regla: { tipo: "dia_por_medio" } };
+    const numeros = texto.split(/[\s,]+/).filter(Boolean);
+    if (!numeros.length || !numeros.every((n) => /^\d{1,2}$/.test(n) && Number(n) >= 1 && Number(n) <= 31)) throw error();
+    return { ...fila, regla: { tipo: "fechas", dias: numeros.map(Number) } };
   });
 }

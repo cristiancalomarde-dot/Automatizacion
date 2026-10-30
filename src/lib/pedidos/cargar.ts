@@ -18,9 +18,11 @@ import {
   ARCHIVO_BLACKOUTS,
   ARCHIVO_DIAS_BUS,
   ARCHIVO_FECHAS_ESPECIALES,
+  ARCHIVO_SALIDAS_BUS,
   leerBlackouts,
   leerDiasDeBus,
   leerFechasEspeciales,
+  leerSalidasDeBus,
   type ReglasItinerario,
 } from "./itinerario";
 import type {
@@ -504,7 +506,7 @@ export async function cargarCatalogoParaPedidos(
 
 /**
  * M3-24: las reglas de los avisos del itinerario (`data/blackouts.csv`, `data/fechas-especiales.csv` y
- * `data/dias-bus.csv`), leídas al armar: cambiar una regla no pide recargar el catálogo.
+ * `data/dias-bus.csv`; M3-27: `data/salidas-bus.csv`), leídas al armar: cambiar una regla no pide recargar el catálogo.
  */
 export function cargarReglasItinerario(raiz: string = process.cwd()): ReglasItinerario {
   const leer = (archivo: string) => readFileSync(join(raiz, archivo), "utf-8");
@@ -512,5 +514,6 @@ export function cargarReglasItinerario(raiz: string = process.cwd()): ReglasItin
     blackouts: leerBlackouts(leer(ARCHIVO_BLACKOUTS)),
     fechasEspeciales: leerFechasEspeciales(leer(ARCHIVO_FECHAS_ESPECIALES)),
     diasBus: leerDiasDeBus(leer(ARCHIVO_DIAS_BUS)),
+    salidasBus: leerSalidasDeBus(leer(ARCHIVO_SALIDAS_BUS)),
   };
 }

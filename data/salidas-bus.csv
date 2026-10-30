@@ -1,0 +1,7 @@
+origen,destino,desde,hasta,regla,proveedor,nota
+BRC,CHA,2026-11-01,2026-11-13,3 6 9 12,Chalten Travel,"Insumos/Calendario_Buses_BRC_CHA_Nov2026_Feb2027.xlsx (M3-27): sale 08:30 de Bariloche, llega al día siguiente 10:30. Noviembre: 3, 6, 9 y 12"
+BRC,CHA,2026-11-14,2026-12-01,día por medio,Chalten Travel,"Ídem: 14/11 y día por medio hasta el 30/11 (el Excel decía confirmar el 14/11; owner 2026-10-29: queda como salida)"
+BRC,CHA,2026-12-02,2027-02-28,todos los días,Chalten Travel,"Ídem: desde el 2/12 todos los días hasta el 28/02/2027"
+CHA,BRC,2026-11-01,2026-11-11,1 4 7 10,Chalten Travel,"Ídem: sale 21:00 de El Chaltén, llega al día siguiente 22:20. Noviembre: 1, 4, 7 y 10"
+CHA,BRC,2026-11-12,2026-11-30,día por medio,Chalten Travel,"Ídem: 12/11 y día por medio hasta el 30/11 (el Excel decía confirmar el 12/11; owner 2026-10-29: queda como salida)"
+CHA,BRC,2026-12-01,2027-02-28,todos los días,Chalten Travel,"Ídem: desde el 1/12 todos los días hasta el 28/02/2027"
