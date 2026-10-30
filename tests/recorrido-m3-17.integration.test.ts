@@ -124,8 +124,9 @@ const MESES = ["January", "February", "March", "April", "May", "June", "July", "
     for (const c of ["OD032", "OD010A", "OD018", "OD029"]) expect(inicio[c], c).toBeTruthy();
   });
 
+  // M3-32: Big Dude es de Río de Janeiro: su pedido va en portugués.
   it("Río: Big Dude el día 2", () => {
-    expect(conRenglon("Excursión: Big Dude")).toContain(`Excursión: Big Dude\nFecha: ${dia("OD032", 2)}\n`);
+    expect(conRenglon("Passeio: Big Dude")).toContain(`Passeio: Big Dude\nData: ${fechaCorta(sumarDias(inicio.OD032, 1), "pt")}\n`);
   });
 
   it("Iguazú: lado argentino el día 2 y brasileño el día 3", () => {
@@ -146,8 +147,9 @@ const MESES = ["January", "February", "March", "April", "May", "June", "July", "
   });
 
   it("ninguna de esas excursiones queda a coordinar", () => {
-    for (const r of ["Excursión: Big Dude", "Lado argentino", "Excursión: Tango Show"]) {
-      expect(conRenglon(r), r).not.toContain("Fecha: a coordinar");
+    for (const r of ["Passeio: Big Dude", "Lado argentino", "Excursión: Tango Show"]) {
+      expect(conRenglon(r), r).toBeTruthy();
+      expect(conRenglon(r), r).not.toMatch(/Fecha: a coordinar|Data: a combinar/);
     }
     expect(bikeSantiago()).not.toContain("Fecha: a coordinar");
   });

@@ -148,7 +148,8 @@ const renglon = (cuerpo: string, empieza: string) => cuerpo.split("\n").find((l)
   });
 
   it("Río: el hotel es el 3* del paquete (National Inn Copacabana o Copacabana Mar)", () => {
-    expect(pedidos.some((p) => /Alojamiento: .*(Nacional Inn|National Inn|Copacabana Mar)/i.test(p.cuerpo))).toBe(true);
+    // M3-32: el hotel es de Río de Janeiro: su pedido va en portugués ("Hospedagem").
+    expect(pedidos.some((p) => /Hospedagem: .*(Nacional Inn|National Inn|Copacabana Mar)/i.test(p.cuerpo))).toBe(true);
   });
 
   it("volver a armar reemplaza los borradores sin editar con lo mismo", async () => {

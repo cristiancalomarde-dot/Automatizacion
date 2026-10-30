@@ -107,7 +107,8 @@ const PASAJEROS = [
     expect(guardados.pedidos.some((p) => p.destinatarios.includes("reservas8@cuencadelplata.com"))).toBe(true);
     // M3-16: el asunto guardado no lleva el código del producto ni el número de la agencia...
     for (const p of guardados.pedidos) {
-      expect(p.asunto).toMatch(/^Solicitud de reserva – /);
+      // M3-32: a un proveedor de Brasil (el hotel de Foz de OD010D), en portugués.
+      expect(p.asunto).toMatch(/^(Solicitud de reserva|Solicitação de reserva) – /);
       expect(p.asunto).not.toMatch(/OD010D|DK9000001/);
     }
     // ...que sigue guardado en la reserva.

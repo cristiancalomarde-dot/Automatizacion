@@ -151,7 +151,11 @@ const CASOS = [
         const desde = inicioDe(e.componente);
         expect(desde, `${caso.tour}: la parte ${e.componente} con fecha`).toBeTruthy();
         // El renglón de la excursión: "1) Excursión: X…" / "Excursión: X…" o "Lado argentino, …".
-        const esLaExcursion = (l: string) => l.replace(/^\d+\) /, "").startsWith(e.excursion.startsWith("Lado") ? e.excursion : `Excursión: ${e.excursion}`);
+        // M3-32: a un proveedor de Brasil (Big Dude, en Río), "Passeio: X" y la fecha en portugués.
+        const esLaExcursion = (l: string) =>
+          e.excursion.startsWith("Lado")
+            ? l.replace(/^\d+\) /, "").startsWith(e.excursion)
+            : [`Excursión: ${e.excursion}`, `Passeio: ${e.excursion}`].some((x) => l.replace(/^\d+\) /, "").startsWith(x));
         const pedido = pedidos.find((p) => p.cuerpo.split("\n").some(esLaExcursion));
         expect(pedido, `${caso.tour}: pedido con ${e.excursion}`).toBeTruthy();
         const lineas = pedido!.cuerpo.split("\n");
@@ -159,8 +163,9 @@ const CASOS = [
         // "Excursión: X\nFecha: …" (dos renglones) o "Lado argentino, …: 4 oct 2026 · …" (uno).
         const bloque = lineas.slice(desdeLinea, desdeLinea + (e.excursion.startsWith("Lado") ? 1 : 2)).join("\n");
         console.log(`[M3-17] ${caso.tour} ${e.componente} desde ${desde}: ${bloque.replace(/\n/g, " | ")}`);
-        expect(bloque, `${caso.tour}: ${e.excursion}`).toContain(fechaCorta(sumarDias(desde!, e.dia - 1)));
-        expect(bloque).not.toContain("a coordinar");
+        const idioma = pedido!.cuerpo.startsWith("Olá") ? "pt" : "es";
+        expect(bloque, `${caso.tour}: ${e.excursion}`).toContain(fechaCorta(sumarDias(desde!, e.dia - 1), idioma));
+        expect(bloque).not.toMatch(/a coordinar|a combinar/);
       }
     });
   });
