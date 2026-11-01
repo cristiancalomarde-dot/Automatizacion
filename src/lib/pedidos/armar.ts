@@ -268,7 +268,7 @@ class Armado {
     if (parte.esTarea) {
       const ruta = parte.descripcionRuta ?? parte.textoAgencia ?? "bus";
       if (this.tramoAProveedor(parte, ruta)) return;
-      this.tarea("emitir_boleto", `Emitir boleto: ${ruta}${parte.fechaInicio ? `, ${fechaCorta(parte.fechaInicio)}` : ""}`, { parteId: parte.id, ruta }, parte.fechaInicio);
+      this.tarea("emitir_boleto", `Emitir pasaje: ${ruta}${parte.fechaInicio ? `, ${fechaCorta(parte.fechaInicio)}` : ""}`, { parteId: parte.id, ruta }, parte.fechaInicio);
       this.avisosDelItinerario([{ tipo: "bus", nombre: ruta, fecha: parte.fechaInicio, destino: null }]);
       return;
     }
@@ -395,7 +395,7 @@ class Armado {
     if (!regla) return false;
     const proveedor = regla.proveedorDelDirectorio;
     if (!proveedor) {
-      this.avisos.push(`"${regla.proveedor}" no está en el directorio de proveedores: el bus ${ruta} queda como boleto para emitir. Revisalo antes de enviar.`);
+      this.avisos.push(`"${regla.proveedor}" no está en el directorio de proveedores: el bus ${ruta} queda como pasaje para emitir. Revisalo antes de enviar.`);
       return false;
     }
     const horario = mismoSentido(regla) ? regla.horario : undefined;
@@ -648,7 +648,7 @@ class Armado {
     if (s.reservaManual) {
       const donde = s.bookingSupplierNombre ?? s.bookingSupplier?.nombre ?? "su sistema";
       if (s.tipo === "bus") {
-        this.tarea("emitir_boleto", `Emitir boleto: ${nombre}${cuando ? `, ${cuando}` : ""}`, { producto: b.codigo, servicioId: s.id }, a.fecha);
+        this.tarea("emitir_boleto", `Emitir pasaje: ${nombre}${cuando ? `, ${cuando}` : ""}`, { producto: b.codigo, servicioId: s.id }, a.fecha);
       } else {
         this.tarea("reservar_a_mano", `Reservar a mano en ${donde}: ${a.queParaTarea}${cuando ? `, ${cuando}` : ""}`, { producto: b.codigo, servicioId: s.id }, a.fecha);
       }
@@ -907,7 +907,7 @@ class Armado {
         lugar: `${noche.hotel}${noche.aConfirmar ? " (a confirmar)" : ""}`,
       };
     }
-    return { renglon: `Pick up: ${hotelEnSanPedroAConfirmar(this.reserva.agencia)}`, pendientes: [this.tx.pendiente.alojamiento], lugar: null };
+    return { renglon: `Pick up: ${hotelEnSanPedroAConfirmar()}`, pendientes: [this.tx.pendiente.alojamiento], lugar: null };
   }
 
   /** El alojamiento de esa noche o, si ese día es el OUT, el de la noche anterior. */
@@ -1018,7 +1018,7 @@ class Armado {
       }
     }
     const quedan = lados.filter((l) => !b.omitir.includes(l)).filter((l) => !(l === "in" && b.llegaEnBus) && !(l === "out" && b.saleEnBus));
-    const deUnLado = quedan.length === 1 ? this.nombreDeUnLado(b, s, nombre, quedan[0]) : nombre;
+    const deUnLado = quedan.length === 1 ? this.nombreDeUnLado(b, s, nombre, quedan[0], quedan[0] === "in" ? desde : hasta) : nombre;
     return quedan.map((l) => this.unTraslado(b, s, deUnLado, l, l === "in" ? desde : hasta));
   }
 
@@ -1029,14 +1029,21 @@ class Armado {
    * "Transfer in Aeropuerto Salta - Alojamiento" o "Transfer out Alojamiento en Ushuaia - Aeropuerto Ushuaia".
    * La ciudad sale de los códigos del renglón (SLA, USH) o, si no nombra ninguna (EZE o AEP), del destino del
    * paquete; sin ciudad, "Aeropuerto - Alojamiento". Un reemplazo (Iguazú) ya trae su propio texto.
+   * M3-42 (owner, 2026-11-01): "Alojamiento" a secas no sirve: va el hotel de la reserva en esa ciudad, el que
+   * entra la fecha de la llegada (in) o sale la de la salida (out), con el nombre del pedido al hotel:
+   * "Transfer in Aeropuerto Salta - Trotamundos Salta", "Transfer out Anum Hostel (Ushuaia) - Aeropuerto Ushuaia".
+   * Sin hotel que coincida, el texto de M3-28.
    */
-  private nombreDeUnLado(b: Bloque, s: Servicio, nombre: string, lado: Lado): string {
+  private nombreDeUnLado(b: Bloque, s: Servicio, nombre: string, lado: Lado, fecha: string | null): string {
     if (s.sentido !== "ida_y_vuelta" || s.ajusteTour?.accion === "reemplazar") return nombre;
     if (s.ajusteTour?.texto) return s.ajusteTour.texto;
     const enElTexto = `${s.descripcion ?? ""} ${nombre}`.match(/\b[A-Z]{3}\b/g) ?? [];
     const codigo = enElTexto.find((c) => NOMBRE_DESTINO[c]) ?? b.destino;
     const ciudad = codigo ? (NOMBRE_DESTINO[codigo] ?? null) : null;
     const en = (prefijo: string) => (ciudad ? `${prefijo}${ciudad}` : "");
+    const deEsaCiudad = (x: Estadia) => !ciudad || !x.ciudad || x.ciudad === ciudad;
+    const hotel = fecha ? this.estadias.find((x) => (lado === "in" ? x.desde : x.hasta) === fecha && deEsaCiudad(x))?.hotel : undefined;
+    if (hotel) return lado === "in" ? `Transfer in Aeropuerto${en(" ")} - ${hotel}` : `Transfer out ${hotel}${ciudad ? ` (${ciudad})` : ""} - Aeropuerto${en(" ")}`;
     return lado === "in" ? `Transfer in Aeropuerto${en(" ")} - Alojamiento` : `Transfer out Alojamiento${en(" en ")} - Aeropuerto${en(" ")}`;
   }
 

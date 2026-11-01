@@ -161,7 +161,7 @@ function ficha(numero: string, inicio: string) {
     console.log(`[M3-24 recorrido] avisos internos del borrador a Huentata: ${JSON.stringify(huentata.avisos)}`);
     expect(huentata.avisos).toEqual(expect.arrayContaining(AVISOS_1389186.slice(0, 2)));
     expect(huentata.cuerpo).not.toMatch(/Navidad/);
-    expect(pantalla.tareas.map((t) => t.texto)).toContain("Emitir boleto: Río Gallegos – Ushuaia, 5 ene 2027");
+    expect(pantalla.tareas.map((t) => t.texto)).toContain("Emitir pasaje: Río Gallegos – Ushuaia, 5 ene 2027");
     // La reserva se borra antes de la segunda (si no, la segunda podría ser "posible duplicada").
     await registro.limpiar(admin);
   });

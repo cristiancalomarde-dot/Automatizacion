@@ -221,7 +221,7 @@ function Detalle({
       <div className={estilos.columnas}>
         <div className={estilos.columna}>
           <Producto reserva={reserva} />
-          {reserva.partes.length > 0 ? <Partes partes={reserva.partes} hoteles={reserva.hotelesAgencia ?? []} agencia={reserva.agencia} /> : null}
+          {reserva.partes.length > 0 ? <Partes partes={reserva.partes} hoteles={reserva.hotelesAgencia ?? []} /> : null}
           <Datos reserva={reserva} />
           <Vuelos vuelos={reserva.vuelos}>
             {corregible ? (
@@ -405,10 +405,10 @@ function fechasDeParte(p: ParteDeReserva): string {
 }
 
 /** Las partes de un tour compuesto, en el orden del tour (#8). Journaway suma el pick up de cada tour (M2-09 #11). */
-function Partes({ partes: delTour, hoteles, agencia }: { partes: ParteDeReserva[]; hoteles: HotelDeLaAgencia[]; agencia: string | null }) {
+function Partes({ partes: delTour, hoteles }: { partes: ParteDeReserva[]; hoteles: HotelDeLaAgencia[] }) {
   // M3-38: el traslado San Pedro → Hito Cajón no va suelto: figura dentro del Overland.
   // M3-41: el pick up del Overland es el hotel de San Pedro, nunca el Tayka que manda Journaway.
-  const partes = partesConElTrasladoEnElOverland(partesConElPickUpDelOverland(delTour, hoteles, agencia));
+  const partes = partesConElTrasladoEnElOverland(partesConElPickUpDelOverland(delTour, hoteles));
   const conPickUp = partes.some((p) => p.pickUp);
   return (
     <section className={ui.seccion}>

@@ -222,7 +222,7 @@ interface ReservaCreada {
     expect(resumen.AR34.tareas).toEqual([]);
     expect(resumen.OD014.casillas).toEqual(["agencias@chaltentravel.com", "contacto@southroad.com.ar,bue@southroad.com.ar", "reservas@glaciar.com"]);
     expect(resumen.OD014.tareas).toEqual([]);
-    expect(resumen.ARCH33EXP.tareas).toEqual(["emitir_boleto: Emitir boleto: El Calafate – Puerto Natales", "emitir_boleto: Emitir boleto: Bus Puerto Natales – Punta Arenas"]);
+    expect(resumen.ARCH33EXP.tareas).toEqual(["emitir_boleto: Emitir pasaje: El Calafate – Puerto Natales", "emitir_boleto: Emitir pasaje: Bus Puerto Natales – Punta Arenas"]);
     // M3-11: con "Double Room - Hostel" el hostel de Puerto Natales va a Factoria, no a Puma. M3-22: se le pide a
     // Factoria (en el directorio, "Factoria (hostel de Vertice)"), no a Vértice.
     expect(resumen.ARCH33EXP.casillas).toEqual(["agencias@chaltentravel.com", "carmen.munoz@lastorres.com", "reservas@factoriapatagonia.com", "reservas@glaciar.com"]);
@@ -237,15 +237,15 @@ interface ReservaCreada {
       "reservas@maderotango.com.ar",
     ]);
     expect(resumen.ARBR23.tareas).toEqual([
-      // M3-28 (owner, 2026-10-28): el traslado de un solo lado, con el nombre de la ciudad y guion.
-      "reservar_a_mano: Reservar a mano en Greeters: traslado de llegada Transfer in Aeropuerto Buenos Aires - Alojamiento",
-      "emitir_boleto: Emitir boleto: Buenos Aires – Iguazú",
-      "emitir_boleto: Emitir boleto: Iguazú – Río de Janeiro",
+      // M3-28 (owner, 2026-10-28): el traslado de un solo lado, con el nombre de la ciudad y guion; M3-42 (2026-11-01): y el hotel.
+      "reservar_a_mano: Reservar a mano en Greeters: traslado de llegada Transfer in Aeropuerto Buenos Aires - Milhouse Avenue",
+      "emitir_boleto: Emitir pasaje: Buenos Aires – Iguazú",
+      "emitir_boleto: Emitir pasaje: Iguazú – Río de Janeiro",
     ]);
     expect(resumen.ARUY01.tareas).toEqual([
-      "reservar_a_mano: Reservar a mano en Greeters: traslado de llegada Transfer in Aeropuerto Buenos Aires - Alojamiento",
-      "emitir_boleto: Emitir boleto: Ferry Buenos Aires – Colonia del Sacramento",
-      "emitir_boleto: Emitir boleto: Bus regular Colonia - Montevideo (terminal de buses Tres Cruces)",
+      "reservar_a_mano: Reservar a mano en Greeters: traslado de llegada Transfer in Aeropuerto Buenos Aires - Dazzler Maipu",
+      "emitir_boleto: Emitir pasaje: Ferry Buenos Aires – Colonia del Sacramento",
+      "emitir_boleto: Emitir pasaje: Bus regular Colonia - Montevideo (terminal de buses Tres Cruces)",
       "revisar: Pedir a mano: Hotel Oxford Montevideo (OD040)",
     ]);
     expect(resumen.ARUY01.casillas).toEqual([

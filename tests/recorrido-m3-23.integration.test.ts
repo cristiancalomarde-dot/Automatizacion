@@ -162,10 +162,10 @@ interface Armado {
     expect(armados.get("DBL Hotel 3*")!.tareas.filter((t) => !t.startsWith("emitir_boleto"))).toEqual([]);
     for (const c of CASOS) {
       expect(armados.get(c.clave)!.tareas.filter((t) => t.startsWith("emitir_boleto")), c.clave).toEqual([
-        "emitir_boleto: Emitir boleto: Salta – Mendoza, 23 dic 2026",
-        "emitir_boleto: Emitir boleto: Mendoza – Bariloche, 26 dic 2026",
-        "emitir_boleto: Emitir boleto: El Calafate – Río Gallegos, 5 ene 2027",
-        "emitir_boleto: Emitir boleto: Río Gallegos – Ushuaia, 5 ene 2027",
+        "emitir_boleto: Emitir pasaje: Salta – Mendoza, 23 dic 2026",
+        "emitir_boleto: Emitir pasaje: Mendoza – Bariloche, 26 dic 2026",
+        "emitir_boleto: Emitir pasaje: El Calafate – Río Gallegos, 5 ene 2027",
+        "emitir_boleto: Emitir pasaje: Río Gallegos – Ushuaia, 5 ene 2027",
       ]);
       expect(armados.get(c.clave)!.pedidos.filter((p) => p.sinDestinatario || p.destinatarios.length === 0), c.clave).toEqual([]);
     }

@@ -180,7 +180,7 @@ const botonEnviar = () => screen.getByRole("button", { name: /^Enviar \d+ pedido
 
     // Las tareas a mano, aparte y sin contar en el botón.
     const tareas = screen.getByRole("region", { name: T.tareas });
-    expect(within(tareas).getAllByText(/^Emitir boleto: /).length).toBeGreaterThan(0);
+    expect(within(tareas).getAllByText(/^Emitir pasaje: /).length).toBeGreaterThan(0);
     // Y la firma con el nombre de quien tiene la sesión.
     expect(within(conMail[0]).getByText(new RegExp(firmante))).toBeInTheDocument();
 

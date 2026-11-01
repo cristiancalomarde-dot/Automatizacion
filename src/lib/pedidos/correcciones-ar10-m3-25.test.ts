@@ -151,11 +151,11 @@ const tramosConChalten: TramoSePideA[] = tramosDelArchivo.map((t) => ({ ...t, pr
 const pedidoA = (r: ResultadoArmado & { ok: true }, mail: string) => r.pedidos.find((p) => p.destinatarios.includes(mail))!;
 
 describe("M3-25 fila 1 — OD027 en AR10: el traslado de La Ciénaga es solo de llegada", () => {
-  // M3-28 (owner, 2026-10-28): "Transfer in Aeropuerto <ciudad> - Alojamiento", con guion y el nombre de la ciudad.
+  // M3-28 (owner, 2026-10-28): "Transfer in Aeropuerto <ciudad> - …", con guion y el nombre de la ciudad; M3-42 (2026-11-01): con el hotel de esa noche.
   it("el renglón dice solo el in (aeropuerto - alojamiento), no el SLA – accommodation – SLA", () => {
     const cuerpo = pedidoA(armarAr10(), "cienaga@test").cuerpo;
-    expect(bloque(cuerpo, "Traslado de llegada: Transfer in Aeropuerto Salta - Alojamiento")).toEqual([
-      "Traslado de llegada: Transfer in Aeropuerto Salta - Alojamiento",
+    expect(bloque(cuerpo, "Traslado de llegada: Transfer in Aeropuerto Salta - Trotamundos Salta")).toEqual([
+      "Traslado de llegada: Transfer in Aeropuerto Salta - Trotamundos Salta",
       "Fecha: 19 dic 2026",
       "Vuelo pendiente",
     ]);
@@ -187,11 +187,11 @@ describe("M3-25 fila 1 — OD027 en AR10: el traslado de La Ciénaga es solo de 
 });
 
 describe("M3-25 fila 2 — OD022 en AR10: el traslado de Rumbo Sur es solo de salida", () => {
-  // M3-28 (owner, 2026-10-28): "Transfer out Alojamiento en <ciudad> - Aeropuerto <ciudad>" (el owner escribió USH; va la ciudad, parejo con el in).
+  // M3-28 (owner, 2026-10-28): la ciudad del aeropuerto; M3-42 (2026-11-01): "Transfer out <hotel> (<ciudad>) - Aeropuerto <ciudad>".
   it("el renglón dice solo el out (alojamiento - aeropuerto), no el Round Trip", () => {
     const cuerpo = pedidoA(armarAr10(), "rumbosur@test").cuerpo;
-    expect(bloque(cuerpo, "Traslado de salida: Transfer out Alojamiento en Ushuaia - Aeropuerto Ushuaia")).toEqual([
-      "Traslado de salida: Transfer out Alojamiento en Ushuaia - Aeropuerto Ushuaia",
+    expect(bloque(cuerpo, "Traslado de salida: Transfer out Anum (Ushuaia) - Aeropuerto Ushuaia")).toEqual([
+      "Traslado de salida: Transfer out Anum (Ushuaia) - Aeropuerto Ushuaia",
       "Fecha: 8 ene 2027",
       "Vuelo pendiente",
     ]);
@@ -245,7 +245,7 @@ describe("M3-25 fila 4 — los buses de El Chaltén de AR10 van a Chalten Travel
   it("ya no queda el boleto Bariloche – El Chaltén para HI Travel; los demás buses siguen como tarea", () => {
     const tareas = armarAr10().tareas.map((t) => t.texto);
     expect(tareas).not.toContainEqual(expect.stringContaining("Bariloche – El Chaltén"));
-    expect(tareas).toContain("Emitir boleto: El Calafate – Río Gallegos, 5 ene 2027");
+    expect(tareas).toContain("Emitir pasaje: El Calafate – Río Gallegos, 5 ene 2027");
   });
 
   it("una regla escrita al revés (El Chaltén → Bariloche) también vale, pero sin su horario (es el de la otra punta)", () => {
@@ -257,7 +257,7 @@ describe("M3-25 fila 4 — los buses de El Chaltén de AR10 van a Chalten Travel
   it("si Chalten Travel no está en el directorio, el boleto queda como hoy, con un aviso", () => {
     const sinDirectorio: TramoSePideA[] = [{ tour: "AR10", ruta: "Bariloche – El Chaltén", proveedor: "Chalten Travel", proveedorDelDirectorio: null }];
     const r = armarAr10(sinDirectorio);
-    expect(r.tareas.map((t) => t.texto)).toContain("Emitir boleto: Bariloche – El Chaltén, 30 dic 2026");
+    expect(r.tareas.map((t) => t.texto)).toContain("Emitir pasaje: Bariloche – El Chaltén, 30 dic 2026");
     expect(r.avisos.join("\n")).toContain('"Chalten Travel" no está en el directorio de proveedores');
   });
 
@@ -271,7 +271,7 @@ describe("M3-25 fila 4 — los buses de El Chaltén de AR10 van a Chalten Travel
         plantilla,
       ),
     );
-    expect(r.tareas.map((t) => t.texto)).toContain("Emitir boleto: Bariloche – El Chaltén, 30 dic 2026");
+    expect(r.tareas.map((t) => t.texto)).toContain("Emitir pasaje: Bariloche – El Chaltén, 30 dic 2026");
   });
 });
 
@@ -308,5 +308,52 @@ describe("M3-25 fila 5 — Greeters reserva por su sistema: tarea a mano, sin ma
       "reservar_a_mano: Reservar a mano en Greeters: traslado de llegada Transfer EZE o AEP - Hotel - EZE o AEP, 1 feb 2027 · Vuelo pendiente",
       "reservar_a_mano: Reservar a mano en Greeters: traslado de salida Transfer EZE o AEP - Hotel - EZE o AEP, 4 feb 2027 · Vuelo pendiente",
     ]);
+  });
+});
+
+describe("M3-42 #2 (owner, 2026-11-01) — el traslado de un solo lado nombra el alojamiento de esa ciudad", () => {
+  /** Un tour con el paquete y un bus después (o antes), para que quede un solo lado del traslado. */
+  function armarCon(paquete: typeof od027, desde: string, hasta: string) {
+    const tour = producto("prod-t42", "AR10", [], { esTour: true, componentes: [componente("c-t42", 1, 1, 4, paquete)] });
+    return ok(
+      armarPedidos(
+        reserva({
+          productoId: tour.id,
+          habitacion: "Double Hostel",
+          fechaInicio: desde,
+          fechaFin: hasta,
+          partes: [parte({ id: "x", orden: 1, tipo: "paquete", productoId: paquete.id, productoComponenteId: "c-t42", fechaInicio: desde, fechaFin: hasta })],
+        }),
+        catalogoCon([tour, paquete], [], dias),
+        plantilla,
+      ),
+    );
+  }
+  const sinAlojamiento = (p: typeof od027) => ({ ...p, servicios: p.servicios.filter((s) => s.tipo !== "alojamiento") });
+
+  it("in: sin alojamiento en la reserva, queda el texto de hoy (Aeropuerto Salta - Alojamiento)", () => {
+    const cuerpo = pedidoA(armarCon(sinAlojamiento(od027), "2026-12-19", "2026-12-23"), "cienaga@test").cuerpo;
+    expect(cuerpo).toContain("Traslado de llegada: Transfer in Aeropuerto Salta - Alojamiento\n");
+  });
+
+  it("out: sin alojamiento en la reserva, queda el texto de hoy (Alojamiento en Ushuaia - Aeropuerto Ushuaia)", () => {
+    const cuerpo = pedidoA(armarCon(sinAlojamiento(od022), "2027-01-05", "2027-01-08"), "rumbosur@test").cuerpo;
+    expect(cuerpo).toContain("Traslado de salida: Transfer out Alojamiento en Ushuaia - Aeropuerto Ushuaia\n");
+  });
+
+  it("out sin ciudad conocida: Transfer out <hotel> - Aeropuerto", () => {
+    const sinCiudad = { ...od022, destino: null };
+    const cuerpo = pedidoA(armarCon(sinCiudad, "2027-01-05", "2027-01-08"), "rumbosur@test").cuerpo;
+    expect(cuerpo).toContain("Traslado de salida: Transfer out Anum - Aeropuerto\n");
+  });
+
+  it("el alojamiento que no entra (in) o no sale (out) esa fecha no se usa", () => {
+    // El hotel de OD027 solo las 2 últimas noches: el día de la llegada no hay hotel que entre.
+    const tarde = {
+      ...od027,
+      servicios: od027.servicios.map((s) => (s.tipo === "alojamiento" ? { ...s, tramosNoches: [{ nocheDesde: 3, noches: 2, lugar: null }] } : s)),
+    } as typeof od027;
+    const cuerpo = pedidoA(armarCon(tarde, "2026-12-19", "2026-12-23"), "cienaga@test").cuerpo;
+    expect(cuerpo).toContain("Traslado de llegada: Transfer in Aeropuerto Salta - Alojamiento\n");
   });
 });

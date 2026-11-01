@@ -199,7 +199,7 @@ describe("M3-41: en el detalle, el pick up del Overland es el hotel de San Pedro
     expect(fila.lastElementChild!.textContent).not.toMatch(/tayka/i);
   });
 
-  it("Petzold (sin hotel de San Pedro en el mail): a confirmar, lo informa Journaway, sin nombre de hotel", async () => {
+  it("Petzold (sin hotel de San Pedro en el mail): a confirmar (sin nombrar a la agencia, M3-42), sin nombre de hotel", async () => {
     const petzold: DetalleReserva = {
       ...spap05,
       fechaInicio: "2027-05-22",
@@ -211,7 +211,7 @@ describe("M3-41: en el detalle, el pick up del Overland es el hotel de San Pedro
       ],
     };
     const fila = await overland(petzold);
-    expect(fila.lastElementChild).toHaveTextContent("hotel en San Pedro de Atacama a confirmar (lo informa Journaway)");
+    expect(fila.lastElementChild).toHaveTextContent("hotel en San Pedro de Atacama a confirmar");
     expect(fila.lastElementChild!.textContent).not.toMatch(/tayka|habitas|don raul/i);
   });
 });

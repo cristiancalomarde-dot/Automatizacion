@@ -14,9 +14,12 @@ export function esHotelDelOverland(texto: string | null | undefined): boolean {
   return !!texto && TAYKA.test(texto);
 }
 
-/** "hotel en San Pedro de Atacama a confirmar (lo informa Journaway)". */
-export function hotelEnSanPedroAConfirmar(agencia: string | null | undefined): string {
-  return `hotel en San Pedro de Atacama a confirmar (lo informa ${agencia?.trim() || "la agencia"})`;
+/**
+ * "hotel en San Pedro de Atacama a confirmar". M3-42 (owner, 2026-11-01): sin nombrar a la agencia
+ * (antes decía "(lo informa Journaway)").
+ */
+export function hotelEnSanPedroAConfirmar(): string {
+  return "hotel en San Pedro de Atacama a confirmar";
 }
 
 /** Un pick up de otra parte de la reserva (una excursión o traslado en San Pedro) con su fecha. */
@@ -69,12 +72,11 @@ const OVERLAND = /\boverland\b/i;
 export function partesConElPickUpDelOverland<T extends ParteConPickUp>(
   partes: readonly T[],
   hoteles: readonly HotelConNoches[] = [],
-  agencia: string | null = null,
 ): T[] {
   const nombre = (p: ParteConPickUp) => p.producto?.nombre ?? p.descripcion ?? "";
   return partes.map((p) => {
     if (!OVERLAND.test(nombre(p)) || !(esHotelDelOverland(p.pickUp) || esHotelDelOverland(nombre(p)))) return p;
     const otras = partes.filter((x) => x !== p).map((x) => ({ pickUp: x.pickUp, fecha: x.fechaInicio }));
-    return { ...p, pickUp: hotelEnSanPedro(p.fechaInicio, otras, hoteles) ?? hotelEnSanPedroAConfirmar(agencia) };
+    return { ...p, pickUp: hotelEnSanPedro(p.fechaInicio, otras, hoteles) ?? hotelEnSanPedroAConfirmar() };
   });
 }

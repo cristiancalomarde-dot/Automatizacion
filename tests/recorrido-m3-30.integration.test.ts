@@ -167,15 +167,33 @@ const registroMes = (): RegistroUsoIA => ({ gastoDelMes: async () => 0, sumar: a
       for (const p of armado.pedidos) expect(`${p.asunto}\n${p.cuerpo}`).not.toMatch(/Night Bus Peru|Peru/i);
     });
 
-    it("M3-41: el pick up del Overland es el hotel de San Pedro; el mail no lo trae → a confirmar, lo informa Journaway, con el pendiente", async () => {
+    it("M3-41: el pick up del Overland es el hotel de San Pedro; el mail no lo trae → a confirmar (sin nombrar a la agencia, M3-42), con el pendiente", async () => {
       const armado = await armarYGuardarPedidos(admin, reservaId);
       expect(armado.ok).toBe(true);
       if (!armado.ok) return;
       const overland = armado.pedidos.find((p) => /Overland/.test(p.cuerpo))!;
       const pickUps = overland.cuerpo.split("\n").filter((l) => l.startsWith("Pick up"));
-      expect(pickUps).toContain("Pick up: hotel en San Pedro de Atacama a confirmar (lo informa Journaway)");
+      expect(pickUps).toContain("Pick up: hotel en San Pedro de Atacama a confirmar");
       for (const l of pickUps) expect(l).not.toMatch(/tayka|habitas|don raul/i);
       expect(overland.cuerpo).toContain("Les pasamos el alojamiento para el pick up apenas lo tengamos.");
+      expect(overland.cuerpo).not.toMatch(/lo informa/);
+    });
+
+    it("M3-42 #4/#5: el Overland dice la pensión completa y los Tayka no dicen 'con desayuno'", async () => {
+      const armado = await armarYGuardarPedidos(admin, reservaId);
+      expect(armado.ok).toBe(true);
+      if (!armado.ok) return;
+      const overland = armado.pedidos.find((p) => /Overland/.test(p.cuerpo))!;
+      const renglones = overland.cuerpo.split("\n").map((l) => l.replace(/^\d+\) /, ""));
+      const delOverland = renglones.find((l) => l.startsWith("Excursión: Overland"))!;
+      expect(delOverland).toContain("con pensión completa (incluye cena y desayuno en los Tayka)");
+      for (const tayka of ["Alojamiento: Tayka del Desierto", "Alojamiento: Tayka de Sal"]) {
+        const i = renglones.indexOf(tayka);
+        expect(i).toBeGreaterThanOrEqual(0);
+        const habitacion = renglones.slice(i, renglones.indexOf("", i)).find((l) => l.startsWith("Habitación:"));
+        expect(habitacion).toBe("Habitación: DBL Standard");
+      }
+      expect(overland.cuerpo).not.toContain("con desayuno");
     });
   },
 );

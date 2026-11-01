@@ -130,7 +130,7 @@ const CASOS = [
     });
   });
 
-  it("sin habitación (SPAP05 de Journaway, los Tayka del Overland privado), 2 pax: «DBL Standard con desayuno» (M3-21) y un aviso", async () => {
+  it("sin habitación (SPAP05 de Journaway, los Tayka del Overland privado), 2 pax: «DBL Standard» sin desayuno en los Tayka (M3-21, M3-42) y un aviso", async () => {
     const prod = await admin.from("producto").select("id").eq("codigo", "SPAP05").single();
     if (prod.error) throw new Error(prod.error.message);
     const detalle = await cargarProducto(admin, prod.data.id);
@@ -163,7 +163,8 @@ const CASOS = [
     const avisos = pedidos.filter((p) => p.cuerpo.includes("Alojamiento: ")).flatMap((p) => p.avisos);
     console.log(`[M3-18] SPAP05 sin habitación: ${habs.map(([h, x]) => `${h} → ${x}`).join(" | ")} · avisos: ${avisos.join(" | ")}`);
     expect(habs.length).toBeGreaterThan(0);
-    for (const [, x] of habs) expect(x).toBe("Habitación: DBL Standard con desayuno");
+    // M3-42 (owner, 2026-11-01): los Tayka van sin "con desayuno" (la pensión completa del Overland ya lo cubre).
+    for (const [h, x] of habs) expect(x).toBe(/tayka/i.test(h) ? "Habitación: DBL Standard" : "Habitación: DBL Standard con desayuno");
     expect(avisos).toContain("La reserva no dice el tipo de habitación: va DBL por 2 pax. Revisalo con el vendedor.");
   });
 

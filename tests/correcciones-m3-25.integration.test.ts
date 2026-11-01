@@ -211,9 +211,9 @@ function bloque(cuerpo: string, primerRenglon: string): string[] {
 
     it("fila 1: La Ciénaga recibe solo el traslado de llegada", () => {
       const cuerpo = cuerpoDe("florencia@lacienagaturismo.com.ar");
-      // M3-28 (owner, 2026-10-28): el traslado de un solo lado, con el nombre de la ciudad y guion.
-      expect(bloque(cuerpo, "Traslado de llegada: Transfer in Aeropuerto Salta - Alojamiento")).toEqual([
-        "Traslado de llegada: Transfer in Aeropuerto Salta - Alojamiento",
+      // M3-28 (owner, 2026-10-28): el traslado de un solo lado, con el nombre de la ciudad y guion; M3-42 (2026-11-01): y el hotel.
+      expect(bloque(cuerpo, "Traslado de llegada: Transfer in Aeropuerto Salta - Trotamundos Salta")).toEqual([
+        "Traslado de llegada: Transfer in Aeropuerto Salta - Trotamundos Salta",
         "Fecha: 19 dic 2026",
         "Vuelo pendiente",
       ]);
@@ -223,8 +223,8 @@ function bloque(cuerpo: string, primerRenglon: string): string[] {
 
     it("filas 2 y 3: Rumbo Sur recibe solo el traslado de salida y el Beagle sin pick up", () => {
       const cuerpo = cuerpoDe("emiliao@rumbosur.com.ar");
-      expect(bloque(cuerpo, "Traslado de salida: Transfer out Alojamiento en Ushuaia - Aeropuerto Ushuaia")).toEqual([
-        "Traslado de salida: Transfer out Alojamiento en Ushuaia - Aeropuerto Ushuaia",
+      expect(bloque(cuerpo, "Traslado de salida: Transfer out Anum Hostel (Ushuaia) - Aeropuerto Ushuaia")).toEqual([
+        "Traslado de salida: Transfer out Anum Hostel (Ushuaia) - Aeropuerto Ushuaia",
         "Fecha: 8 ene 2027",
         "Vuelo pendiente",
       ]);
@@ -245,11 +245,11 @@ function bloque(cuerpo: string, primerRenglon: string): string[] {
         "Bus: Public Bus El Chalten Bus Station - El Calafate Bus Station",
         "Fecha: 2 ene 2027 · Horario: 8:00 am",
       ]);
-      expect(r.tareas.map((t) => t.texto).filter((t) => t.startsWith("Emitir boleto"))).toEqual([
-        "Emitir boleto: Salta – Mendoza, 23 dic 2026",
-        "Emitir boleto: Mendoza – Bariloche, 26 dic 2026",
-        "Emitir boleto: El Calafate – Río Gallegos, 5 ene 2027",
-        "Emitir boleto: Río Gallegos – Ushuaia, 5 ene 2027",
+      expect(r.tareas.map((t) => t.texto).filter((t) => t.startsWith("Emitir pasaje"))).toEqual([
+        "Emitir pasaje: Salta – Mendoza, 23 dic 2026",
+        "Emitir pasaje: Mendoza – Bariloche, 26 dic 2026",
+        "Emitir pasaje: El Calafate – Río Gallegos, 5 ene 2027",
+        "Emitir pasaje: Río Gallegos – Ushuaia, 5 ene 2027",
       ]);
     });
   });

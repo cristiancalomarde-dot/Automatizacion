@@ -348,7 +348,7 @@ describe("armarPedidos — tareas en vez de mails (fila 8)", () => {
         plantilla,
       ),
     );
-    expect(r.tareas).toContainEqual(expect.objectContaining({ tipo: "emitir_boleto", texto: "Emitir boleto: El Calafate – El Chaltén, 1 mar 2027" }));
+    expect(r.tareas).toContainEqual(expect.objectContaining({ tipo: "emitir_boleto", texto: "Emitir pasaje: El Calafate – El Chaltén, 1 mar 2027" }));
     expect(r.pedidos.some((p) => p.cuerpo.includes("El Calafate – El Chaltén"))).toBe(false);
     expect(r.pedidos).toHaveLength(1);
   });
@@ -664,11 +664,11 @@ describe("armarPedidos — M3-38: el traslado San Pedro → Hito Cajón va dentr
     expect(lineaPickUp(p.cuerpo)).toBe("Pick up: Hotel Don Raul");
   });
 
-  it("M3-41 #2/#4: Petzold (el mail no trae el hotel de San Pedro) → a confirmar, lo informa Journaway, con el pendiente y sin nombre de hotel", () => {
+  it("M3-41 #2/#4: Petzold (el mail no trae el hotel de San Pedro) → a confirmar (sin nombrar a la agencia, M3-42), con el pendiente y sin nombre de hotel", () => {
     const casos: ConSanPedro[] = [{}, { pickUpOverland: "Tayka del Desierto Hotel" }, { pickUpOverland: "Tayka del Desierto Hotel", pickUpSanPedro: null }];
     for (const con of casos) {
       const p = delOverland(armarSpap("SPAP05", con));
-      expect(lineaPickUp(p.cuerpo)).toBe("Pick up: hotel en San Pedro de Atacama a confirmar (lo informa Journaway)");
+      expect(lineaPickUp(p.cuerpo)).toBe("Pick up: hotel en San Pedro de Atacama a confirmar");
       expect(p.cuerpo).not.toMatch(/Don Raul|Habitas/i);
       expect(p.cuerpo).toContain("Les pasamos el alojamiento para el pick up apenas lo tengamos.");
       // #5: las noches en los Tayka siguen en sus renglones de alojamiento.

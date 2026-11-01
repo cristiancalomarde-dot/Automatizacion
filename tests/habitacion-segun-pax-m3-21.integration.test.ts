@@ -182,7 +182,8 @@ const CASOS: Caso[] = [
       const avisos = pedidos.filter((p) => p.cuerpo.includes("Alojamiento: ")).flatMap((p) => p.avisos);
       console.log(`[M3-21] SPAP05 ${pax} pax: ${habs.map(([h, x]) => `${h} → ${x}`).join(" | ")} · avisos: ${[...new Set(avisos)].join(" | ")}`);
       expect(habs.length).toBeGreaterThan(0);
-      for (const [, x] of habs) expect(x).toBe(`Habitación: ${pax === 2 ? "DBL" : "SGL"} Standard con desayuno`);
+      // M3-42 (owner, 2026-11-01): los Tayka van sin "con desayuno" (la pensión completa del Overland ya lo cubre).
+      for (const [h, x] of habs) expect(x).toBe(`Habitación: ${pax === 2 ? "DBL" : "SGL"} Standard${/tayka/i.test(h) ? "" : " con desayuno"}`);
       expect(avisos).toContain(pax === 2 ? AVISO_DBL : AVISO_SGL);
       for (const p of pedidos) expect(p.cuerpo).not.toMatch(/vendedor/i);
     });

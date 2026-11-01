@@ -157,7 +157,7 @@ function ok<T extends { ok: boolean }>(r: T): Extract<T, { ok: true }> {
     const r = ok(await prepararPedidos(equipo, id));
     const boletos = r.tareas.filter((t) => t.tipo === "emitir_boleto");
     expect(boletos.length).toBeGreaterThan(0);
-    expect(boletos.some((t) => /^Emitir boleto: El Calafate/.test(t.texto))).toBe(true);
+    expect(boletos.some((t) => /^Emitir pasaje: El Calafate/.test(t.texto))).toBe(true);
     for (const t of boletos) expect(r.pedidos.some((p) => p.cuerpo.includes(t.texto))).toBe(false);
   });
 
