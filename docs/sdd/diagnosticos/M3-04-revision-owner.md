@@ -68,3 +68,28 @@ Las otras 8 reservas de la lista.
 - **DK1592913:** el vendedor pidió **una noche menos en El Calafate**: corre las fechas de Puerto Natales, del bus
   FTE → PNT y del PNT → PUQ; el alojamiento en PUQ es manual. Pregunta del owner: ¿el sistema avisa o lo resuelve?
   Hoy ya avisa con "La agencia pidió: …" en amarillo; correr las fechas solo es otra pieza (más adelante).
+
+## Tercera ronda — 2026-11-01 (antes del primer envío real del lunes 2026-11-02)
+
+**Bien:** DK1598001, SE1598630, DK1595221, DK1593147, DK1594478, Journaway 67141036449 (salvo el teléfono).
+
+**Generales**
+- **A. Teléfono del pax** en los pedidos a **Cuenca del Plata** (Puerto Iguazú) y **Horizonte Atacama** (San
+  Pedro): lo necesitan para ubicar al pasajero en destino. Y el **pasaporte, siempre que esté** (UK1595157,
+  Journaway 67141036449). → M3-43.
+- **B. Pedidos que no se mandan** (el proveedor no acepta sin vuelo o pasaporte): ¿cómo no olvidarlos? → Ya
+  existe (M3-03 fila 8): la reserva pedida con algún pedido sin enviar lleva la marca "pedido incompleto" en la
+  lista y en el detalle. Se confirma en el primer envío real.
+- **C. Pedir a otro proveedor si no hay lugar** (Rancho Grande → Pioneros del Valle / Patagonia Hostel)
+  reusando el texto. → Para después del MVP; por ahora pedido a mano + copiar y pegar.
+
+**Por reserva**
+- **1389186 (AR10):** el traslado de un solo lado dice "Alojamiento" a secas. Debe nombrar el hotel de esa
+  noche: "Transfer in Aeropuerto Salta - Trotamundos Salta" (La Ciénaga) y "Transfer out Anum Hostel (Ushuaia) -
+  Aeropuerto Ushuaia" (Rumbo Sur). → M3-42.
+- **SE1598630:** "Emitir boleto" → en Argentina se dice **pasaje**: "Emitir pasaje: Bus El Calafate – Puerto
+  Natales". → M3-42.
+- **Journaway 66688059968 (SPAP05, Imperio Inca):** el Overland es **con pensión completa** (decirlo); el pick up
+  no nombra a la agencia ("hotel en San Pedro de Atacama a confirmar", sin "lo informa Journaway"); los Tayka no
+  dicen "con desayuno" (la pensión completa del Overland ya cubre cena y desayuno; "con desayuno" confunde).
+  → M3-42.
