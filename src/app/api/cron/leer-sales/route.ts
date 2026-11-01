@@ -3,8 +3,8 @@ import { lecturaActiva } from "@/lib/lectura-sales/config";
 import { correrLectura, registrarApagada } from "@/lib/lectura-sales/produccion";
 
 /**
- * La lectura diaria de sales@ (spec M2-07): Vercel Cron la llama a las 15:00
- * UTC (12:00 de Argentina, `vercel.json`) con `Authorization: Bearer
+ * La lectura diaria de sales@ (spec M2-07): Vercel Cron la llama a las 16:00
+ * UTC (entre 13 y 14 de Argentina, `vercel.json`) con `Authorization: Bearer
  * <CRON_SECRET>`. El botón "Run" de Vercel → Cron Jobs hace lo mismo.
  *
  * - Sin el secreto correcto (o sin CRON_SECRET en el servidor): 401, sin
