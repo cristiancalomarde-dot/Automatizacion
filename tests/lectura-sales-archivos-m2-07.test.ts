@@ -1,5 +1,5 @@
 // Spec M2-07 — lo que se comprueba leyendo archivos: #1 (el servidor solo de la
-// variable), #4 (un solo cron a las 15:00 UTC), #16 (ningún camino para mandar
+// variable), #4 (un solo cron a las 16:00 UTC; owner 2026-11-01), #16 (ningún camino para mandar
 // mails) y #22 (.env.example con los nombres, sin valores).
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join, resolve } from "node:path";
@@ -13,9 +13,9 @@ const archivos = (dir: string): string[] =>
   });
 
 describe("M2-07 en los archivos", () => {
-  it("#4: vercel.json tiene exactamente un cron a /api/cron/leer-sales a las 15:00 UTC (12:00 de Argentina)", () => {
+  it("#4: vercel.json tiene exactamente un cron a /api/cron/leer-sales a las 16:00 UTC (entre 13 y 14 de Argentina)", () => {
     const v = JSON.parse(readFileSync(join(RAIZ, "vercel.json"), "utf-8"));
-    expect(v.crons).toEqual([{ path: "/api/cron/leer-sales", schedule: "0 15 * * *" }]);
+    expect(v.crons).toEqual([{ path: "/api/cron/leer-sales", schedule: "0 16 * * *" }]);
   });
 
   it("#1: en src/ y scripts/ no aparece el servidor de Ferozo ni una clave", () => {
