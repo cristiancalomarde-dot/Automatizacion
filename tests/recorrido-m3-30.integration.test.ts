@@ -195,5 +195,16 @@ const registroMes = (): RegistroUsoIA => ({ gastoDelMes: async () => 0, sumar: a
       }
       expect(overland.cuerpo).not.toContain("con desayuno");
     });
+
+    it("M3-44 #2: el pedido del Overland (su única excursión) pide el horario de salida desde San Pedro", async () => {
+      const armado = await armarYGuardarPedidos(admin, reservaId);
+      expect(armado.ok).toBe(true);
+      if (!armado.ok) return;
+      const overland = armado.pedidos.find((p) => /Overland/.test(p.cuerpo))!;
+      expect(overland.cuerpo).toContain("¿Nos confirman el horario de salida del Overland desde San Pedro de Atacama, por favor?");
+      expect(overland.cuerpo).not.toMatch(/horario de la excursi/);
+      // Los otros pedidos con excursiones siguen con el renglón de siempre.
+      for (const p of armado.pedidos.filter((x) => x !== overland)) expect(p.cuerpo).not.toContain("horario de salida del Overland");
+    });
   },
 );

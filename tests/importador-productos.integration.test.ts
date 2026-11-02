@@ -323,8 +323,8 @@ interface FilaServicioDB {
       }
     }, TIMEOUT);
 
-    it("M1-04b #4 Beer asignado a Tangoinn (confirmado por el owner 2026-09-27, ya sin marca); Tetris resuelto por WhatsApp (M1-04d)", async () => {
-      const { data: tango } = await admin.from("proveedor").select("id").eq("nombre", "Tangoinn Bed & Brewery IGR").single();
+    it("M1-04b #4 Beer asignado a Beer Hostel (ex Tangoinn, confirmado por el owner 2026-09-27; M3-44: renombrado 2026-11-01), ya sin marca; Tetris resuelto por WhatsApp (M1-04d)", async () => {
+      const { data: tango } = await admin.from("proveedor").select("id").eq("nombre", "Beer Hostel").eq("ciudad", "IGUAZU").single();
       const todas = await todasLasFilas();
       const beer = todas.filter((f) => ["Beer", "Beer Hostel"].includes(f.booking_supplier_nombre ?? ""));
       expect(beer.map((f) => f.codigo)).toEqual(["OD010A", "OD010C", "OD010D"]);

@@ -676,6 +676,8 @@ export const TEXTOS = {
     /** M3-34 (staff, 2026-10-28): con al menos una excursión, que reconfirmen el horario; sin excursiones, nada. */
     horarioExcursiones: (n: number) =>
       n <= 0 ? "" : n === 1 ? "¿Nos confirman el horario de la excursión, por favor?" : "¿Nos confirman el horario de las excursiones, por favor?",
+    /** M3-44 (owner, 2026-11-01): si la única excursión del pedido es el Overland (UYUO01). */
+    horarioOverland: "¿Nos confirman el horario de salida del Overland desde San Pedro de Atacama, por favor?",
   },
   /** Revisión y envío de los pedidos a proveedores (spec M3-02, user-flow.md §5.4). */
   pedidos: {

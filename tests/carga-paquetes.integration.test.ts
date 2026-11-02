@@ -13,6 +13,7 @@ import { resolve } from "node:path";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { importarProveedores } from "@/lib/importador-proveedores/importar";
+import { BEER_HOSTEL, renombrarProveedor } from "@/lib/importador-proveedores/renombrar";
 import { TIPO_CORRIDA_PAQUETES } from "@/lib/importador-productos/carga-paquetes";
 import { cargarEquivalencias } from "@/lib/importador-productos/equivalencias";
 import { CODIGOS_PILOTO, importarProductosSimples, type ResumenImportacionProductos } from "@/lib/importador-productos/importar";
@@ -106,6 +107,8 @@ interface Fila {
     it("#1 re-importar el Excel de proveedores actualizado deja los nuevos con mail o canal", async () => {
       const r = await importarProveedores({ admin, rutaArchivo: RUTA_PROVEEDORES, consultarIA: null });
       importaciones.push(r.importacionId);
+      // M3-44: el Excel todavía dice "Tangoinn Bed & Brewery IGR" y la recarga lo vuelve a llamar así; como el owner, se renombra a Beer Hostel.
+      await renombrarProveedor(admin, BEER_HOSTEL, { aplicar: true });
       for (const nombre of ["Anum Hostel", "Del Glaciar / Juan Pablo", "Rincon del calafate", "Dazzler San Martin", "Bamboo Hostel Rio", "Rodrigo Perez"]) {
         const { data } = await admin.from("proveedor").select("nombre, mails, canal").eq("nombre", nombre);
         expect(data, nombre).not.toHaveLength(0);

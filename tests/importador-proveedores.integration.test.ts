@@ -25,6 +25,7 @@ import {
 } from "@/lib/importador-proveedores/importar";
 import type { ConsultarIA } from "@/lib/importador-proveedores/resolver";
 import { parsearProveedoresBorrados } from "@/lib/importador-proveedores/cambios";
+import { BEER_HOSTEL, renombrarProveedor } from "@/lib/importador-proveedores/renombrar";
 import { credencialesSupabaseDisponibles } from "./helpers/entorno-supabase";
 
 const RAIZ = resolve(__dirname, "..");
@@ -81,6 +82,8 @@ interface FilaProveedorDB {
   });
 
   afterAll(async () => {
+    // M3-44: el Excel todavía dice "Tangoinn Bed & Brewery IGR" y la recarga lo vuelve a llamar así; como el owner, se renombra a Beer Hostel.
+    await renombrarProveedor(admin, BEER_HOSTEL, { aplicar: true });
     if (importacionesDePrueba.length) {
       await admin.from("importacion").delete().in("id", importacionesDePrueba);
     }

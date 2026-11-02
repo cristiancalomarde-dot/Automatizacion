@@ -22,7 +22,7 @@ export const cuenca: ProveedorResumen = {
 };
 export const tangoinn: ProveedorResumen = {
   id: "prov-tangoinn",
-  nombre: "Tangoinn Bed & Brewery IGR",
+  nombre: "Beer Hostel", // M3-44: antes "Tangoinn Bed & Brewery IGR"
   mails: ["beerhotel@tangoinn.com", "beerhotel@cervezaholy.com"],
   canal: "mail",
   telefono: null,

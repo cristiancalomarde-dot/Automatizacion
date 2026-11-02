@@ -168,8 +168,9 @@ describe("M3-25 fila 1 — OD027 en AR10: el traslado de La Ciénaga es solo de 
     const suelto = { ...od027, servicios: od027.servicios.map((s) => ({ ...s, ajusteTour: undefined })) };
     const r = ok(armarPedidos(reserva({ productoId: suelto.id, fechaInicio: "2026-12-19", fechaFin: "2026-12-23" }), catalogoCon([suelto], [], dias), plantilla));
     const cuerpo = pedidoA(r, "cienaga@test").cuerpo;
-    expect(cuerpo).toContain("Traslado de llegada: Transfer SLA - Accommodation - SLA");
-    expect(cuerpo).toContain("Traslado de salida: Transfer SLA - Accommodation - SLA");
+    // M3-44 (owner, 2026-11-01): todo traslado nombra el hotel, también el de ida y vuelta.
+    expect(cuerpo).toContain("Traslado de llegada: Transfer SLA - Trotamundos Salta - SLA");
+    expect(cuerpo).toContain("Traslado de salida: Transfer SLA - Trotamundos Salta - SLA");
   });
 
   it("si el ajuste del tour trae su texto, va ese", () => {
@@ -182,7 +183,8 @@ describe("M3-25 fila 1 — OD027 en AR10: el traslado de La Ciénaga es solo de 
         plantilla,
       ),
     );
-    expect(pedidoA(r, "cienaga@test").cuerpo).toContain("Traslado de llegada: Transfer aeropuerto de Salta - alojamiento\nFecha: 19 dic 2026");
+    // M3-44 (owner, 2026-11-01): el texto del ajuste, con el hotel en lugar de "alojamiento".
+    expect(pedidoA(r, "cienaga@test").cuerpo).toContain("Traslado de llegada: Transfer aeropuerto de Salta - Trotamundos Salta\nFecha: 19 dic 2026");
   });
 });
 

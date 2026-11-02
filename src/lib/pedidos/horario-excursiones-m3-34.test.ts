@@ -97,3 +97,26 @@ describe("M3-34 fila 3 — sin excursiones, sin renglón", () => {
     expect(p.cuerpo).not.toMatch(/horario de la/);
   });
 });
+
+describe("M3-44 #2 (owner, 2026-11-01) — el horario del Overland", () => {
+  const OVERLAND = "¿Nos confirman el horario de salida del Overland desde San Pedro de Atacama, por favor?";
+  const overland = (id: string) =>
+    servicio({ productoId: id, tipo: "excursion", orden: 1, descripcion: "Excursion: Overland privado San Pedro – Uyuni. Booking Supplier: Imperio Inca", serviceProviderNombre: "Overland San Pedro – Uyuni", bookingSupplier: P.imperio });
+
+  it("si la única excursión del pedido es el Overland, pide el horario de salida desde San Pedro", () => {
+    const prod = producto("prod-uyuo", "UYUO01", [overland("prod-uyuo")], { destino: "SPA" });
+    const p = pedidoA(ok(armarPedidos(reserva({ productoId: prod.id, fechaInicio: "2027-05-26", fechaFin: "2027-05-28" }), catalogoCon([prod]), plantilla)), "reservas@imperioinca.test");
+    expect(p.cuerpo).toContain(OVERLAND);
+    expect(p.cuerpo).not.toContain(SINGULAR);
+  });
+
+  it("con otra excursión en el mismo pedido, el renglón de siempre", () => {
+    const prod = producto("prod-uyuo2", "UYUO02", [
+      overland("prod-uyuo2"),
+      servicio({ productoId: "prod-uyuo2", tipo: "excursion", orden: 2, descripcion: "Excursion: Valle de la Luna. Booking Supplier: Imperio Inca", serviceProviderNombre: "Valle de la Luna", bookingSupplier: P.imperio }),
+    ], { destino: "SPA" });
+    const p = pedidoA(ok(armarPedidos(reserva({ productoId: prod.id, fechaInicio: "2027-05-26", fechaFin: "2027-05-28" }), catalogoCon([prod]), plantilla)), "reservas@imperioinca.test");
+    expect(p.cuerpo).toContain(PLURAL);
+    expect(p.cuerpo).not.toContain(OVERLAND);
+  });
+});

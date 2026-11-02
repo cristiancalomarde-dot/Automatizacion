@@ -26,6 +26,7 @@ import { parsearPaquetesPiloto } from "@/lib/importador-productos/paquetes-pilot
 import { parsearRenglonesAgregados } from "@/lib/importador-productos/renglones-agregados";
 import { parsearProveedoresBorrados } from "@/lib/importador-proveedores/cambios";
 import { importarProveedores } from "@/lib/importador-proveedores/importar";
+import { BEER_HOSTEL, renombrarProveedor } from "@/lib/importador-proveedores/renombrar";
 import { importarToursCompuestos, type ResumenImportacionTours } from "@/lib/importador-tours/importar";
 import { hayInsumosTours, leerInsumosTours } from "@/lib/importador-tours/insumos";
 import { nochesBasePaquete } from "@/lib/importador-tours/noches-base";
@@ -204,6 +205,8 @@ interface Fila {
       borrados: parsearProveedoresBorrados(dato("proveedores-borrados.csv")),
     });
     importaciones.push(prov.importacionId);
+    // M3-44: el Excel todavía dice "Tangoinn Bed & Brewery IGR" y la recarga lo vuelve a llamar así; como el owner, se renombra a Beer Hostel.
+    await renombrarProveedor(admin, BEER_HOSTEL, { aplicar: true });
     const ps = await todo<{ codigo: string }>("producto", "codigo");
     existentes = ps.map((p) => p.codigo).filter((c) => !NUEVOS.includes(c) && !CAMBIA.includes(c)).sort();
     fotoAntes = await foto(existentes);

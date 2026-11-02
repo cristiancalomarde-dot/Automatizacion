@@ -63,6 +63,8 @@ export interface TextosDelPedido {
   pasajeroPrincipal: string;
   pax: { nacionalidad: string; nacimiento: string; pasaporte: string; pendiente: string; telefono: string };
   horarioExcursiones: (n: number) => string;
+  /** M3-44: si la única excursión del pedido es el Overland. */
+  horarioOverland: string;
 }
 
 const ES: TextosDelPedido = {
@@ -108,6 +110,7 @@ const ES: TextosDelPedido = {
   pasajeroPrincipal: "pasajero principal",
   pax: { nacionalidad: "Nacionalidad", nacimiento: "Fecha de nacimiento", pasaporte: "Pasaporte", pendiente: "pendiente", telefono: "Teléfono" },
   horarioExcursiones: TEXTOS.pedidoProveedor.horarioExcursiones,
+  horarioOverland: TEXTOS.pedidoProveedor.horarioOverland,
 };
 
 const PT: TextosDelPedido = {
@@ -154,6 +157,7 @@ const PT: TextosDelPedido = {
   pax: { nacionalidad: "Nacionalidade", nacimiento: "Data de nascimento", pasaporte: "Passaporte", pendiente: "pendente", telefono: "Telefone" },
   horarioExcursiones: (n) =>
     n <= 0 ? "" : n === 1 ? "Vocês podem nos confirmar o horário do passeio, por favor?" : "Vocês podem nos confirmar o horário dos passeios, por favor?",
+  horarioOverland: "Vocês podem nos confirmar o horário de saída do Overland desde San Pedro de Atacama, por favor?",
 };
 
 export const TEXTOS_DEL_PEDIDO: Readonly<Record<Idioma, TextosDelPedido>> = { es: ES, pt: PT };

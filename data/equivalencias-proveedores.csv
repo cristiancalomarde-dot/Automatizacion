@@ -17,8 +17,8 @@ IGR,Taroba Hotel 3* sup/4,HOTEL TAROBA,alias,confirmado,
 IGR,Bambu,Bambu hostel,alias,confirmado,
 IGR,Bambu Foz,Bambu hostel,alias,confirmado,
 IGR,Bambu Hostel Foz,Bambu hostel,alias,confirmado,
-IGR,Beer,Tangoinn Bed & Brewery IGR,alias,confirmado,"Cambió de nombre de Tangoinn Bed & Brewery a Beer; confirmado por el owner 2026-09-27 (mails: beerhotel@tangoinn.com y beerhotel@cervezaholy.com)"
-IGR,Beer Hostel,Tangoinn Bed & Brewery IGR,alias,confirmado,"Cambió de nombre de Tangoinn Bed & Brewery a Beer; confirmado por el owner 2026-09-27"
+IGR,Beer,Beer Hostel,alias,confirmado,"Cambió de nombre de Tangoinn Bed & Brewery a Beer; confirmado por el owner 2026-09-27 (mails: beerhotel@tangoinn.com y beerhotel@cervezaholy.com). M3-44 (owner 2026-11-01): en el directorio se llama Beer Hostel (npm run renombrar:beer-hostel)"
+IGR,Beer Hostel,Beer Hostel,alias,confirmado,"Cambió de nombre de Tangoinn Bed & Brewery a Beer; confirmado por el owner 2026-09-27. M3-44 (owner 2026-11-01): en el directorio se llama Beer Hostel"
 IGR,Tetris,Tetris Hostel Foz do Iguacu,alias,confirmado,"Se reserva por WhatsApp; confirmado por el owner (2026-10-05)"
 USH,Albatros,albatros hotel ushuaia,alias,confirmado,"Confirmado por el owner (2026-10-03/05, diagnóstico M1-04c)"
 USH,Altos de Ushuaia,Altos Ushuaia,alias,confirmado,"Confirmado por el owner (2026-10-03/05, diagnóstico M1-04c)"

@@ -27,6 +27,7 @@
     "leer:sales": "tsx --conditions=react-server scripts/leer-sales.ts",
     "armar:pedidos": "tsx --conditions=react-server scripts/armar-pedidos.ts",
     "sumar:vuelos-sin-numero": "tsx scripts/sumar-vuelos-sin-numero.ts",
+    "renombrar:beer-hostel": "tsx scripts/renombrar-beer-hostel.ts",
     "reprocesar:mail": "tsx --conditions=react-server scripts/reprocesar-mail.ts"
   },
   "dependencies": {

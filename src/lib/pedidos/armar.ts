@@ -135,6 +135,8 @@ interface Item {
   tour?: TourDeFicha;
   /** M3-34: cuántas excursiones pide (el paquete 105 de Iguazú, una por lado), para pedir el horario. */
   excursiones: number;
+  /** M3-44: la excursión es el Overland (UYUO01). */
+  overland?: boolean;
 }
 
 /** Un paquete (o producto suelto) de la reserva, con sus fechas y su lugar en el tour. */
@@ -670,7 +672,9 @@ class Armado {
     const cubre: ParteCubierta = { parteId: b.parteId, productoServicioId: s.id, producto: b.codigo, fecha: a.fecha };
     // M3-34: el paquete con traslados (105 de Iguazú) cuenta sus excursiones; una excursión suelta, una.
     const excursiones = a.conDia ? a.conDia.filter((x) => x.tipo === "excursion").length : s.tipo === "excursion" ? 1 : 0;
-    this.agregar(proveedor, s.tipo, a.renglones, a.fecha, cubre, a.datosPax, [...avisos, ...a.avisos], a.pendientes, a.tour, a.hasta ?? null, excursiones);
+    // M3-44: la excursión es el Overland (UYUO01), para pedir el horario de salida desde San Pedro.
+    const overland = excursiones === 1 && !a.conDia && esOverland(`${nombre} ${s.descripcion ?? ""}`);
+    this.agregar(proveedor, s.tipo, a.renglones, a.fecha, cubre, a.datosPax, [...avisos, ...a.avisos], a.pendientes, a.tour, a.hasta ?? null, excursiones, overland);
   }
 
   private agregar(
@@ -685,8 +689,9 @@ class Armado {
     tour?: TourDeFicha,
     hasta: string | null = null,
     excursiones = 0,
+    overland = false,
   ): void {
-    this.items.push({ proveedor, tipo, renglones, fecha, hasta, seq: this.seq++, cubre, datosPax, avisos, pendientes, tour, excursiones });
+    this.items.push({ proveedor, tipo, renglones, fecha, hasta, seq: this.seq++, cubre, datosPax, avisos, pendientes, tour, excursiones, overland });
   }
 
   private tarea(tipo: TareaArmada["tipo"], texto: string, detalle: Record<string, unknown>, fecha: string | null): void {
@@ -1037,17 +1042,42 @@ class Armado {
   private nombreDeUnLado(b: Bloque, s: Servicio, nombre: string, lado: Lado, fecha: string | null): string {
     if (s.sentido !== "ida_y_vuelta" || s.ajusteTour?.accion === "reemplazar") return nombre;
     if (s.ajusteTour?.texto) return s.ajusteTour.texto;
-    const enElTexto = `${s.descripcion ?? ""} ${nombre}`.match(/\b[A-Z]{3}\b/g) ?? [];
-    const codigo = enElTexto.find((c) => NOMBRE_DESTINO[c]) ?? b.destino;
-    const ciudad = codigo ? (NOMBRE_DESTINO[codigo] ?? null) : null;
+    const { ciudad, hotel } = this.hotelDelTraslado(b, s, nombre, lado, fecha);
     const en = (prefijo: string) => (ciudad ? `${prefijo}${ciudad}` : "");
-    const deEsaCiudad = (x: Estadia) => !ciudad || !x.ciudad || x.ciudad === ciudad;
-    const hotel = fecha ? this.estadias.find((x) => (lado === "in" ? x.desde : x.hasta) === fecha && deEsaCiudad(x))?.hotel : undefined;
     if (hotel) return lado === "in" ? `Transfer in Aeropuerto${en(" ")} - ${hotel}` : `Transfer out ${hotel}${ciudad ? ` (${ciudad})` : ""} - Aeropuerto${en(" ")}`;
     return lado === "in" ? `Transfer in Aeropuerto${en(" ")} - Alojamiento` : `Transfer out Alojamiento${en(" en ")} - Aeropuerto${en(" ")}`;
   }
 
-  private unTraslado(b: Bloque, s: Servicio, nombre: string, lado: Lado | null, fecha: string | null): Renglones {
+  /**
+   * M3-42: el hotel de la reserva en la ciudad del traslado, el que entra la fecha de la llegada (in) o sale
+   * la de la salida (out). La ciudad sale de los códigos del renglón (SLA, USH) o del destino del paquete.
+   */
+  private hotelDelTraslado(b: Bloque, s: Servicio, nombre: string, lado: Lado, fecha: string | null, dondeDuerme: string | null = null): { ciudad: string | null; hotel: string | undefined } {
+    const enElTexto = `${s.descripcion ?? ""} ${nombre}`.match(/\b[A-Z]{3}\b/g) ?? [];
+    const codigo = enElTexto.find((c) => NOMBRE_DESTINO[c]) ?? b.destino;
+    const ciudad = codigo ? (NOMBRE_DESTINO[codigo] ?? null) : null;
+    // M3-44: si el texto dice dónde duerme ("alojamiento en La Paz"), esa ciudad: el código puede ser el del aeropuerto (CJC).
+    const donde = dondeDuerme ? normalizarTexto(dondeDuerme) : null;
+    const deEsaCiudad = (x: Estadia) =>
+      !x.ciudad || (donde ? normalizarTexto(x.ciudad).includes(donde) || donde.includes(normalizarTexto(x.ciudad)) : !ciudad || x.ciudad === ciudad);
+    const hotel = fecha ? this.estadias.find((x) => (lado === "in" ? x.desde : x.hasta) === fecha && deEsaCiudad(x))?.hotel : undefined;
+    return { ciudad, hotel };
+  }
+
+  /**
+   * M3-44 (owner, 2026-11-01): todo traslado nombra el hotel. El lugar genérico del texto ("accommodation",
+   * "La Paz Accommodation", "alojamiento en La Paz") se cambia por el hotel de la reserva (la búsqueda de M3-42);
+   * sin lado, el que dice el texto: el alojamiento al principio es la salida, después la llegada. Sin hotel, igual.
+   */
+  private conElHotel(b: Bloque, s: Servicio, nombre: string, lado: Lado | null, fecha: string | null): string {
+    const lugar = lugarGenericoDelTraslado(nombre);
+    if (!lugar) return nombre;
+    const { hotel } = this.hotelDelTraslado(b, s, nombre, lado ?? (lugar.alPrincipio ? "out" : "in"), fecha, lugar.ciudad);
+    return hotel ? lugar.con(hotel) : nombre;
+  }
+
+  private unTraslado(b: Bloque, s: Servicio, nombreDelServicio: string, lado: Lado | null, fecha: string | null): Renglones {
+    const nombre = this.conElHotel(b, s, nombreDelServicio, lado, fecha);
     const iguazu = IGUAZU.has(b.destino ?? "");
     const texto = s.ajusteTour?.texto ?? s.descripcion ?? nombre;
     const codigos = iguazu ? ["IGR", "IGU"] : (lugarDelTraslado(texto, b.destino)?.codigos ?? []);
@@ -1319,6 +1349,26 @@ export function buscarVuelo(vuelos: readonly VueloDeReserva[], lado: Lado, codig
  * El nombre de un servicio para el mail: sin "Booking Supplier: …" (con sus
  * variantes mal escritas), sin el prefijo de tipo ni signos sueltos al final.
  */
+/** El tramo de un traslado que nombra el alojamiento genérico, con su ciudad (M3-44). */
+const ALOJAMIENTO_GENERICO = /^(\s*(?:transfer|traslado)(?:\s+(?:regular|privado|private|in|out))*\s+)?(.*?)\b(?:accommodation|alojamiento)\b(?:\s+(?:in|en)\s+(.+))?$/i;
+
+/**
+ * M3-44: dónde dice el alojamiento genérico un traslado ("Transfer SCL - accommodation", "La Paz Accommodation",
+ * "Accommodation in San Pedro de Atacama", "Transfer alojamiento en La Paz") y cómo queda con el hotel: el tramo
+ * entero (entre guiones) se cambia, ciudad incluida; el "Transfer" de adelante se conserva. null si no lo dice.
+ */
+export function lugarGenericoDelTraslado(texto: string): { alPrincipio: boolean; ciudad: string | null; con: (hotel: string) => string } | null {
+  const partes = texto.split(/(\s+[-–]\s+)/);
+  const i = partes.findIndex((p, j) => j % 2 === 0 && ALOJAMIENTO_GENERICO.test(p));
+  if (i < 0) return null;
+  const [, prefijo, antes, despues] = partes[i].match(ALOJAMIENTO_GENERICO)!;
+  return {
+    alPrincipio: i === 0,
+    ciudad: (despues ?? antes).trim() || null,
+    con: (hotel) => partes.map((p, j) => (j === i ? `${prefijo ?? ""}${hotel}` : p)).join(""),
+  };
+}
+
 export function nombreLimpio(texto: string): string {
   return texto
     .split("\n")[0]
@@ -1462,6 +1512,14 @@ function asuntoYReferencia(reserva: ReservaParaPedidos, catalogo: CatalogoParaPe
 }
 
 /** Por qué no se arman pedidos para una reserva en ese estado (fila 10); null si se puede. */
+/** M3-34/M3-44: el renglón del horario: el de las excursiones o, si la única es el Overland, el de su salida. */
+function horarioDelPedido(items: Item[], idioma: Idioma): string {
+  const tx = TEXTOS_DEL_PEDIDO[idioma];
+  const excursiones = items.reduce((n, it) => n + it.excursiones, 0);
+  const soloOverland = excursiones > 0 && items.every((it) => it.excursiones === 0 || it.overland);
+  return soloOverland ? tx.horarioOverland : tx.horarioExcursiones(excursiones);
+}
+
 export function porQueNoSeArma(estado: ReservaParaPedidos["estado"]): string | null {
   if (estado === "para_revision") return MENSAJES.paraRevision;
   // M3-03: una reserva ya pedida se vuelve a armar para completar lo que quedó sin enviar (lo enviado se conserva).
@@ -1518,8 +1576,8 @@ export function armarPedidos(reserva: ReservaParaPedidos, catalogo: CatalogoPara
         cuerpo: comoSeEscribe(
           completar(pl.cuerpo, {
             servicios,
-            // M3-34: con al menos una excursión, que reconfirmen el horario.
-            horario: TEXTOS_DEL_PEDIDO[idioma].horarioExcursiones(g.items.reduce((n, it) => n + it.excursiones, 0)),
+            // M3-34: con al menos una excursión, que reconfirmen el horario; M3-44: si es solo el Overland, el de salida.
+            horario: horarioDelPedido(g.items, idioma),
             pasajeros,
             pendientes,
           }),
