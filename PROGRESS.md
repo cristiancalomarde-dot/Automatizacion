@@ -8,9 +8,7 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
   hotel, Overland con pensión completa, Tayka sin desayuno, pick up sin nombrar a Journaway), M3-43 (teléfono y
   pasaporte del pax; teléfono solo a Cuenca/Horizonte, lectura v6), M3-44 (todo traslado nombra el hotel, horario
   de salida del Overland, Beer Hostel) y M3-45 (aviso de traslado nocturno de Cuenca, 21 a 07 hs).
-  - Owner corrió `importar:journaway` (3 servicios). **Falta (owner):** `npm run renombrar:beer-hostel -- --aplicar`
-    y después `npm run importar:equivalencias`; cambiar "Tangoinn Bed & Brewery IGR" → "Beer Hostel" en el Excel
-    de proveedores (si no, la próxima carga del directorio lo revierte).
+  - Owner corrió `importar:journaway` (3 servicios). Beer Hostel: renombrado en la base, equivalencias cargadas (2 actualizadas) y corregido en el Excel (owner, 2026-11-01).
   - **Mañana 2026-11-02 (M3-04, último paso):** el owner carga `PEDIDOS_ENVIO_REAL=si` en Vercel + redeploy (vuelta
     atrás: `no` + redeploy); primer envío real de un pedido simple con el owner mirando; confirmar la marca
     "pedido incompleto"; después el equipo arranca con las reservas de la lectura de las 13-14.
