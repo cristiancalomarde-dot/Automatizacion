@@ -1,0 +1,6 @@
+proveedor,empresa,desde,hasta,nota
+Transfers IGU - Puerto Iguazu Hotels (regular 7 AM - 9 PM; privado de noche) IGRT01,Cuenca del Plata,21:00,07:00,"Owner 2026-11-01 (M3-45, DK1592913): catálogo de Cuenca del Plata, ""Transfer In o Transfer Out realizados desde las 21 hs. hasta las 07 hs. se realizan únicamente en forma privada y se confirma con las tarifas en privado"". Cada fila nombra un proveedor del directorio (se compara sin mayúsculas ni acentos); empresa es cómo lo nombra el aviso. Rango inclusivo, cruza la medianoche. Mismos nombres que data/proveedores-con-telefono.csv (M3-43): las filas de Cuenca con traslados"
+"Paquetes 105 Premium: Transfer in+out en IGR, Lado Arg, lado Bra",Cuenca del Plata,21:00,07:00,Cuenca del Plata (M3-45): paquete con traslados
+"Paquete 105 Premium desde Foz: Transfer in+out en Foz/Igu, Lado Arg, Lado Bra IGRP01",Cuenca del Plata,21:00,07:00,Cuenca del Plata (M3-45): paquete con traslados
+PKT 101 x Foz: Transfer in + UN lado (argentino o brasileño) + transfer out IGRP02,Cuenca del Plata,21:00,07:00,Cuenca del Plata (M3-45): paquete con traslados
+Cuenca del Plata,Cuenca del Plata,21:00,07:00,"Cuenca del Plata (M3-45), por si una fila del directorio se llama así"

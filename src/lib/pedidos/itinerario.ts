@@ -11,6 +11,8 @@
  *   pares / impares.
  * - **Salidas de un bus por fecha** (`data/salidas-bus.csv`, M3-27): el calendario de un tramo
  *   (Bariloche ↔ El Chaltén) entre dos fechas; fuera de lo cargado, avisa que hay que confirmar.
+ * - **Traslado nocturno** (`data/traslados-nocturnos.csv`, M3-45): el traslado de un proveedor que de
+ *   noche lo hace solo en privado (Cuenca del Plata, 21:00 a 07:00) y el vuelo llega (o sale) en ese rango.
  *
  * Las fechas van como "AAAA-MM-DD". Los rangos fijos van como "MM-DD" (inclusive; pueden cruzar el
  * año: 12-27 → 01-03). Los relativos a la Pascua, como "P-52" … "P0" (días desde el domingo de Pascua
@@ -24,6 +26,7 @@ export const ARCHIVO_BLACKOUTS = "data/blackouts.csv";
 export const ARCHIVO_FECHAS_ESPECIALES = "data/fechas-especiales.csv";
 export const ARCHIVO_DIAS_BUS = "data/dias-bus.csv";
 export const ARCHIVO_SALIDAS_BUS = "data/salidas-bus.csv";
+export const ARCHIVO_TRASLADOS_NOCTURNOS = "data/traslados-nocturnos.csv";
 
 export interface Blackout {
   producto: string;
@@ -69,15 +72,26 @@ export interface SalidasDeBus {
   proveedor: string;
 }
 
+/** M3-45: el proveedor (su nombre en el directorio) que de `desde` a `hasta` ("HH:MM", inclusive) hace el traslado solo en privado. */
+export interface TrasladoNocturno {
+  proveedor: string;
+  /** Cómo lo nombra el aviso ("Cuenca del Plata"). */
+  empresa: string;
+  desde: string;
+  hasta: string;
+}
+
 export interface ReglasItinerario {
   blackouts: readonly Blackout[];
   fechasEspeciales: readonly FechaEspecial[];
   diasBus: readonly DiasDeBus[];
   /** M3-27: los calendarios por fecha (`data/salidas-bus.csv`). */
   salidasBus: readonly SalidasDeBus[];
+  /** M3-45: los traslados que de noche van solo en privado (`data/traslados-nocturnos.csv`). */
+  trasladosNocturnos?: readonly TrasladoNocturno[];
 }
 
-export const SIN_REGLAS: ReglasItinerario = { blackouts: [], fechasEspeciales: [], diasBus: [], salidasBus: [] };
+export const SIN_REGLAS: ReglasItinerario = { blackouts: [], fechasEspeciales: [], diasBus: [], salidasBus: [], trasladosNocturnos: [] };
 
 // --- Fechas -------------------------------------------------------------------------------------
 
@@ -164,6 +178,15 @@ export interface ServicioConDia {
   fecha: string | null;
   /** El destino del paquete (el de salida, en un bus). */
   destino: string | null;
+  /** M3-45: el vuelo de un traslado de llegada (in) o de salida (out), con su hora tal como la trajo el mail. */
+  vuelo?: VueloDelTraslado;
+}
+
+/** M3-45: el lado del traslado y su vuelo (número y hora local del mail; null si no vino). */
+export interface VueloDelTraslado {
+  lado: "in" | "out";
+  numero: string | null;
+  hora: string | null;
 }
 
 /** Las filas que valen para el destino: las que lo nombran o, si ninguna, las de "*". */
@@ -280,6 +303,40 @@ export function avisosDeDiasDeBus(reglas: ReglasItinerario, bus: { ruta: string;
   return [`El bus ${nombre(tramo.origen)} → ${nombre(tramo.destino)} cae ${fechaLarga(bus.fecha)}; según la planilla sale ${textoDeDias(regla.dias)}.`, ...porFecha];
 }
 
+// --- Traslados nocturnos (M3-45) ----------------------------------------------------------------
+
+const HORA = /^([01]?\d|2[0-3]):([0-5]\d)(?::[0-5]\d)?$/;
+const claveProveedor = (t: string) => sinAcentos(t).replace(/\s+/g, " ");
+
+/** "22:40", "5:30" o "22:40:00" → los minutos desde la medianoche; null si no es una hora. */
+function minutos(hora: string | null | undefined): number | null {
+  const m = (hora ?? "").trim().match(HORA);
+  return m ? Number(m[1]) * 60 + Number(m[2]) : null;
+}
+
+const hhmm = (min: number) => `${String(Math.floor(min / 60)).padStart(2, "0")}:${String(min % 60).padStart(2, "0")}`;
+
+/**
+ * M3-45 (owner 2026-11-01): el traslado de un proveedor de `data/traslados-nocturnos.csv` con un vuelo que llega
+ * (in) o sale (out) entre `desde` y `hasta` (inclusive, cruzando la medianoche). Sin hora, ninguno.
+ */
+export function avisosDeTrasladoNocturno(reglas: ReglasItinerario, t: { proveedor: string | null | undefined } & VueloDelTraslado): string[] {
+  const suyo = t.proveedor ? claveProveedor(t.proveedor) : "";
+  const hora = minutos(t.hora);
+  if (!suyo || hora === null) return [];
+  const regla = (reglas.trasladosNocturnos ?? []).find((r) => claveProveedor(r.proveedor) === suyo);
+  const desde = minutos(regla?.desde);
+  const hasta = minutos(regla?.hasta);
+  if (!regla || desde === null || hasta === null) return [];
+  const adentro = desde <= hasta ? hora >= desde && hora <= hasta : hora >= desde || hora <= hasta;
+  if (!adentro) return [];
+  const numero = t.numero?.trim();
+  const cuando = `${t.lado === "in" ? "llega" : "sale"} ${hhmm(hora)}`;
+  return [
+    `Traslado nocturno (${numero ? `vuelo ${numero}, ${cuando}` : cuando}): ${regla.empresa} lo hace solo en privado, con tarifa privada. Confirmar con la agencia antes de pedir.`,
+  ];
+}
+
 // --- Lectura de los CSV -------------------------------------------------------------------------
 
 function cabecera(contenido: string, archivo: string, esperada: string): void {
@@ -389,5 +446,24 @@ export function leerSalidasDeBus(contenido: string): SalidasDeBus[] {
     const numeros = texto.split(/[\s,]+/).filter(Boolean);
     if (!numeros.length || !numeros.every((n) => /^\d{1,2}$/.test(n) && Number(n) >= 1 && Number(n) <= 31)) throw error();
     return { ...fila, regla: { tipo: "fechas", dias: numeros.map(Number) } };
+  });
+}
+
+/**
+ * M3-45 — `data/traslados-nocturnos.csv`: proveedor,empresa,desde,hasta,nota. `proveedor`, el nombre en el
+ * directorio (sin mayúsculas ni acentos); `empresa`, cómo lo nombra el aviso (vacía: el proveedor);
+ * `desde`/`hasta` como 21:00 (inclusive; pueden cruzar la medianoche).
+ */
+export function leerTrasladosNocturnos(contenido: string): TrasladoNocturno[] {
+  cabecera(contenido, ARCHIVO_TRASLADOS_NOCTURNOS, "proveedor,empresa,desde,hasta");
+  return leerCsv(contenido).map((f, i) => {
+    const proveedor = f.proveedor?.trim() ?? "";
+    const empresa = f.empresa?.trim() || proveedor;
+    const desde = minutos(f.desde);
+    const hasta = minutos(f.hasta);
+    if (!proveedor || desde === null || hasta === null) {
+      throw new Error(`${ARCHIVO_TRASLADOS_NOCTURNOS}, fila ${i + 2}: hace falta el proveedor y desde y hasta como 21:00.`);
+    }
+    return { proveedor, empresa, desde: hhmm(desde), hasta: hhmm(hasta) };
   });
 }

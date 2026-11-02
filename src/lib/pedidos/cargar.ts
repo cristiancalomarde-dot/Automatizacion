@@ -19,10 +19,12 @@ import {
   ARCHIVO_DIAS_BUS,
   ARCHIVO_FECHAS_ESPECIALES,
   ARCHIVO_SALIDAS_BUS,
+  ARCHIVO_TRASLADOS_NOCTURNOS,
   leerBlackouts,
   leerDiasDeBus,
   leerFechasEspeciales,
   leerSalidasDeBus,
+  leerTrasladosNocturnos,
   type ReglasItinerario,
 } from "./itinerario";
 import type {
@@ -563,5 +565,6 @@ export function cargarReglasItinerario(raiz: string = process.cwd()): ReglasItin
     fechasEspeciales: leerFechasEspeciales(leer(ARCHIVO_FECHAS_ESPECIALES)),
     diasBus: leerDiasDeBus(leer(ARCHIVO_DIAS_BUS)),
     salidasBus: leerSalidasDeBus(leer(ARCHIVO_SALIDAS_BUS)),
+    trasladosNocturnos: leerTrasladosNocturnos(leer(ARCHIVO_TRASLADOS_NOCTURNOS)),
   };
 }

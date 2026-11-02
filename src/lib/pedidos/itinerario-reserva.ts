@@ -4,8 +4,8 @@ import "server-only";
  * El bloque "Revisar antes de pedir" del detalle de una reserva (spec M3-24 fila 5): los avisos del
  * itinerario calculados con el mismo recorrido que el armado (`itinerarioDeLaReserva`), en el
  * servidor y con el cliente de la SESIÓN (RLS, #1). No arma ni guarda nada, no llama a la IA (#3) y
- * no manda nada (#4). Las reglas salen de `data/blackouts.csv`, `data/fechas-especiales.csv` y
- * `data/dias-bus.csv`.
+ * no manda nada (#4). Las reglas salen de `data/blackouts.csv`, `data/fechas-especiales.csv`,
+ * `data/dias-bus.csv`, `data/salidas-bus.csv` y `data/traslados-nocturnos.csv` (M3-45).
  */
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { esIdDeReserva } from "@/lib/reservas/reglas";

@@ -39,7 +39,7 @@ import { esOverland, esTrasladoAHitoCajon, incluyeTrasladoAHitoCajon, overlandDe
 import { esHotelDelOverland, hotelEnSanPedro, hotelEnSanPedroAConfirmar } from "@/lib/reservas/pick-up-overland";
 import { llevaEntradas } from "./entradas";
 import { TEXTOS_DEL_PEDIDO, idiomaDeLaCiudad, traducir, type Idioma, type TextosDelPedido } from "./idioma";
-import { avisosDeBlackout, avisosDeDiasDeBus, avisosDeFechaEspecial, tramoDeLaRuta, type ServicioConDia } from "./itinerario";
+import { avisosDeBlackout, avisosDeDiasDeBus, avisosDeFechaEspecial, avisosDeTrasladoNocturno, tramoDeLaRuta, type ServicioConDia, type VueloDelTraslado } from "./itinerario";
 import { HOTEL_A_CONFIRMAR, fichasDePasajeros, lineaDeTour, llevaFichaCompleta, llevaTelefono, restriccionAlimentaria, type TourDeFicha } from "./ficha";
 import { completar, completarAsunto } from "./plantilla";
 import { renglonDelVuelo } from "./renglon-vuelo";
@@ -646,7 +646,8 @@ class Armado {
   private destino(b: Bloque, s: Servicio, nombre: string, a: Renglones, avisosPrevios: string[]): void {
     const cuando = a.resumen;
     // M3-24: las fechas especiales y los días de los buses de lo que se pide (vaya por mail, WhatsApp o a mano).
-    const avisos = [...avisosPrevios, ...this.avisosDelItinerario(this.conDia(b, s, nombre, a))];
+    // M3-45: con el proveedor, para el aviso de traslado nocturno (data/traslados-nocturnos.csv).
+    const avisos = [...avisosPrevios, ...this.avisosDelItinerario(this.conDia(b, s, nombre, a), s.bookingSupplier?.nombre ?? s.bookingSupplierNombre ?? null)];
     if (s.reservaManual) {
       const donde = s.bookingSupplierNombre ?? s.bookingSupplier?.nombre ?? "su sistema";
       if (s.tipo === "bus") {
@@ -957,7 +958,7 @@ class Armado {
     // M3-24: cada traslado y excursión del paquete con su día, para los avisos del itinerario.
     const conDia: ServicioConDia[] = [];
     if (!b.omitir.includes("in")) {
-      conDia.push({ tipo: "traslado", nombre: `TRF IN (${titulo})`, fecha: llegada.fecha ?? b.inicio, destino: b.destino });
+      conDia.push({ tipo: "traslado", nombre: `TRF IN (${titulo})`, fecha: llegada.fecha ?? b.inicio, destino: b.destino, vuelo: { lado: "in", numero: llegada.numero, hora: llegada.hora } });
       renglones.push(
         conHotel(`TRF IN${tipoTraslado}: ${b.inicio ? fechaCorta(llegada.fecha ?? b.inicio, id) : "a confirmar"} · ${llegada.dato}`, [["Drop off", b.inicio]]),
       );
@@ -993,7 +994,7 @@ class Armado {
     });
     const salida = this.traslado("out", "", b.fin, codigos, IGUAZU.has(b.destino ?? ""));
     if (!b.omitir.includes("out")) {
-      conDia.push({ tipo: "traslado", nombre: `TRF OUT (${titulo})`, fecha: salida.fecha ?? b.fin, destino: b.destino });
+      conDia.push({ tipo: "traslado", nombre: `TRF OUT (${titulo})`, fecha: salida.fecha ?? b.fin, destino: b.destino, vuelo: { lado: "out", numero: salida.numero, hora: salida.hora } });
       renglones.push(
         conHotel(`TRF OUT${tipoTraslado}: ${b.fin ? fechaCorta(salida.fecha ?? b.fin, id) : "a confirmar"} · ${salida.dato}`, [["Pick up", nocheAnterior(b.fin)]]),
       );
@@ -1103,6 +1104,7 @@ class Armado {
       datosPax: false,
       avisos: [],
       pendientes: t.pendientes,
+      vuelo: { lado, numero: t.numero, hora: t.hora },
     };
   }
 
@@ -1116,13 +1118,13 @@ class Armado {
       const hora = lado === "in" ? vuelo.hora_llegada : vuelo.hora_salida;
       const dia = (lado === "in" ? vuelo.fecha_llegada : vuelo.fecha_salida) ?? fecha;
       // M3-32: `dato` va en el mail (en el idioma del proveedor); `datoEs`, en las tareas.
-      return { dato: renglonDelVuelo(vuelo, this.idioma), datoEs: renglonDelVuelo(vuelo), fecha: dia, pendientes: [] as string[], hora: hora ?? null };
+      return { dato: renglonDelVuelo(vuelo, this.idioma), datoEs: renglonDelVuelo(vuelo), fecha: dia, pendientes: [] as string[], hora: hora ?? null, numero: vuelo.numero?.trim() || null };
     }
     const { tx } = this;
     const es = TEXTOS_DEL_PEDIDO.es;
     return iguazu
-      ? { dato: tx.busOVueloPendiente, datoEs: es.busOVueloPendiente, fecha, pendientes: [tx.pendiente.busOVuelo], hora: null }
-      : { dato: tx.vueloPendiente, datoEs: es.vueloPendiente, fecha, pendientes: [tx.pendiente.vuelo], hora: null };
+      ? { dato: tx.busOVueloPendiente, datoEs: es.busOVueloPendiente, fecha, pendientes: [tx.pendiente.busOVuelo], hora: null, numero: null }
+      : { dato: tx.vueloPendiente, datoEs: es.vueloPendiente, fecha, pendientes: [tx.pendiente.vuelo], hora: null, numero: null };
   }
 
   /** Las reglas de `data/buses-el-chalten.csv` (M3-20) de ese servicio del paquete, ida primero. */
@@ -1246,7 +1248,7 @@ class Armado {
     // La excursión sin fecha ("a coordinar") no se mira: su `fecha` es el inicio de la estadía.
     // Con el nombre de la excursión del renglón (M3-15: "Bodegas half Day and Alta Montaña" sale en dos, cada una con el suyo).
     if (s.tipo === "excursion" || s.tipo === "crucero") return a.tour ? [{ tipo: "excursion", nombre: a.tour.nombre, fecha: a.tour.fecha, destino: b.destino }] : [];
-    if (s.tipo === "traslado") return [{ tipo: "traslado", nombre, fecha: a.fecha, destino: b.destino }];
+    if (s.tipo === "traslado") return [{ tipo: "traslado", nombre, fecha: a.fecha, destino: b.destino, ...(a.vuelo ? { vuelo: a.vuelo } : {}) }];
     return [];
   }
 
@@ -1254,7 +1256,7 @@ class Armado {
    * Los avisos de fecha especial y de días de bus de esos servicios: los guarda para el bloque
    * "Revisar antes de pedir" y los devuelve para el borrador. Un bus se mira por su ciudad de salida.
    */
-  private avisosDelItinerario(servicios: ServicioConDia[]): string[] {
+  private avisosDelItinerario(servicios: ServicioConDia[], proveedor: string | null = null): string[] {
     const reglas = this.catalogo.itinerario;
     if (!reglas) return [];
     const avisos: string[] = [];
@@ -1270,7 +1272,11 @@ class Armado {
                 ...avisosDeDiasDeBus(reglas, { ruta: s.nombre, fecha: s.fecha }),
               ];
             })()
-          : avisosDeFechaEspecial(reglas, s);
+          : [
+              ...avisosDeFechaEspecial(reglas, s),
+              // M3-45: el traslado de un proveedor que de noche va solo en privado, con el vuelo en ese rango.
+              ...(s.tipo === "traslado" && s.vuelo ? avisosDeTrasladoNocturno(reglas, { proveedor, ...s.vuelo }) : []),
+            ];
       for (const texto of nuevos) {
         if (!this.itinerario.some((x) => x.texto === texto)) this.itinerario.push({ fecha: s.fecha, seq: this.seq++, texto });
         if (!avisos.includes(texto)) avisos.push(texto);
@@ -1320,6 +1326,8 @@ interface Renglones {
   ruta?: string;
   /** M3-24: los servicios con día que junta el renglón (el paquete con traslados de Iguazú). */
   conDia?: ServicioConDia[];
+  /** M3-45: el lado y el vuelo de un traslado, para el aviso de traslado nocturno. */
+  vuelo?: VueloDelTraslado;
 }
 
 /** "18:30" (o "18:30:00") → los minutos desde la medianoche; NaN si no es una hora. */
