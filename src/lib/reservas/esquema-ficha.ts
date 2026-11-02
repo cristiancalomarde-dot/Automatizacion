@@ -47,6 +47,12 @@ export interface PasajeroIA {
   apellido: string;
   nacionalidad: string | null;
   fecha_nacimiento: string | null;
+  /**
+   * M3-43: solo si están escritos en el cuerpo del mail (nunca de adjuntos ni fotos). Opcionales
+   * porque las fichas leídas antes de lectura-mail.v6 no los tienen (no se releen).
+   */
+  pasaporte?: string | null;
+  telefono?: string | null;
   confianza: number;
 }
 
@@ -171,6 +177,8 @@ export const ESQUEMA_FICHA_IA = objeto({
       apellido: texto,
       nacionalidad: textoONulo,
       fecha_nacimiento: fecha("Año-mes-día."),
+      pasaporte: { ...textoONulo, description: `Número de pasaporte, solo si está escrito en el cuerpo del mail (no de adjuntos ni imágenes). ${VACIO}` },
+      telefono: { ...textoONulo, description: `Teléfono del pasajero tal como está escrito en el cuerpo del mail (no de adjuntos ni imágenes). ${VACIO}` },
       confianza,
     }),
   },
@@ -240,12 +248,13 @@ function validarCampo(x: unknown, donde: string, tipo: string, nulo: boolean, en
 function validarLista(
   x: unknown,
   donde: string,
-  campos: Record<string, { tipo: string; nulo?: boolean; lista?: boolean }>,
+  campos: Record<string, { tipo: string; nulo?: boolean; lista?: boolean; siFaltaVacio?: boolean }>,
 ) {
   if (!Array.isArray(x)) throw new Invalida(`${donde}: no es una lista`);
   x.forEach((el, i) => {
     const aqui = `${donde}[${i}]`;
     if (!esObjeto(el)) throw new Invalida(`${aqui}: no es un objeto`);
+    for (const [k, def] of Object.entries(campos)) if (def.siFaltaVacio && !(k in el)) el[k] = null;
     claves(el, [...Object.keys(campos), "confianza"], aqui);
     conf(el.confianza, aqui);
     for (const [k, def] of Object.entries(campos)) {
@@ -285,7 +294,16 @@ export function validarFichaIA(respuesta: unknown): Resultado {
       punto_recogida: TN,
       opcionales: { tipo: "string", lista: true },
     });
-    validarLista(x.pasajeros, "pasajeros", { nombre: T, apellido: T, nacionalidad: TN, fecha_nacimiento: TN });
+    validarLista(x.pasajeros, "pasajeros", {
+      nombre: T,
+      apellido: T,
+      nacionalidad: TN,
+      fecha_nacimiento: TN,
+      // M3-43 (v6): si faltan, vacíos. Un pasaporte que falta no invalida la lectura entera, y las
+      // respuestas con la forma anterior a la v6 (grabadas, de prueba) se siguen leyendo.
+      pasaporte: { ...TN, siFaltaVacio: true },
+      telefono: { ...TN, siFaltaVacio: true },
+    });
     validarLista(x.vuelos, "vuelos", {
       numero: TN,
       aerolinea: TN,

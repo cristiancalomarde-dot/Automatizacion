@@ -30,7 +30,8 @@ export type { MailParaLeer } from "./preparar-mail";
 /** v3 (2026-10-16): en Kilroy "3 bookings" son productos para los mismos pasajeros, no una duda de pax. */
 /** v4 (2026-10-22, M3-13): el formato de Adventure360, "TBC" queda vacío y las elecciones del pasajero van en pedidos especiales. */
 /** v5 (2026-10-28, M3-30): las imágenes del mail son parte del mail (la marca [imagen N] dice dónde estaban). */
-export const VERSION_INSTRUCCIONES = "lectura-mail.v5";
+/** v6 (2026-11-01, M3-43): el pasaporte y el teléfono de cada pasajero, solo si están escritos en el cuerpo del mail. */
+export const VERSION_INSTRUCCIONES = "lectura-mail.v6";
 export type ClienteMensajesIA = Pick<Anthropic, "messages">;
 
 let instruccionesCache: string | null = null;

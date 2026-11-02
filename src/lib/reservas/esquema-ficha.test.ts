@@ -92,3 +92,39 @@ describe("esquema compatible con la API (límite de 16 parámetros con unión)",
     expect(r.ficha.productos[0]).toMatchObject({ codigo: null, noches: null, fecha_fin: null });
   });
 });
+
+describe("M3-43 — pasaporte y teléfono de cada pasajero", () => {
+  it("el esquema pide pasaporte y teléfono por pasajero (vacío si el mail no los escribe)", () => {
+    const pasajero = (ESQUEMA_FICHA_IA.properties.pasajeros as { items: { properties: Record<string, unknown> } }).items;
+    expect(Object.keys(pasajero.properties)).toEqual(expect.arrayContaining(["pasaporte", "telefono"]));
+  });
+
+  it("Kilroy con el teléfono en el cuerpo: viaja; sin pasaporte escrito, queda vacío", () => {
+    const r = validarFichaIA(fichaGrabada("kilroy-dk1576932"));
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.ficha.pasajeros.map((p) => [p.pasaporte, p.telefono])).toEqual([
+      [null, "+45 00000001"],
+      [null, "+45 00000002"],
+    ]);
+  });
+
+  it("Adventure360 escribe pasaporte y teléfono: viajan los dos", () => {
+    const r = validarFichaIA(fichaGrabada("adventure360-brarch26"));
+    expect(r.ok && r.ficha.pasajeros[0]).toMatchObject({ pasaporte: "000000000", telefono: "+440000000000" });
+  });
+
+  it("un mail sin los datos los deja vacíos; si la IA no manda el campo (forma anterior a v6), queda vacío sin rechazar la lectura", () => {
+    const r = validarFichaIA(fichaGrabada("kilroy-od010d"));
+    expect(r.ok && r.ficha.pasajeros.every((p) => p.pasaporte === null && p.telefono === null)).toBe(true);
+    const x = fichaGrabada("kilroy-od010d") as { pasajeros: Array<Record<string, unknown>> };
+    delete x.pasajeros[0].telefono;
+    delete x.pasajeros[0].pasaporte;
+    const sin = validarFichaIA(x);
+    expect(sin.ok && sin.ficha.pasajeros[0]).toMatchObject({ pasaporte: null, telefono: null });
+    // Un tipo inválido sí se rechaza.
+    const y = fichaGrabada("kilroy-od010d") as { pasajeros: Array<Record<string, unknown>> };
+    y.pasajeros[0].telefono = 4512345678;
+    expect(validarFichaIA(y)).toMatchObject({ ok: false, error: expect.stringMatching(/pasajeros\[0\]\.telefono/) });
+  });
+});

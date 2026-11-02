@@ -222,7 +222,7 @@ function completarPasajeros(antes: unknown[], nuevos: unknown[]): unknown[] | nu
     const otro = (nuevos as Array<Partial<PasajeroIA>>).find((x) => nombreCompleto(x) === nombreCompleto(p));
     if (!otro) return p;
     const r = { ...p };
-    for (const k of ["nacionalidad", "fecha_nacimiento"] as const) {
+    for (const k of ["nacionalidad", "fecha_nacimiento", "pasaporte", "telefono"] as const) {
       if (r[k] == null && otro[k] != null) {
         r[k] = otro[k];
         cambio = true;

@@ -95,6 +95,14 @@ export function codigoApareceEnTexto(codigo: string, texto: string): boolean {
   return new RegExp(`(?<![a-z0-9])${patron}(?![a-z0-9])`).test(texto.toLowerCase());
 }
 
+/** M3-43: un teléfono escrito en el texto, con o sin espacios, guiones, puntos o paréntesis entre las cifras. */
+export function telefonoApareceEnTexto(telefono: string, texto: string): boolean {
+  const cifras = telefono.replace(/\D/g, "");
+  if (cifras.length < 6) return false;
+  const patron = [...cifras].join("[\\s().\\-/]*");
+  return new RegExp(`(?<!\\d)${patron}(?!\\d)`).test(texto);
+}
+
 /** La fecha (año-mes-día) escrita en el texto en alguno de los formatos de los mails. */
 export function fechaApareceEnTexto(fechaIso: string, texto: string): boolean {
   const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(fechaIso);
@@ -262,6 +270,7 @@ export function limpiarFicha(
   });
 
   // HI Travel nunca es un pasajero (fila 13).
+  let sinPasaporteOTelefono = false;
   const pasajeros = ficha.pasajeros
     .filter((p) => {
       const esHiTravel = /hitravel/i.test(`${p.nombre} ${p.apellido}`);
@@ -271,7 +280,16 @@ export function limpiarFicha(
       }
       return !esHiTravel;
     })
-    .map((p) => {
+    .map((original) => {
+      // M3-43: pasaporte y teléfono solo si están escritos en el cuerpo (no de adjuntos ni imágenes).
+      let p = original;
+      for (const k of ["pasaporte", "telefono"] as const) {
+        const v = p[k];
+        if (v && !(k === "telefono" ? telefonoApareceEnTexto(v, texto) : codigoApareceEnTexto(v, texto))) {
+          p = { ...p, [k]: null };
+          sinPasaporteOTelefono = true;
+        }
+      }
       const nacimiento = normalizarFecha(p.fecha_nacimiento);
       if (p.fecha_nacimiento !== null && !nacimiento) {
         dudosos.add("pasajeros");
@@ -279,6 +297,8 @@ export function limpiarFicha(
       }
       return { ...p, fecha_nacimiento: nacimiento };
     });
+  // La nota sin el dato (los datos de pasajeros nunca van en las notas).
+  if (sinPasaporteOTelefono) notas.push("Un pasaporte o teléfono que devolvió la IA no está escrito en el cuerpo del mail: se descartó.");
 
   const vuelos = ficha.vuelos.map((v) => {
     let r = { ...v };

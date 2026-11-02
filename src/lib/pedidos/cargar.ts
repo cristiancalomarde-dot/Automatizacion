@@ -37,6 +37,7 @@ import type {
   OpcionDelPasajero,
   ParteParaPedidos,
   PasajeroDeReserva,
+  ProveedorConTelefono,
   ProveedorFichaCompleta,
   PuntoDeEncuentro,
   ReservaParaPedidos,
@@ -48,6 +49,7 @@ import type {
 export const ARCHIVO_DIAS = join("data", "dias-servicio.csv");
 export const ARCHIVO_ENTRADAS = join("data", "excursiones-con-entrada.csv");
 export const ARCHIVO_FICHA_COMPLETA = join("data", "proveedores-ficha-completa.csv");
+export const ARCHIVO_CON_TELEFONO = join("data", "proveedores-con-telefono.csv");
 export const ARCHIVO_HOSTEL_SEGUN_HABITACION = join("data", "hostel-segun-habitacion.csv");
 export const ARCHIVO_OPCIONES_PASAJERO = join("data", "opciones-pasajero.csv");
 export const ARCHIVO_CATEGORIAS_TOUR = join("data", "categorias-tour.csv");
@@ -194,6 +196,27 @@ export function leerProveedoresFichaCompleta(contenido: string): ProveedorFichaC
 
 export function cargarProveedoresFichaCompleta(raiz: string = process.cwd()): ProveedorFichaCompleta[] {
   return leerProveedoresFichaCompleta(readFileSync(join(raiz, ARCHIVO_FICHA_COMPLETA), "utf-8"));
+}
+
+/**
+ * `data/proveedores-con-telefono.csv`: proveedor,nota (M3-43, owner 2026-11-01). Cada fila nombra un
+ * proveedor del directorio (se compara sin mayúsculas ni acentos) que recibe el teléfono del pasajero
+ * (hoy Cuenca del Plata, con sus filas, y Horizonte Atacama).
+ */
+export function leerProveedoresConTelefono(contenido: string): ProveedorConTelefono[] {
+  const cabecera = contenido.replace(/^﻿/, "").split(/\r?\n/)[0]?.trim() ?? "";
+  if (!/^proveedor,nota\b/.test(cabecera)) {
+    throw new Error(`${ARCHIVO_CON_TELEFONO}: la primera fila tiene que ser "proveedor,nota".`);
+  }
+  return leerCsv(contenido).map((f, i) => {
+    const proveedor = f.proveedor?.trim();
+    if (!proveedor) throw new Error(`${ARCHIVO_CON_TELEFONO}, fila ${i + 2}: falta el nombre del proveedor.`);
+    return { proveedor };
+  });
+}
+
+export function cargarProveedoresConTelefono(raiz: string = process.cwd()): ProveedorConTelefono[] {
+  return leerProveedoresConTelefono(readFileSync(join(raiz, ARCHIVO_CON_TELEFONO), "utf-8"));
 }
 
 /**

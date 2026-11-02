@@ -142,6 +142,11 @@ export interface ProveedorFichaCompleta {
   proveedor: string;
 }
 
+/** M3-43: una fila de `data/proveedores-con-telefono.csv`: el proveedor (por nombre) que recibe el teléfono del pasajero. */
+export interface ProveedorConTelefono {
+  proveedor: string;
+}
+
 /**
  * Una fila de `data/hostel-segun-habitacion.csv` (M3-11): en ese destino, el orden de los hostels
  * según la habitación (dorm o privada). Los que no están en la lista no se ofrecen.
@@ -232,6 +237,8 @@ export interface CatalogoParaPedidos {
   entradas?: readonly ExcursionConEntrada[];
   /** Los proveedores que piden la ficha completa por pasajero (sin la lista, ninguno). */
   fichaCompleta?: readonly ProveedorFichaCompleta[];
+  /** M3-43: los proveedores que reciben el teléfono del pasajero (sin la lista, ninguno). */
+  conTelefono?: readonly ProveedorConTelefono[];
   /** El hostel según la habitación (M3-11; sin la lista, el orden del Excel). */
   hostelSegunHabitacion?: readonly HostelSegunHabitacion[];
   /** Los alojamientos que no ofrecen desayuno (M3-35; sin la lista, todos con desayuno). */

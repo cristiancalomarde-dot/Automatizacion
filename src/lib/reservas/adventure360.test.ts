@@ -31,7 +31,7 @@ const deps = () => ({ catalogo: catalogoDePrueba(), detalle: detallePorId, prove
 
 describe("M3-13 fila 3 — la lectura del mail de Adventure360", () => {
   it("las instrucciones (v4 en adelante) nombran a Adventure360 y dicen dónde van las elecciones del pasajero", () => {
-    expect(VERSION_INSTRUCCIONES).toBe("lectura-mail.v5");
+    expect(VERSION_INSTRUCCIONES).toBe("lectura-mail.v6");
     const texto = instruccionesLectura();
     expect(texto).toMatch(/Adventure360/);
     expect(texto).toMatch(/Choice of tour in .*pedidos especiales/i);

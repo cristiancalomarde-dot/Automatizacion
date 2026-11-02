@@ -40,7 +40,7 @@ import { esHotelDelOverland, hotelEnSanPedro, hotelEnSanPedroAConfirmar } from "
 import { llevaEntradas } from "./entradas";
 import { TEXTOS_DEL_PEDIDO, idiomaDeLaCiudad, traducir, type Idioma, type TextosDelPedido } from "./idioma";
 import { avisosDeBlackout, avisosDeDiasDeBus, avisosDeFechaEspecial, tramoDeLaRuta, type ServicioConDia } from "./itinerario";
-import { HOTEL_A_CONFIRMAR, fichasDePasajeros, lineaDeTour, llevaFichaCompleta, restriccionAlimentaria, type TourDeFicha } from "./ficha";
+import { HOTEL_A_CONFIRMAR, fichasDePasajeros, lineaDeTour, llevaFichaCompleta, llevaTelefono, restriccionAlimentaria, type TourDeFicha } from "./ficha";
 import { completar, completarAsunto } from "./plantilla";
 import { renglonDelVuelo } from "./renglon-vuelo";
 import {
@@ -1430,13 +1430,20 @@ function conFichaCompleta(reserva: ReservaParaPedidos, items: Item[]): { servici
   return { servicios: partes.filter(Boolean).join("\n\n"), pasajeros: "" };
 }
 
-function bloquePasajeros(reserva: ReservaParaPedidos, conDatos: boolean, idioma: Idioma = "es"): string {
+/**
+ * M3-43: con `conTelefono` (el proveedor está en data/proveedores-con-telefono.csv), el teléfono de cada
+ * pasajero; el PAX 1 sin teléfono propio lleva el del contacto de la reserva (Journaway).
+ */
+function bloquePasajeros(reserva: ReservaParaPedidos, conDatos: boolean, idioma: Idioma = "es", conTelefono = false): string {
   const tx = TEXTOS_DEL_PEDIDO[idioma];
   const pax = reserva.pax ?? (reserva.pasajeros.length || null);
   const cantidad = `${tx.pasajeros}: ${pax ?? "a confirmar"}`;
   const principal = reserva.pasajeros.map(nombreDelPasajero).find(Boolean);
   if (!conDatos) return principal ? `${cantidad} (${tx.pasajeroPrincipal}: ${principal})` : cantidad;
-  const renglones = reserva.pasajeros.map((p, i) => renglonDelPasajero(p, i, idioma)).filter((r): r is string => !!r);
+  const contacto = reserva.contactoCliente?.telefono?.trim() || null;
+  const renglones = reserva.pasajeros
+    .map((p, i) => renglonDelPasajero(i === 0 && !p.telefono?.trim() && contacto ? { ...p, telefono: contacto } : p, i, idioma, conTelefono))
+    .filter((r): r is string => !!r);
   return [cantidad, ...renglones].join("\n");
 }
 
@@ -1490,7 +1497,15 @@ export function armarPedidos(reserva: ReservaParaPedidos, catalogo: CatalogoPara
       const visibles = conElTrasladoEnElOverland(g.items);
       const { servicios, pasajeros } = ficha
         ? conFichaCompleta(reserva, visibles)
-        : { servicios: textoDeServicios(visibles), pasajeros: bloquePasajeros(reserva, g.items.some((it) => it.datosPax), idioma) };
+        : {
+            servicios: textoDeServicios(visibles),
+            pasajeros: bloquePasajeros(
+              reserva,
+              g.items.some((it) => it.datosPax),
+              idioma,
+              g.items.some((it) => llevaTelefono(catalogo.conTelefono ?? [], it.proveedor)),
+            ),
+          };
       const pendientes = [...new Set(g.items.flatMap((it) => it.pendientes))].join("\n");
       const proveedores = [...new Map(g.items.map((it) => [it.proveedor.id, { id: it.proveedor.id, nombre: it.proveedor.nombre }])).values()];
       return {

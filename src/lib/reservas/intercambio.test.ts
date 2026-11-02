@@ -216,6 +216,12 @@ describe("fila 3: completa solo los datos vacíos", () => {
     const c = armarCambios(reserva({ pasajeros: antes }), entrante({ pasajeros: ahora }), {});
     expect(c.completar.pasajeros).toEqual([{ ...antes[0], nacionalidad: "DK" }]);
   });
+  it("M3-43: el pasaporte y el teléfono que llegan después se suman al pasajero, sin pisar lo que tenía", () => {
+    const antes = [{ nombre: "Ana", apellido: "Prueba", nacionalidad: "DK", fecha_nacimiento: null, telefono: "+45 1", confianza: 1 }];
+    const ahora = [{ nombre: "Ana", apellido: "Prueba", nacionalidad: "DK", fecha_nacimiento: null, pasaporte: "AA0000001", telefono: "+45 2", confianza: 1 }];
+    const c = armarCambios(reserva({ pasajeros: antes }), entrante({ pasajeros: ahora }), {});
+    expect(c.completar.pasajeros).toEqual([{ ...antes[0], pasaporte: "AA0000001" }]);
+  });
   it("un mail sin nada nuevo no cambia nada", () => {
     const c = armarCambios(reserva(), entrante(), {});
     expect(c).toMatchObject({ completar: {}, completados: [], distintos: [], estado: "recibida", motivos: [], nota: null });

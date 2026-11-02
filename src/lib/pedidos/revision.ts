@@ -24,6 +24,7 @@ import {
   cargarExcursionesConEntrada,
   cargarHostelSegunHabitacion,
   cargarOpcionesPasajero,
+  cargarProveedoresConTelefono,
   cargarProveedoresFichaCompleta,
   cargarAlojamientoSePideA,
   cargarAlojamientosSinDesayuno,
@@ -40,7 +41,7 @@ import { avisosDeLaPantalla, loQuePidioLaAgencia, validarEdicion, type EdicionPe
 import { idiomaDeLaCiudad } from "./idioma";
 import { cargarPlantilla } from "./plantilla";
 import type { CategoriaTour } from "@/lib/importador-tours/datos";
-import type { AlojamientoSePideA, AlojamientoSinDesayuno, CiudadEnPortugues, WTrekRefugios, TramoSePideA, BusElChalten, DiaDeServicio, ExcursionConEntrada, HostelSegunHabitacion, OpcionDelPasajero, ProveedorFichaCompleta, PuntoDeEncuentro, Plantilla } from "./tipos";
+import type { AlojamientoSePideA, AlojamientoSinDesayuno, CiudadEnPortugues, WTrekRefugios, TramoSePideA, BusElChalten, DiaDeServicio, ExcursionConEntrada, HostelSegunHabitacion, OpcionDelPasajero, ProveedorConTelefono, ProveedorFichaCompleta, PuntoDeEncuentro, Plantilla } from "./tipos";
 import type { ReglasItinerario } from "./itinerario";
 import { enviarPedidosAprobados, type DependenciasEnvio, type PedidoDeEnvio, type ResultadoEnvio } from "./envio/enviar";
 
@@ -103,6 +104,8 @@ export interface OpcionesPreparar {
   tramosSePidenA?: readonly TramoSePideA[];
   /** M3-35: los alojamientos que no ofrecen desayuno (por defecto, data/alojamientos-sin-desayuno.csv). */
   sinDesayuno?: readonly AlojamientoSinDesayuno[];
+  /** M3-43: los proveedores que reciben el teléfono del pasajero (por defecto, data/proveedores-con-telefono.csv). */
+  conTelefono?: readonly ProveedorConTelefono[];
   /** M3-32: las ciudades de Brasil (por defecto, data/ciudades-portugues.csv). */
   ciudadesPortugues?: readonly CiudadEnPortugues[];
   /** M3-33: los refugios de cada variante del W Trek (por defecto, data/w-trek-refugios.csv). */
@@ -152,6 +155,7 @@ export async function prepararPedidos(cliente: SupabaseClient, reservaId: string
       ...catalogo,
       itinerario: opciones.itinerario ?? cargarReglasItinerario(),
       sinDesayuno: opciones.sinDesayuno ?? cargarAlojamientosSinDesayuno(),
+      conTelefono: opciones.conTelefono ?? cargarProveedoresConTelefono(),
       ciudadesPortugues: ciudades,
       wTrekRefugios: opciones.wTrekRefugios ?? cargarWTrekRefugios(),
     },

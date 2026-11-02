@@ -7,7 +7,7 @@
  * solo van en el pedido a ese proveedor, no se loguean). Puro, sin base.
  */
 import { normalizarTexto } from "@/lib/catalogo/reglas";
-import type { PasajeroDeReserva, ProveedorFichaCompleta } from "./tipos";
+import type { PasajeroDeReserva, ProveedorConTelefono, ProveedorFichaCompleta } from "./tipos";
 
 const clave = (nombre: string) => normalizarTexto(nombre).replace(/\s+/g, " ");
 
@@ -15,6 +15,11 @@ const clave = (nombre: string) => normalizarTexto(nombre).replace(/\s+/g, " ");
 export function llevaFichaCompleta(lista: readonly ProveedorFichaCompleta[], proveedor: { nombre: string }): boolean {
   const suyo = clave(proveedor.nombre);
   return !!suyo && lista.some((f) => clave(f.proveedor) === suyo);
+}
+
+/** M3-43: si el proveedor recibe el teléfono del pasajero (`data/proveedores-con-telefono.csv`, mismo criterio). */
+export function llevaTelefono(lista: readonly ProveedorConTelefono[], proveedor: { nombre: string }): boolean {
+  return llevaFichaCompleta(lista, proveedor);
 }
 
 const ISO = /^(\d{4})-(\d{2})-(\d{2})$/;

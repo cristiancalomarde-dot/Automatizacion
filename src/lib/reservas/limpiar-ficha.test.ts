@@ -235,3 +235,21 @@ describe("número de reserva de Journaway: el ID del asunto (owner, 2026-10-13)"
     expect(g.numero_reserva.valor).toBeNull();
   });
 });
+
+describe("M3-43 — pasaporte y teléfono: solo si están escritos en el cuerpo del mail", () => {
+  it("el teléfono escrito en el mail queda (aunque la IA lo escriba sin espacios)", () => {
+    const f = ficha("kilroy-dk1576932");
+    f.pasajeros[1] = { ...f.pasajeros[1], telefono: "+4500000002" };
+    const l = limpiarFicha(f, contexto("kilroy-dk1576932"));
+    expect(l.pasajeros.map((p) => p.telefono)).toEqual(["+45 00000001", "+4500000002"]);
+  });
+
+  it("lo que no está en el cuerpo (de un adjunto o inventado) se descarta, con una nota sin el dato", () => {
+    const f = ficha("kilroy-dk1576932");
+    f.pasajeros[0] = { ...f.pasajeros[0], pasaporte: "ZX9876543", telefono: "+45 99999999" };
+    const l = limpiarFicha(f, contexto("kilroy-dk1576932", { seMandoPdf: true }));
+    expect(l.pasajeros[0]).toMatchObject({ pasaporte: null, telefono: null });
+    expect(l.notas.join("\n")).toMatch(/pasaporte o teléfono/i);
+    expect(l.notas.join("\n")).not.toMatch(/ZX9876543|99999999/);
+  });
+});

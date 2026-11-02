@@ -237,8 +237,11 @@ export function nombreDelPasajero(p: PasajeroDeReserva): string {
   return [texto(p.nombre), texto(p.apellido)].filter(Boolean).join(" ");
 }
 
-/** "PAX 1: Ana Gómez · Nacionalidad: Denmark · …", solo con lo que vino. Null si no hay ni el nombre. M3-32: en el idioma del pedido. */
-export function renglonDelPasajero(p: PasajeroDeReserva, i: number, idioma: Idioma = "es"): string | null {
+/**
+ * "PAX 1: Ana Gómez · Nacionalidad: Denmark · …", solo con lo que vino. Null si no hay ni el nombre. M3-32: en el idioma del pedido.
+ * M3-43: el teléfono, solo si el proveedor lo pide (`conTelefono`).
+ */
+export function renglonDelPasajero(p: PasajeroDeReserva, i: number, idioma: Idioma = "es", conTelefono = false): string | null {
   const nombre = nombreDelPasajero(p);
   if (!nombre) return null;
   const t = TEXTOS_DEL_PEDIDO[idioma].pax;
@@ -248,7 +251,7 @@ export function renglonDelPasajero(p: PasajeroDeReserva, i: number, idioma: Idio
     texto(p.fecha_nacimiento) && `${t.nacimiento}: ${fechaDeNacimiento(texto(p.fecha_nacimiento)!)}`,
     // Siempre con lugar para el pasaporte, aunque llegue después (owner, 2026-10-20).
     `${t.pasaporte}: ${texto(p.pasaporte) ?? t.pendiente}`,
-    texto(p.telefono) && `${t.telefono}: ${texto(p.telefono)}`,
+    conTelefono && texto(p.telefono) && `${t.telefono}: ${texto(p.telefono)}`,
   ].filter(Boolean);
   return datos.join(" · ");
 }
