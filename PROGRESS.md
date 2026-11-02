@@ -3,6 +3,10 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
 
 # Dónde retomar
 
+- **2026-11-02 ~10 hs: envío real PRENDIDO** (`PEDIDOS_ENVIO_REAL=si` en Production, tipo Secret, + redeploy; la
+  pantalla ya no dice modo prueba). Ojo: el primer redeploy se hizo antes de guardar la variable y no la tomó. Vuelta
+  atrás: valor `no` + redeploy. Falta: primer envío real con el owner mirando, con las reservas de la lectura de 13-14.
+
 - **2026-11-01: revisión completa del owner (M3-04, tercera ronda) y todo publicado.** Lectura de sales@ pasa
   a **16:00 UTC (entre 13 y 14 hs ART)** desde el 2026-11-02. Publicadas M3-42 (pasaje, traslado de un lado con
   hotel, Overland con pensión completa, Tayka sin desayuno, pick up sin nombrar a Journaway), M3-43 (teléfono y
