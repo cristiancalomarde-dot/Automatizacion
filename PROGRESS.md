@@ -5,8 +5,8 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
 
 - **2026-11-03: BR18 cargado en la base real con OK del owner (M3-46 y M3-47 publicadas).** Suite: 2899 passed, 1
   skipped. Cargados: proveedores (12 altas, 0 bajas), equivalencias (6), ODBR15, COMPBR04, COMPBR12, BR18 y su código Kilroy.
-  - **Falta para cerrar M3-47:** DK1587388 sigue en "para revisión" sin producto. Llevarla a BR18 y revisar con el owner
-    el mail a Laranjeiras con las dos estadías, y las tareas de Plataforma10 y WhatsApp, antes de enviar.
+  - **M3-47 cerrada:** el owner asignó BR18 a DK1587388 y dijo que salió muy bien; la reserva quedó en "recibida" con
+    BR18 (comprobado en la real). El envío de sus pedidos queda en manos del owner.
   - **Sigue:** BR03/BR04 (spec aparte). El owner agrega Casa do Rio, Agatha y Casa Viva. Copiar del Drive el Word de
     Multi Destination. Preguntar qué hostels no dan desayuno. "Paraty Tours" quedó con nombre largo: puede pedir
     equivalencia. El precio nuevo de BR03/BR04 es el bueno; el catálogo público cambia recién en mayo-junio de 2027.
