@@ -28,6 +28,7 @@ import { nochesBasePaquete } from "@/lib/importador-tours/noches-base";
 import { importarCodigosKilroy } from "@/lib/reservas/emparejar/codigos-kilroy";
 import { importarCodigosTourRadarCsv } from "@/lib/reservas/emparejar/codigos-tourradar-csv";
 import { componentesDeLaReserva } from "@/lib/reservas/emparejar/componentes";
+import { tomarBloqueoVariantesCatalogo } from "./helpers/bloqueo-datos-de-prueba";
 import { credencialesSupabaseDisponibles } from "./helpers/entorno-supabase";
 
 const RAIZ = resolve(__dirname, "..");
@@ -181,7 +182,12 @@ interface Fila {
     });
     const ps = await todo<{ codigo: string }>("producto", "codigo");
     existentes = ps.map((p) => p.codigo).filter((c) => !NUEVOS.includes(c)).sort();
-    fotoAntes = await foto(existentes);
+    const soltarVariantes = await tomarBloqueoVariantesCatalogo();
+    try {
+      fotoAntes = await foto(existentes);
+    } finally {
+      soltarVariantes();
+    }
     reservasAntes = new Map(
       (await todo<{ id: string; producto_id: string | null; estado: string }>("reserva", "id, producto_id, estado")).map((r) => [
         r.id,
@@ -243,8 +249,7 @@ interface Fila {
       });
     }
     // M3-23: OD027 trae "Las Marias Tilcara" (sin proveedor): sin IA queda afuera.
-    // M3-46: COMPBR04 trae el renglón "(Gruta da Lapa Doce, …)" debajo de su excursión: sin IA queda afuera.
-    expect(segundaPaquetes.bloquesQueNecesitanIA).toEqual(["OD027", "COMPBR04"]);
+    expect(segundaPaquetes.bloquesQueNecesitanIA).toEqual(["OD027"]);
   });
 
   it("fila 2: cada servicio de los paquetes nuevos tiene proveedor con mail, salvo los avisados (Oxford y Merit sin mail; COT online a mano)", async () => {

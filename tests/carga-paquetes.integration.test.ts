@@ -116,11 +116,11 @@ interface Fila {
       }
     }, TIMEOUT);
 
-    it("#2 cargar las equivalencias del formato nuevo (92 desde M1-08, 95 desde M2-08, 104 desde M3-10, 113 desde M3-23, 114 desde M3-25: Greeters a mano, 116 desde M3-46: Plataforma10 en SSA y CHAP) es idempotente", async () => {
+    it("#2 cargar las equivalencias del formato nuevo (92 desde M1-08, 95 desde M2-08, 104 desde M3-10, 113 desde M3-23, 114 desde M3-25: Greeters a mano, 116 desde M3-46: Plataforma10 en SSA y CHAP, 120 desde M3-47: Laranjeiras, Bahia Transfers, Cassi y Chapada Backpackers) es idempotente", async () => {
       const texto = readFileSync(RUTA_EQUIVALENCIAS, "utf-8");
       await cargarEquivalencias({ admin, textoCsv: texto });
       const segunda = await cargarEquivalencias({ admin, textoCsv: texto });
-      expect(segunda).toMatchObject({ total: 116, creados: 0, actualizados: 0 });
+      expect(segunda).toMatchObject({ total: 120, creados: 0, actualizados: 0 });
       const { data } = await admin
         .from("proveedor_alias")
         .select("destino, modo, proveedor:proveedor_id(nombre, ciudad)")
@@ -136,11 +136,11 @@ interface Fila {
       expect((rumbo!.proveedor as unknown as { ciudad: string }).ciudad).toBe("USHUAIA");
     }, TIMEOUT);
 
-    it("#9 los 17 productos (22 desde M3-10, 24 desde M3-23, 26 desde M3-46) existen con servicios; una segunda corrida deja 0 filas nuevas", async () => {
+    it("#9 los 17 productos (22 desde M3-10, 24 desde M3-23, 26 desde M3-46, 27 desde M3-47) existen con servicios; una segunda corrida deja 0 filas nuevas", async () => {
       const primera = await cargar();
       importaciones.push(primera.importacionId);
       expect(primera.codigosNoEncontrados).toEqual([]);
-      expect(primera.productos).toHaveLength(26);
+      expect(primera.productos).toHaveLength(27);
       expect(primera.productos.every((p) => !p.bloqueParaRevisar && p.opciones > 0)).toBe(true);
       const tras = await conteos();
       const segunda = await cargar();
@@ -148,7 +148,7 @@ interface Fila {
       expect(segunda.creados).toEqual({ productos: 0, servicios: 0, codigos: 0 });
       expect(segunda.servicios).toMatchObject({ creados: 0, actualizados: 0, eliminados: 0 });
       expect(await conteos()).toEqual(tras);
-      expect(tras.productos).toBe(26);
+      expect(tras.productos).toBe(27);
       const { data } = await admin.from("importacion").select("tipo_corrida, filas_cargadas").eq("id", segunda.importacionId).single();
       expect(data).toEqual({ tipo_corrida: TIPO_CORRIDA_PAQUETES, filas_cargadas: 0 });
     }, TIMEOUT);

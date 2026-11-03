@@ -22,6 +22,7 @@ import { importarProductosSimples } from "@/lib/importador-productos/importar";
 import { parsearNivelesConfirmados } from "@/lib/importador-productos/niveles-confirmados";
 import { importarToursCompuestos, TOURS_PILOTO } from "@/lib/importador-tours/importar";
 import { hayInsumosTours, leerInsumosTours } from "@/lib/importador-tours/insumos";
+import { tomarBloqueoVariantesCatalogo } from "./helpers/bloqueo-datos-de-prueba";
 import { credencialesSupabaseDisponibles } from "./helpers/entorno-supabase";
 
 const RAIZ = resolve(__dirname, "..");
@@ -294,8 +295,18 @@ interface Servicio {
   });
 
   describe("variantes que cambian un dato (se deshacen al final)", () => {
+    let soltarVariantes: () => void;
+
+    beforeAll(async () => {
+      soltarVariantes = await tomarBloqueoVariantesCatalogo();
+    }, TIMEOUT);
+
     afterAll(async () => {
-      await cargar();
+      try {
+        await cargar();
+      } finally {
+        soltarVariantes?.();
+      }
     }, TIMEOUT);
 
     it(

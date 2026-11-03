@@ -115,7 +115,7 @@ const fichaDePrueba = (nombre: string) => conNumerosDeTest(fichaDePruebaReal(nom
     // M3-10: ARCH33EXP ya está cargado; el caso se prueba con un código que no existe.
     it("fila 2: una fila con un producto que no está en el catálogo (XX99) hace fallar la carga y no escribe nada", async () => {
       const antes = await codigosExternos();
-      const malo = `${CSV.trim()}\nHI_TRAVEL_XX99-677,XX99,Producto inexistente,no cargado,\n`;
+      const malo = `${CSV.trim()}\nHI_TRAVEL_XX99-677,XX99,Producto inexistente,no cargado\n`;
       await expect(importarCodigosKilroy(admin, malo)).rejects.toThrow(/XX99 no existe en el catálogo.*No se cargó nada/);
       expect(await codigosExternos()).toEqual(antes);
     });

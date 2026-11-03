@@ -320,8 +320,7 @@ dice así (no "Excel de paquetes").
   código que no está cargado = "no está en el catálogo", sin IA. Nunca escribe en el catálogo.
 - Los códigos Kilroy que no siguen la regla (y los de los tours, que el importador de M1-05 no cargó
   para Kilroy) viven en `data/codigos-kilroy.csv` y se cargan con `npm run importar:codigos-kilroy`
-  (todo o nada, salvo una fila con `pendiente_de_carga=si`: mientras su producto no exista queda
-  afuera y se informa; cuando exista, se carga como cualquier otra. M3-46).
+  (todo o nada: una fila cuyo producto no exista corta la carga).
 - `reserva.origen_emparejado` (`codigo | nombre | ia`, solo con producto), `confianza_emparejado` y
   `sugerencia_producto_id` (lo que propuso la IA y no se aceptó; nunca es el producto).
 - Una reserva por producto del mail, con el mismo `booking_id`. Solo "reserva nueva" se empareja del

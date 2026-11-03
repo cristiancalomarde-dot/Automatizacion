@@ -14,21 +14,21 @@ import { join } from "node:path";
 const RUTA = join(tmpdir(), "hi-travel-datos-de-prueba.lock");
 const ABANDONADO_MS = 10 * 60 * 1000;
 
-export async function tomarBloqueoDatosDePrueba(esperaMaximaMs = 5 * 60 * 1000): Promise<() => void> {
+export async function tomarBloqueoDatosDePrueba(esperaMaximaMs = 5 * 60 * 1000, ruta = RUTA): Promise<() => void> {
   const inicio = Date.now();
   for (;;) {
     try {
-      closeSync(openSync(RUTA, "wx"));
+      closeSync(openSync(ruta, "wx"));
       return () => {
         try {
-          unlinkSync(RUTA);
+          unlinkSync(ruta);
         } catch {
           // ya no estaba
         }
       };
     } catch {
       try {
-        if (Date.now() - statSync(RUTA).mtimeMs > ABANDONADO_MS) unlinkSync(RUTA);
+        if (Date.now() - statSync(ruta).mtimeMs > ABANDONADO_MS) unlinkSync(ruta);
       } catch {
         // lo soltó otro mientras mirábamos
       }
@@ -38,4 +38,13 @@ export async function tomarBloqueoDatosDePrueba(esperaMaximaMs = 5 * 60 * 1000):
       await new Promise((r) => setTimeout(r, 250));
     }
   }
+}
+
+/**
+ * M3-47: las "variantes" de M2-08 cambian FTEE04 y FTEE05 un rato y lo deshacen. Las fotos de "lo que
+ * ya estaba" de M3-10 y M3-23 no se pueden sacar en ese rato: la foto de antes queda con el dato de
+ * prueba y nunca coincide con la de después. Candado aparte, para no esperar a los recorridos.
+ */
+export function tomarBloqueoVariantesCatalogo(): Promise<() => void> {
+  return tomarBloqueoDatosDePrueba(5 * 60 * 1000, join(tmpdir(), "hi-travel-variantes-catalogo.lock"));
 }

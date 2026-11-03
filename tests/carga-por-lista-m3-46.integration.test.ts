@@ -26,7 +26,6 @@ import { parsearIncluidosTour, parsearTramosConProveedor } from "@/lib/importado
 import { fila } from "@/lib/importador-tours/fixtures";
 import { importarToursCompuestos, TOURS_PILOTO } from "@/lib/importador-tours/importar";
 import { hayInsumosTours } from "@/lib/importador-tours/insumos";
-import { importarCodigosKilroy } from "@/lib/reservas/emparejar/codigos-kilroy";
 import { componentesDeLaReserva } from "@/lib/reservas/emparejar/componentes";
 import { credencialesSupabaseDisponibles } from "./helpers/entorno-supabase";
 
@@ -358,15 +357,6 @@ interface Pedido {
     });
   });
 
-  it("importar:codigos-kilroy no se rompe con BR18 sin cargar: esa fila queda afuera y se informa", async () => {
-    const { data } = await lectura.from("producto").select("id").eq("codigo", "BR18");
-    expect(data).toEqual([]);
-    const { cliente, metodos } = clienteSeco();
-    const r = await importarCodigosKilroy(cliente, dato("codigos-kilroy.csv"));
-    expect(r.pendientes).toEqual(["HI_TRAVEL_BR18-677"]);
-    expect(new Set(metodos)).toEqual(new Set(["GET"]));
-  });
-
   describe("los scripts, de punta a punta", () => {
     /** Con las claves de la base de pruebas: `.env.local` no pisa las variables que ya vienen en el entorno. */
     function correr(script: string, ...argumentos: string[]) {
@@ -380,16 +370,15 @@ interface Pedido {
       return { salida: JSON.parse(r.stdout) as Record<string, unknown>, stderr: r.stderr };
     }
 
-    it("importar:tours --codigos BR18 --en-seco: BR18 queda para revisar, no se crea y no toca los reportes", () => {
+    it("importar:tours --codigos BR18 --en-seco: solo BR18 y no toca los reportes", () => {
       const { salida } = correr("importar-tours-compuestos.ts", "--codigos", "BR18", "--en-seco");
       expect(salida.base).not.toBe(REF_BASE_REAL);
       expect(salida.enSeco).toBeTruthy();
-      expect(salida.tours).toEqual([expect.stringMatching(/^BR18: para_revisar/)]);
-      expect(salida.haria).toMatchObject({ productosNuevos: ["BR18"] });
+      expect(salida.tours).toEqual([expect.stringMatching(/^BR18: /)]);
       expect(salida.reporte).toBeUndefined();
     });
 
-    it("importar:tours --en-seco, sin códigos: los tours de siempre, sin BR18, todos armados", () => {
+    it("importar:tours --en-seco, sin códigos: los tours de siempre, con BR18 desde M3-47, todos armados", () => {
       const { salida } = correr("importar-tours-compuestos.ts", "--en-seco");
       expect(salida.tours).toEqual(TOURS_PILOTO.map((c) => `${c}: armado`));
       expect(salida.reporte).toBeUndefined();

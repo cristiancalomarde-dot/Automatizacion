@@ -34,6 +34,7 @@ import { importarCodigosAgencias } from "@/lib/reservas/emparejar/codigos-agenci
 import { importarCodigosKilroy } from "@/lib/reservas/emparejar/codigos-kilroy";
 import { importarCodigosTourRadarCsv } from "@/lib/reservas/emparejar/codigos-tourradar-csv";
 import { componentesDeLaReserva } from "@/lib/reservas/emparejar/componentes";
+import { tomarBloqueoVariantesCatalogo } from "./helpers/bloqueo-datos-de-prueba";
 import { credencialesSupabaseDisponibles } from "./helpers/entorno-supabase";
 
 const RAIZ = resolve(__dirname, "..");
@@ -209,7 +210,12 @@ interface Fila {
     await renombrarProveedor(admin, BEER_HOSTEL, { aplicar: true });
     const ps = await todo<{ codigo: string }>("producto", "codigo");
     existentes = ps.map((p) => p.codigo).filter((c) => !NUEVOS.includes(c) && !CAMBIA.includes(c)).sort();
-    fotoAntes = await foto(existentes);
+    const soltarVariantes = await tomarBloqueoVariantesCatalogo();
+    try {
+      fotoAntes = await foto(existentes);
+    } finally {
+      soltarVariantes();
+    }
     od033Antes = (await servicios("OD033")).map(renglon);
     ({ r: primeraPaquetes, t: primerosTours } = await cargarTodo());
     ({ r: segundaPaquetes, t: segundosTours } = await cargarTodo());
@@ -251,8 +257,7 @@ interface Fila {
     expect(segundaPaquetes.productos.find((x) => x.codigo === "OD024")!.lineasParaRevisar).toEqual([]);
     expect(segundaPaquetes.productos.find((x) => x.codigo === "OD027")!.lineasParaRevisar.map((l) => l.texto)).toEqual(["Las Marias Tilcara"]);
     // Sin IA (la carga corre sin clave): "Las Marias Tilcara" (sin "Accommodation:" ni proveedor) queda afuera, como dice el diagnóstico.
-    // M3-46: COMPBR04 trae el renglón "(Gruta da Lapa Doce, …)" debajo de su excursión: sin IA queda afuera.
-    expect(segundaPaquetes.bloquesQueNecesitanIA).toEqual(["OD027", "COMPBR04"]);
+    expect(segundaPaquetes.bloquesQueNecesitanIA).toEqual(["OD027"]);
   });
 
   it("fila 2: proveedores de OD027 y OD024 (respuestas del owner del 2026-10-26), todos con mail", async () => {

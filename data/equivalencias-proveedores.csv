@@ -115,3 +115,7 @@ BRC,Design,Design Suites,alias,confirmado,"M3-23 (diagnóstico): Design Suites B
 BUE,Greeters,,manual,confirmado,"Owner (2026-10-27, revisión de M3-04, punto 6; M3-25): Greeters no toma reservas por mail, tiene su sistema de reservas, como los buses. Sus traslados (OD018 y OD020) quedan como tarea a mano, sin mail, como Kupos o COT online"
 SSA,Plataforma10,,manual,confirmado,"Owner (2026-11-02, M3-46): el bus Salvador ↔ Lençóis de BR18 se emite a mano en plataforma10.com.br. No se le escribe a nadie"
 CHAP,Plataforma10,,manual,confirmado,"Owner (2026-11-02, M3-46): el bus Lençóis ↔ Salvador de BR18 se emite a mano en plataforma10.com.br. No se le escribe a nadie"
+SSA,Hostel Laranjeiras,Laranjeiras Hostel,alias,confirmado,"M3-47: el Excel de paquetes (ODBR15, COMPBR12) lo escribe al revés que el directorio (fila 457)"
+SSA,Bahia Transfers,Bahia Transfers (transfer SSA - hotel - SSA y trasfer hotel en SSA - praia do forte y praia do forte - SSA),alias,confirmado,"M3-47: el directorio (fila 464) agrega entre paréntesis qué servicios hace"
+SSA,Cassi Turismo,Cassi Turismo (Praia do Forte Full Day y Bahia de todos los Santos Scuna boat tour),alias,confirmado,"M3-47: el directorio (fila 465) agrega entre paréntesis qué servicios hace"
+CHAP,Agencia Chapada Backpackers,Chapada Backpackers (Tour 4Ps e Vale do Pati Trek),alias,confirmado,"M3-47: la excursión 4 Ps va a la fila de tours del directorio (479). La fila 472 (Chapada Backpackers) es el hostel, con la nota de usarlo solo si no hay lugar en HI Hostel Chapada: no aplica acá ni es una regla"

@@ -25,7 +25,6 @@ async function main() {
   });
   const r = await importarCodigosKilroy(admin, readFileSync(resolve(process.cwd(), "data", "codigos-kilroy.csv"), "utf-8"));
   console.log(`Códigos Kilroy: ${r.creados} creados, ${r.actualizados} actualizados, ${r.sinCambios} sin cambios.`);
-  if (r.pendientes.length) console.log(`Quedan afuera hasta que su producto esté cargado: ${r.pendientes.join(", ")}.`);
 }
 
 main().catch((e: unknown) => {
