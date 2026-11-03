@@ -3,15 +3,18 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
 
 # Dónde retomar
 
-- **2026-11-03: M3-46 publicada (preparación de BR18); sigue M3-47.** Suite: 2857 passed, 1 skipped. Nada cargado
-  todavía en la base real: DK1587388 (BR18) sigue en "para revisión". Orden del owner: BR18 primero, después BR03/BR04.
-  - **M3-47:** copiar del Drive al clon Rutas, Construcción de Paquetes y Multi Destination (comparar antes de pisar);
-    COMPBR11/12 a `BLOQUES_SIN_SECCION_2`; traslado de salida de COMPBR12; niveles Hotel 3*; equivalencias; resolver
-    sin IA COMPBR04 fila 2239; BR18 a `TOURS_PILOTO`; sacar `pendiente_de_carga`. En seco primero; en la real, con OK del owner.
-  - **Excel de proveedores:** el owner edita solo en el Drive; Claude copia al clon antes de cada carga. Pendiente del
-    owner: mail de Merit Montevideo y Casa do Rio, Agatha y Casa Viva (Paraty, para BR03/BR04).
-  - Sin causa demostrada: diferencias de COMPBR04 y FTEE04/FTEE05 vistas en corridas anteriores de `catalogo-m3-10`
-    (no aparecieron en la última). Si vuelven, investigar desde cero.
+- **2026-11-03: BR18 cargado en la base real con OK del owner (M3-46 y M3-47 publicadas).** Suite: 2899 passed, 1
+  skipped. Cargados: proveedores (12 altas, 0 bajas), equivalencias (6), ODBR15, COMPBR04, COMPBR12, BR18 y su código Kilroy.
+  - **Falta para cerrar M3-47:** DK1587388 sigue en "para revisión" sin producto. Llevarla a BR18 y revisar con el owner
+    el mail a Laranjeiras con las dos estadías, y las tareas de Plataforma10 y WhatsApp, antes de enviar.
+  - **Sigue:** BR03/BR04 (spec aparte). El owner agrega Casa do Rio, Agatha y Casa Viva. Copiar del Drive el Word de
+    Multi Destination. Preguntar qué hostels no dan desayuno. "Paraty Tours" quedó con nombre largo: puede pedir
+    equivalencia. El precio nuevo de BR03/BR04 es el bueno; el catálogo público cambia recién en mayo-junio de 2027.
+  - **Ojo:** `importar:codigos-kilroy`, `importar:proveedores` e `importar:equivalencias` no tienen `--en-seco`. El de
+    Kilroy ignora la opción y escribe (pasó el 2026-11-03: 1 alta de BR18 y el nombre de OD031, ya dentro de la carga autorizada).
+  - **Excel de proveedores:** el owner edita solo en el Drive; Claude copia al clon antes de cada carga.
+  - Sin causa demostrada: `recorrido-m3-08` falló una vez en 7 suites ("No pudimos cargar las reservas." al reabrir) y
+    las diferencias de COMPBR04 en `catalogo-m3-10`. Si vuelven, investigar desde cero.
 
 - **2026-11-02 ~10 hs: envío real PRENDIDO** (`PEDIDOS_ENVIO_REAL=si` en Production, tipo Secret, + redeploy; la
   pantalla ya no dice modo prueba). Ojo: el primer redeploy se hizo antes de guardar la variable y no la tomó. Vuelta
