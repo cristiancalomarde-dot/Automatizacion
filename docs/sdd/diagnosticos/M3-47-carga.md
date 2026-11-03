@@ -1,5 +1,11 @@
 # M3-47 · En seco contra la base real (2026-11-03)
 
+> **Carga hecha el 2026-11-03 con OK del owner:** proveedores 12 altas y 276 actualizados (0 bajas, 9 llamadas a IA, 0
+> resueltas); equivalencias 6 nuevas; paquetes 3 productos y 13 servicios; BR18 "armado" con 3 componentes y 2 buses;
+> Kilroy 1 alta (`HI_TRAVEL_BR18-677`) y 1 actualización (nombre de OD031). `importar:codigos-kilroy` se corrió con
+> `--en-seco` por error: no tiene esa opción y escribió. Después, en seco, paquetes y BR18 dan 0 cambios.
+> Lo que sigue abajo es el estado **antes** de la carga.
+
 Corrido con `--en-seco` (`clienteEnSeco` + `fetchSoloLectura`, sin IA) contra la base real
 (`uhwkifqmexdktaseaxxo`), con los Excel definitivos del Drive y los CSV del clon. **Ninguna fila cambió.**
 
