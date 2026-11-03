@@ -106,8 +106,14 @@ export interface ResumenAPedido {
  * cierra, no escribe nada. Un servicio que tenía marca y ya no está en el
  * archivo la pierde (vuelve a "se pide siempre").
  */
-export async function cargarServiciosAPedido(opciones: { admin: SupabaseClient; filas: FilaAPedido[] }): Promise<ResumenAPedido> {
-  const { admin, filas } = opciones;
+export async function cargarServiciosAPedido(opciones: {
+  admin: SupabaseClient;
+  filas: FilaAPedido[];
+  /** M3-46 (`--codigos`): solo estos paquetes. Las marcas de los demás no se tocan, ni siquiera para quitarlas. */
+  soloPaquetes?: string[];
+}): Promise<ResumenAPedido> {
+  const { admin, soloPaquetes } = opciones;
+  const filas = soloPaquetes ? opciones.filas.filter((f) => soloPaquetes.includes(f.paquete)) : opciones.filas;
   const codigos = [...new Set(filas.map((f) => f.paquete))];
   const resumen: ResumenAPedido = { marcados: 0, desmarcados: 0 };
 
@@ -137,10 +143,17 @@ export async function cargarServiciosAPedido(opciones: { admin: SupabaseClient; 
     for (const m of planAPedido(codigo, filas, servicios)) deseadas.set(`${idDe.get(codigo)}:${m.orden}`, m);
   }
 
-  const { data: marcados, error: em } = await admin
+  let idsDeLaCorrida: string[] | null = null;
+  if (soloPaquetes) {
+    const { data, error: ep } = await admin.from("producto").select("id").in("codigo", soloPaquetes);
+    if (ep) throw new Error(`No se pudo leer producto: ${ep.message}`);
+    idsDeLaCorrida = (data ?? []).map((p) => p.id as string);
+  }
+  const consultaMarcados = admin
     .from("producto_servicio")
     .select("id, producto_id, orden, a_pedido, a_pedido_nota")
     .not("a_pedido", "is", null);
+  const { data: marcados, error: em } = await (idsDeLaCorrida ? consultaMarcados.in("producto_id", idsDeLaCorrida) : consultaMarcados);
   if (em) throw new Error(`No se pudo leer las marcas actuales: ${em.message}`);
   const ahora = new Date().toISOString();
   for (const s of marcados ?? []) {

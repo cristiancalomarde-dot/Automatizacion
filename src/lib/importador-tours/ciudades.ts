@@ -57,6 +57,11 @@ const ALIAS: Array<[string, string]> = [
   ["foz do iguacu", "IGR"],
   ["iguazu", "IGR"],
   ["foz", "IGR"],
+  // M3-46: BR18. "Bahia" sola no es un destino (Bahia Transfers, Bahia de Todos los Santos).
+  ["salvador de bahia", "SSA"],
+  ["salvador", "SSA"],
+  ["lencois", "CHAP"],
+  ["chapada diamantina", "CHAP"],
 ];
 
 /** Palabras que ganan a cualquier ciudad en un encabezado ("San Pedro to Uyuni Overland including:"). */
@@ -85,6 +90,8 @@ export const NOMBRE_DESTINO: Record<string, string> = {
   RIO: "Río de Janeiro",
   SAO: "São Paulo",
   IGR: "Iguazú",
+  SSA: "Salvador",
+  CHAP: "Lençóis",
 };
 
 export function nombreDestino(destino: string): string {

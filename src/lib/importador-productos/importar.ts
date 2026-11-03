@@ -204,10 +204,12 @@ export async function guardarCodigoExterno(
     if (e) throw new Error(`No se pudo insertar codigo_externo ${agencia} ${codigo}: ${e.message}`);
     return "creado";
   }
-  if (data.producto_id !== productoId || (data.nombre_externo ?? null) !== nombre) {
+  // M3-46: sin nombre no se pisa el guardado (el importador pasa null; data/codigos-kilroy.csv trae el de OD031).
+  const nombreFinal = nombre ?? (data.nombre_externo as string | null) ?? null;
+  if (data.producto_id !== productoId || (data.nombre_externo ?? null) !== nombreFinal) {
     const { error: e } = await admin
       .from("codigo_externo")
-      .update({ producto_id: productoId, nombre_externo: nombre, updated_at: ahora })
+      .update({ producto_id: productoId, nombre_externo: nombreFinal, updated_at: ahora })
       .eq("id", data.id);
     if (e) throw new Error(`No se pudo actualizar codigo_externo ${agencia} ${codigo}: ${e.message}`);
     return "actualizado";
@@ -236,6 +238,8 @@ export async function importarProductosSimples(opciones: {
   tipoCorrida?: string;
   /** M3-10: renglones que todavía no están en el Excel (data/renglones-agregados.csv). */
   renglonesAgregados?: readonly RenglonAgregado[];
+  /** M3-46 (`--codigos`): de los códigos TourRadar, solo los de los paquetes de esta corrida. */
+  tourRadarSoloDeLaCorrida?: boolean;
 }): Promise<ResumenImportacionProductos> {
   const { admin } = opciones;
   const destino = opciones.destino ?? DESTINO_PILOTO;
@@ -263,9 +267,9 @@ export async function importarProductosSimples(opciones: {
       renglonesAgregados: opciones.renglonesAgregados,
     });
   }
-  const codigosTR = opciones.rutaCodigosTourRadar
-    ? leerCodigosTourRadar(leerHoja(opciones.rutaCodigosTourRadar, null))
-    : [];
+  const codigosTR = (opciones.rutaCodigosTourRadar ? leerCodigosTourRadar(leerHoja(opciones.rutaCodigosTourRadar, null)) : []).filter(
+    (c) => !opciones.tourRadarSoloDeLaCorrida || codigos.includes(c.nuestroCodigo),
+  );
 
   // Directorio de proveedores (M1-03) para el emparejado. Solo se lee.
   const { data: proveedores, error: errorProveedores } = await admin

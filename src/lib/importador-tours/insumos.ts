@@ -5,16 +5,18 @@ import { leerFilasPaquetes } from "@/lib/importador-productos/importar";
 import { parsearPaquetesPiloto, type PaquetePiloto } from "@/lib/importador-productos/paquetes-piloto";
 import {
   parsearCategoriasTour,
+  parsearIncluidosTour,
   parsearTramosConProveedor,
   parsearTransfersTour,
   type CategoriaTour,
   type ExcepcionTransfer,
+  type IncluidoTour,
   type TramoConProveedor,
 } from "./datos";
 import type { DocumentoWord } from "./importar";
-import { HOJA_TOURS } from "./rutas";
+import { HOJA_TOURS, leerTourRutas } from "./rutas";
 import { parsearTrasladosTour, type ExcepcionTraslado } from "./traslados";
-import { leerParrafosDocx } from "./word";
+import { leerItinerario, leerParrafosDocx } from "./word";
 
 /**
  * Los archivos que lee la carga de los tours (spec M1-05 §2), desde la raíz
@@ -42,6 +44,8 @@ export interface InsumosTours {
   excepcionesTransfer: ExcepcionTransfer[];
   /** data/traslados-tour.csv (M1-08). */
   excepcionesTraslado: ExcepcionTraslado[];
+  /** data/incluidos-tour.csv (M3-46). */
+  incluidosTour: IncluidoTour[];
   archivos: { rutas: string; paquetes: string };
 }
 
@@ -82,6 +86,20 @@ export function leerInsumosTours(raiz: string): InsumosTours {
     excepcionesTraslado: existsSync(resolve(raiz, "data/traslados-tour.csv"))
       ? parsearTrasladosTour(texto("data/traslados-tour.csv"))
       : [],
+    incluidosTour: existsSync(resolve(raiz, "data/incluidos-tour.csv"))
+      ? parsearIncluidosTour(texto("data/incluidos-tour.csv"))
+      : [],
     archivos: { rutas: basename(RUTA_RUTAS), paquetes: basename(RUTA_PAQUETES) },
   };
+}
+
+/**
+ * M3-46: de los códigos pedidos con `--codigos`, los que no están ni en
+ * RutasenBus ni en los Word. Un tour "para revisar" igual crea su producto: un
+ * error de tipeo no puede dejar un producto inventado en el catálogo.
+ */
+export function toursDesconocidos(insumos: Pick<InsumosTours, "filasRutas" | "words">, codigos: string[]): string[] {
+  return codigos.filter(
+    (c) => !leerTourRutas(insumos.filasRutas, c) && !insumos.words.some((w) => leerItinerario(w.parrafos, c)),
+  );
 }

@@ -147,6 +147,16 @@ transfer_out, nota) pisa la regla en un tour y componente puntual, con `si`/`no`
 regla). Ej.: BRARCH26 termina en Santiago (OD029) **sin** transfer de salida. Si una fila nombra un
 componente que el tour no tiene, el importador falla antes de escribir.
 
+**Lo que incluye el Word, por excepción (M3-46):** `data/incluidos-tour.csv` (tour, incluye, nota)
+reemplaza el "Included" del Word de un tour que no cuenta la secuencia real (BR18). Cada fila es un
+renglón, escrito como en el Word, en el orden del viaje. Con esa fila, un destino puede estar en más
+de un componente: la primera estadía va al primero de RutasenBus, la segunda al segundo, y las noches
+de cada uno se controlan igual. Sin fila, manda el Word y un destino repetido sigue siendo "ambiguo".
+
+**Carga por lista y en seco (M3-46):** `importar:paquetes` e `importar:tours` aceptan `--codigos A,B`
+(solo esos) y `--en-seco` (qué haría, sin escribir en la base ni llamar a la IA). Con cualquiera de
+las dos no se reescriben los reportes de `docs/`, que son del catálogo entero.
+
 **Los traslados de cada paquete dentro del tour (M1-08, regla confirmada por el owner el
 2026-10-10).** Las marcas de arriba son el resumen por componente; lo que se pide de verdad se
 decide servicio por servicio y queda en `tour_servicio_ajuste`. Entre un paquete y el siguiente
@@ -310,7 +320,8 @@ dice así (no "Excel de paquetes").
   código que no está cargado = "no está en el catálogo", sin IA. Nunca escribe en el catálogo.
 - Los códigos Kilroy que no siguen la regla (y los de los tours, que el importador de M1-05 no cargó
   para Kilroy) viven en `data/codigos-kilroy.csv` y se cargan con `npm run importar:codigos-kilroy`
-  (todo o nada).
+  (todo o nada, salvo una fila con `pendiente_de_carga=si`: mientras su producto no exista queda
+  afuera y se informa; cuando exista, se carga como cualquier otra. M3-46).
 - `reserva.origen_emparejado` (`codigo | nombre | ia`, solo con producto), `confianza_emparejado` y
   `sugerencia_producto_id` (lo que propuso la IA y no se aceptó; nunca es el producto).
 - Una reserva por producto del mail, con el mismo `booking_id`. Solo "reserva nueva" se empareja del

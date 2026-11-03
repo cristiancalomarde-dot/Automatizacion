@@ -136,7 +136,7 @@ function leerBus(linea: string): ItemIncluido | null {
   return null;
 }
 
-function leerIncluidos(lineas: string[]): ItemIncluido[] {
+export function leerIncluidos(lineas: string[]): ItemIncluido[] {
   const items: ItemIncluido[] = [];
   let encabezado: string | null = null;
   for (const linea of lineas) {

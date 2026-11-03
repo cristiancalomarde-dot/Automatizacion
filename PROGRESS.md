@@ -3,6 +3,16 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
 
 # Dónde retomar
 
+- **2026-11-03: M3-46 publicada (preparación de BR18); sigue M3-47.** Suite: 2857 passed, 1 skipped. Nada cargado
+  todavía en la base real: DK1587388 (BR18) sigue en "para revisión". Orden del owner: BR18 primero, después BR03/BR04.
+  - **M3-47:** copiar del Drive al clon Rutas, Construcción de Paquetes y Multi Destination (comparar antes de pisar);
+    COMPBR11/12 a `BLOQUES_SIN_SECCION_2`; traslado de salida de COMPBR12; niveles Hotel 3*; equivalencias; resolver
+    sin IA COMPBR04 fila 2239; BR18 a `TOURS_PILOTO`; sacar `pendiente_de_carga`. En seco primero; en la real, con OK del owner.
+  - **Excel de proveedores:** el owner edita solo en el Drive; Claude copia al clon antes de cada carga. Pendiente del
+    owner: mail de Merit Montevideo y Casa do Rio, Agatha y Casa Viva (Paraty, para BR03/BR04).
+  - Sin causa demostrada: diferencias de COMPBR04 y FTEE04/FTEE05 vistas en corridas anteriores de `catalogo-m3-10`
+    (no aparecieron en la última). Si vuelven, investigar desde cero.
+
 - **2026-11-02 ~10 hs: envío real PRENDIDO** (`PEDIDOS_ENVIO_REAL=si` en Production, tipo Secret, + redeploy; la
   pantalla ya no dice modo prueba). Ojo: el primer redeploy se hizo antes de guardar la variable y no la tomó. Vuelta
   atrás: valor `no` + redeploy.

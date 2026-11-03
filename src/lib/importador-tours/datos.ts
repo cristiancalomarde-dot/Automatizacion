@@ -1,6 +1,7 @@
 import { leerCsv } from "@/lib/importador-productos/csv";
 import { primeraCiudad, ultimaCiudad } from "./ciudades";
 import { normalizarCategoria } from "./rutas";
+import { leerIncluidos, type ItemIncluido } from "./word";
 
 /**
  * Los dos archivos de datos de M1-05 (spec §3 #6 y #8, "Datos, no código"):
@@ -16,6 +17,11 @@ import { normalizarCategoria } from "./rutas";
  *   categoría del tour cuando no es la misma.
  *
  * - `data/transfers-tour.csv` (M1-07): excepciones a la regla de transfers.
+ *
+ * - `data/incluidos-tour.csv` (M3-46; tour, incluye, nota): reemplaza lo que
+ *   incluye el Word de un tour cuando no cuenta la secuencia real (BR18 dice
+ *   "4 nights in Salvador" y un bus "round trip"). Cada fila es un renglón,
+ *   escrito como en el Word, en el orden del viaje. Sin fila, manda el Word.
  *
  * Una fila incompleta o una ruta que no se entiende es un error explícito.
  */
@@ -44,6 +50,12 @@ export interface ExcepcionTransfer {
   transferIn: boolean | null;
   transferOut: boolean | null;
   nota?: string;
+}
+
+/** Lo que incluye un tour según `data/incluidos-tour.csv` (M3-46), en el orden del viaje. */
+export interface IncluidoTour {
+  tour: string;
+  items: ItemIncluido[];
 }
 
 export interface CategoriaTour {
@@ -115,6 +127,29 @@ export function parsearTransfersTour(texto: string): ExcepcionTransfer[] {
     }
     return { tour, codigo, transferIn, transferOut, nota: (r.nota ?? "").trim() || undefined };
   });
+}
+
+export function parsearIncluidosTour(texto: string): IncluidoTour[] {
+  requerir(["tour", "incluye"], texto, "incluidos-tour.csv");
+  const porTour = new Map<string, ItemIncluido[]>();
+  leerCsv(texto).forEach((r, i) => {
+    const fila = i + 2;
+    const tour = (r.tour ?? "").trim();
+    const incluye = (r.incluye ?? "").trim();
+    if (!tour || !incluye) throw new Error(`incluidos-tour.csv, fila ${fila}: faltan tour o incluye.`);
+    const [item] = leerIncluidos([incluye]);
+    if (!item) {
+      throw new Error(`incluidos-tour.csv, fila ${fila}: no entiendo "${incluye}" (escribilo "3 nights accommodation in X" o "Bus from A to B").`);
+    }
+    if (item.tipo === "estadia" && !item.destino) {
+      throw new Error(`incluidos-tour.csv, fila ${fila}: no sé en qué destino es "${incluye}".`);
+    }
+    if (item.tipo === "bus" && (!item.desde || !item.hasta)) {
+      throw new Error(`incluidos-tour.csv, fila ${fila}: no sé entre qué ciudades va "${incluye}".`);
+    }
+    porTour.set(tour, [...(porTour.get(tour) ?? []), item]);
+  });
+  return [...porTour.entries()].map(([tour, items]) => ({ tour, items }));
 }
 
 export function parsearCategoriasTour(texto: string): CategoriaTour[] {

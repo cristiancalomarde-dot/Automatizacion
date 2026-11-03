@@ -1,5 +1,5 @@
 import { ciudadesEnTexto, nombraDestino, nombreDestino } from "./ciudades";
-import { mismaRuta, type ExcepcionTransfer, type TramoConProveedor } from "./datos";
+import { mismaRuta, type ExcepcionTransfer, type IncluidoTour, type TramoConProveedor } from "./datos";
 import type { TourExcel } from "./rutas";
 import type { DiaItinerario, ItemIncluido, ItinerarioWord } from "./word";
 
@@ -33,6 +33,12 @@ import type { DiaItinerario, ItemIncluido, ItinerarioWord } from "./word";
  *    `data/transfers-tour.csv` (M1-07) pisa la regla en un tour y componente
  *    puntual; si nombra un componente que el tour no tiene, el armado falla
  *    (tira un error) y el importador no escribe nada.
+ *
+ * M3-46: `data/incluidos-tour.csv` reemplaza lo que incluye el Word de un tour
+ * que no cuenta la secuencia real (BR18). Con esa fila, un destino puede estar
+ * en más de un componente: la primera estadía de ese destino va al primero de
+ * RutasenBus, la segunda al segundo, y las noches de cada uno se controlan
+ * igual. Sin fila, los dos motivos de "orden ambiguo" siguen como siempre.
  *
  * Lo que no cierra no se arma: el tour queda "para revisar" con sus motivos
  * (falta un paquete, las noches del Word no coinciden con el Excel, la suma
@@ -145,6 +151,8 @@ export interface EntradaArmado {
   tramosConProveedor: TramoConProveedor[];
   /** Excepciones a la regla de transfers (data/transfers-tour.csv, M1-07). */
   excepcionesTransfer?: ExcepcionTransfer[];
+  /** Lo que reemplaza al "Included" del Word de un tour (data/incluidos-tour.csv, M3-46). */
+  incluidosTour?: IncluidoTour[];
 }
 
 interface Grupo {
@@ -281,9 +289,11 @@ export function armarTour(e: EntradaArmado): TourArmado {
   for (const p of word.problemas) motivos.push(p);
   const textoDia = new Map<number, DiaItinerario>();
   for (const d of word.dias) if (!textoDia.has(d.numero)) textoDia.set(d.numero, d);
+  const excepcion = (e.incluidosTour ?? []).find((x) => x.tour === e.codigo);
+  if (excepcion) base.notas.push("Lo que incluye sale de data/incluidos-tour.csv, no del Word: el Word no cuenta la secuencia real.");
   const pasos: Paso[] = [];
   let dia = 1;
-  for (const item of word.items) {
+  for (const item of excepcion?.items ?? word.items) {
     if (item.tipo === "estadia") {
       pasos.push({ item, dia, nocturno: false });
       dia += item.noches;
@@ -308,6 +318,15 @@ export function armarTour(e: EntradaArmado): TourArmado {
   // --- 3. cada estadía a su componente ---
   const grupoDePaso = new Map<number, Grupo>();
   const vistos: Grupo[] = [];
+  const estadiasEnDestino = new Map<string, number>();
+  if (excepcion) {
+    for (const p of pasos) {
+      if (p.item.tipo === "estadia" && p.item.destino) {
+        estadiasEnDestino.set(p.item.destino, (estadiasEnDestino.get(p.item.destino) ?? 0) + 1);
+      }
+    }
+  }
+  const usadasEnDestino = new Map<string, number>();
   pasos.forEach((p, i) => {
     if (p.item.tipo !== "estadia") return;
     if (!p.item.destino) {
@@ -317,6 +336,23 @@ export function armarTour(e: EntradaArmado): TourArmado {
     const candidatos = porDestino.get(p.item.destino) ?? [];
     if (candidatos.length === 0) {
       motivos.push(`el Word tiene ${nochesTexto(p.item.noches)} en ${nombreDestino(p.item.destino)} y RutasenBus no tiene un paquete de ese destino`);
+      return;
+    }
+    if (excepcion) {
+      // La secuencia la dice la excepción: una estadía por componente del destino, en el orden de RutasenBus.
+      const estadias = estadiasEnDestino.get(p.item.destino)!;
+      if (estadias > candidatos.length) {
+        const texto = `data/incluidos-tour.csv tiene ${estadias} estadías en ${nombreDestino(p.item.destino)} y RutasenBus solo ${candidatos.length} ${candidatos.length === 1 ? "componente" : "componentes"} de ese destino (${candidatos.map((g) => g.codigo).join(", ")})`;
+        if (!motivos.includes(texto)) motivos.push(texto);
+        // Ya está dicho: que no se sume "RutasenBus trae X pero el Word no tiene noches".
+        for (const g of candidatos) if (!vistos.includes(g)) vistos.push(g);
+        return;
+      }
+      const usadas = usadasEnDestino.get(p.item.destino) ?? 0;
+      usadasEnDestino.set(p.item.destino, usadas + 1);
+      const g = candidatos[usadas];
+      vistos.push(g);
+      grupoDePaso.set(i, g);
       return;
     }
     if (candidatos.length > 1) {

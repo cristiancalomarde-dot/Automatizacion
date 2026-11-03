@@ -4,7 +4,7 @@ import type { PaquetePiloto } from "@/lib/importador-productos/paquetes-piloto";
 import { crearIndiceProveedores } from "@/lib/importador-productos/proveedores";
 import { armarTour, rutasDeServicios, type ComponenteArmado, type PaqueteConocido, type ServicioPropio, type TourArmado } from "./armado";
 import { verificarCategorias, type CategoriaFaltante } from "./categorias";
-import type { CategoriaTour, ExcepcionTransfer, TramoConProveedor } from "./datos";
+import type { CategoriaTour, ExcepcionTransfer, IncluidoTour, TramoConProveedor } from "./datos";
 import { nochesBasePaquete } from "./noches-base";
 import { resolverProveedorTramo } from "./proveedor-tramo";
 import {
@@ -158,6 +158,8 @@ export async function importarToursCompuestos(opciones: {
   excepcionesTransfer?: ExcepcionTransfer[];
   /** data/traslados-tour.csv (M1-08). Una fila que no cierra corta la carga antes de escribir. */
   excepcionesTraslado?: ExcepcionTraslado[];
+  /** data/incluidos-tour.csv (M3-46): reemplaza lo que incluye el Word de un tour. */
+  incluidosTour?: IncluidoTour[];
   archivos: { rutas: string; paquetes: string };
   tours?: string[];
 }): Promise<ResumenImportacionTours> {
@@ -224,6 +226,7 @@ export async function importarToursCompuestos(opciones: {
         tours: armados,
         tramosConProveedor: opciones.tramosConProveedor,
         excepcionesTransfer: opciones.excepcionesTransfer ?? [],
+        incluidosTour: opciones.incluidosTour ?? [],
       }),
     );
   }

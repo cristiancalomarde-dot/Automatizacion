@@ -62,3 +62,46 @@ describe("M2-03 fila 2 — data/codigos-kilroy.csv", () => {
     ]);
   });
 });
+
+describe("M3-46 punto 5 — HI_TRAVEL_BR18-677 y una fila que espera su carga", () => {
+  it("el lector toma HI_TRAVEL_BR18-677 → BR18", () => {
+    expect(leerCodigosKilroy(CSV)).toContainEqual(
+      expect.objectContaining({ codigoKilroy: "HI_TRAVEL_BR18-677", codigoHiTravel: "BR18", pendienteDeCarga: true }),
+    );
+  });
+
+  it("solo la fila de BR18 espera su carga", () => {
+    expect(leerCodigosKilroy(CSV).filter((f) => f.pendienteDeCarga).map((f) => f.codigoHiTravel)).toEqual(["BR18"]);
+  });
+
+  it("con BR18 sin cargar no corta la carga: esa fila queda afuera y las demás se cargan", () => {
+    const filas = leerCodigosKilroy(
+      `${ENCABEZADO},pendiente_de_carga
+HI_TRAVEL_BR18-677,BR18,,sin cargar,si
+HI_ARGENTINA_OVERLAND_7DAYS-677,CHB31,,,
+`,
+    );
+    expect(planCargaCodigosKilroy(filas, new Map([["CHB31", "id-chb31"]]))).toEqual([
+      { productoId: "id-chb31", agencia: "Kilroy", codigo: "HI_ARGENTINA_OVERLAND_7DAYS-677", nombre: null },
+    ]);
+  });
+
+  it("cuando BR18 ya está cargado, la fila se carga sin tocar el archivo", () => {
+    const filas = leerCodigosKilroy(`${ENCABEZADO},pendiente_de_carga
+HI_TRAVEL_BR18-677,BR18,,,si
+`);
+    expect(planCargaCodigosKilroy(filas, new Map([["BR18", "id-br18"]]))).toEqual([
+      { productoId: "id-br18", agencia: "Kilroy", codigo: "HI_TRAVEL_BR18-677", nombre: null },
+    ]);
+  });
+
+  it("una fila sin la marca sigue cortando la carga, y un valor raro es un error", () => {
+    const filas = leerCodigosKilroy(`${ENCABEZADO},pendiente_de_carga
+X-677,ZZ1,,,
+`);
+    expect(() => planCargaCodigosKilroy(filas, new Map())).toThrow(/ZZ1 no existe en el catálogo/);
+    expect(() => leerCodigosKilroy(`${ENCABEZADO},pendiente_de_carga
+X-677,ZZ1,,,tal vez
+`)).toThrow(/fila 2.*pendiente_de_carga/);
+  });
+});

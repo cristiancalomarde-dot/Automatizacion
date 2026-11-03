@@ -251,7 +251,8 @@ interface Fila {
     expect(segundaPaquetes.productos.find((x) => x.codigo === "OD024")!.lineasParaRevisar).toEqual([]);
     expect(segundaPaquetes.productos.find((x) => x.codigo === "OD027")!.lineasParaRevisar.map((l) => l.texto)).toEqual(["Las Marias Tilcara"]);
     // Sin IA (la carga corre sin clave): "Las Marias Tilcara" (sin "Accommodation:" ni proveedor) queda afuera, como dice el diagnóstico.
-    expect(segundaPaquetes.bloquesQueNecesitanIA).toEqual(["OD027"]);
+    // M3-46: COMPBR04 trae el renglón "(Gruta da Lapa Doce, …)" debajo de su excursión: sin IA queda afuera.
+    expect(segundaPaquetes.bloquesQueNecesitanIA).toEqual(["OD027", "COMPBR04"]);
   });
 
   it("fila 2: proveedores de OD027 y OD024 (respuestas del owner del 2026-10-26), todos con mail", async () => {

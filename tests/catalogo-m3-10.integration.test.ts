@@ -243,7 +243,8 @@ interface Fila {
       });
     }
     // M3-23: OD027 trae "Las Marias Tilcara" (sin proveedor): sin IA queda afuera.
-    expect(segundaPaquetes.bloquesQueNecesitanIA).toEqual(["OD027"]);
+    // M3-46: COMPBR04 trae el renglón "(Gruta da Lapa Doce, …)" debajo de su excursión: sin IA queda afuera.
+    expect(segundaPaquetes.bloquesQueNecesitanIA).toEqual(["OD027", "COMPBR04"]);
   });
 
   it("fila 2: cada servicio de los paquetes nuevos tiene proveedor con mail, salvo los avisados (Oxford y Merit sin mail; COT online a mano)", async () => {
