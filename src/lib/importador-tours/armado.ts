@@ -120,6 +120,8 @@ export interface ServicioPropio {
   sentido: string;
   /** Otra forma de hacer el tramo, que se elige con la reserva (tramos-con-proveedor.csv, M1-07). */
   alternativa?: string;
+  /** Cómo se nombra el tramo en la tarea (tramos-con-proveedor.csv, M3-48). */
+  enLaTarea?: string;
 }
 
 interface Base {
@@ -458,6 +460,7 @@ export function armarTour(e: EntradaArmado): TourArmado {
         nocturno: p.nocturno,
         sentido: ruta(bus.desde!, bus.hasta!),
         ...(propio.alternativa ? { alternativa: propio.alternativa } : {}),
+        ...(propio.enLaTarea ? { enLaTarea: propio.enLaTarea } : {}),
       });
       sumarCiudad(bus.desde!);
       sumarCiudad(bus.hasta!);

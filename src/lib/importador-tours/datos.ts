@@ -37,6 +37,8 @@ export interface TramoConProveedor {
   ambosSentidos: boolean;
   /** Columna opcional `alternativa`: otra forma de hacer el mismo tramo, que se elige con la reserva (M1-07, ARCH33). */
   alternativa?: string;
+  /** Columna opcional `en_la_tarea` (M3-48): cómo se nombra el tramo en la tarea, con terminales y dónde se compra. */
+  enLaTarea?: string;
   nota?: string;
 }
 
@@ -92,6 +94,7 @@ export function parsearTramosConProveedor(texto: string): TramoConProveedor[] {
       throw new Error(`tramos-con-proveedor.csv, fila ${fila}: ambos_sentidos tiene que ser si o no (dice "${r.ambos_sentidos}").`);
     }
     const alternativa = (r.alternativa ?? "").trim() || undefined;
+    const enLaTarea = (r.en_la_tarea ?? "").trim() || undefined;
     return {
       tour,
       desde,
@@ -100,6 +103,7 @@ export function parsearTramosConProveedor(texto: string): TramoConProveedor[] {
       bookingSupplier,
       ambosSentidos: sentidos === "si" || sentidos === "sí",
       ...(alternativa ? { alternativa } : {}),
+      ...(enLaTarea ? { enLaTarea } : {}),
       nota: (r.nota ?? "").trim() || undefined,
     };
   });

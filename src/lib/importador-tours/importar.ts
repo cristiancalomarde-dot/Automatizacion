@@ -438,7 +438,7 @@ export async function importarToursCompuestos(opciones: {
         nivel: null,
         fila_excel: null,
         // M3-48: la ruta del CSV dice si es un traslado (Paraty Tours); si no, es un bus.
-        descripcion: `${/^transfer\b/i.test(s.ruta) ? "Transfer" : "Bus"} ${s.sentido} (${s.nocturno ? "nocturno" : "diurno"}, sale el día ${s.diaDesde} del tour)${s.alternativa ? ` o ${s.alternativa} (se elige con la reserva)` : ""}. Booking Supplier: ${s.bookingSupplier}`,
+        descripcion: `${s.enLaTarea ?? `${/^transfer\b/i.test(s.ruta) ? "Transfer" : "Bus"} ${s.sentido}`} (${s.nocturno ? "nocturno" : "diurno"}, sale el día ${s.diaDesde} del tour)${s.alternativa ? ` o ${s.alternativa} (se elige con la reserva)` : ""}. Booking Supplier: ${s.bookingSupplier}`,
         service_provider_nombre: s.ruta,
         booking_supplier_nombre: s.bookingSupplier,
         service_provider_id: null,

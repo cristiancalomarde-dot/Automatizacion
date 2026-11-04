@@ -205,18 +205,19 @@ function ficha(): FichaLectura {
     expect(br04.noches).toBe(14);
     expect(recorrido(br04)).toEqual([
       "OD010B d1 3n IN OUT",
-      "Iguazú – São Paulo d4 nocturno",
       "COMPBR10 d5 2n",
-      "São Paulo – Paraty d7",
       "COMPBR02 d7 2n",
       "COMPBR11 d9 3n",
       "OD032 d12 3n OUT",
     ]);
     expect(propios(br04)).toEqual([
+      ["Iguazú – São Paulo", 4, true, false],
+      ["São Paulo – Paraty", 7, true, false],
       ["Paraty – Ilha Grande", 9, false, false],
       ["Ilha Grande – Río de Janeiro", 12, false, false],
     ]);
     expect(br04.ajustes.map((a) => [a.paquete, a.accion])).toEqual([
+      ["OD010B", "reemplazar"],
       ["COMPBR02", "anular"],
       ["OD032", "invertir"],
     ]);
@@ -259,7 +260,7 @@ function ficha(): FichaLectura {
       const { pedidos, tareas } = await cargarPedidos(admin, reservaId);
       expect(pedidos.filter((p) => p.sin_destinatario).map((p) => p.proveedores.join())).toEqual([]);
       expect(pedidos.some((p) => /lagarto/i.test(p.proveedores.join(" ")))).toBe(false);
-      expect(tareas.filter((x) => x.tipo === "reservar_a_mano").map((x) => x.texto)).toEqual(["Reservar a mano en Che Lagarto: Che Lagarto (dorm compartido), IN 1 jun 2027, OUT 3 jun 2027"]);
+      expect(tareas.filter((x) => x.tipo === "reservar_a_mano").map((x) => x.texto)).toEqual(["Reservar a mano en Che Lagarto: Che Lagarto (dorm compartido), IN 1 jun 2027, OUT 3 jun 2027. Si no hay lugar: Casa do Rio, Casa Viva, Agatha"]);
     });
 
     it("Ilha Grande: Holandes recibe el mail en portugués, con desayuno y sus 3 noches", async () => {
@@ -278,16 +279,19 @@ function ficha(): FichaLectura {
       const { cuerpo } = paraty[0];
       expect(cuerpo).toMatch(/Scuna Netuno[^\n]*\nData: 2 jun 2027/);
       expect(cuerpo).toContain("Transfer: Paraty – Ilha Grande\nData: 3 jun 2027");
-      expect(cuerpo).toContain("Transfer: Ilha Grande – Río de Janeiro\nData: 6 jun 2027");
+      expect(cuerpo).toContain("Transfer: Ilha Grande – Rio de Janeiro\nData: 6 jun 2027");
       expect(cuerpo.match(/Transfer: /g)).toHaveLength(2);
-      expect(cuerpo).not.toMatch(/Ônibus|Rio de Janeiro - Paraty/);
+      expect(cuerpo).not.toMatch(/Ônibus|Rio de Janeiro - Paraty|Río/);
+      // Scuna: punto de encuentro en el puerto, sin pick up y sin preguntar el horario.
+      expect(cuerpo).toContain("Ponto de encontro: Porto de Paraty (o passageiro vai direto)");
+      expect(cuerpo).not.toMatch(/pick up|hor[aá]rio/i);
     });
 
     it("los dos buses dan tareas 'Emitir pasaje', sin pedido", async () => {
       const { tareas } = await cargarPedidos(admin, reservaId);
       expect(tareas.filter((x) => x.tipo === "emitir_boleto").map((x) => x.texto)).toEqual([
-        "Emitir pasaje: Iguazú – São Paulo, 29 may 2027",
-        "Emitir pasaje: São Paulo – Paraty, 1 jun 2027",
+        "Emitir pasaje: Bus Foz do Iguaçu – São Paulo Barra Funda, en Plataforma10, 29 may 2027",
+        "Emitir pasaje: Bus São Paulo Tietê – Paraty, en Plataforma10, 1 jun 2027",
       ]);
     });
 
@@ -298,7 +302,10 @@ function ficha(): FichaLectura {
       expect(estadia("perez@local55.com")).toBe("IN: 6 jun 2027\nOUT: 9 jun 2027 (3 noites)");
       expect(tareas.filter((x) => x.tipo === "whatsapp").map((x) => x.texto)).toEqual([expect.stringMatching(/Fujima Hostel .*IN 30 may 2027, OUT 1 jun 2027/)]);
       const out = pedidos.find((p) => p.destinatarios.includes("buziostransfer@hotmail.com"))!.cuerpo;
-      expect(out).toMatch(/Transfer de saída: [^\n]*\nData: 9 jun 2027/);
+      expect(out).toContain("Transfer de saída: Transfer Cabanacopa Hostel - Aeropuerto GIG\nData: 9 jun 2027");
+      const foz = pedidos.find((p) => p.destinatarios.includes("reservas8@cuencadelplata.com"))!.cuerpo;
+      expect(foz).toMatch(/TRF OUT: 29 may 2027 · Rodoviaria de Foz \(bus a São Paulo Barra Funda\) · Pick up: /);
+      expect(foz).not.toMatch(/TRF OUT:[^\n]*pendiente/);
     });
   });
 });

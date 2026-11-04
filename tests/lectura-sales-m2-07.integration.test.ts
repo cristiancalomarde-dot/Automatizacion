@@ -164,7 +164,7 @@ const desconocido = (i: number) =>
           salida.push(a.map(String).join(" "));
         });
       }
-    }, 120_000);
+    }, 420_000); // M3-48: el candado puede esperar hasta 5 minutos; con 120 s el hook vencía antes.
 
     afterEach(() => {
       // #15: en ninguna corrida de la suite aparece un comando que escriba en la casilla.

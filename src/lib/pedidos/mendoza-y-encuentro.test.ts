@@ -117,6 +117,7 @@ describe("las reglas en data/ (fila 5)", () => {
     expect(puntos).toEqual([
       { codigo: "OD018", orden: 5, servicio: "Bike Tour", punto: "Pasaje Giuffra 370, San Telmo" },
       { codigo: "OD020", orden: 5, servicio: "Bike Tour", punto: "Pasaje Giuffra 370, San Telmo" },
+      { codigo: "COMPBR02", orden: 4, servicio: "Excursion Scuna Netuno 10.30 hs Islas paradisiacas", punto: "Porto de Paraty" },
     ]);
   });
 

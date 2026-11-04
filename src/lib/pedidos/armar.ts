@@ -106,6 +106,14 @@ const PRIVADO = /\b(privad[oa]|private)\b/i;
 function comoSeEscribe(texto: string): string {
   return texto.replace(/\bTransvipp\b/gi, "Transvip");
 }
+/** M3-48 (owner, 2026-11-03): en los mails en portugués, Rio sin acento. Solo el texto del mail, no los datos. */
+function rioEnPortugues(texto: string): string {
+  return texto.replace(/(?<!\p{L})Río(?!\p{L})(?! Gallegos)/gu, "Rio");
+}
+/** M3-48: la excursión que ya dice su hora en el nombre ("Scuna Netuno 10.30 hs"): no se pregunta el horario. */
+const HORA_EN_EL_NOMBRE = /\b\d{1,2}[.:]\d{2}\s*hs\b/i;
+/** M3-48: el ajuste del tour dice que la salida de Iguazú es a la Rodoviaria de Foz, con su bus (BR04). */
+const SALIDA_A_LA_RODOVIARIA = /transfer out a la (Rodoviaria de Foz \(bus [^)]*\))/i;
 /** El servicio se hace en español (el Overland de Imperio Inca: "chofer de habla hispana, sin guía en inglés"). */
 const EN_ESPANOL = /habla hispana|spanish[- ]speaking|sin gu[ií]a en ingl[eé]s/i;
 /** Una excursión de varios días ("3 días en jeep", "3 days"). */
@@ -524,7 +532,7 @@ class Armado {
           ? "se eligió según la habitación"
           : "se tomó la primera opción del catálogo";
       const avisoOpciones = otras.length ? [`${nombre}: ${elegida} (otras: ${otras.join(", ")}).`] : [];
-      this.servicio(b, s, avisoOpciones, nombre);
+      this.servicio(b, s, avisoOpciones, nombre, otras);
       for (const r of elecciones.filter((x) => x.accion === "agregar")) this.agregarElegido(b, s, r);
     }
   }
@@ -585,7 +593,10 @@ class Armado {
     if (grupo[0].tipo !== "alojamiento" || !b.destino) return comoEnElExcel;
     const hab = normalizarTexto(tipoDeHabitacion(this.reserva.habitacion) ?? "");
     const clase = hab.startsWith("dorm") ? "dorm" : ["doble", "twin", "single", "triple"].includes(hab) ? "privada" : null;
-    const regla = clase && (this.catalogo.hostelSegunHabitacion ?? []).find((r) => r.destino === b.destino && r.habitacion === clase);
+    const delDestino = (this.catalogo.hostelSegunHabitacion ?? []).filter((r) => r.destino === b.destino);
+    // M3-48: si el orden del destino es el mismo con cualquier habitación (Paraty), vale aunque la reserva no la diga.
+    const mismoOrden = new Set(delDestino.map((r) => r.orden.join("|"))).size === 1;
+    const regla = clase ? delDestino.find((r) => r.habitacion === clase) : mismoOrden ? delDestino[0] : undefined;
     if (!regla) return comoEnElExcel;
     const nombreDe = (s: Servicio) => normalizarTexto(s.serviceProviderNombre ?? queEs(s));
     const opciones = regla.orden.flatMap((n) => grupo.filter((s) => nombreDe(s) === normalizarTexto(n)));
@@ -593,7 +604,8 @@ class Armado {
   }
 
   private nombre(s: Servicio): string {
-    if (s.ajusteTour?.accion === "reemplazar" && s.ajusteTour.texto) return s.ajusteTour.texto;
+    // M3-48: un traslado invertido dice su sentido de verdad, no el del Excel (OD032 en BR04: "Transfer GIG - …" es la salida).
+    if ((s.ajusteTour?.accion === "reemplazar" || s.ajusteTour?.accion === "invertir") && s.ajusteTour.texto) return s.ajusteTour.texto;
     return nombreLimpio(queEs(s)) || s.serviceProviderNombre || nombreLimpio(s.descripcion ?? "") || "servicio";
   }
 
@@ -607,7 +619,7 @@ class Armado {
   }
 
   /** Un servicio elegido: va a un pedido, a una tarea o a WhatsApp. */
-  private servicio(b: Bloque, delCatalogo: Servicio, avisosDelServicio: string[], nombreElegido?: string): void {
+  private servicio(b: Bloque, delCatalogo: Servicio, avisosDelServicio: string[], nombreElegido?: string, alternativas: string[] = []): void {
     const { s, avisos } = this.seLePideA(b, delCatalogo, avisosDelServicio);
     const nombre = nombreElegido ?? this.nombre(s);
     const tramos = s.tramosNoches?.length ? s.tramosNoches : [null];
@@ -616,7 +628,7 @@ class Armado {
       const hasta = b.inicio && tramo ? sumarDias(b.inicio, tramo.nocheDesde - 1 + tramo.noches) : b.fin;
       // M3-32: los renglones en el idioma del proveedor al que se le pide (portugués a los de Brasil).
       const armados = this.enElIdiomaDe(s.bookingSupplier, () => this.renglones(b, s, nombre, desde, hasta));
-      for (const a of armados) this.destino(b, s, nombre, a, avisos);
+      for (const a of armados) this.destino(b, s, nombre, a, avisos, alternativas);
     }
   }
 
@@ -645,7 +657,7 @@ class Armado {
   }
 
   /** A quién va: mail, WhatsApp, a mano o sin proveedor. */
-  private destino(b: Bloque, s: Servicio, nombre: string, a: Renglones, avisosPrevios: string[]): void {
+  private destino(b: Bloque, s: Servicio, nombre: string, a: Renglones, avisosPrevios: string[], alternativas: string[] = []): void {
     const cuando = a.resumen;
     // M3-24: las fechas especiales y los días de los buses de lo que se pide (vaya por mail, WhatsApp o a mano).
     // M3-45: con el proveedor, para el aviso de traslado nocturno (data/traslados-nocturnos.csv).
@@ -655,7 +667,9 @@ class Armado {
       if (s.tipo === "bus") {
         this.tarea("emitir_boleto", `Emitir pasaje: ${nombre}${cuando ? `, ${cuando}` : ""}`, { producto: b.codigo, servicioId: s.id }, a.fecha);
       } else {
-        this.tarea("reservar_a_mano", `Reservar a mano en ${donde}: ${a.queParaTarea}${cuando ? `, ${cuando}` : ""}`, { producto: b.codigo, servicioId: s.id }, a.fecha);
+        // M3-48 (owner, 2026-11-03): el alojamiento a mano nombra las alternativas, porque no hay otro pedido que las diga.
+        const siNoHay = s.tipo === "alojamiento" && alternativas.length ? `. Si no hay lugar: ${alternativas.join(", ")}` : "";
+        this.tarea("reservar_a_mano", `Reservar a mano en ${donde}: ${a.queParaTarea}${cuando ? `, ${cuando}` : ""}${siNoHay}`, { producto: b.codigo, servicioId: s.id }, a.fecha);
       }
       return;
     }
@@ -674,7 +688,7 @@ class Armado {
     }
     const cubre: ParteCubierta = { parteId: b.parteId, productoServicioId: s.id, producto: b.codigo, fecha: a.fecha };
     // M3-34: el paquete con traslados (105 de Iguazú) cuenta sus excursiones; una excursión suelta, una.
-    const excursiones = a.conDia ? a.conDia.filter((x) => x.tipo === "excursion").length : s.tipo === "excursion" ? 1 : 0;
+    const excursiones = a.conDia ? a.conDia.filter((x) => x.tipo === "excursion").length : s.tipo === "excursion" && !HORA_EN_EL_NOMBRE.test(nombre) ? 1 : 0;
     // M3-44: la excursión es el Overland (UYUO01), para pedir el horario de salida desde San Pedro.
     const overland = excursiones === 1 && !a.conDia && esOverland(`${nombre} ${s.descripcion ?? ""}`);
     this.agregar(proveedor, s.tipo, a.renglones, a.fecha, cubre, a.datosPax, [...avisos, ...a.avisos], a.pendientes, a.tour, a.hasta ?? null, excursiones, overland);
@@ -995,12 +1009,13 @@ class Armado {
       }
     });
     const salida = this.traslado("out", "", b.fin, codigos, IGUAZU.has(b.destino ?? ""));
+    const aLaRodoviaria = s.ajusteTour?.accion === "reemplazar" ? s.ajusteTour.texto?.match(SALIDA_A_LA_RODOVIARIA)?.[1] : undefined;
     if (!b.omitir.includes("out")) {
       conDia.push({ tipo: "traslado", nombre: `TRF OUT (${titulo})`, fecha: salida.fecha ?? b.fin, destino: b.destino, vuelo: { lado: "out", numero: salida.numero, hora: salida.hora } });
       renglones.push(
-        conHotel(`TRF OUT${tipoTraslado}: ${b.fin ? fechaCorta(salida.fecha ?? b.fin, id) : "a confirmar"} · ${salida.dato}`, [["Pick up", nocheAnterior(b.fin)]]),
+        conHotel(`TRF OUT${tipoTraslado}: ${b.fin ? fechaCorta(salida.fecha ?? b.fin, id) : "a confirmar"} · ${aLaRodoviaria ?? salida.dato}`, [["Pick up", nocheAnterior(b.fin)]]),
       );
-      pendientes.push(...salida.pendientes);
+      if (!aLaRodoviaria) pendientes.push(...salida.pendientes);
     }
     if (b.pickUp) renglones.push(`Pick up: ${b.pickUp}`);
     return { renglones, fecha: b.inicio, hasta: b.inicio ? b.fin : null, resumen: b.inicio && b.fin ? rangoCorto(b.inicio, b.fin) : "", queParaTarea: titulo, datosPax: true, avisos, pendientes, conDia };
@@ -1583,14 +1598,16 @@ export function armarPedidos(reserva: ReservaParaPedidos, catalogo: CatalogoPara
         partes: g.items.map((it) => it.cubre),
         // M3-16: las fechas son las de los servicios de ESTE pedido, no las de toda la reserva.
         asunto: completarAsunto(pl.asunto, { ...datosAsunto, fechas: fechasDelAsunto(g.items.flatMap((it) => [it.fecha, it.hasta]), idioma) }),
-        cuerpo: comoSeEscribe(
-          completar(pl.cuerpo, {
-            servicios,
-            // M3-34: con al menos una excursión, que reconfirmen el horario; M3-44: si es solo el Overland, el de salida.
-            horario: horarioDelPedido(g.items, idioma),
-            pasajeros,
-            pendientes,
-          }),
+        cuerpo: (idioma === "pt" ? rioEnPortugues : (t: string) => t)(
+          comoSeEscribe(
+            completar(pl.cuerpo, {
+              servicios,
+              // M3-34: con al menos una excursión, que reconfirmen el horario; M3-44: si es solo el Overland, el de salida.
+              horario: horarioDelPedido(g.items, idioma),
+              pasajeros,
+              pendientes,
+            }),
+          ),
         ),
         firma: pl.firma,
         sinDestinatario: g.sinDestinatario,

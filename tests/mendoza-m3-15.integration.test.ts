@@ -91,7 +91,7 @@ const CASOS = [
       expect(od019, d.servicio).toContain(normalizarTexto(d.servicio!));
     }
     const od018 = (await servicio5("OD018")).map((s) => s.service_provider_nombre);
-    for (const p of cargarPuntosDeEncuentro()) expect(od018).toContain(p.servicio);
+    for (const p of cargarPuntosDeEncuentro().filter((x) => x.codigo === "OD018")) expect(od018).toContain(p.servicio);
   });
 
   CASOS.forEach((caso, i) => {

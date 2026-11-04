@@ -204,6 +204,8 @@ describe("M3-48 punto 4 — Che Lagarto como tarea, sin pedido", () => {
   });
 
   it("Che Lagarto está marcado manual en Paraty y en Ilha Grande, con la nota del owner", () => {
+    const plataforma = parsearEquivalencias(dato("equivalencias-proveedores.csv")).filter((f) => f.alias_normalizado === "plataforma10" && f.modo === "manual");
+    expect(plataforma.map((f) => f.destino)).toEqual(expect.arrayContaining(["CHAP", "IGR", "PRY", "SAO", "SSA"]));
     const manuales = parsearEquivalencias(dato("equivalencias-proveedores.csv")).filter((f) => f.alias_normalizado === "che lagarto");
     expect(manuales.map((f) => [f.destino, f.modo, f.estado]).sort()).toEqual([
       ["ILH", "manual", "confirmado"],
@@ -324,12 +326,14 @@ describe("M3-48 punto 7 — los tramos", () => {
         { codigo: "OD032", destino: "RIO" },
       ],
       servicios: new Map([
+        ["OD010B", [{ orden: 5, prioridad: 1, tipo: "excursion", serviceProviderNombre: "Paquete Receptvo 105 Premium x Foz", descripcion: "Excursion: Paquete Receptvo 105 Premium x Foz. Booking Supplier: Cuenca del Plata", sentido: null }]],
         ["OD032", [servicioDe(3, "Transfer GIG - Accommodation in Rio. Booking Supplier: Buzios Transfers / Alex", "llegada")]],
         ["COMPBR02", [servicioDe(3, traslado, "sin_sentido")]],
       ]),
       excepciones,
     });
     expect(ajustes.map((a) => [a.paquete, a.accion, a.origen])).toEqual([
+      ["OD010B", "reemplazar", "excepcion"],
       ["COMPBR02", "anular", "excepcion"],
       ["OD032", "invertir", "excepcion"],
     ]);
@@ -408,14 +412,14 @@ describe("M3-48 punto 7 — los tramos", () => {
       expect(t.noches).toBe(14);
       expect(recorrido(t)).toEqual([
         "OD010B d1 3n IN OUT",
-        "bus Iguazú – São Paulo d4 nocturno",
         "COMPBR10 d5 2n",
-        "bus São Paulo – Paraty d7",
         "COMPBR02 d7 2n",
         "COMPBR11 d9 3n",
         "OD032 d12 3n OUT",
       ]);
       expect(propios(t)).toEqual([
+        ["Bus Foz do Iguazu – Sao Paulo", "Iguazú – São Paulo", 4, "Plataforma10"],
+        ["Bus Sao Paulo – Paraty", "São Paulo – Paraty", 7, "Plataforma10"],
         ["Transfer Paraty – Ilha Grande", "Paraty – Ilha Grande", 9, "Paraty Tours"],
         ["Transfer Ilha Grande – Rio de Janeiro", "Ilha Grande – Río de Janeiro", 12, "Paraty Tours"],
       ]);

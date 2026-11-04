@@ -22,6 +22,16 @@
 - **Desayuno:** Che Lagarto (Paraty e Ilha Grande) y Holandes **sí**. Casa do Rio, Casa Viva y Hostel Agatha **no**.
 - **Precios:** el precio nuevo de BR03, BR04 y BR20 es el correcto; el catálogo público cambia recién en mayo-junio de 2027.
 
+### Respuestas del owner (2026-11-03)
+- **Che Lagarto a mano:** la tarea nombra las alternativas, en el orden de Paraty: Casa do Rio, Casa Viva, Agatha.
+- **Paraty Tours:** hace los traslados Río - Ilha Grande, Río - Paraty, Paraty - Ilha Grande y viceversa. En BR04, el de Ilha Grande - Río está incluido en COMPBR02.
+- **Buses de BR04:** se emiten con Plataforma10 (plataforma10.com.br): Foz - São Paulo Barra Funda y Paraty - São Paulo Tietê, y viceversa. La tarea nombra Plataforma10 y esas terminales.
+- **Budget en Foz (BR04):** Nacional Inn Foz 3\* (306). El owner prefiere dar algo mejor: los Budget de IGR e IGU son muy básicos.
+- **Traslado de salida de Río:** "Transfer <alojamiento> - Aeropuerto GIG".
+- **Scuna Netuno:** sin pick up ni drop off. El punto de encuentro es en el puerto para todos los clientes; no se pregunta el horario.
+- **Salida de Foz en BR04:** solo un transfer a la Rodoviaria de Foz, desde donde sale el bus a São Paulo Barra Funda. No dice "Bus o vuelo pendiente".
+- **Portugués:** los mails dicen "Rio de Janeiro".
+
 ## 3. Qué tiene que hacer (y cómo comprobamos cada cosa)
 
 | # | Qué hace | Cómo se comprueba |
@@ -51,3 +61,4 @@ Con OK del owner y copiando antes los Excel del Drive: `importar:proveedores` �
 - BR20, aunque hereda precios de BR04.
 - Una pasada automática de "si Holandes no contesta, pedir a Che Lagarto": la decide la persona. Holandes tarda en responder (owner).
 - La marca "pedido incompleto".
+- Los traslados en privado (owner, 2026-11-03): si se piden en privado, se le piden a Alex. Queda a mano.

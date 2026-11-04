@@ -33,6 +33,8 @@ const CASOS = [
   { clave: "BR04 Dorm Hostel", ...BR04, numero: `DK93481${SUFIJO}/test`, habitacion: "Dormitory - Hostel", inicio: "2027-05-26", fin: "2027-06-09" },
   // Otra semana: con las mismas fechas y pax sería "posible duplicada" (y es correcto que lo sea).
   { clave: "BR04 Hotel 3*", ...BR04, numero: `DK93482${SUFIJO}/test`, habitacion: "Double Room - Hotel 3*", inicio: "2027-07-07", fin: "2027-07-21" },
+  // Owner 2026-11-03: el Budget de Foz en BR04 es el Nacional Inn Foz 3* (306), no el Budget de OD010B.
+  { clave: "BR04 Budget", ...BR04, numero: `DK93484${SUFIJO}/test`, habitacion: "Double Room - Budget Hotel", inicio: "2027-08-04", fin: "2027-08-18" },
   { clave: "BR03 Single Hostel", ...BR03, numero: `DK93483${SUFIJO}/test`, habitacion: "Single Room - Hostel", inicio: "2027-03-03", fin: "2027-03-11" },
 ];
 
@@ -154,10 +156,10 @@ interface Armada {
     expect(pedidos.filter((p) => p.sin_destinatario)).toEqual([]);
     for (const p of pedidos) expect(p.asunto, p.destinatarios.join()).toMatch(/ x 2 /);
     expect(tareas.map((t) => `${t.tipo}: ${t.texto}`)).toEqual([
-      "emitir_boleto: Emitir pasaje: Iguazú – São Paulo, 29 may 2027",
+      "emitir_boleto: Emitir pasaje: Bus Foz do Iguaçu – São Paulo Barra Funda, en Plataforma10, 29 may 2027",
       expect.stringMatching(/^whatsapp: Contactar por WhatsApp a Fujima Hostel.*IN 30 may 2027, OUT 1 jun 2027/),
-      "emitir_boleto: Emitir pasaje: São Paulo – Paraty, 1 jun 2027",
-      "reservar_a_mano: Reservar a mano en Che Lagarto: Che Lagarto (dorm compartido), IN 1 jun 2027, OUT 3 jun 2027",
+      "emitir_boleto: Emitir pasaje: Bus São Paulo Tietê – Paraty, en Plataforma10, 1 jun 2027",
+      "reservar_a_mano: Reservar a mano en Che Lagarto: Che Lagarto (dorm compartido), IN 1 jun 2027, OUT 3 jun 2027. Si no hay lugar: Casa do Rio, Casa Viva, Agatha",
     ]);
   });
 
@@ -172,14 +174,21 @@ interface Armada {
     expect(pedidos.find((p) => p.destinatarios.includes("reservasparaty@pousadacorsario.com.br"))!.cuerpo).toContain("com café da manhã");
   });
 
+  it("BR04 Budget: los mismos hoteles que Hotel 3*: en Foz el Nacional Inn Foz 3*, no el Dann Inn", () => {
+    const { pedidos } = armadas.get("BR04 Budget")!;
+    const hoteles = [...pedidos.map((p) => p.cuerpo).join("\n").matchAll(/(?:Hospedagem|Alojamiento): ([^\n]+)/g)].map((m) => m[1]);
+    expect(hoteles).toEqual(["Nacional Inn Foz 3*", "National Inn Copacabana", "Soos Hotel Collection", "Pousada do Corsario Paraty", "Pousada Aquarela do Mar"]);
+    expect(pedidos.map((p) => p.cuerpo).join("\n")).not.toContain("Dann Inn");
+  });
+
   it("BR03 Single Hostel: Río, Che Lagarto a mano, Holandes y los tres traslados con Paraty Tours", () => {
     const { pedidos, tareas } = armadas.get("BR03 Single Hostel")!;
     const paraty = pedidos.find((p) => p.destinatarios.includes("reservas@paratytours.com.br"))!.cuerpo;
-    expect(paraty).toContain("Transfer: Río de Janeiro – Paraty\nData: 6 mar 2027");
+    expect(paraty).toContain("Transfer: Rio de Janeiro – Paraty\nData: 6 mar 2027");
     expect(paraty).toContain("Transfer: Paraty – Ilha Grande\nData: 8 mar 2027");
-    expect(paraty).toContain("Transfer: Ilha Grande – Río de Janeiro\nData: 11 mar 2027");
+    expect(paraty).toContain("Transfer: Ilha Grande – Rio de Janeiro\nData: 11 mar 2027");
     expect(paraty.match(/Transfer: /g)).toHaveLength(3);
-    expect(tareas.filter((t) => t.tipo === "reservar_a_mano").map((t) => t.texto)).toEqual([expect.stringMatching(/^Reservar a mano en Che Lagarto: Che Lagarto \(.*\), IN 6 mar 2027, OUT 8 mar 2027$/)]);
+    expect(tareas.filter((t) => t.tipo === "reservar_a_mano").map((t) => t.texto)).toEqual([expect.stringMatching(/^Reservar a mano en Che Lagarto: Che Lagarto \(.*\), IN 6 mar 2027, OUT 8 mar 2027\. Si no hay lugar: Casa do Rio, Casa Viva, Agatha$/)]);
     expect(pedidos.find((p) => p.destinatarios.includes("reservas@holandeshostel.com.br"))!.cuerpo).toContain("IN: 8 mar 2027\nOUT: 11 mar 2027 (3 noites)");
   });
 });

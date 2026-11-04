@@ -46,6 +46,9 @@ describe("tramos-con-proveedor.csv (spec M1-05 §3 #6)", () => {
       ["BR03", "ILH", "RIO", "Paraty Tours", false],
       ["BR04", "PRY", "ILH", "Paraty Tours", false],
       ["BR04", "ILH", "RIO", "Paraty Tours", false],
+      // M3-48: los buses de BR04 con Plataforma10.
+      ["BR04", "IGR", "SAO", "Plataforma10", true],
+      ["BR04", "SAO", "PRY", "Plataforma10", true],
     ]);
     // M1-07 #3: Transvip queda solo como traslado del aeropuerto de Calama (en OD030), no en 5C01.
     expect(texto).not.toMatch(/transvip/i);

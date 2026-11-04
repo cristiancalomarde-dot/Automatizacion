@@ -192,6 +192,7 @@ describe("el motivo que ve el operativo (spec M1-10)", () => {
       "BR03 · COMPBR02 · Se pide por tramos, cada uno con su día (servicios del tour).",
       "BR04 · COMPBR02 · Se pide por tramos, cada uno con su día (servicios del tour).",
       "BR04 · OD032 · En este tour el traslado es de salida, del alojamiento al aeropuerto de Río.",
+      "BR04 · OD010B · Sale en bus a São Paulo Barra Funda desde la Rodoviaria de Foz.",
     ]);
     for (const x of REAL) expect(x.motivo).not.toMatch(INTERNO);
     for (const tour of Object.keys(SECUENCIAS)) {

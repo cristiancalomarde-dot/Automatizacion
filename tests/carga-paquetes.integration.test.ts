@@ -117,11 +117,11 @@ interface Fila {
       }
     }, TIMEOUT);
 
-    it("#2 cargar las equivalencias del formato nuevo (92 desde M1-08, 95 desde M2-08, 104 desde M3-10, 113 desde M3-23, 114 desde M3-25: Greeters a mano, 116 desde M3-46: Plataforma10 en SSA y CHAP, 120 desde M3-47: Laranjeiras, Bahia Transfers, Cassi y Chapada Backpackers, 126 desde M3-48: Paraty e Ilha Grande) es idempotente", async () => {
+    it("#2 cargar las equivalencias del formato nuevo (92 desde M1-08, 95 desde M2-08, 104 desde M3-10, 113 desde M3-23, 114 desde M3-25: Greeters a mano, 116 desde M3-46: Plataforma10 en SSA y CHAP, 120 desde M3-47: Laranjeiras, Bahia Transfers, Cassi y Chapada Backpackers, 129 desde M3-48: Paraty, Ilha Grande y Plataforma10) es idempotente", async () => {
       const texto = readFileSync(RUTA_EQUIVALENCIAS, "utf-8");
       await cargarEquivalencias({ admin, textoCsv: texto });
       const segunda = await cargarEquivalencias({ admin, textoCsv: texto });
-      expect(segunda).toMatchObject({ total: 126, creados: 0, actualizados: 0 });
+      expect(segunda).toMatchObject({ total: 129, creados: 0, actualizados: 0 });
       const { data } = await admin
         .from("proveedor_alias")
         .select("destino, modo, proveedor:proveedor_id(nombre, ciudad)")

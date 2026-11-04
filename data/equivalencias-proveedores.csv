@@ -125,3 +125,6 @@ PRY,Pousada do Corsario Paraty,Pousada Corsario,alias,confirmado,"M3-48: el Exce
 PRY,Agatha,Hostel Agatha,alias,confirmado,"M3-48: el Excel de paquetes (fila 1722) escribe Agatha; en el directorio es Hostel Agatha (fila 397)"
 PRY,Paraty Tours,PARATY TOURS (Transfer regular Rio (alojamiento hoteles zona sur) - Angra - Ilha Grande / Ilha Grande - Angra - Paraty / Paraty - Rio de Janeiro (alojamiento hoteles zona sur),alias,confirmado,"M3-48: el directorio (fila 400) agrega entre paréntesis qué traslados hace"
 ILH,Paraty Tours,PARATY TOURS (Transfer regular Rio (alojamiento hoteles zona sur) - Angra - Ilha Grande / Ilha Grande - Angra - Paraty / Paraty - Rio de Janeiro (alojamiento hoteles zona sur),alias,confirmado,"M3-48: la misma fila 400, para el traslado Ilha Grande - Río (no pasa por Paraty). Aclaración del directorio: cuando sale o van a Ilha Grande, Paraty o Angra dos Reis, con Paraty Tours"
+IGR,Plataforma10,,manual,confirmado,"Owner 2026-11-03 (M3-48): los buses de BR04 se emiten a mano en plataforma10.com.br. No se le escribe a nadie"
+SAO,Plataforma10,,manual,confirmado,"Owner 2026-11-03 (M3-48): los buses de BR04 se emiten a mano en plataforma10.com.br. No se le escribe a nadie"
+PRY,Plataforma10,,manual,confirmado,"Owner 2026-11-03 (M3-48): los buses de BR04 se emiten a mano en plataforma10.com.br. No se le escribe a nadie"
