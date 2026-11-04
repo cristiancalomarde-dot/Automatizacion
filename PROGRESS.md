@@ -3,11 +3,12 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
 
 # Dónde retomar
 
-- **2026-11-03 noche: M3-48 (BR03 y BR04) lista para cargar, sin cargar.** Suite: 2961 passed, 1 skipped; linter y tsc
-  limpios. En seco contra la real: `docs/sdd/diagnosticos/M3-48-carga.md`. **Falta:** las 5 preguntas al owner (tarea de
-  Che Lagarto sin alternativas, Ilha Grande - Río con Paraty Tours, sistema de los buses, Budget de Foz, textos raros de
-  los mails) y su OK para la carga (ficha §5, copiando antes los Excel del Drive). Después asignar BR04 a su reserva real
-  `a6db2703-e4ae-40a5-bb1e-3826c814abf7`. A la de BR03 no se le arman pedidos: ya se pidió a mano.
+- **2026-11-04: BR03 y BR04 cargados en la base real con OK del owner (M3-48).** Suite: 2981 passed, 1 skipped; linter y
+  tsc limpios. Detalle: `docs/sdd/diagnosticos/M3-48-carga.md`. **Falta para cerrar M3-48:** que el owner asigne BR04 a su
+  reserva real `a6db2703-e4ae-40a5-bb1e-3826c814abf7` (sigue en "para revisión") y revise los pedidos. A la de BR03
+  (`ea043c00-f295-4973-bf7b-3c56100b7f18`) no se le arman pedidos: ya se pidió a mano.
+  - **Publicado:** el traslado invertido escribe la ruta en su sentido, también en ARBR23, BOCHI04R y ARUY01 (aprobado por
+    el owner). Traslado privado con Alex: a mano.
   - **Base de pruebas:** quedaron 3 reservas `DK9315030`, `DK9315130` y `DK9315230` del 2026-10-23. `mendoza-m3-15` usa
     2 cifras al azar en el booking: si salen 30, choca (1 en 100; es la causa probable de 3 fallas de una suite). Las
     reservas no se pueden borrar por la regla de la base. Otra falla de esa suite fue un 502 momentáneo.

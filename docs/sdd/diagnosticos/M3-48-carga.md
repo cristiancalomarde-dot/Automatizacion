@@ -1,5 +1,11 @@
 # M3-48 · En seco contra la base real (2026-11-03)
 
+> **Carga hecha el 2026-11-04 con OK del owner:** proveedores 3 altas y 0 bajas (9 llamadas a IA, 0 resueltas);
+> equivalencias 9 nuevas; paquetes 2 productos y 11 servicios, 0 sin resolver; BR03 y BR04 "armado" con 8 componentes, 7
+> servicios y 4 ajustes; Kilroy 2 altas. Después, en seco, paquetes y los 14 tours dan 0 cambios. Los 2 traslados sin
+> sentido del informe son COMPBR02 (sus tramos salen por excepción en los tours) y OD019.
+> Lo que sigue abajo es el estado **antes** de la carga.
+
 Repetido con las respuestas del owner (2026-11-03). Corrido con `--en-seco` (`clienteEnSeco` + `fetchSoloLectura`, sin IA) contra la base real (`uhwkifqmexdktaseaxxo`), con los
 Excel y el Word copiados del Drive y los CSV del clon. **Ninguna fila cambió.** Es el estado **antes** de la carga.
 
