@@ -6,6 +6,12 @@ Formato mínimo por entrada: qué decisión, por qué, alternativa rechazada, co
 
 # Decisiones de diseño
 
+## 2026-11-03: BR03 y BR04 (M3-48): orden de hostels, Che Lagarto como tarea y desayuno
+- **Decisión:** Paraty se pide Che Lagarto → Casa do Rio → Casa Viva → Agatha, e Ilha Grande Holandes → Che Lagarto. Che Lagarto sale como tarea "Reservar a mano", sin mail. Casa do Rio, Casa Viva y Hostel Agatha van a `data/alojamientos-sin-desayuno.csv`; Che Lagarto y Holandes dan desayuno.
+- **Razón:** lo decidió el owner. Che Lagarto se reserva en su sistema online y no tiene casilla. El orden de Paraty se indica con filas en `hostel-segun-habitacion.csv`, sin tocar el Excel y sin código nuevo.
+- **Alternativa rechazada:** pedir automáticamente a Che Lagarto si Holandes no contesta: Holandes tarda en responder, y la decisión queda en la persona.
+- **Constraint:** si la habitación no dice dorm ni privada, vuelve el orden del Excel (Agatha antes que Casa Viva). El owner escribió Casa Viva dos veces en su orden; se tomó como Casa Viva y después Agatha, y se le avisó.
+
 ## 2026-11-03: BR18 (M3-47): un solo mail al hotel con las dos estadías; Laranjeiras y HI Hostel Chapada sin desayuno
 - **Decisión:** el hotel de una estadía repetida recibe un mail con las dos estadías numeradas, sin juntarlas. `Hostel Laranjeiras` y `HI Hostel Chapada` entran a `data/alojamientos-sin-desayuno.csv`; los Hotel 3\* siguen con desayuno.
 - **Razón:** el owner prefiere todo en un mail, y ya es el diseño de M3-01 (un borrador por casilla). El Word de BR18 dice "NO breakfast in Hostel".
