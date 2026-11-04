@@ -1,3 +1,5 @@
 destino,habitacion,orden,nota
 PNT,dorm,Puma Hostel|Last Hope,"Owner 2026-10-09/22: en Puerto Natales con Dorm va Puma Hostel y si no Last Hope (Factoria no tiene dorms)"
 PNT,privada,Factoria|Last Hope|Puma Hostel,"Owner 2026-10-09/22: en Puerto Natales con habitación privada (doble, twin, single, triple) va Factoria, después Last Hope y después Puma Hostel"
+PRY,dorm,Che Lagarto|Casa do Rio|Casa Viva|Agatha,"Owner 2026-11-03 (M3-48): en Paraty, Che Lagarto, Casa do Rio, Casa Viva y Agatha. El Excel nombra a Agatha antes que a Casa Viva"
+PRY,privada,Che Lagarto|Casa do Rio|Casa Viva|Agatha,"Owner 2026-11-03 (M3-48): el mismo orden con habitación privada"

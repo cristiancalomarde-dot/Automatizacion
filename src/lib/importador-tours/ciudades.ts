@@ -62,6 +62,9 @@ const ALIAS: Array<[string, string]> = [
   ["salvador", "SSA"],
   ["lencois", "CHAP"],
   ["chapada diamantina", "CHAP"],
+  // M3-48: BR03 y BR04.
+  ["paraty", "PRY"],
+  ["ilha grande", "ILH"],
 ];
 
 /** Palabras que ganan a cualquier ciudad en un encabezado ("San Pedro to Uyuni Overland including:"). */
@@ -92,6 +95,8 @@ export const NOMBRE_DESTINO: Record<string, string> = {
   IGR: "Iguazú",
   SSA: "Salvador",
   CHAP: "Lençóis",
+  PRY: "Paraty",
+  ILH: "Ilha Grande",
 };
 
 export function nombreDestino(destino: string): string {

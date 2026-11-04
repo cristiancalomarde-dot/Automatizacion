@@ -261,11 +261,10 @@ describe("M3-47 §1 — lo que falta para el recorrido de la ficha", () => {
 });
 
 describe("M3-47 punto 7 — BR18 entra de verdad", () => {
-  it("BR18 está en TOURS_PILOTO y COMPBR12 en la lista de paquetes (COMPBR11 no: BR03 y BR04 quedan afuera)", () => {
+  it("BR18 está en TOURS_PILOTO y COMPBR12 en la lista de paquetes", () => {
     expect(TOURS_PILOTO).toContain("BR18");
     const lista = parsearPaquetesPiloto(dato("paquetes-piloto.csv"));
     expect(lista).toContainEqual({ codigo: "COMPBR12", destino: "SSA" });
-    expect(lista.some((p) => p.codigo === "COMPBR11")).toBe(false);
   });
 
   it("el código Kilroy de BR18 es una fila común, y la marca de pendiente se fue con él", () => {

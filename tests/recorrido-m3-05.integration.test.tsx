@@ -22,6 +22,7 @@ import type { FichaLectura } from "@/lib/reservas/esquema-ficha";
 import { crearReserva, guardarMailRecibido as guardarMailRecibidoReal } from "@/lib/reservas/guardar";
 import type { ReservaEntrada } from "@/lib/reservas/tipos";
 import { TEXTOS } from "@/lib/textos";
+import { tomarBloqueoDatosDePrueba } from "./helpers/bloqueo-datos-de-prueba";
 import { credencialesSupabaseDisponibles } from "./helpers/entorno-supabase";
 import { crearRegistroDePrueba } from "./helpers/registro-de-prueba";
 import { crearSesionDePrueba } from "./helpers/usuario-de-prueba";
@@ -90,7 +91,11 @@ const guardarMailRecibido = registro.conMail(guardarMailRecibidoReal);
     return r.id;
   }
 
+  let soltarBloqueo: (() => void) | undefined;
+
   beforeAll(async () => {
+    // M3-48: crea reservas sin la marca de prueba, y M2-06 cuenta esas mientras tiene el candado.
+    soltarBloqueo = await tomarBloqueoDatosDePrueba();
     admin = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!, {
       auth: { autoRefreshToken: false, persistSession: false },
     });
@@ -104,7 +109,7 @@ const guardarMailRecibido = registro.conMail(guardarMailRecibidoReal);
     const p = await admin.from("producto").select("id,codigo,nombre").eq("codigo", "OD031").single();
     if (p.error) throw new Error(p.error.message);
     od031 = p.data;
-  }, 120_000);
+  }, 420_000);
 
   afterEach(() => cleanup());
 
@@ -115,6 +120,7 @@ const guardarMailRecibido = registro.conMail(guardarMailRecibidoReal);
       if (usuarioId) await admin.from("usuario").delete().eq("id", usuarioId);
     } finally {
       await borrarSesion?.();
+      soltarBloqueo?.();
     }
   }, 120_000);
 

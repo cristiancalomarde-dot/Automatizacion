@@ -188,6 +188,10 @@ describe("el motivo que ve el operativo (spec M1-10)", () => {
       "ARUY01 · OD018 · Sale en ferry a Colonia del Sacramento.",
       "ARUY01 · COMPUY03 · En este tour el bus va al revés: de Colonia a Montevideo.",
       "ARUY01 · OD040 · En este tour el traslado es de salida, del alojamiento al aeropuerto de Carrasco.",
+      // M3-48
+      "BR03 · COMPBR02 · Se pide por tramos, cada uno con su día (servicios del tour).",
+      "BR04 · COMPBR02 · Se pide por tramos, cada uno con su día (servicios del tour).",
+      "BR04 · OD032 · En este tour el traslado es de salida, del alojamiento al aeropuerto de Río.",
     ]);
     for (const x of REAL) expect(x.motivo).not.toMatch(INTERNO);
     for (const tour of Object.keys(SECUENCIAS)) {

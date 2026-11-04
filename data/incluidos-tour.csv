@@ -4,3 +4,18 @@ BR18,Bus from Salvador to Lencois,
 BR18,3 nights accommodation in Lencois,
 BR18,Bus from Lencois to Salvador,
 BR18,1 night accommodation in Salvador,
+BR03,3 nights accommodation in Rio de Janeiro,"M3-48: el Word lista los traslados entre destinos como regular transfer y el lector solo entiende bus o ferry. Es la secuencia del Word, escrita para que cada tramo entre con su día (data/tramos-con-proveedor.csv)"
+BR03,Bus from Rio de Janeiro to Paraty,Word: Regular transfer from Rio de Janeiro to Paraty
+BR03,2 nights accommodation in Paraty,
+BR03,Bus from Paraty to Ilha Grande,Word: Regular transfer plus boat ride from Paraty to Ilha Grande via Angra dos Reis Port
+BR03,3 nights accommodation in Ilha Grande,
+BR03,Bus from Ilha Grande to Rio de Janeiro,Word: Regular boat ride plus transfer from Ilha Grande to Rio de Janiero Airport
+BR04,3 nights accommodation in Iguazu,"M3-48: como BR03. Lo demás, tal cual el Word"
+BR04,Night bus from Foz do Iguazu to Sao Paulo,
+BR04,2 nights accommodation in Sao Paulo,
+BR04,Bus from Sao Paulo to Paraty,
+BR04,2 nights accommodation in Paraty,
+BR04,Bus from Paraty to Ilha Grande,Word: Regular transfer plus boat ride from Paraty to Ilha Grande via Angra dos Reis Port
+BR04,3 nights accommodation in Ilha Grande,
+BR04,Bus from Ilha Grande to Rio de Janeiro,Word: Regular boat ride plus transfer from Ilha Grande to accommodation in Rio de Janiero
+BR04,3 nights accommodation in Rio de Janeiro,

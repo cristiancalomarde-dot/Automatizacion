@@ -28,6 +28,7 @@ import type { FichaLectura } from "@/lib/reservas/esquema-ficha";
 import { crearReserva, guardarMailRecibido as guardarMailRecibidoReal } from "@/lib/reservas/guardar";
 import type { MailEntrada, ReservaEntrada } from "@/lib/reservas/tipos";
 import { TEXTOS } from "@/lib/textos";
+import { tomarBloqueoDatosDePrueba } from "./helpers/bloqueo-datos-de-prueba";
 import { credencialesSupabaseDisponibles } from "./helpers/entorno-supabase";
 import { crearRegistroDePrueba } from "./helpers/registro-de-prueba";
 import { crearSesionDePrueba } from "./helpers/usuario-de-prueba";
@@ -98,7 +99,11 @@ function ok(r: ResultadoConfirmar): Extract<ResultadoConfirmar, { ok: true }> {
   const equivalencias = async (codigo: string) =>
     (await admin.from("codigo_externo").select("*").eq("agencia", "Kilroy").eq("codigo", codigo)).data ?? [];
 
+  let soltarBloqueo: (() => void) | undefined;
+
   beforeAll(async () => {
+    // M3-48: crea reservas sin la marca de prueba, y M2-06 cuenta esas mientras tiene el candado.
+    soltarBloqueo = await tomarBloqueoDatosDePrueba();
     admin = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!, {
       auth: { autoRefreshToken: false, persistSession: false },
     });
@@ -116,7 +121,7 @@ function ok(r: ResultadoConfirmar): Extract<ResultadoConfirmar, { ok: true }> {
     if (productos.error) throw new Error(productos.error.message);
     for (const p of productos.data ?? []) ids.set(p.codigo, p.id);
     expect([...ids.keys()].sort()).toEqual(["CHB31", "OD030", "OD031"]);
-  }, 120_000);
+  }, 420_000);
 
   afterAll(async () => {
     try {
@@ -125,6 +130,7 @@ function ok(r: ResultadoConfirmar): Extract<ResultadoConfirmar, { ok: true }> {
       if (usuarioId) await admin.from("usuario").delete().eq("id", usuarioId);
     } finally {
       await borrarSesion?.();
+      soltarBloqueo?.();
     }
   }, 120_000);
 

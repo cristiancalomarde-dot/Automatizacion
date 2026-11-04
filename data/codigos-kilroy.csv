@@ -17,3 +17,5 @@ HI_ARGENTINA_OD014-677,OD014,El Calafate & El Chalten full day - 4 nights,"Owner
 HI_TRAVEL_ARCH_EXP-677,ARCH33EXP,"Patagonia, Trekking Paradise with W-Trek EXPRESS","Owner (2026-10-14 y 2026-10-21): es ARCH33 con la W Express (CH11). Antes en data/productos-no-cargados.csv (M3-10)"
 ARCH33EXP,ARCH33EXP,,"Kilroy usa nuestro mismo código en los tours; el importador de tours solo carga el código HI Travel (M3-10)"
 HI_TRAVEL_BR18-677,BR18,,"Reserva real DK1587388 (owner, 2026-11-02; M3-46). BR18 se carga en M3-47"
+HI_TRAVEL_BR03-677,BR03,,"Reserva real HI_TRAVEL_BR03-677 (ea043c00; owner, 2026-11-02; M3-48)"
+HI_TRAVEL_BR04-677,BR04,,"Reserva real HI_TRAVEL_BR04-677 (a6db2703; owner, 2026-11-02; M3-48)"

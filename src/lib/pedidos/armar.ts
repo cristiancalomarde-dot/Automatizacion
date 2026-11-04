@@ -373,7 +373,9 @@ class Armado {
       return;
     }
     const nocturno = !!parte.fechaInicio && !!parte.fechaFin && parte.fechaFin > parte.fechaInicio;
-    const renglones = [`${tx.bus}: ${que}`, `${tx.fecha}: ${parte.fechaInicio ? fechaCorta(parte.fechaInicio, id) : "a confirmar"}${nocturno ? ` (${tx.nocturno})` : ""}`];
+    // M3-48: los tramos con Paraty Tours son traslados, no buses.
+    const encabezado = /^transfer\s/i.test(que) ? `${tx.traslado.suelto}: ${que.replace(/^transfer\s+/i, "")}` : `${tx.bus}: ${que}`;
+    const renglones = [encabezado, `${tx.fecha}: ${parte.fechaInicio ? fechaCorta(parte.fechaInicio, id) : "a confirmar"}${nocturno ? ` (${tx.nocturno})` : ""}`];
     const avisos = this.avisosDelItinerario([{ tipo: "bus", nombre: que, fecha: parte.fechaInicio, destino: null }]);
     this.agregar(proveedor, "bus", renglones, parte.fechaInicio, cubre, false, avisos, []);
   }

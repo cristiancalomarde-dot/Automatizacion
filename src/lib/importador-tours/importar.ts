@@ -44,8 +44,8 @@ import { leerItinerario, type ItinerarioWord } from "./word";
  */
 
 export const TIPO_CORRIDA_TOURS = "tours-compuestos";
-/** Los 7 tours top-seller del MVP (spec M1-05 §1), los 3 que pidieron las agencias (spec M3-10), AR10 (M3-23) y BR18 (M3-47). */
-export const TOURS_PILOTO = ["CHB31", "BOCHI04R", "ARCH31", "ARCH33", "AR09", "BRARCH26", "5C01", "ARCH33EXP", "ARBR23", "ARUY01", "AR10", "BR18"];
+/** Los 7 tours top-seller del MVP (spec M1-05 §1), los 3 que pidieron las agencias (spec M3-10), AR10 (M3-23), BR18 (M3-47), BR03 y BR04 (M3-48). */
+export const TOURS_PILOTO = ["CHB31", "BOCHI04R", "ARCH31", "ARCH33", "AR09", "BRARCH26", "5C01", "ARCH33EXP", "ARBR23", "ARUY01", "AR10", "BR18", "BR03", "BR04"];
 
 export interface DocumentoWord {
   archivo: string;
@@ -266,7 +266,9 @@ export async function importarToursCompuestos(opciones: {
     (x) => codigosTour.includes(x.tour) || !TOURS_PILOTO.includes(x.tour),
   );
   const toursArmados = codigosTour.filter((c) => armados.get(c)!.estado === "armado");
-  validarExcepcionesTraslado(excepcionesTraslado, toursArmados);
+  // M3-48: un tour de esta carga que queda para revisar no usa sus excepciones ni toca lo cargado: no corta la corrida
+  // (en seco, antes de cargar sus paquetes). Lo que corta es una fila de un tour que no se conoce.
+  validarExcepcionesTraslado(excepcionesTraslado, codigosTour);
   const ajustesPorTour = new Map<string, AjusteTraslado[]>();
   for (const codigo of toursArmados) {
     ajustesPorTour.set(
@@ -435,7 +437,8 @@ export async function importarToursCompuestos(opciones: {
         tipo_servicio: "bus",
         nivel: null,
         fila_excel: null,
-        descripcion: `Bus ${s.sentido} (${s.nocturno ? "nocturno" : "diurno"}, sale el día ${s.diaDesde} del tour)${s.alternativa ? ` o ${s.alternativa} (se elige con la reserva)` : ""}. Booking Supplier: ${s.bookingSupplier}`,
+        // M3-48: la ruta del CSV dice si es un traslado (Paraty Tours); si no, es un bus.
+        descripcion: `${/^transfer\b/i.test(s.ruta) ? "Transfer" : "Bus"} ${s.sentido} (${s.nocturno ? "nocturno" : "diurno"}, sale el día ${s.diaDesde} del tour)${s.alternativa ? ` o ${s.alternativa} (se elige con la reserva)` : ""}. Booking Supplier: ${s.bookingSupplier}`,
         service_provider_nombre: s.ruta,
         booking_supplier_nombre: s.bookingSupplier,
         service_provider_id: null,

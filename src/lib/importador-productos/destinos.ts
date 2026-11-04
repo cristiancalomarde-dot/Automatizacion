@@ -27,6 +27,9 @@ export const CIUDADES_POR_DESTINO: Record<string, string[]> = {
   // M3-23 (AR10): Salta y Purmamarca (OD027) y Bariloche (OD024).
   SLA: ["SALTA", "PURMAMARCA"],
   BRC: ["BARILOCHE"],
+  // M3-48 (BR03 y BR04): Holandes Hostel está en dos filas del directorio, BRASIL e ILHA GRANDE.
+  PRY: ["PARATY"],
+  ILH: ["ILHA GRANDE"],
 };
 
 export interface CandidatoProveedor {

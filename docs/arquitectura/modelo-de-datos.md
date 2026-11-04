@@ -148,7 +148,9 @@ regla). Ej.: BRARCH26 termina en Santiago (OD029) **sin** transfer de salida. Si
 componente que el tour no tiene, el importador falla antes de escribir.
 
 **Lo que incluye el Word, por excepción (M3-46):** `data/incluidos-tour.csv` (tour, incluye, nota)
-reemplaza el "Included" del Word de un tour que no cuenta la secuencia real (BR18). Cada fila es un
+reemplaza el "Included" del Word de un tour que no cuenta la secuencia real (BR18) o cuyos traslados entre
+destinos el lector no entiende (BR03 y BR04, M3-48: se escriben como bus y su ruta en `tramos-con-proveedor.csv` empieza con
+"Transfer", para que el pedido diga traslado). Cada fila es un
 renglón, escrito como en el Word, en el orden del viaje. Con esa fila, un destino puede estar en más
 de un componente: la primera estadía va al primero de RutasenBus, la segunda al segundo, y las noches
 de cada uno se controlan igual. Sin fila, manda el Word y un destino repetido sigue siendo "ambiguo".

@@ -98,12 +98,12 @@ export function parsearTrasladosTour(texto: string): ExcepcionTraslado[] {
   });
 }
 
-/** Cada excepción nombra un tour que se está cargando (y que quedó armado). */
-export function validarExcepcionesTraslado(excepciones: ExcepcionTraslado[], toursArmados: string[]): void {
-  const desconocidos = [...new Set(excepciones.map((x) => x.tour).filter((t) => !toursArmados.includes(t)))];
+/** Cada excepción nombra un tour que se está cargando. */
+export function validarExcepcionesTraslado(excepciones: ExcepcionTraslado[], tours: string[]): void {
+  const desconocidos = [...new Set(excepciones.map((x) => x.tour).filter((t) => !tours.includes(t)))];
   if (desconocidos.length) {
     throw new Error(
-      `${ARCHIVO}: no conozco el tour ${desconocidos.join(", ")} (o quedó para revisar). Los tours armados son ${toursArmados.join(", ")}. Corregí la fila; no se cargó nada.`,
+      `${ARCHIVO}: no conozco el tour ${desconocidos.join(", ")}. Los tours de esta carga son ${tours.join(", ")}. Corregí la fila; no se cargó nada.`,
     );
   }
 }

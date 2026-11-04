@@ -31,3 +31,5 @@ OD024,BRC,"Bariloche, Patagonian Lakes: lo necesita AR10 (M3-23)"
 ODBR15,SSA,M3-46: Salvador (BR18); bloque bajo SSA en el Excel de paquetes
 COMPBR04,CHAP,M3-46: Lençóis / Chapada Diamantina (BR18); bloque bajo CHAP en el Excel de paquetes
 COMPBR12,SSA,"M3-47: noche extra de Salvador (BR18); bloque propio del owner, fila 2702 del Excel de paquetes"
+COMPBR02,PRY,"M3-48: Paraty (BR03 y BR04); bloque de la fila 1720 del Excel de paquetes, que en la columna A dice Paraty y no un código"
+COMPBR11,ILH,"M3-48: Ilha Grande (BR03 y BR04); bloque propio del owner, fila 2686 del Excel de paquetes"

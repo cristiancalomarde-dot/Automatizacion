@@ -112,8 +112,8 @@ const TIMEOUT = 240_000;
       expect(metodos.filter((m) => m !== "GET" && m !== "HEAD")).toEqual([]);
     });
 
-    it("los 17 códigos (24 desde M3-23, 26 desde M3-46, 27 desde M3-47): cada uno con su bloque o reportado como no encontrado", () => {
-      expect(LOS_17).toHaveLength(27);
+    it("los 17 códigos (24 desde M3-23, 26 desde M3-46, 27 desde M3-47, 29 desde M3-48): cada uno con su bloque o reportado como no encontrado", () => {
+      expect(LOS_17).toHaveLength(29);
       expect(d.paquetes.map((p) => p.codigo)).toEqual(LOS_17);
       const noEncontrados = d.aConfirmar.bloquesNoEncontrados.map((b) => b.codigo);
       for (const p of d.paquetes) {

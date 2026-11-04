@@ -40,6 +40,12 @@ describe("tramos-con-proveedor.csv (spec M1-05 §3 #6)", () => {
       ["ARCH33EXP", "PNT", "PUQ", "Kupos.cl", false],
       // M3-46: BR18, los dos buses Salvador ↔ Lençóis con Plataforma10.
       ["BR18", "SSA", "CHAP", "Plataforma10", true],
+      // M3-48: los traslados de BR03 y BR04 con Paraty Tours.
+      ["BR03", "RIO", "PRY", "Paraty Tours", false],
+      ["BR03", "PRY", "ILH", "Paraty Tours", false],
+      ["BR03", "ILH", "RIO", "Paraty Tours", false],
+      ["BR04", "PRY", "ILH", "Paraty Tours", false],
+      ["BR04", "ILH", "RIO", "Paraty Tours", false],
     ]);
     // M1-07 #3: Transvip queda solo como traslado del aeropuerto de Calama (en OD030), no en 5C01.
     expect(texto).not.toMatch(/transvip/i);
