@@ -3,6 +3,16 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
 
 # Dónde retomar
 
+- **2026-11-05: retomar con las respuestas del owner, sin nada construido todavía.** El owner presentó el sistema al equipo
+  y asignó BR03 y BR04 a sus reservas; dijo "todo muy bien por ahora", pero falta que confirme cómo salen los pedidos de
+  BR04 para cerrar M3-48. A BR03 no se le envían pedidos.
+  - **Pedidos de operaciones, propuestos y sin aprobar:** (1) copiar a la persona responsable de la reserva y cerrar el
+    mail con "Por favor copiar la respuesta a: <su mail>"; (2) "Por favor enviar el precio neto a pagar, detallado por
+    servicio." (recomendado frente a "liquidación").
+  - **Orden recomendado:** 1 y 2, después A (URL, ej. `reservas.hitravel.com.ar`), B (respuesta al vendedor); C (leer
+    respuestas del proveedor) con respuestas reales; D (tours de Jysk) cuando entre una venta. B y C están fuera del PRD.
+  - **Preguntas abiertas:** texto del punto 2, orden, si cada persona entra con su cuenta y su mail de hitravel, nombre de la URL.
+
 - **2026-11-04: BR03 y BR04 cargados en la base real con OK del owner (M3-48).** Suite: 2981 passed, 1 skipped; linter y
   tsc limpios. Detalle: `docs/sdd/diagnosticos/M3-48-carga.md`. **Falta para cerrar M3-48:** que el owner asigne BR04 a su
   reserva real `a6db2703-e4ae-40a5-bb1e-3826c814abf7` (sigue en "para revisión") y revise los pedidos. A la de BR03
