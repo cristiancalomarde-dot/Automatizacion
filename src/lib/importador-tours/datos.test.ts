@@ -135,12 +135,13 @@ describe("transfers-tour.csv (spec M1-07 §3 #4)", () => {
     expect(() => parsearTransfersTour(`${enc}BRARCH26,OD029,,\n`)).toThrow(/fila 2.*no cambia nada/);
   });
 
-  it("el archivo real: BRARCH26 OD029 sin transfer de salida (owner, 2026-10-09); 5C01 OD031 llega a la terminal (M1-08)", async () => {
+  it("el archivo real: BRARCH26 OD029 sin transfer de salida (owner, 2026-10-09); 5C01 OD031 llega a la terminal (M1-08); CH13 COMPCH01 sin salida (M3-50)", async () => {
     const { readFileSync } = await import("node:fs");
     const filas = parsearTransfersTour(readFileSync("data/transfers-tour.csv", "utf-8"));
     expect(filas.map((f) => [f.tour, f.codigo, f.transferIn, f.transferOut])).toEqual([
       ["BRARCH26", "OD029", null, false],
       ["5C01", "OD031", true, false],
+      ["CH13", "COMPCH01", null, false],
     ]);
   });
 });
