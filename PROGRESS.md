@@ -3,6 +3,12 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
 
 # Dónde retomar
 
+- **2026-11-06 tarde: CH13 cargado en la real con OK del owner (M3-50).** Tours: CH13 armado (1 producto, 2
+  componentes, 1 código); Kilroy: 1 alta, 20 sin cambios. Después, en seco, los 15 tours dan 0 cambios. **Falta para
+  cerrar M3-50:** que el owner asigne CH13 a DK1599008 (`f294f1eb-846c-468e-8e79-5fffe7bf2a82`) y revise los pedidos.
+  **BR20 (M3-51):** esperando las respuestas del owner a 10 preguntas (paquetes COMPBR06/ODBR50, Dourados, Agmar, Bonito
+  HI Hostel, buses, salida de Foz, São Paulo 1 noche, Ilha Grande, categorías, desayuno).
+
 - **2026-11-06: M3-49 publicada (`0da225f`) y DK1595014 vuelta a leer con OK del owner.** La reserva vieja
   `a1c28d7d-…` quedó descartada; la nueva `4b808e00-ca55-42a0-ba2a-962837f0c636` entró "recibida" con OD010D, 2-5/4/2027,
   2 pax, Double Room - Hostel y sus 2 vuelos, **sin responsable**. IA: US$ 0,031.
