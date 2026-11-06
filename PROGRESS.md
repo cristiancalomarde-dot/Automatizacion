@@ -3,10 +3,17 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
 
 # Dónde retomar
 
+- **2026-11-06 noche: BR20 (M3-51) listo para cargar, publicado (`6ff0029`), sin cargar en la real.** Falta el OK del
+  owner. Orden: copiar los Excel del Drive → `importar:equivalencias` (1 nueva: Pira Miuna) → `importar:paquetes
+  --codigos ODBR50,COMPBR06,COMPBR13,COMPBR14` → `importar:tours --codigos BR20` → `importar:codigos-kilroy`. Detalle y
+  preguntas: `docs/sdd/diagnosticos/M3-51-carga.md`. Preguntas abiertas (no bloquean): sacar el pick up del mail a
+  Ygarape (lo hace Agmar) y "pensão completa" en vez de "café da manhã" en Pantanal Jungle Lodge.
+
 - **2026-11-06 ~16:30: proveedores cargados en la real con OK del owner.** 6 altas (Bonito HI Hostel, Pira Miuna,
   Ygarape de Bonito, Agmar por WhatsApp, Ceu do Mato Eco Hostel y Hotel Bahamas Dourados), 1 cambio (Hostal Providencia
   → contacto@hostalprovidencia.com), 0 bajas; IA: 9 llamadas. El owner asignó CH13 a DK1599008; sin pedidos todavía.
-  **BR20 (M3-51):** respuestas del owner recibidas (ver el chat del 2026-11-06). Faltan: los bloques COMPBR13 y COMPBR14
+  **BR20 (M3-51):** respuestas del owner recibidas (ver el chat del 2026-11-06). **Salida de Foz: sin traslado**, van
+  por su cuenta a la Rodoviaria (no está en el presupuesto; owner corrigió). Faltan: los bloques COMPBR13 y COMPBR14
   en el Excel de paquetes (la copia del Drive es del 3/11) y cuál mail de Ygarape vale (fila 367 vieja o 486 nueva).
 
 - **2026-11-06 tarde: CH13 cargado en la real con OK del owner (M3-50).** Tours: CH13 armado (1 producto, 2
