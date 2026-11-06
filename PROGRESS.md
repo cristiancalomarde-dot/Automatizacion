@@ -3,6 +3,15 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
 
 # Dónde retomar
 
+- **2026-11-06: M3-49 publicada (`0da225f`) y DK1595014 vuelta a leer con OK del owner.** La reserva vieja
+  `a1c28d7d-…` quedó descartada; la nueva `4b808e00-ca55-42a0-ba2a-962837f0c636` entró "recibida" con OD010D, 2-5/4/2027,
+  2 pax, Double Room - Hostel y sus 2 vuelos, **sin responsable**. IA: US$ 0,031.
+  - **DK1598967 (2 tours en un mail) entró en la lectura de las 13 hs:** BR18 (`d4ae871a-…`, para revisión por posible
+    duplicada de DK1587388: mismo tour, fecha y pax, otra reserva) y BR20 (`e0791f38-…`, no está en el catálogo). Las dos
+    reservas recibieron los 4 vuelos del mail y el pedido especial de BR18; la persona los corrige a mano.
+  - **Sigue: cargar BR20** (pedido por el owner): investigar el Word, RutasenBus y los Excel, un bloque de preguntas, en
+    seco y carga con OK.
+
 - **2026-11-05: retomar con las respuestas del owner, sin nada construido todavía.** El owner presentó el sistema al equipo
   y asignó BR03 y BR04 a sus reservas; dijo "todo muy bien por ahora", pero falta que confirme cómo salen los pedidos de
   BR04 para cerrar M3-48. A BR03 no se le envían pedidos.
