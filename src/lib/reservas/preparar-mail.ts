@@ -30,7 +30,7 @@ export const MAX_PAGINAS_PDF = 10;
 export const MAX_BYTES_PDF = 5 * 1024 * 1024;
 const TOKENS_POR_PAGINA_PDF = 3000;
 
-/** M3-30 (#3): hasta cuántas imágenes y cuántos bytes de imágenes se leen por mail. */
+/** M3-30 (#3): hasta cuántas imágenes y cuántos bytes de imágenes se leen por mail (M3-49: las que sobran quedan afuera). */
 export const MAX_IMAGENES = 8;
 export const MAX_BYTES_IMAGENES = 5 * 1024 * 1024;
 /** Más chica que esto es un logo o un ícono: no se lee. */
@@ -227,6 +227,27 @@ function imagenesDelMail(mail: MailParaLeer): { candidatas: ImagenCandidata[]; h
   return { candidatas, html: mail.cuerpoHtml ?? null };
 }
 
+/**
+ * M3-49: si las imágenes no entran (más de MAX_IMAGENES o de MAX_BYTES_IMAGENES),
+ * se dejan afuera las más pesadas hasta que entren (a igual peso, la que viene
+ * después). Las demás siguen en su orden. Las que quedan afuera se anotan como
+ * no leídas, como cualquier adjunto que no se lee.
+ */
+function lasQueEntran(candidatas: ImagenCandidata[]): ImagenCandidata[] {
+  const peso = (c: ImagenCandidata) => c.a.contenido.byteLength;
+  let cantidad = candidatas.length;
+  let bytes = candidatas.reduce((s, c) => s + peso(c), 0);
+  const afuera = new Set<ImagenCandidata>();
+  const porPeso = candidatas.map((c, i) => ({ c, i })).sort((x, y) => peso(y.c) - peso(x.c) || y.i - x.i);
+  for (const { c } of porPeso) {
+    if (cantidad <= MAX_IMAGENES && bytes <= MAX_BYTES_IMAGENES) break;
+    afuera.add(c);
+    cantidad--;
+    bytes -= peso(c);
+  }
+  return candidatas.filter((c) => !afuera.has(c));
+}
+
 /** El HTML con cada `<img src="cid:…">` que viaja cambiado por "[imagen N]" (las demás `<img>` se van). */
 function ubicarImagenes(html: string, candidatas: ImagenCandidata[]): { html: string; orden: ImagenCandidata[] } {
   const porCid = new Map(candidatas.filter((c) => c.a.cid).map((c) => [normalCid(c.a.cid!), c]));
@@ -266,13 +287,15 @@ export function prepararMail(
 
   // M3-30: si el HTML tiene imágenes pegadas que viajan, el cuerpo sale del HTML con sus marcas
   // (el texto plano no dice dónde estaban); si no, como siempre.
+  // M3-49: primero se eligen las que viajan, después se ubican sus marcas (1..N sin huecos).
   const deImagenes = imagenesDelMail(mail);
-  const ubicadas = deImagenes.html ? ubicarImagenes(deImagenes.html, deImagenes.candidatas) : { html: "", orden: [] };
+  const viajan = lasQueEntran(deImagenes.candidatas);
+  const ubicadas = deImagenes.html ? ubicarImagenes(deImagenes.html, viajan) : { html: "", orden: [] };
   const cuerpoOriginal = ubicadas.orden.length ? htmlATexto(ubicadas.html) : cuerpoDelMail(mail);
   const cuerpo = limpiarCuerpo(cuerpoOriginal);
   if (cuerpo.length > MAX_CARACTERES_CUERPO) return { ok: false, motivo: MOTIVOS.grande };
 
-  const enOrden = [...ubicadas.orden, ...deImagenes.candidatas.filter((c) => !ubicadas.orden.includes(c))];
+  const enOrden = [...ubicadas.orden, ...viajan.filter((c) => !ubicadas.orden.includes(c))];
   const imagenes: ImagenParaLeer[] = enOrden.map((c, i) => ({
     numero: i + 1,
     nombre: c.a.nombre,
@@ -281,8 +304,6 @@ export function prepararMail(
     adjunta: i >= ubicadas.orden.length,
     tokens: c.tokens,
   }));
-  const bytesImagenes = enOrden.reduce((s, c) => s + c.a.contenido.byteLength, 0);
-  if (imagenes.length > MAX_IMAGENES || bytesImagenes > MAX_BYTES_IMAGENES) return { ok: false, motivo: MOTIVOS.grande };
 
   const pdfs: PdfParaLeer[] = [];
   const adjuntosNoLeidos: string[] = [];

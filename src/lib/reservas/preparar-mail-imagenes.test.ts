@@ -5,6 +5,7 @@ import { MODELOS } from "@/lib/ia/modelos";
 import type { RegistroUsoIA } from "@/lib/ia/techo-gasto";
 import { camposDeEml } from "@/lib/modo-prueba/leer-archivo";
 import { emlPetzold, htmlPetzold, IMAGENES_PETZOLD, imagenPetzold, fichaIAPetzold } from "../../../tests/fixtures/journaway/petzold";
+import { mailKilroyPesado, pngDeTamano, TAMANOS_KILROY_PESADO } from "../../../tests/fixtures/kilroy/imagenes-pesadas";
 import { clienteFalso, respuestaCon } from "./__fixtures__/cargar";
 import { leerAgencias } from "./agencias";
 import { leerMailConIA } from "./extraer";
@@ -127,20 +128,112 @@ describe("prepararMail — tope de gasto con imágenes (fila 3)", () => {
     expect(con.peorCaso).toBeGreaterThan(sin.peorCaso);
   });
 
-  it(`más de ${MAX_IMAGENES} imágenes → mail demasiado grande`, () => {
+  // M3-49 cambió estos dos casos: antes el mail entero quedaba "demasiado grande"; ahora se dejan afuera
+  // las imágenes que no entran y el mail se lee igual.
+  it(`más de ${MAX_IMAGENES} imágenes → viajan ${MAX_IMAGENES}, la que sobra queda anotada (M3-49)`, () => {
     const adjuntos = Array.from({ length: MAX_IMAGENES + 1 }, (_, i) => ({ nombre: `i${i}.png`, tipo: "image/png", contenido: png(500, 500), cid: `c${i}` }));
     const html = adjuntos.map((a) => `<img src="cid:${a.cid}">`).join("");
-    expect(prepararMail({ remitente: "operations@journaway.com", cuerpoHtml: html, adjuntos }, OPCIONES)).toEqual({
-      ok: false,
-      motivo: "mail demasiado grande",
-    });
+    const r = prepararMail({ remitente: "operations@journaway.com", cuerpoHtml: html, adjuntos }, OPCIONES);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.imagenes).toHaveLength(MAX_IMAGENES);
+    expect(r.adjuntosNoLeidos).toHaveLength(1);
+    expect(r.cuerpo.match(/\[imagen \d+\]/g)).toEqual(Array.from({ length: MAX_IMAGENES }, (_, i) => `[imagen ${i + 1}]`));
   });
 
-  it("imágenes que pesan más que el tope → mail demasiado grande", () => {
+  it("una imagen que sola pesa más que el tope queda afuera y el mail se lee igual (M3-49)", () => {
     const grande = png(1000, 1000, MAX_BYTES_IMAGENES);
-    expect(
-      prepararMail({ remitente: "operations@journaway.com", cuerpoHtml: `<img src="cid:a">`, adjuntos: [{ nombre: "a.png", tipo: "image/png", contenido: grande, cid: "a" }] }, OPCIONES),
-    ).toEqual({ ok: false, motivo: "mail demasiado grande" });
+    const r = prepararMail(
+      { remitente: "operations@journaway.com", cuerpoHtml: `<p>Hola</p><img src="cid:a">`, adjuntos: [{ nombre: "a.png", tipo: "image/png", contenido: grande, cid: "a" }] },
+      OPCIONES,
+    );
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.imagenes).toEqual([]);
+    expect(r.adjuntosNoLeidos).toEqual(["a.png"]);
+    expect(r.cuerpo).toBe("Hola");
+  });
+});
+
+describe("M3-49 — un mail con imágenes pesadas se lee igual", () => {
+  const kilroy = (): MailParaLeer => ({ remitente: "copenhagen@kilroy.dk", asunto: "DK9349014 - NEW BOOKING", ...mailKilroyPesado("DK9349014") });
+
+  // Por peso: sin la más pesada (3.707.515) quedan 136.771 + 3.386.877 = 3.523.648 bytes, que entran en 5 MB.
+  it("fila 1: DK1595014 da ok; queda afuera la más pesada y viajan las otras dos, en su orden", () => {
+    const r = prepararMail(kilroy(), OPCIONES);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.agencia).toBe("Kilroy");
+    expect(r.imagenes.map((i) => [i.numero, i.adjunta, Buffer.from(i.base64, "base64").byteLength])).toEqual([
+      [1, false, TAMANOS_KILROY_PESADO.extra],
+      [2, false, TAMANOS_KILROY_PESADO.pasaporte1],
+    ]);
+  });
+
+  it("fila 2: la que queda afuera se anota; el cuerpo lleva solo las marcas de las que viajan, 1..N sin huecos", () => {
+    const r = prepararMail(kilroy(), OPCIONES);
+    if (!r.ok) throw new Error(r.motivo);
+    expect(r.adjuntosNoLeidos).toEqual(["image.png"]);
+    expect(r.cuerpo.match(/\[imagen \d+\]/g)).toEqual(["[imagen 1]", "[imagen 2]"]);
+    expect(r.cuerpo).toMatch(/Extra Requests \(transfers etc\):\s+\[imagen 1\]\s+Passenger 1 Information/);
+    expect(r.cuerpo).toMatch(/Passport:\s+\[imagen 2\]\s+Passenger 2 Information/);
+    expect(r.cuerpo).toMatch(/Passenger 2 Information[^[]*Passport:\s+This is a firm booking\./);
+    expect(r.cuerpo).not.toMatch(/cid:/);
+    expect(r.cuerpo).toContain("Tour code: HI_ARGENTINA_OD010D-677");
+  });
+
+  // Segundo caso real (Kilroy "2 new bookings - DK1598967", 2026-11-06): 5 PNG pegados, ~7,2 MB. Tamaños y medidas
+  // aproximados, sacados del .msg, en el orden del archivo; el texto es sintético.
+  it("fila 1: DK1598967 — cae solo la de ~4,0 MB y viajan las otras 4 (~3,3 MB), con la del vuelo bajo 'Flight info:'", () => {
+    const pngs = [
+      { cid: "p1", medidas: [1440, 1920], bytes: 4_000_000 },
+      { cid: "vuelo", medidas: [1242, 2208], bytes: 3_000_000 },
+      { cid: "p3", medidas: [1118, 367], bytes: 65_000 },
+      { cid: "p4", medidas: [1136, 371], bytes: 68_000 },
+      { cid: "p5", medidas: [1139, 773], bytes: 140_000 },
+    ];
+    const adjuntos = pngs.map((p) => ({ nombre: "image.png", tipo: "image/png", contenido: pngDeTamano(p.medidas[0], p.medidas[1], p.bytes), cid: p.cid }));
+    const html = [
+      "<p>NEW BOOKING 1</p>",
+      `<img src="cid:p1">`,
+      "<p>Flight info:</p>",
+      `<img src="cid:vuelo">`,
+      "<p>NEW BOOKING 2</p>",
+      `<img src="cid:p3"><img src="cid:p4"><img src="cid:p5">`,
+      "<p>This is a firm booking.</p>",
+    ].join("");
+    const r = prepararMail({ remitente: "copenhagen@kilroy.dk", asunto: "2 new bookings - DK9598967/test", cuerpoHtml: html, adjuntos }, OPCIONES);
+    if (!r.ok) throw new Error(r.motivo);
+    expect(r.imagenes.map((i) => [i.numero, Buffer.from(i.base64, "base64").byteLength])).toEqual([
+      [1, 3_000_000],
+      [2, 65_000],
+      [3, 68_000],
+      [4, 140_000],
+    ]);
+    expect(r.adjuntosNoLeidos).toEqual(["image.png"]);
+    expect(r.cuerpo.replace(/\s+/g, " ")).toBe(
+      "NEW BOOKING 1 Flight info: [imagen 1] NEW BOOKING 2 [imagen 2] [imagen 3] [imagen 4] This is a firm booking.",
+    );
+  });
+
+  it("fila 1: se dejan afuera las más pesadas, no las últimas; las marcas quedan 1..N sin huecos", () => {
+    const mega = 1024 * 1024;
+    const adjuntos = [
+      { nombre: "a.png", tipo: "image/png", contenido: png(500, 500, 2 * mega), cid: "a" },
+      { nombre: "b.png", tipo: "image/png", contenido: png(500, 500, 3 * mega), cid: "b" },
+      { nombre: "c.png", tipo: "image/png", contenido: png(500, 500, 2 * mega), cid: "c" },
+      { nombre: "d.png", tipo: "image/png", contenido: png(500, 500, 0.5 * mega), cid: "d" },
+    ];
+    const html = `<p>uno</p><img src="cid:a"><p>dos</p><img src="cid:b"><p>tres</p><img src="cid:c"><p>cuatro</p><img src="cid:d">`;
+    const r = prepararMail({ remitente: "operations@journaway.com", cuerpoHtml: html, adjuntos }, OPCIONES);
+    if (!r.ok) throw new Error(r.motivo);
+    expect(r.imagenes.map((i) => [i.numero, i.nombre])).toEqual([
+      [1, "a.png"],
+      [2, "c.png"],
+      [3, "d.png"],
+    ]);
+    expect(r.adjuntosNoLeidos).toEqual(["b.png"]);
+    expect(r.cuerpo.replace(/\s+/g, " ")).toBe("uno [imagen 1] dos tres [imagen 2] cuatro [imagen 3]");
   });
 });
 
