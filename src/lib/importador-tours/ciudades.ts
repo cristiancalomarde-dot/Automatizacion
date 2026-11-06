@@ -65,6 +65,11 @@ const ALIAS: Array<[string, string]> = [
   // M3-48: BR03 y BR04.
   ["paraty", "PRY"],
   ["ilha grande", "ILH"],
+  // M3-51: BR20. Campo Grande no tiene paquete: es la Rodoviaria del bus nocturno a São Paulo.
+  ["dourados", "DOU"],
+  ["bonito", "BON"],
+  ["pantanal", "PTL"],
+  ["campo grande", "CGR"],
 ];
 
 /** Palabras que ganan a cualquier ciudad en un encabezado ("San Pedro to Uyuni Overland including:"). */
@@ -97,6 +102,10 @@ export const NOMBRE_DESTINO: Record<string, string> = {
   CHAP: "Lençóis",
   PRY: "Paraty",
   ILH: "Ilha Grande",
+  DOU: "Dourados",
+  BON: "Bonito",
+  PTL: "Pantanal",
+  CGR: "Campo Grande",
 };
 
 export function nombreDestino(destino: string): string {

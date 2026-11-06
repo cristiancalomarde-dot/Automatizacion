@@ -30,6 +30,9 @@ export const CIUDADES_POR_DESTINO: Record<string, string[]> = {
   // M3-48 (BR03 y BR04): Holandes Hostel está en dos filas del directorio, BRASIL e ILHA GRANDE.
   PRY: ["PARATY"],
   ILH: ["ILHA GRANDE"],
+  // M3-51 (BR20): Ygarape está en dos filas del directorio, BRASIL (atendimento@, vieja) y BONITO (ygarape@, la que vale).
+  BON: ["BONITO"],
+  DOU: ["DOURADOS"],
 };
 
 export interface CandidatoProveedor {

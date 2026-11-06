@@ -1010,7 +1010,8 @@ class Armado {
     });
     const salida = this.traslado("out", "", b.fin, codigos, IGUAZU.has(b.destino ?? ""));
     const aLaRodoviaria = s.ajusteTour?.accion === "reemplazar" ? s.ajusteTour.texto?.match(SALIDA_A_LA_RODOVIARIA)?.[1] : undefined;
-    if (!b.omitir.includes("out")) {
+    // M3-51 (owner, 2026-11-06): en BR20 se sale de Foz por cuenta propia: el ajuste del tour deja solo la llegada.
+    if (!b.omitir.includes("out") && s.ajusteTour?.accion !== "solo_llegada") {
       conDia.push({ tipo: "traslado", nombre: `TRF OUT (${titulo})`, fecha: salida.fecha ?? b.fin, destino: b.destino, vuelo: { lado: "out", numero: salida.numero, hora: salida.hora } });
       renglones.push(
         conHotel(`TRF OUT${tipoTraslado}: ${b.fin ? fechaCorta(salida.fecha ?? b.fin, id) : "a confirmar"} · ${aLaRodoviaria ?? salida.dato}`, [["Pick up", nocheAnterior(b.fin)]]),
@@ -1036,6 +1037,10 @@ class Armado {
       lados = ladosDeUnTraslado(s).quedan;
       if (lados.length === 0 && (s.sentido === "sin_sentido" || !s.sentido)) {
         // Sin sentido deducido: de un día, un solo traslado ese día; si no, ida y vuelta.
+        // M3-51: con día fijo en data/dias-servicio.csv (el de Agmar a la excursión de Bonito), un solo traslado ese día.
+        const regla = this.diaDelServicio(b, s);
+        const fijo = regla ? this.diaDeLaEstadia(b, regla.dia) : null;
+        if (fijo) return [this.unTraslado(b, s, nombre, null, fijo)];
         if (desde && hasta && desde !== hasta) lados = ["in", "out"];
         else return [this.unTraslado(b, s, nombre, null, desde)];
       }

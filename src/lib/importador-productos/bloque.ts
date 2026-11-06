@@ -161,12 +161,13 @@ function esTituloDeSeccion2(texto: string, bloque: BloqueProducto): boolean {
  * Bloques que el owner armó sin sección 2 (sin "Paquetes …" ni el título
  * repetido debajo), confirmados en M1-04d: COMPBO20 (bloque propio agregado
  * en la fila ~847) y COMPBR10 (São Paulo); M3-47: COMPBR11 (Ilha Grande) y
- * COMPBR12 (noche extra de Salvador), con la misma forma. Su sección 1 termina
+ * COMPBR12 (noche extra de Salvador), con la misma forma; M3-51: COMPBR13 (noche
+ * extra de São Paulo) y COMPBR14 (noche extra de Dourados). Su sección 1 termina
  * en la próxima fila con algo escrito en la columna A (el bloque o destino
  * siguiente) o, si no hay, al final del destino. Regla puntual: un bloque
  * cualquiera sin fin de sección sigue sin calzar (para revisar).
  */
-export const BLOQUES_SIN_SECCION_2 = new Set(["COMPBO20", "COMPBR10", "COMPBR11", "COMPBR12"]);
+export const BLOQUES_SIN_SECCION_2 = new Set(["COMPBO20", "COMPBR10", "COMPBR11", "COMPBR12", "COMPBR13", "COMPBR14"]);
 
 function limiteSinSeccion2(filas: Filas, rango: RangoDestino): number {
   for (let r = rango.desde + 1; r < rango.hasta; r++) {

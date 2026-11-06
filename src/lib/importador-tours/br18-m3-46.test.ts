@@ -209,8 +209,8 @@ describe("M3-46 punto 3 — los buses con Plataforma10", () => {
 });
 
 describe("M3-46 punto 4 — la excepción de lo que incluye el Word (data/incluidos-tour.csv)", () => {
-  it("el archivo trae BR18 con la secuencia real (M3-48 suma BR03 y BR04)", () => {
-    expect(INCLUIDOS.map((x) => x.tour)).toEqual(["BR18", "BR03", "BR04"]);
+  it("el archivo trae BR18 con la secuencia real (M3-48 suma BR03 y BR04; M3-51, BR20)", () => {
+    expect(INCLUIDOS.map((x) => x.tour)).toEqual(["BR18", "BR03", "BR04", "BR20"]);
     expect(INCLUIDOS[0].items).toMatchObject([
       { tipo: "estadia", noches: 3, destino: "SSA" },
       { tipo: "bus", desde: "SSA", hasta: "CHAP" },

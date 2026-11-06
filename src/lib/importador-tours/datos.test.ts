@@ -49,6 +49,13 @@ describe("tramos-con-proveedor.csv (spec M1-05 §3 #6)", () => {
       // M3-48: los buses de BR04 con Plataforma10.
       ["BR04", "IGR", "SAO", "Plataforma10", true],
       ["BR04", "SAO", "PRY", "Plataforma10", true],
+      // M3-51: los buses de BR20 con Plataforma10 y sus traslados con Paraty Tours.
+      ["BR20", "IGR", "DOU", "Plataforma10", false],
+      ["BR20", "DOU", "BON", "Plataforma10", false],
+      ["BR20", "CGR", "SAO", "Plataforma10", false],
+      ["BR20", "SAO", "PRY", "Plataforma10", false],
+      ["BR20", "PRY", "ILH", "Paraty Tours", false],
+      ["BR20", "ILH", "RIO", "Paraty Tours", false],
     ]);
     // M1-07 #3: Transvip queda solo como traslado del aeropuerto de Calama (en OD030), no en 5C01.
     expect(texto).not.toMatch(/transvip/i);
@@ -135,13 +142,14 @@ describe("transfers-tour.csv (spec M1-07 §3 #4)", () => {
     expect(() => parsearTransfersTour(`${enc}BRARCH26,OD029,,\n`)).toThrow(/fila 2.*no cambia nada/);
   });
 
-  it("el archivo real: BRARCH26 OD029 sin transfer de salida (owner, 2026-10-09); 5C01 OD031 llega a la terminal (M1-08); CH13 COMPCH01 sin salida (M3-50)", async () => {
+  it("el archivo real: BRARCH26 OD029 sin transfer de salida (owner, 2026-10-09); 5C01 OD031 llega a la terminal (M1-08); CH13 COMPCH01 sin salida (M3-50); BR20 OD010B sin salida (M3-51)", async () => {
     const { readFileSync } = await import("node:fs");
     const filas = parsearTransfersTour(readFileSync("data/transfers-tour.csv", "utf-8"));
     expect(filas.map((f) => [f.tour, f.codigo, f.transferIn, f.transferOut])).toEqual([
       ["BRARCH26", "OD029", null, false],
       ["5C01", "OD031", true, false],
       ["CH13", "COMPCH01", null, false],
+      ["BR20", "OD010B", null, false],
     ]);
   });
 });

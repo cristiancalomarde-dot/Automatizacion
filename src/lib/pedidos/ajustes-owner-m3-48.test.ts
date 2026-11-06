@@ -93,8 +93,8 @@ describe("punto 3 — los buses de BR04 con Plataforma10", () => {
     ]);
   });
 
-  it("los otros tramos no cambian de texto (BR18 sigue sin esa columna)", () => {
-    expect(tramos.filter((t) => t.enLaTarea && t.tour !== "BR04")).toEqual([]);
+  it("los otros tramos no cambian de texto (BR18 sigue sin esa columna; BR20 tiene los suyos, M3-51)", () => {
+    expect(tramos.filter((t) => t.enLaTarea && !["BR04", "BR20"].includes(t.tour))).toEqual([]);
   });
 });
 

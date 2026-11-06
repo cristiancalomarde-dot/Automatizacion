@@ -118,6 +118,9 @@ export const NOTAS_SIN_SERVICIO = [
   "(Gruta da Lapa Doce, Gruta da Pratinha, Gruta Azul e Morro do Pai Inácio)",
   // M3-48: el precio de la excursión Scuna Netuno de COMPBR02 (fila 1736), debajo de su renglón.
   "BRL 100",
+  // M3-51: en ODBR50, la tarifa del Lodge en cuádruple (fila 1919) y el título de la tabla de traslados (fila 1926).
+  "CPL 3n/4 dias c actividades",
+  "Traslados",
 ];
 const NOTAS_NORMALIZADAS = new Set(NOTAS_SIN_SERVICIO.map((n) => limpiarNombre(n).toLowerCase()));
 /** Títulos de la tabla de costos (incluye los del Excel vigente: "Excursions Net Rates", "Net Prices", "Tarifas W Trek"). */

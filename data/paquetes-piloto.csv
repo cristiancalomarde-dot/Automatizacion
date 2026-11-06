@@ -33,3 +33,7 @@ COMPBR04,CHAP,M3-46: Lençóis / Chapada Diamantina (BR18); bloque bajo CHAP en 
 COMPBR12,SSA,"M3-47: noche extra de Salvador (BR18); bloque propio del owner, fila 2702 del Excel de paquetes"
 COMPBR02,PRY,"M3-48: Paraty (BR03 y BR04); bloque de la fila 1720 del Excel de paquetes, que en la columna A dice Paraty y no un código"
 COMPBR11,ILH,"M3-48: Ilha Grande (BR03 y BR04); bloque propio del owner, fila 2686 del Excel de paquetes"
+ODBR50,PTL,"M3-51: Pantanal Discovery (BR20); bloque de la fila 1913 del Excel de paquetes, bajo PTL. 3 noches en Pantanal Jungle Lodge"
+COMPBR06,BON,"M3-51: Bonito, 2 noches con 1 actividad (BR20); bloque de la fila 2352 del Excel de paquetes, bajo BON"
+COMPBR13,SAO,"M3-51: noche extra de São Paulo (BR20), como COMPBR10 pero 1 noche; bloque propio del owner, fila 2720 del Excel de paquetes"
+COMPBR14,DOU,"M3-51: noche extra de Dourados (BR20); bloque propio del owner, fila 2736 del Excel de paquetes"

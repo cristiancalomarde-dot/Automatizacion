@@ -19,3 +19,17 @@ BR04,Bus from Paraty to Ilha Grande,Word: Regular transfer plus boat ride from P
 BR04,3 nights accommodation in Ilha Grande,
 BR04,Bus from Ilha Grande to Rio de Janeiro,Word: Regular boat ride plus transfer from Ilha Grande to accommodation in Rio de Janiero
 BR04,3 nights accommodation in Rio de Janeiro,
+BR20,3 nights accommodation in Foz do Iguacu,"M3-51: el Word dice ""Night bus from Foz do Iguazu to Sao Paulo"" y es desde Campo Grande (owner 2026-11-06); el traslado al Lodge y a la Rodoviaria son de Agmar en ODBR50. Lo demás, tal cual el Word"
+BR20,Bus from Foz do Iguacu to Dourados,"Word: Bus from Foz do Iguacu to Cascavel + Bus from Cascavel to Dourados (un solo pasaje en Plataforma10)"
+BR20,1 night accommodation in Dourados,
+BR20,Bus from Dourados to Bonito,
+BR20,2 nights accommodation in Bonito,
+BR20,3 nights accommodation in Pantanal,"Word: Private transfer from Bonito accommodation to Pantanal Jungle Lodge (Agmar, ODBR50)"
+BR20,Night bus from Campo Grande to Sao Paulo,"Word: Private transfer from Pantanal Jungle Lodge to Campo Grande Bus Station (Agmar, ODBR50) + Night bus to Sao Paulo Barra Funda"
+BR20,1 night accommodation in Sao Paulo,
+BR20,Bus from Sao Paulo to Paraty,
+BR20,2 nights accommodation in Paraty,
+BR20,Bus from Paraty to Ilha Grande,Word: Regular transfer plus boat ride from Paraty to Ilha Grande via Angra dos Reis Port
+BR20,3 nights accommodation in Ilha Grande,
+BR20,Bus from Ilha Grande to Rio de Janeiro,Word: Regular boat ride plus transfer from Ilha Grande to accommodation in Rio de Janiero
+BR20,3 nights accommodation in Rio de Janeiro,
