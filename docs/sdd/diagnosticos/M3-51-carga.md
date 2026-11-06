@@ -81,8 +81,8 @@ Con las fechas de DK1598967: 19/02 → 10/03/2027, 2 pax, "Double Room at Hostel
 | Bambu Hostel Foz (portugués) | DBL Standard, sin desayuno | 19 → 22 feb (3 noches) |
 | Cuenca del Plata | 105 Premium x Foz: TRF IN (bus o vuelo pendiente), lado argentino y lado brasileño; **sin TRF OUT** | 19, 20 y 21 feb |
 | Bonito HI Hostel (portugués) | DBL Standard, sin desayuno | 23 → 25 feb (2 noches) |
-| Ygarape (portugués) | Floating Rio da Prata, pick up en Bonito HI Hostel | 24 feb |
-| Pantanal Jungle Lodge (portugués) | DBL Standard con café da manhã | 25 → 28 feb (3 noches) |
+| Ygarape (portugués) | Floating Rio da Prata, sin pick up (lo lleva Agmar) | 24 feb |
+| Pantanal Jungle Lodge (portugués) | DBL Standard com pensão completa | 25 → 28 feb (3 noches) |
 | Paraty Tours (portugués) | Scuna Netuno (punto de encuentro en el puerto); Transfer Paraty – Ilha Grande; Transfer Ilha Grande – Rio de Janeiro | 3, 4 y 7 mar |
 | Holandes Hostel (portugués) | DBL Standard con café da manhã | 4 → 7 mar (3 noches) |
 | Local 55 (portugués) | Cabanacopa Hostel y Big Dude | 7 → 10 mar; Big Dude 8 mar |
@@ -105,11 +105,9 @@ Con las fechas de DK1598967: 19/02 → 10/03/2027, 2 pax, "Double Room at Hostel
 
 ## Preguntas para el owner
 
-1. **Ygarape y el pick up.** El mail a Ygarape dice "Pick up e drop off: Bonito HI Hostel", como toda excursión. En BR20
-   el traslado a la excursión lo hace Agmar. ¿Se le saca el pick up al mail de Ygarape (y se pone "el pasajero llega con
-   su traslado"), o está bien así?
-2. **Pantanal Jungle Lodge, "com café da manhã".** El Lodge es con pensión completa; el pedido dice "DBL Standard com
-   café da manhã" como cualquier hotel. ¿Lo dejamos, o querés que diga pensión completa?
+1. ~~**Ygarape y el pick up.**~~ Contestada (owner, 2026-11-06): "SI, ESO LO HACE AGMAR". El mail a Ygarape va sin pick up.
+2. ~~**Pantanal Jungle Lodge, "com café da manhã".**~~ Contestada (owner, 2026-11-06): "ES EL PROGRAMA QUE TIENE PENSION
+   COMPLETA Y ACTIVIDADES". El pedido dice "com pensão completa".
 3. **Hotel Pira Miuna (Budget Hotel de COMPBR06)** quedó cargado como Budget Hotel, por la tabla del bloque. No se usa en
    BR20 (solo Hostel). Confirmalo cuando entre una venta Budget.
 4. **O Hostel GRU** (segunda opción del Hostel de São Paulo, en COMPBR10 y ahora en COMPBR13) sigue sin estar en el

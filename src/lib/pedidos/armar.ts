@@ -56,6 +56,7 @@ import {
   habitacionDelPedido,
   habitacionSinTipo,
   sinDesayuno,
+  regimenDelAlojamiento,
   alojamientoDelTrek,
   claveDelWTrek,
   renglonDeRefugios,
@@ -123,6 +124,8 @@ const CON_TRASLADOS = /\b(with|con|incl\.?|including)\s+(the\s+)?(transfers?|tra
 const SIN_TRASLADOS = /\b(without|sin|no)\s+(the\s+)?(transfers?|traslados?)\b/i;
 /** "Includes: Transfer in + Out, Excursion Cataratas Argentinas, Excursion Cataratas Brasileras" (el 105 de Cuenca del Plata). */
 const INCLUYE_TRASLADOS = /Includes:\s*Transfer\s+in\s*\+\s*Out\s*,\s*(.+)$/im;
+/** M3-51: "Transfer for the 2 days of Excursions" (Agmar en Bonito): las excursiones del componente van sin pick up. */
+const TRASLADO_A_LAS_EXCURSIONES = /\btransfers?\s+for\b.*\bexcursions?\b/i;
 
 /** Un servicio que va en un pedido por mail. */
 interface Item {
@@ -763,7 +766,9 @@ class Armado {
     const hostel = normalizarTexto(s.nivel ?? nivelDeLaHabitacion(this.reserva.habitacion) ?? "") === "hostel";
     // M3-35: los de data/alojamientos-sin-desayuno.csv no ofrecen desayuno; el pedido no lo dice.
     const desayuno = !sinDesayuno(hotel, this.catalogo.sinDesayuno);
-    renglones.push(`${tx.habitacion}: ${habitacionDelPedido(this.reserva.habitacion, { pax, hostel, desayuno }, idioma)}`);
+    // M3-51: con la columna `regimen` del mismo CSV (Pantanal Jungle Lodge), el pedido dice la pensión completa.
+    const regimen = regimenDelAlojamiento(hotel, this.catalogo.sinDesayuno);
+    renglones.push(`${tx.habitacion}: ${habitacionDelPedido(this.reserva.habitacion, { pax, hostel, desayuno, regimen }, idioma)}`);
     if (habitacionSinTipo(this.reserva.habitacion)) {
       if (hostel) avisos.push(`La reserva no dice si en ${hotel} es dorm, DBL o SGL: completalo antes de enviar y revisalo con el vendedor.`);
       else if (pax === 1 || pax === 2) avisos.push(`La reserva no dice el tipo de habitación: va ${pax === 2 ? "DBL" : "SGL"} por ${pax} pax. Revisalo con el vendedor.`);
@@ -849,7 +854,10 @@ class Armado {
     renglones.push(`${tx.servicio}: ${traducir(tx.regular, regular)} · ${tx.idioma}: ${traducir(tx.idiomas, idioma)}${entradas ? ` · ${tx.conEntradas}` : ""}`);
     const punto = this.puntoDeEncuentro(b, s, nombre);
     // M3-25 (owner, 2026-10-27): la excursión "sin transfer" (el Beagle de OD022, "no transfer to port") no lleva pick up.
-    const sinTraslado = SIN_TRASLADOS.test(`${nombre} ${s.descripcion ?? ""}`);
+    // M3-51 (owner, 2026-11-06): si el componente trae su propio traslado a las excursiones, el pick up no es del proveedor.
+    const sinTraslado =
+      SIN_TRASLADOS.test(`${nombre} ${s.descripcion ?? ""}`) ||
+      b.servicios.some((x) => x.tipo === "traslado" && TRASLADO_A_LAS_EXCURSIONES.test(x.descripcion ?? ""));
     const pickUp: { renglon: string | null; pendientes: string[]; lugar: string | null } = punto
       ? { renglon: tx.puntoDeEncuentro(punto), pendientes: [], lugar: punto }
       : sinTraslado

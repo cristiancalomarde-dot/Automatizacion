@@ -14,7 +14,7 @@ import { planificarBloques } from "@/lib/importador-productos/plan";
 import { armarFilasServicio, crearIndiceProveedores, resolverProveedor } from "@/lib/importador-productos/proveedores";
 import { parsearRenglonesAgregados } from "@/lib/importador-productos/renglones-agregados";
 import { cargarAlojamientosSinDesayuno, leerCiudadesPortugues } from "@/lib/pedidos/cargar";
-import { sinDesayuno } from "@/lib/pedidos/formato";
+import { regimenDelAlojamiento, sinDesayuno } from "@/lib/pedidos/formato";
 import { idiomaDeLaCiudad } from "@/lib/pedidos/idioma";
 import { leerCodigosKilroy } from "@/lib/reservas/emparejar/codigos-kilroy";
 import { armarTour, type PaqueteConocido } from "./armado";
@@ -304,13 +304,17 @@ describe("M3-51 punto 6 — el desayuno (owner, 2026-11-06)", () => {
     expect(sinDesayuno(nombre, lista)).toBe(true);
   });
 
-  it.each(["Hotel Pira Miuna", "Hotel Bahamas Dourados", "Pantanal Jungle Lodge", "Fujima Hostel", "Soos Hotel Collection"])("%s sigue con desayuno", (nombre) => {
+  it.each(["Hotel Pira Miuna", "Hotel Bahamas Dourados", "Fujima Hostel", "Soos Hotel Collection"])("%s sigue con desayuno", (nombre) => {
     expect(sinDesayuno(nombre, lista)).toBe(false);
   });
 
-  it("son esos dos, con la nota del owner", () => {
+  it("Pantanal Jungle Lodge: pensión completa en lugar del desayuno", () => {
+    expect(regimenDelAlojamiento("Pantanal Jungle Lodge", lista)).toBe("pension completa");
+  });
+
+  it("son esos dos y el Lodge, con la nota del owner", () => {
     const filas = lista.filter((f) => /M3-51/.test(f.nota ?? ""));
-    expect(filas.map((f) => f.alojamiento).sort()).toEqual(["Bonito HI Hostel", "Ceu do Mato Eco Hostel"]);
+    expect(filas.map((f) => f.alojamiento).sort()).toEqual(["Bonito HI Hostel", "Ceu do Mato Eco Hostel", "Pantanal Jungle Lodge"]);
     for (const f of filas) expect(f.nota).toContain("Owner 2026-11-06 (M3-51)");
   });
 });

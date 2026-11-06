@@ -21,6 +21,8 @@ export interface TextosDelPedido {
   alojamiento: string;
   habitacion: string;
   conDesayuno: string;
+  /** M3-51: en lugar del desayuno, en los alojamientos con pensión completa (Pantanal Jungle Lodge). */
+  conPensionCompleta: string;
   /** Las habitaciones en palabras (las siglas DBL/SGL/TWIN/TPL no se traducen). */
   tipos: Readonly<Record<string, string>>;
   excursion: string;
@@ -74,6 +76,7 @@ const ES: TextosDelPedido = {
   alojamiento: "Alojamiento",
   habitacion: "Habitación",
   conDesayuno: "con desayuno",
+  conPensionCompleta: "con pensión completa",
   tipos: {},
   excursion: "Excursión",
   fecha: "Fecha",
@@ -120,6 +123,7 @@ const PT: TextosDelPedido = {
   alojamiento: "Hospedagem",
   habitacion: "Quarto",
   conDesayuno: "com café da manhã",
+  conPensionCompleta: "com pensão completa",
   tipos: { "dorm compartido": "quarto compartilhado (dorm)", "dorm compartido (viajan juntos)": "quarto compartilhado (dorm, viajam juntos)" },
   excursion: "Passeio",
   fecha: "Data",

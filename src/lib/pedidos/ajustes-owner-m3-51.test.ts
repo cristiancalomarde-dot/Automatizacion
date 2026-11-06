@@ -8,7 +8,8 @@ import { describe, expect, it } from "vitest";
 import { parsearTrasladosTour } from "@/lib/importador-tours/traslados";
 import type { AjusteEnTour } from "@/lib/catalogo/tipos";
 import { armarPedidos } from "./armar";
-import { ARCHIVO_DIAS, cargarAlojamientosSinDesayuno, cargarCiudadesPortugues, leerDiasServicio } from "./cargar";
+import { ARCHIVO_DIAS, cargarAlojamientosSinDesayuno, cargarCiudadesPortugues, leerAlojamientosSinDesayuno, leerDiasServicio } from "./cargar";
+import { regimenDelAlojamiento } from "./formato";
 import { catalogoCon, od010b, producto, proveedor, reserva, reservaOd010b, servicio } from "./fixtures.test-utils";
 import { cargarPlantilla } from "./plantilla";
 import type { CatalogoParaPedidos, ResultadoArmado } from "./tipos";
@@ -86,6 +87,13 @@ describe("punto 4 — los traslados de Agmar (WhatsApp), cada uno con su fecha",
     expect(excursion).toContain("Data: 24 fev 2027");
   });
 
+  it("el mail a Ygarape va sin pick up: el traslado a la excursión lo hace Agmar (owner, 2026-11-06)", () => {
+    const r = armar(excepcion("BR20", "COMPBR06"), DIAS);
+    const excursion = r.pedidos.find((p) => p.destinatarios.includes("ygarape@ygarape.test"))!.cuerpo;
+    expect(excursion).toContain("Passeio: Floating Rio da Prata w/lunch");
+    expect(excursion).not.toMatch(/Pick up|Drop off/i);
+  });
+
   it("sin día fijo, el traslado sin sentido sigue como antes (ida y vuelta)", () => {
     const r = armar(excepcion("BR20", "COMPBR06"), []);
     const agmarTexto = r.tareas.find((t) => t.tipo === "whatsapp")!.texto;
@@ -115,6 +123,20 @@ describe("punto 4 — los traslados de Agmar (WhatsApp), cada uno con su fecha",
     const lodgePedido = r.pedidos.find((x) => x.destinatarios.includes("reserva@pantanaljunglelodge.test"))!.cuerpo;
     expect(lodgePedido).toContain("Escrevemos da HI Travel");
     expect(lodgePedido).toContain("IN: 25 fev 2027\nOUT: 28 fev 2027 (3 noites)");
+    // Owner, 2026-11-06: el programa del Lodge es con pensión completa y actividades.
+    expect(lodgePedido).toContain("Quarto: DBL Standard com pensão completa");
+    expect(lodgePedido).not.toMatch(/caf[eé] da manh/i);
+  });
+});
+
+describe("data/alojamientos-sin-desayuno.csv, columna regimen", () => {
+  it("Pantanal Jungle Lodge con pensión completa; el resto, sin régimen; uno desconocido falla", () => {
+    const lista = cargarAlojamientosSinDesayuno(RAIZ);
+    expect(regimenDelAlojamiento("Pantanal Jungle Lodge", lista)).toBe("pension completa");
+    expect(regimenDelAlojamiento("Bonito HI Hostel", lista)).toBeNull();
+    expect(regimenDelAlojamiento("Holandes Hostel", lista)).toBeNull();
+    expect(leerAlojamientosSinDesayuno("alojamiento,nota\nX,y\n")[0].regimen).toBeNull();
+    expect(() => leerAlojamientosSinDesayuno("alojamiento,nota,regimen\nX,y,media pensión\n")).toThrow(/fila 2.*media pensión/);
   });
 });
 

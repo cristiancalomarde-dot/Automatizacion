@@ -30,6 +30,12 @@ Adventure - 19 nights", 19/02 al 10/03/2027, 2 pax, "Double Room at Hostel and J
 - **Desayuno:** los hostels de Dourados y Bonito **no** dan desayuno (Ceu do Mato, Bonito HI Hostel); los hoteles sí.
   Foz, según el Word, sin desayuno (ver lo que ya hace OD010B; no cambiarlo para otros tours).
 - **Ygarape:** vale `ygarape@ygarape.com.br` (la fila de Bonito). La fila vieja (`atendimento@`, ciudad BRASIL) no se usa.
+- **Ygarape sin pick up** (owner, 2026-11-06, después de ver los pedidos): el traslado a la excursión lo hace Agmar. Regla:
+  si el componente trae un traslado "Transfer for … Excursions", sus excursiones van sin pick up (en el Excel, solo los
+  paquetes de Bonito).
+- **Pantanal Jungle Lodge, pensión completa** (owner, 2026-11-06): el programa es con pensión completa y actividades. El
+  pedido dice "com pensão completa" en lugar de "com café da manhã": columna `regimen` en
+  `data/alojamientos-sin-desayuno.csv`.
 
 ## 3. Qué tiene que hacer (y cómo comprobamos cada cosa)
 

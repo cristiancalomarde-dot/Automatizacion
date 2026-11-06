@@ -5,7 +5,7 @@
  */
 import { normalizarTexto } from "@/lib/catalogo/reglas";
 import { TEXTOS_DEL_PEDIDO, traducir, type Idioma } from "./idioma";
-import type { PasajeroDeReserva } from "./tipos";
+import type { PasajeroDeReserva, Regimen } from "./tipos";
 
 /** M3-32: los meses en el idioma del pedido (castellano si no se dice). */
 const meses = (idioma: Idioma) => TEXTOS_DEL_PEDIDO[idioma].meses;
@@ -167,8 +167,10 @@ export function tipoDeHabitacion(habitacion: string | null): string | null {
 export function habitacionDelPedido(habitacion: string | null, contexto: ContextoDeHabitacion = { pax: null, hostel: false }, idioma: Idioma = "es"): string {
   // M3-35: en los alojamientos que no ofrecen desayuno, ninguna variante lo dice. M3-32: en el idioma del pedido.
   const t = TEXTOS_DEL_PEDIDO[idioma];
-  const con = contexto.desayuno === false ? "" : ` ${t.conDesayuno}`;
-  const coma = contexto.desayuno === false ? "" : `, ${t.conDesayuno}`;
+  // M3-51: con régimen (pensión completa), eso en lugar del desayuno.
+  const incluye = contexto.regimen ? t.conPensionCompleta : contexto.desayuno === false ? null : t.conDesayuno;
+  const con = incluye ? ` ${incluye}` : "";
+  const coma = incluye ? `, ${incluye}` : "";
   const varias = variasHabitaciones(habitacion);
   if (varias) return `${varias} Standard${con}`;
   if (habitacionSinTipo(habitacion)) {
@@ -189,6 +191,8 @@ export interface ContextoDeHabitacion {
   pax: number | null;
   hostel: boolean;
   desayuno?: boolean;
+  /** M3-51: el régimen de `data/alojamientos-sin-desayuno.csv` (pensión completa), si tiene. */
+  regimen?: Regimen | null;
 }
 
 /**
@@ -210,6 +214,12 @@ function claveDelAlojamiento(nombre: string): string {
 export function sinDesayuno(alojamiento: string | null, lista: readonly { alojamiento: string }[] = []): boolean {
   const clave = claveDelAlojamiento(alojamiento ?? "");
   return !!clave && lista.some((f) => claveDelAlojamiento(f.alojamiento) === clave);
+}
+
+/** M3-51: el régimen del alojamiento en `data/alojamientos-sin-desayuno.csv` (pensión completa), o null. */
+export function regimenDelAlojamiento(alojamiento: string | null, lista: readonly { alojamiento: string; regimen?: Regimen | null }[] = []): Regimen | null {
+  const clave = claveDelAlojamiento(alojamiento ?? "");
+  return (clave && lista.find((f) => claveDelAlojamiento(f.alojamiento) === clave)?.regimen) || null;
 }
 
 /** M3-21: la habitación no dice el tipo: vacía o solo el nivel ("Budget Hotel", "Hotel 3*", "Hostel"). */

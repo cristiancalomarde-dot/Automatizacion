@@ -270,8 +270,9 @@ export function cargarAlojamientoSePideA(raiz: string = process.cwd()): Alojamie
 }
 
 /**
- * `data/alojamientos-sin-desayuno.csv`: alojamiento,nota (M3-35, owner 2026-10-28). Los alojamientos
- * (su nombre en el catálogo) que no ofrecen desayuno. El owner suma filas editando el CSV.
+ * `data/alojamientos-sin-desayuno.csv`: alojamiento,nota,regimen (M3-35, owner 2026-10-28). Los alojamientos
+ * (su nombre en el catálogo) que no ofrecen desayuno. El owner suma filas editando el CSV. M3-51: con
+ * `regimen` = "pensión completa", el pedido dice eso en lugar del desayuno (Pantanal Jungle Lodge).
  */
 export function leerAlojamientosSinDesayuno(contenido: string): AlojamientoSinDesayuno[] {
   const cabecera = contenido.replace(/^﻿/, "").split(/\r?\n/)[0]?.trim() ?? "";
@@ -281,7 +282,12 @@ export function leerAlojamientosSinDesayuno(contenido: string): AlojamientoSinDe
   return leerCsv(contenido).map((f, i) => {
     const alojamiento = f.alojamiento?.trim();
     if (!alojamiento) throw new Error(`${ARCHIVO_ALOJAMIENTOS_SIN_DESAYUNO}, fila ${i + 2}: hace falta el alojamiento.`);
-    return { alojamiento, nota: f.nota?.trim() || null };
+    // M3-51: columna opcional `regimen` (vacía = sin desayuno, como siempre).
+    const regimen = normalizarTexto(f.regimen?.trim() ?? "");
+    if (regimen && regimen !== "pension completa") {
+      throw new Error(`${ARCHIVO_ALOJAMIENTOS_SIN_DESAYUNO}, fila ${i + 2}: el régimen "${f.regimen}" no se conoce (vale "pensión completa" o vacío).`);
+    }
+    return { alojamiento, nota: f.nota?.trim() || null, regimen: regimen ? "pension completa" : null };
   });
 }
 

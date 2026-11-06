@@ -209,7 +209,12 @@ export interface TramoSePideA {
 export interface AlojamientoSinDesayuno {
   alojamiento: string;
   nota: string | null;
+  /** M3-51 (columna opcional `regimen`): lo que el pedido dice en lugar del desayuno. */
+  regimen?: Regimen | null;
 }
+
+/** M3-51: el régimen que el pedido dice en lugar de "con desayuno" (Pantanal Jungle Lodge). */
+export type Regimen = "pension completa";
 
 /**
  * Una fila de `data/w-trek-refugios.csv` (M3-33, owner 2026-10-28): la variante del W Trek (el nombre

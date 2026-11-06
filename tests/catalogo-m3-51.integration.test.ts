@@ -327,6 +327,14 @@ function ficha(): FichaLectura {
       const excursion = de("ygarape@ygarape.com.br")[0].cuerpo;
       expect(excursion).toContain("Escrevemos da HI Travel");
       expect(excursion).toMatch(/Floating Rio da Prata[^\n]*\nData: 24 fev 2027/);
+      // Owner, 2026-11-06: el traslado a la excursión lo hace Agmar; el mail a Ygarape no lleva pick up.
+      expect(excursion).not.toMatch(/Pick up|Drop off/i);
+    });
+
+    it("Pantanal Jungle Lodge: con pensión completa, no con café da manhã (owner, 2026-11-06)", () => {
+      const lodge = de("reserva@pantanaljunglelodge.com.br")[0].cuerpo;
+      expect(lodge).toContain("com pensão completa");
+      expect(lodge).not.toMatch(/caf[eé] da manh/i);
     });
 
     it("Paraty Tours: los dos traslados con su fecha; el de COMPBR02 no se duplica", () => {
