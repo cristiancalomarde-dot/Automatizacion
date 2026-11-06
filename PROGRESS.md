@@ -3,6 +3,12 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
 
 # Dónde retomar
 
+- **2026-11-06 ~16:30: proveedores cargados en la real con OK del owner.** 6 altas (Bonito HI Hostel, Pira Miuna,
+  Ygarape de Bonito, Agmar por WhatsApp, Ceu do Mato Eco Hostel y Hotel Bahamas Dourados), 1 cambio (Hostal Providencia
+  → contacto@hostalprovidencia.com), 0 bajas; IA: 9 llamadas. El owner asignó CH13 a DK1599008; sin pedidos todavía.
+  **BR20 (M3-51):** respuestas del owner recibidas (ver el chat del 2026-11-06). Faltan: los bloques COMPBR13 y COMPBR14
+  en el Excel de paquetes (la copia del Drive es del 3/11) y cuál mail de Ygarape vale (fila 367 vieja o 486 nueva).
+
 - **2026-11-06 tarde: CH13 cargado en la real con OK del owner (M3-50).** Tours: CH13 armado (1 producto, 2
   componentes, 1 código); Kilroy: 1 alta, 20 sin cambios. Después, en seco, los 15 tours dan 0 cambios. **Falta para
   cerrar M3-50:** que el owner asigne CH13 a DK1599008 (`f294f1eb-846c-468e-8e79-5fffe7bf2a82`) y revise los pedidos.
