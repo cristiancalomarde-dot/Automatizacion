@@ -3,6 +3,16 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
 
 # Dónde retomar
 
+- **2026-11-07: BR20 asignado a DK1598967 por el owner; ajustes publicados (`436dcea`) y cargados con su OK.** En BR20 se
+  anula el opcional "Transffers Campo Grande - Bonito - Campo Grande" de COMPBR06 (se llega a Bonito en bus; a Pantanal y
+  Campo Grande lleva Agmar). Los pedidos de una reserva salen por su primera fecha (a igual fecha, el orden del armado).
+  Ygarape viejo (atendimento@, BRASIL) borrado de la real y anotado en `proveedores-borrados.csv`. Tours: BR20, 1 ajuste
+  nuevo; después, en seco, 0 cambios. Pedidos de DK1598967 rearmados: 9 (Bambu, Cuenca, Bonito HI, Ygarape, Pantanal,
+  Paraty Tours, Holandes, Local 55, Buzios) y 8 tareas, sin el aviso del opcional. La suite se corre de frente por tandas
+  (`src` y `tests/` de a 13-25 archivos): en segundo plano la corta la falta de memoria. **Falta para cerrar M3-51:** que
+  el owner saque los vuelos y el pedido especial de BR18 de la reserva y confirme los pedidos. Abiertas: Pira Miuna como
+  Budget, O Hostel GRU fuera del directorio.
+
 - **2026-11-06 noche: BR20 (M3-51) cargado en la real con OK del owner.** Antes, las dos respuestas del owner publicadas
   (`379e54f`): Ygarape sin pick up (lo lleva Agmar) y Pantanal Jungle Lodge "com pensão completa". Excel copiados del
   Drive (iguales). Equivalencias: 1 alta, 129 sin cambios. Paquetes ODBR50/COMPBR06/COMPBR13/COMPBR14: 4 productos, 13
