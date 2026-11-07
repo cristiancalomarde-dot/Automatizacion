@@ -249,7 +249,13 @@ describe("M3-51 punto 4 — los tramos de BR20", () => {
     expect(tramos.some((t) => /agmar/i.test(t.bookingSupplier))).toBe(false);
     const servicios = new Map<string, ServicioDePaquete[]>([
       ["OD010B", [{ orden: 5, prioridad: 1, tipo: "excursion", serviceProviderNombre: "Paquete Receptvo 105 Premium x Foz", descripcion: "Excursion: Paquete Receptvo 105 Premium x Foz. Booking Supplier: Cuenca del Plata", sentido: null }]],
-      ["COMPBR06", [{ orden: 4, prioridad: 1, tipo: "traslado", serviceProviderNombre: "for the 2 days of Excursions", descripcion: "Transfer for the 2 days of Excursions. Booking Supplier: Agmar", sentido: "sin_sentido" }]],
+      [
+        "COMPBR06",
+        [
+          { orden: 4, prioridad: 1, tipo: "traslado", serviceProviderNombre: "for the 2 days of Excursions", descripcion: "Transfer for the 2 days of Excursions. Booking Supplier: Agmar", sentido: "sin_sentido" },
+          { orden: 5, prioridad: 1, tipo: "otro", serviceProviderNombre: "Transffers Campo Grande - Bonito - Campo Grande", descripcion: "Optional: Transffers Campo Grande - Bonito - Campo Grande. Booking Supplier: Agmar", sentido: null },
+        ],
+      ],
       ["ODBR50", [{ orden: 2, prioridad: 1, tipo: "otro", serviceProviderNombre: "Private Transfer Campo Grande - Pantanal - Campo Grande for 1 to 4 pax", descripcion: "Private Transfer Campo Grande - Pantanal - Campo Grande for 1 to 4 pax. Booking Supplier: Agmar", sentido: null }]],
       ["COMPBR02", [{ orden: 3, prioridad: 1, tipo: "traslado", serviceProviderNombre: "Rio de Janeiro - Paraty - Ilha Grande", descripcion: "Transfer Rio de Janeiro - Paraty - Ilha Grande. Booking Supplier: Paraty Tours", sentido: "sin_sentido" }]],
       ["OD032", [{ orden: 3, prioridad: 1, tipo: "traslado", serviceProviderNombre: "GIG - Accommodation in Rio", descripcion: "Transfer GIG - Accommodation in Rio. Booking Supplier: Buzios Transfers / Alex", sentido: "llegada" }]],
@@ -272,6 +278,7 @@ describe("M3-51 punto 4 — los tramos de BR20", () => {
     expect(ajustes.map((a) => [a.paquete, a.accion, a.origen])).toEqual([
       ["OD010B", "solo_llegada", "excepcion"],
       ["COMPBR06", "reemplazar", "excepcion"],
+      ["COMPBR06", "anular", "excepcion"],
       ["ODBR50", "reemplazar", "excepcion"],
       ["COMPBR02", "anular", "excepcion"],
       ["OD032", "invertir", "excepcion"],

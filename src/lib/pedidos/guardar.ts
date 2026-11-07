@@ -29,6 +29,7 @@ import {
   cargarPuntosDeEncuentro,
   cargarReservaParaPedidos,
 } from "./cargar";
+import { ordenarPorFecha } from "./orden";
 import { cargarPlantilla } from "./plantilla";
 import type { CategoriaTour } from "@/lib/importador-tours/datos";
 import type { AlojamientoSePideA, AlojamientoSinDesayuno, CiudadEnPortugues, WTrekRefugios, TramoSePideA, BusElChalten, DiaDeServicio, ExcursionConEntrada, HostelSegunHabitacion, OpcionDelPasajero, ProveedorConTelefono, ProveedorFichaCompleta, PuntoDeEncuentro, PedidoArmado, Plantilla, ResultadoArmado, TareaArmada, TipoTarea } from "./tipos";
@@ -198,5 +199,5 @@ export async function cargarPedidos(cliente: SupabaseClient, reservaId: string):
   ]);
   if (pedidos.error) throw new Error(`No se pudieron leer los pedidos: ${pedidos.error.message}`);
   if (tareas.error) throw new Error(`No se pudieron leer las tareas: ${tareas.error.message}`);
-  return { pedidos: (pedidos.data ?? []) as PedidoGuardado[], tareas: (tareas.data ?? []) as TareaGuardada[] };
+  return { pedidos: ordenarPorFecha((pedidos.data ?? []) as PedidoGuardado[]), tareas: (tareas.data ?? []) as TareaGuardada[] };
 }

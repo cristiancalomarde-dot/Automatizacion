@@ -12,6 +12,7 @@ import { cargarProducto } from "@/lib/catalogo/consultas";
 import { cargarAvisosDeVuelo } from "./avisos-vuelo";
 import { sinDatoDeLlegada } from "./llegada-iguazu";
 import { nombreVisible } from "@/lib/usuarios/nombre";
+import { ordenarPorFecha } from "@/lib/pedidos/orden";
 import { cuerpoComoTexto, esCancelacion } from "./reglas";
 import {
   BUCKET_ADJUNTOS,
@@ -119,7 +120,7 @@ async function conPedidosSinEnviar(cliente: SupabaseClient, ids?: string[]): Pro
   return new Set(filas.map((p) => p.reserva_id as string));
 }
 
-const CAMPOS_PEDIDO = "id,proveedores,destinatarios,estado,enviado_en,enviado_por_nombre,motivo_fallo,sin_destinatario,reenvios,created_at,a_mano";
+const CAMPOS_PEDIDO = "id,proveedores,destinatarios,estado,enviado_en,enviado_por_nombre,motivo_fallo,sin_destinatario,reenvios,created_at,a_mano,partes";
 
 function aPedidoVista(p: any): PedidoDeReservaVista {
   return {
@@ -378,7 +379,8 @@ export async function cargarReserva(cliente: SupabaseClient, id: string): Promis
       .in("tipo", ["pedidos_enviados", "envio_de_prueba", "producto_confirmado", ...Object.keys(TIPO_CAMBIO), ...Object.keys(TIPO_CORRECCION), ...Object.keys(TIPO_A_MANO)])
       .order("created_at"),
   ]);
-  const filasPedidos = (verificar(pedidos) as any[]).map(aPedidoVista);
+  // M3-51: en orden cronológico, como en la pantalla de pedidos.
+  const filasPedidos = ordenarPorFecha(verificar(pedidos) as any[]).map(aPedidoVista);
   const historial = verificar(envios) as any[];
   const filasPartes = verificar(partes) as any[];
   const idsSumados = (verificar(eventos) as any[]).map((e) => e.mail_recibido_id as string);

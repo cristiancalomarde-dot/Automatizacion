@@ -197,6 +197,7 @@ describe("el motivo que ve el operativo (spec M1-10)", () => {
       "BR20 · OD010B · Sale de Foz por su cuenta a la Rodoviaria (bus a Cascavel): sin traslado de salida.",
       "BR20 · COMPBR06 · Agmar lleva a la excursión de Bonito (pick up privado, día 2 de Bonito).",
       "BR20 · ODBR50 · Llega desde Bonito y sale a la Rodoviaria de Campo Grande, con Agmar.",
+      "BR20 · COMPBR06 · Se llega a Bonito en bus desde Dourados; a Pantanal y a Campo Grande lleva Agmar (ODBR50).",
       "BR20 · COMPBR02 · Se pide por tramos, cada uno con su día (servicios del tour).",
       "BR20 · OD032 · En este tour el traslado es de salida, del alojamiento al aeropuerto de Río.",
     ]);

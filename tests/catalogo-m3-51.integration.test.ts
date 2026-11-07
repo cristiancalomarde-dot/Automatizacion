@@ -231,6 +231,7 @@ function ficha(): FichaLectura {
     expect(t.ajustes.map((a) => [a.paquete, a.accion])).toEqual([
       ["OD010B", "solo_llegada"],
       ["COMPBR06", "reemplazar"],
+      ["COMPBR06", "anular"],
       ["ODBR50", "reemplazar"],
       ["COMPBR02", "anular"],
       ["OD032", "invertir"],
@@ -255,7 +256,8 @@ function ficha(): FichaLectura {
     let reservaId: string;
     let pedidos: PedidoGuardado[];
     let tareas: TareaGuardada[];
-    const de = (mail: string) => pedidos.filter((p) => p.destinatarios.includes(mail));
+    let avisos: string[];
+    const de =(mail: string) => pedidos.filter((p) => p.destinatarios.includes(mail));
 
     beforeAll(async () => {
       const { mail } = await guardarMailRecibido(mailDePrueba(), admin);
@@ -268,8 +270,14 @@ function ficha(): FichaLectura {
       expect([fila.producto?.codigo, fila.estado, fila.motivos_revision ?? []]).toEqual(["BR20", "recibida", []]);
       const r = await armarYGuardarPedidos(admin, reservaId);
       if (!r.ok) throw new Error(r.error);
+      avisos = r.avisos;
       ({ pedidos, tareas } = await cargarPedidos(admin, reservaId));
     }, 180_000);
+
+    it("el opcional Campo Grande - Bonito - Campo Grande no va ni se avisa: se llega a Bonito en bus (owner, 2026-11-07)", () => {
+      expect(avisos.join(" ")).not.toMatch(/Campo Grande - Bonito/);
+      expect(pedidos.map((p) => p.cuerpo).join(" ")).not.toMatch(/Campo Grande - Bonito/);
+    });
 
     it("a quién va cada pedido, sin ninguno a una casilla vacía, todos para 2 pasajeros", () => {
       expect(pedidos.map((p) => p.destinatarios.join(","))).toEqual([
