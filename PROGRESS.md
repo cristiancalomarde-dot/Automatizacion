@@ -3,11 +3,14 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
 
 # Dónde retomar
 
-- **2026-11-06 noche: BR20 (M3-51) listo para cargar, publicado (`6ff0029`), sin cargar en la real.** Falta el OK del
-  owner. Orden: copiar los Excel del Drive → `importar:equivalencias` (1 nueva: Pira Miuna) → `importar:paquetes
-  --codigos ODBR50,COMPBR06,COMPBR13,COMPBR14` → `importar:tours --codigos BR20` → `importar:codigos-kilroy`. Detalle y
-  preguntas: `docs/sdd/diagnosticos/M3-51-carga.md`. Preguntas abiertas (no bloquean): sacar el pick up del mail a
-  Ygarape (lo hace Agmar) y "pensão completa" en vez de "café da manhã" en Pantanal Jungle Lodge.
+- **2026-11-06 noche: BR20 (M3-51) cargado en la real con OK del owner.** Antes, las dos respuestas del owner publicadas
+  (`379e54f`): Ygarape sin pick up (lo lleva Agmar) y Pantanal Jungle Lodge "com pensão completa". Excel copiados del
+  Drive (iguales). Equivalencias: 1 alta, 129 sin cambios. Paquetes ODBR50/COMPBR06/COMPBR13/COMPBR14: 4 productos, 13
+  servicios, 8 códigos (sin resolver: O Hostel GRU, ya conocido). Tours: BR20 armado (1 producto, 8 componentes, 6
+  servicios, 1 código, 5 ajustes). Kilroy: 1 alta, 21 sin cambios. Después, en seco: 0 cambios en los paquetes y en los
+  16 tours, todos armados. **Falta para cerrar M3-51:** que el owner asigne BR20 a DK1598967 (`e0791f38-…`), le saque
+  los vuelos y el pedido especial de BR18, y revise los pedidos. Abiertas: Pira Miuna como Budget, O Hostel GRU fuera
+  del directorio, la fila vieja de Ygarape (367).
 
 - **2026-11-06 ~16:30: proveedores cargados en la real con OK del owner.** 6 altas (Bonito HI Hostel, Pira Miuna,
   Ygarape de Bonito, Agmar por WhatsApp, Ceu do Mato Eco Hostel y Hotel Bahamas Dourados), 1 cambio (Hostal Providencia
