@@ -3,6 +3,16 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
 
 # Dónde retomar
 
+- **2026-11-10 (noche): M3-54 cerrada (Journaway, un código para un solo tour).** `ac97736` y `0a829b6`. 67734240405
+  traía solo FTEE05 y entró toda como FTEE05; ahora cada tour se reconoce por nombre, por cómo empieza
+  (`empieza_con`: "Shared Transfer: IGU - …" = IGRT01) o por la IA. Nombres del Perito Moreno (FTEE01) y el Chaltén
+  (FTEE05) confirmados por el owner. Dos relecturas con OK (US$ 0.12): la reserva nueva `798cb022-…` entró recibida,
+  con las 5 partes reconocidas; 4 pedidos (Cuenca del Plata con el aviso del traslado nocturno, Chaltén Travel, South
+  Road, Canal Fun). Para mirar con el owner: `67697149819` (BUS02, 2 partes sin producto, ya pedida) y `67720778908`.
+  **66925083976 es SPAP06** (el owner, 2026-11-10: el "Option 2) SPAP05" de su documento es un error; nuestro catálogo
+  está bien). El mail de JW mezcla las dos opciones (Overland día 1 el 18; Tayka 19 y 20; el Cumbres hasta el 19): el
+  owner corrige su documento y se lo reenvía a JW. El pedido a Imperio Inca no se envía hasta que JW corrija.
+
 - **2026-11-10: M3-53 cerrada (Journaway, hotel de San Pedro y Tayka pedidos).** Instrucciones lectura-mail.v7
   (`236416f`). La primera relectura se sumó a `ffb7faeb` (descartada) y falló: releer ya no cuenta las descartadas y la
   migración 0025 (aplicada por el owner a la real y con su OK a la de pruebas) deja crear la nueva. En `ffb7faeb` se
