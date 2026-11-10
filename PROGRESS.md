@@ -10,7 +10,8 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
   `0fb1b57e-…` entró SPAP05, recibida, con los hoteles de todo el viaje. Los pedidos piden los dos Tayka y salen del
   Hotel Cumbres (el Overland, aunque JW diga que deja el hotel un día después; la excursión del día de llegada, no del
   Fauna). **Abierto para el owner:** JW pone las noches del Overland un día después que el catálogo (Tayka del Desierto
-  19–20, Sal 20–21, bus el 21; nosotros 18, 19 y 20). M3-50 (CH13) cerrada: el owner ya está pidiendo con los pedidos del
+  19–20, Sal 20–21, bus el 21; nosotros 18, 19 y 20). El owner cree que JW se equivocó y se lo consulta; el pedido a Imperio Inca
+  no se envía hasta tener la respuesta. M3-50 (CH13) cerrada: el owner ya está pidiendo con los pedidos del
   sistema. M3-48 (BR04) sigue abierta: una operativa revisa los vuelos para destrabar los pedidos.
 
 - **2026-11-10: M3-52 cerrada (Journaway, Tayka = SPAP05).** Código en `0ad733d`. Con OK del owner: `importar:journaway`
