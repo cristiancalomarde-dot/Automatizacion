@@ -3,6 +3,16 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
 
 # Dónde retomar
 
+- **2026-11-10: M3-53 cerrada (Journaway, hotel de San Pedro y Tayka pedidos).** Instrucciones lectura-mail.v7
+  (`236416f`). La primera relectura se sumó a `ffb7faeb` (descartada) y falló: releer ya no cuenta las descartadas y la
+  migración 0025 (aplicada por el owner a la real y con su OK a la de pruebas) deja crear la nueva. En `ffb7faeb` se
+  borraron las 4 partes de más; el evento de más queda (el historial no se borra). Relectura con OK (US$ 0.04): la nueva
+  `0fb1b57e-…` entró SPAP05, recibida, con los hoteles de todo el viaje. Los pedidos piden los dos Tayka y salen del
+  Hotel Cumbres (el Overland, aunque JW diga que deja el hotel un día después; la excursión del día de llegada, no del
+  Fauna). **Abierto para el owner:** JW pone las noches del Overland un día después que el catálogo (Tayka del Desierto
+  19–20, Sal 20–21, bus el 21; nosotros 18, 19 y 20). Pendiente también: que el owner confirme BR04 (M3-48) y CH13 (M3-50)
+  y revise sus pedidos.
+
 - **2026-11-10: M3-52 cerrada (Journaway, Tayka = SPAP05).** Código en `0ad733d`. Con OK del owner: `importar:journaway`
   (3 códigos nuevos, nada más tocado) y relectura del mail 17080 (US$ 0.03 de IA). La reserva 66925083976 vieja
   (`ffb7faeb-…`) quedó descartada con las explicaciones del owner en su historial; la nueva (`bfa479c1-…`) entró SPAP05,

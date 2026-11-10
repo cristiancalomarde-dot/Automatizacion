@@ -27,6 +27,7 @@ El código ya sabe usar los hoteles de la agencia por fecha (M3-30): falta que l
 | 4 | **Lo que ya estaba no cambia** | Suite completa, de frente por tandas |
 | 5 | **Releer un mail por segunda vez no lo suma a la reserva que descartó la primera relectura**: las descartadas del mail tampoco cuentan como "mismo intercambio" | Integración: releer dos veces → descartada, descartada, nueva; la primera sin partes ni eventos nuevos |
 | 6 | **Migración 0025: una reserva descartada no bloquea una nueva** con el mismo booking_id y producto (el índice único de 0012 pasa a excluir las descartadas) | La misma integración (la nueva SPAP05 se crea aunque haya una SPAP05 descartada) |
+| 7 | **Con los hoteles de todo el viaje** (lo que trajo la relectura real): el Overland sale del hotel de la agencia de la noche anterior aunque diga que lo deja un día después, y la excursión del día que llega a San Pedro sale del hotel de esa noche, no del de la ciudad anterior (Fauna, Valparaíso) | Unitarios: pedidos (SPAP05 con Fauna y el Cumbres) y `hotelEnSanPedro` |
 
 ## 3. En la real (no lo hace el builder)
 Con OK del owner, después de publicar: volver a leer el mail de 66925083976 (`reprocesar:mail -- --uid 17080`,

@@ -36,7 +36,7 @@ import { NOMBRE_DESTINO, nombreDestino } from "@/lib/importador-tours/ciudades";
 import { TRANSFER_PNT } from "@/lib/reservas/emparejar/componentes";
 import { lugarDelTraslado } from "@/lib/reservas/emparejar/vuelos-requeridos";
 import { esOverland, esTrasladoAHitoCajon, incluyeTrasladoAHitoCajon, overlandDelTraslado } from "@/lib/reservas/hito-cajon";
-import { esHotelDelOverland, hotelEnSanPedro, hotelEnSanPedroAConfirmar } from "@/lib/reservas/pick-up-overland";
+import { esHotelDelOverland, hotelDeLaNocheAnterior, hotelEnSanPedro, hotelEnSanPedroAConfirmar } from "@/lib/reservas/pick-up-overland";
 import { llevaEntradas } from "./entradas";
 import { TEXTOS_DEL_PEDIDO, idiomaDeLaCiudad, traducir, type Idioma, type TextosDelPedido } from "./idioma";
 import { avisosDeBlackout, avisosDeDiasDeBus, avisosDeFechaEspecial, avisosDeTrasladoNocturno, tramoDeLaRuta, type ServicioConDia, type VueloDelTraslado } from "./itinerario";
@@ -893,7 +893,8 @@ class Armado {
     if (b.pickUp) return { renglon: `Pick up: ${b.pickUp}`, pendientes: [], lugar: b.pickUp };
     // M3-23: excursión de un día el día que cambia de alojamiento (Salta → Purmamarca en OD027): lo buscan donde
     // durmió la noche anterior y lo dejan en el de esa noche.
-    const sale = dropOff && fecha ? this.estadias.find((x) => x.hasta === fecha) : undefined;
+    // M3-53: si deja un hotel de la agencia (lista todo el viaje), ese día llega de otra ciudad: sale del de esa noche.
+    const sale = dropOff && fecha ? this.estadias.find((x) => x.hasta === fecha && x.aConfirmar) : undefined;
     const entra = dropOff && fecha ? this.estadias.find((x) => x.desde === fecha) : undefined;
     if (sale && entra && sale.hotel !== entra.hotel) {
       const donde = (x: Estadia) => `${x.hotel}${x.ciudad ? ` (${x.ciudad})` : ""}${x.aConfirmar ? " · hotel a confirmar" : ""}`;
@@ -929,7 +930,7 @@ class Armado {
       .map((p) => ({ pickUp: p.pickUp, fecha: p.fechaInicio }));
     const hotel = deLaAgencia ?? hotelEnSanPedro(desde, pickUps);
     if (hotel) return { renglon: `Pick up: ${hotel}`, pendientes: [], lugar: hotel };
-    const noche = desde ? this.estadias.find((x) => x.hasta === desde && !esHotelDelOverland(x.hotel)) : undefined;
+    const noche = desde ? hotelDeLaNocheAnterior(desde, this.estadias, (x) => x.hotel) : undefined;
     if (noche) {
       return {
         renglon: `Pick up: ${noche.hotel}${noche.ciudad ? ` (${noche.ciudad})` : ""}${noche.aConfirmar ? " · hotel a confirmar" : ""}`,

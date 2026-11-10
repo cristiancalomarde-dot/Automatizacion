@@ -36,9 +36,24 @@ export interface HotelConNoches {
 }
 
 /**
+ * El hotel de la agencia donde duerme la noche anterior a `fecha` (no un Tayka). M3-53: no hace falta
+ * que lo deje ese día; Journaway escribe las noches del Overland un día después que el catálogo.
+ */
+export function hotelDeLaNocheAnterior<H extends { desde: string | null | undefined; hasta: string | null | undefined }>(
+  fecha: string,
+  hoteles: readonly H[],
+  nombre: (h: H) => string,
+): H | undefined {
+  const d = new Date(`${fecha}T00:00:00Z`);
+  d.setUTCDate(d.getUTCDate() - 1);
+  const noche = d.toISOString().slice(0, 10);
+  return hoteles.find((h) => !!h.desde && !!h.hasta && h.desde <= noche && noche < h.hasta && !esHotelDelOverland(nombre(h)));
+}
+
+/**
  * El hotel de San Pedro de donde sale el Overland que arranca `inicio`: el pick up que manda la
- * agencia para lo de San Pedro (el último hasta ese día) o, si no, el hotel de la agencia que deja
- * ese día (la noche anterior al Overland). null si la reserva no lo trae.
+ * agencia para lo de San Pedro (el último hasta ese día) o, si no, el hotel de la agencia de la
+ * noche anterior al Overland. null si la reserva no lo trae.
  */
 export function hotelEnSanPedro(
   inicio: string | null | undefined,
@@ -50,8 +65,7 @@ export function hotelEnSanPedro(
     .sort((a, b) => (a.fecha ?? "").localeCompare(b.fecha ?? ""));
   const ultimo = validos[validos.length - 1];
   if (ultimo) return ultimo.pickUp!.trim();
-  const noche = inicio ? hoteles.find((h) => h.hasta === inicio && !esHotelDelOverland(h.nombre)) : undefined;
-  return noche?.nombre ?? null;
+  return (inicio ? hotelDeLaNocheAnterior(inicio, hoteles, (h) => h.nombre)?.nombre : null) ?? null;
 }
 
 /** Lo mínimo de una parte del detalle para corregir el pick up del Overland. */

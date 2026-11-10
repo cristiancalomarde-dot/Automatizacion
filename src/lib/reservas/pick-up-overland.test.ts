@@ -27,6 +27,15 @@ describe("M3-41: el pick up del Overland es el hotel de San Pedro", () => {
     expect(hotelEnSanPedro("2026-10-15", [{ pickUp: "Tayka del Desierto Hotel", fecha: "2026-10-15" }], hoteles)).toBe("Don Raul");
   });
 
+  it("M3-53: el hotel de la agencia donde duerme la noche anterior, aunque diga que sale un día después (66925083976)", () => {
+    const hoteles = [
+      { nombre: "Fauna Hotel", desde: "2027-01-12", hasta: "2027-01-14" },
+      { nombre: "Hotel Cumbres San Pedro de Atacama", desde: "2027-01-14", hasta: "2027-01-19" },
+      { nombre: "Tayka del Desierto Hotel", desde: "2027-01-17", hasta: "2027-01-18" },
+    ];
+    expect(hotelEnSanPedro("2027-01-18", [], hoteles)).toBe("Hotel Cumbres San Pedro de Atacama");
+  });
+
   it("no se adivina: sin hotel de San Pedro en la reserva, null", () => {
     expect(hotelEnSanPedro("2027-05-26", [{ pickUp: "Tayka del Desierto Hotel", fecha: "2027-05-26" }, { pickUp: null, fecha: "2027-05-25" }])).toBeNull();
   });
