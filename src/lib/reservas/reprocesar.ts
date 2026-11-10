@@ -67,11 +67,13 @@ export async function reprocesarMailGuardado(
   const { data, error } = await admin
     .from("reserva")
     .select("id, estado, booking_id, producto:producto_id(codigo)")
-    .eq("mail_recibido_id", mail.id)
-    .neq("estado", "descartada");
+    .eq("mail_recibido_id", mail.id);
   if (error) throw new Error(`No se pudieron leer las reservas del mail: ${error.message}`);
   type Fila = { id: string; estado: EstadoReserva; booking_id: string | null; producto: { codigo: string } | null };
-  const viejas: ReservaVieja[] = ((data ?? []) as unknown as Fila[]).map((r) => ({
+  const todas = (data ?? []) as unknown as Fila[];
+  // M3-53: las que descartó una relectura anterior tampoco cuentan como "mismo intercambio".
+  const yaDescartadas = todas.filter((r) => r.estado === "descartada").map((r) => r.id);
+  const viejas: ReservaVieja[] = todas.filter((r) => r.estado !== "descartada").map((r) => ({
     id: r.id,
     estado: r.estado,
     bookingId: r.booking_id,
@@ -102,7 +104,7 @@ export async function reprocesarMailGuardado(
       .in("estado", SE_PUEDEN_REEMPLAZAR);
     if (e) throw new Error(`No se pudo descartar la reserva vieja ${r.id}: ${e.message}`);
   }
-  const r = await procesarMail({ ...entrada, huella: mail.huella }, { ...opciones, reprocesar: { excluirReservas: viejas.map((v) => v.id) } });
+  const r = await procesarMail({ ...entrada, huella: mail.huella }, { ...opciones, reprocesar: { excluirReservas: [...viejas.map((v) => v.id), ...yaDescartadas] } });
   return {
     estado: "reprocesado",
     mailRecibidoId: mail.id,

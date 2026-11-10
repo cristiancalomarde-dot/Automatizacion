@@ -182,6 +182,28 @@ async function entradaPetzold(id: string, extra: Partial<MailEntrada> = {}): Pro
       expect((await reservasDe(antes.mailRecibidoId)).map((x) => x.estado)).toEqual(["descartada", "pedido_a_proveedor"]);
     });
 
+    it("M3-53: releer dos veces el mismo mail crea otra reserva; no se suma a la que descartó la primera relectura (66925083976)", async () => {
+      const id = idUnico("667");
+      const ficha = { ...fichaIAPetzold(), numero_reserva: { valor: `ID ${id} · Trip 65037`, confianza: 1 } };
+      const entrada = await entradaPetzold(id);
+      const antes = await procesarMail(entrada, opciones(ficha));
+      registro.mail(antes.mailRecibidoId);
+      const [primera] = await reservasDe(antes.mailRecibidoId);
+      const partesDe = async (reservaId: string) =>
+        (await admin.from("reserva_componente").select("id").eq("reserva_id", reservaId)).data?.length ?? 0;
+      const partesAntes = await partesDe(primera.id);
+
+      expect((await reprocesarMailGuardado(entrada, { ...opciones(ficha), aplicar: true })).estado).toBe("reprocesado");
+      const r = await reprocesarMailGuardado(entrada, { ...opciones(ficha), aplicar: true });
+      expect(r).toMatchObject({ estado: "reprocesado", nuevas: [expect.objectContaining({ accion: "nueva" })] });
+
+      const despues = await reservasDe(antes.mailRecibidoId);
+      expect(despues.map((x) => x.estado)).toEqual(["descartada", "descartada", "para_revision"]);
+      expect(await partesDe(primera.id)).toBe(partesAntes);
+      const { data: eventos } = await admin.from("evento_reserva").select("tipo").eq("reserva_id", primera.id).eq("tipo", "mail_agregado");
+      expect(eventos).toEqual([]);
+    });
+
     it("un mail que no está guardado no se reprocesa", async () => {
       const r = await reprocesarMailGuardado(await entradaPetzold(idUnico("666"), { imapUid: 1, imapUidvalidity: 1 }), {
         ...opciones(fichaIAPetzold()),
