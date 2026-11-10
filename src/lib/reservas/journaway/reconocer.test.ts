@@ -8,7 +8,9 @@ import {
   conTitulo,
   lecturaDeVariante,
   original,
+  OVERLAND,
   overlandCorrido,
+  SAN_PEDRO,
   sinTour,
   type Variante,
 } from "../../../../tests/fixtures/journaway/fichas";
@@ -230,5 +232,33 @@ describe("fila 7 — el título como tercera señal", () => {
     const r = await reconocer(v);
     expect(r.reservas[0].producto).toBeNull();
     expect(r.reservas[0].motivos.join(" ")).toMatch(/Falta .* para SPAP05/);
+  });
+});
+
+/** Cambia el nombre de un tour en la ficha y en el texto, como lo escribió Journaway en otro mail. */
+function renombrado(v: Variante, antes: string, despues: string): Variante {
+  return {
+    texto: v.texto.split(antes).join(despues),
+    ficha: { ...v.ficha, productos: v.ficha.productos.map((p) => (p.nombre === antes ? { ...p, nombre: despues } : p)) },
+  };
+}
+
+describe("M3-52 — Tayka: SPAP05 salvo que las fechas digan otra cosa (owner 2026-11-09)", () => {
+  it("las variantes de nombre del mail 66925083976 (of the Moon Valley, of the Tatio, ', and Laguna Colorada') dan SPAP05", async () => {
+    let v = renombrado(original("D"), SAN_PEDRO.moon, "Tour of the Moon Valley");
+    v = renombrado(v, SAN_PEDRO.tatio, "Tour of the Tatio Geysers");
+    v = renombrado(v, OVERLAND.dia1, "From San Pedro: Sol de Mañana Geysers, Licancabur Volcano, and Laguna Colorada");
+    const r = await reconocer(v);
+    expect(codigos(r)).toEqual(["SPAP05"]);
+    expect(r.reservas[0].motivos).toEqual([]);
+  });
+
+  it("sin el día 1 del Overland, las noches no se cuentan desde los otros días: se sugiere SPAP05, no SPAP06", async () => {
+    // Como en 66925083976: Siloli corrido un día; contado desde ahí daba 5 noches (SPAP06).
+    const r = await reconocer(overlandCorrido(sinTour(original("D"), "Sol de Mañana"), 1));
+    expect(r.reservas[0].producto).toBeNull();
+    expect(r.reservas[0].sugerencia?.codigo).toBe("SPAP05");
+    expect(r.reservas[0].motivos).toContain("Falta el día 1 del Overland");
+    expect(r.reservas[0].motivos.join(" ")).not.toMatch(/SPAP06|noches/);
   });
 });

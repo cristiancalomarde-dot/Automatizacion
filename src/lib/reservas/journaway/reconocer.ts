@@ -120,12 +120,6 @@ function esTayka(tours: TourJournaway[], ctx: Contexto): boolean {
   );
 }
 
-const sumarDias = (iso: string, dias: number) => {
-  const d = new Date(`${iso}T00:00:00Z`);
-  d.setUTCDate(d.getUTCDate() + dias);
-  return d.toISOString().slice(0, 10);
-};
-
 /** El día del paquete en que arranca el Overland, menos uno: las noches en San Pedro (SPAP05 = 4, SPAP06 = 5). */
 function nochesDelPaquete(p: PaqueteJournaway, overland: Set<string>): number | null {
   const parte = p.partes.find((x) => overland.has(x.codigo));
@@ -165,7 +159,9 @@ function armarTayka(tours: TourJournaway[], ctx: Contexto): DecisionTayka {
     if (t) fechaDia.set(dia, t.fecha);
     else motivos.push(M.faltaDiaOverland(dia));
   }
-  const arranque = [...fechaDia].filter(([, f]) => f).map(([dia, f]) => sumarDias(f!, -(dia - 1)))[0] ?? null;
+  // M3-52 (owner 2026-11-09): el arranque sale solo del día 1; contado desde los otros días daba noches de más
+  // (66925083976: Siloli corrido un día, 5 noches = SPAP06, y era SPAP05).
+  const arranque = fechaDia.get(1) ?? null;
 
   // Desde que llega a Calama (vuelo o primer tour de San Pedro) hasta el primer día del Overland.
   const iatas = s.aeropuertos.filter((a) => paquetes.some((p) => a.paquetes.includes(p.codigo))).map((a) => a.iata);
@@ -194,6 +190,9 @@ function armarTayka(tours: TourJournaway[], ctx: Contexto): DecisionTayka {
     }
   } else if (porTitulo) {
     elegido = porTitulo;
+  } else if (!fechaDia.get(1)) {
+    // M3-52: sin el día 1 no se cuentan las noches; casi siempre piden SPAP05 (owner 2026-11-09), el primero de la familia.
+    elegido = paquetes.find((p) => p.codigo === s.familiaTayka.codigos[0]) ?? null;
   } else {
     motivos.push(M.sinNoches);
   }

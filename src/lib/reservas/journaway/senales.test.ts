@@ -14,6 +14,8 @@ describe("data/journaway-senales.csv", () => {
     expect(s.hotelesTayka).toEqual(["tayka del desierto", "tayka del sal", "tayka de sal"]);
     expect(s.diasOverland.map((d) => [d.dia, d.codigo])).toEqual([
       [1, "UYUO01"],
+      // M3-52: el día 1 con ", and" (mail 66925083976).
+      [1, "UYUO01"],
       [2, "UYUO01"],
       [3, "UYUO01"],
       // M3-30: los mismos días en alemán (mail Petzold).
@@ -40,7 +42,7 @@ describe("data/journaway-senales.csv", () => {
   it("un código que no existe falla con un mensaje claro", () => {
     const roto = leerSenalesJournaway(TEXTO.replace("nota_tour,Half-day tour to the Argentinean side,IGRE01", "nota_tour,Half-day tour to the Argentinean side,IGRE99"));
     expect(() => verificarSenales(roto, catalogoJournawayDePrueba().catalogo)).toThrow(
-      "data/journaway-senales.csv, fila 15: el código IGRE99 no está en el catálogo. No se procesó el mail.",
+      "data/journaway-senales.csv, fila 16: el código IGRE99 no está en el catálogo. No se procesó el mail.",
     );
   });
 
