@@ -375,6 +375,9 @@ export async function reconocerJournaway(ficha: FichaLectura, texto: string, con
       const motivo = armado.reservas.flatMap((r) => r.motivos)[0] ?? M.ningunPaquete;
       return terminar([revision(tours, [M.codigoContradice(delMail.map((p) => p.codigo), motivo.charAt(0).toLowerCase() + motivo.slice(1))])]);
     }
+    // M3-54: más tours que códigos (67734240405: un solo FTEE05 que la IA copió a los 5 renglones): el código no
+    // dice qué son los demás. Se reconocen uno por uno (abajo) y el código tiene que salir de alguno.
+    if (tours.length > delMail.length) return terminar(await porTour(delMail));
     // Los tours no se reconocen por nombre: manda el código, sin IA.
     return terminar(
       delMail.map((producto, i) =>
@@ -388,32 +391,40 @@ export async function reconocerJournaway(ficha: FichaLectura, texto: string, con
     );
   }
 
-  // M3-30: si lo reconocido ya es un Tayka (SPAP05/06), lo que falta no se le pregunta a la IA: no es
-  // parte del paquete y se consulta con Journaway (el "Night Bus Peru" de Petzold).
-  const conocidos = tours.filter((t) => t.producto);
-  if (conocidos.length < tours.length && esTayka(conocidos, ctx)) return terminar(armarDesdeTours(tours, ctx).reservas);
+  return terminar(await porTour([]));
 
-  // Fila 2: los tours que no están por nombre, a la IA (solo en una reserva nueva).
-  const usarIA = ficha.tipo_mail.valor === "reserva_nueva" && !!ctx.proponer;
-  const noReconocidos: string[] = [];
-  for (const t of tours.filter((x) => !x.producto)) {
-    if (!usarIA) {
-      noReconocidos.push(t.nombre);
-      continue;
+  async function porTour(delMail: ProductoDeLista[]): Promise<ReservaJournaway[]> {
+    // M3-30: si lo reconocido ya es un Tayka (SPAP05/06), lo que falta no se le pregunta a la IA: no es
+    // parte del paquete y se consulta con Journaway (el "Night Bus Peru" de Petzold).
+    const conocidos = tours.filter((t) => t.producto);
+    if (conocidos.length < tours.length && esTayka(conocidos, ctx)) return armarDesdeTours(tours, ctx).reservas;
+
+    // Fila 2: los tours que no están por nombre, a la IA (solo en una reserva nueva).
+    const usarIA = ficha.tipo_mail.valor === "reserva_nueva" && !!ctx.proponer;
+    const noReconocidos: string[] = [];
+    for (const t of tours.filter((x) => !x.producto)) {
+      if (!usarIA) {
+        noReconocidos.push(t.nombre);
+        continue;
+      }
+      const r = await emparejarProducto(
+        { nombre: t.nombre, codigo: null, fechaInicio: t.fecha, fechaFin: null },
+        { agencia: AGENCIA_JOURNAWAY, catalogo: ctx.catalogo, proponer: ctx.proponer },
+      );
+      if (r.llamada) llamadas.push(r.llamada);
+      costo += r.costo;
+      if (r.producto && (r.origen !== "ia" || (r.confianza ?? 0) >= UMBRAL_CONFIANZA_PRODUCTO)) {
+        t.producto = r.producto;
+        t.origen = r.origen;
+        t.confianza = r.confianza;
+      } else noReconocidos.push(t.nombre);
     }
-    const r = await emparejarProducto(
-      { nombre: t.nombre, codigo: null, fechaInicio: t.fecha, fechaFin: null },
-      { agencia: AGENCIA_JOURNAWAY, catalogo: ctx.catalogo, proponer: ctx.proponer },
-    );
-    if (r.llamada) llamadas.push(r.llamada);
-    costo += r.costo;
-    if (r.producto && (r.origen !== "ia" || (r.confianza ?? 0) >= UMBRAL_CONFIANZA_PRODUCTO)) {
-      t.producto = r.producto;
-      t.origen = r.origen;
-      t.confianza = r.confianza;
-    } else noReconocidos.push(t.nombre);
-  }
-  if (noReconocidos.length) return terminar([revision(tours, noReconocidos.map(M.tourNoReconocido))]);
+    if (noReconocidos.length) return [revision(tours, noReconocidos.map(M.tourNoReconocido))];
 
-  return terminar(armarDesdeTours(tours, ctx).reservas);
+    const reservas = armarDesdeTours(tours, ctx).reservas;
+    const segunTours = reservas.map((r) => r.producto?.codigo).filter((c): c is string => !!c);
+    const faltan = delMail.filter((p) => !segunTours.includes(p.codigo));
+    if (faltan.length) return [revision(tours, [M.codigoContradice(delMail.map((p) => p.codigo), segunTours.join(" + "))])];
+    return reservas;
+  }
 }

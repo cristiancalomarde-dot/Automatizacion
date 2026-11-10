@@ -118,6 +118,71 @@ describe("fila 1 — nuestro código, primero", () => {
     expect(r.reservas[0].notas.join(" ")).toMatch(/El mail dice SPAP06, pero son 4 noches en San Pedro: sería SPAP05/);
   });
 
+  describe("M3-54: un código para un solo tour no se come los demás (67734240405)", () => {
+    // El mail trae FTEE05 (el Chaltén) y la IA lo copió a todos los renglones.
+    const nombres = {
+      traslado: "Shared Transfer: IGU - La Reserva Virgin Lodge",
+      cataratas: "From Puerto Iguazú: Half-day tour to the Argentine Iguazú Falls",
+      perito: "From El Calafate: Full-day tour to the Perito Moreno Glacier",
+      chalten: "From El Calafate: Full-day tour to El Chaltén",
+      esmeralda: "From Ushuaia: Hike through Tierra del Fuego to the Emerald Lagoon",
+    };
+    const variante = (): Variante => {
+      const v = original("A");
+      const renglon = (nombre: string, fecha: string) => ({ ...v.ficha.productos[0], nombre, codigo: "FTEE05", fecha_inicio: fecha, fecha_fin: null, punto_recogida: null });
+      return {
+        texto: `${v.texto}\nFTEE05`,
+        ficha: {
+          ...v.ficha,
+          productos: [
+            renglon(nombres.cataratas, "2026-12-08"),
+            renglon(nombres.perito, "2026-12-10"),
+            renglon(nombres.chalten, "2026-12-12"),
+            renglon(nombres.esmeralda, "2026-12-16"),
+            { ...renglon(nombres.traslado, "2026-12-07"), codigo: null },
+          ],
+        },
+      };
+    };
+    const porCercania: Record<string, string> = {
+      [nombres.traslado]: "IGRT01",
+      [nombres.perito]: "FTEE01",
+      [nombres.chalten]: "FTEE05",
+      [nombres.esmeralda]: "USHE07",
+    };
+    const iaQueSabe = () =>
+      vi.fn<ProponerProducto>(async ({ pedido }) => ({
+        resultado: { tipo: "respuesta", codigo: porCercania[pedido.nombre] ?? null, confianza: 0.95, motivo: "parecido" },
+        llamada: null,
+        costo: 0,
+      }));
+
+    it("cada tour sale con su producto: por nombre o por cercanía (la IA)", async () => {
+      const ia = iaQueSabe();
+      const r = await reconocer(variante(), ia);
+      expect(ia).toHaveBeenCalledTimes(4);
+      expect(codigos(r)).toEqual(["IGRE01", "FTEE01", "FTEE05", "USHE07", "IGRT01"]);
+      expect(r.reservas.flatMap((x) => x.motivos)).toEqual([]);
+    });
+
+    it("si la IA no reconoce uno, va a revisión: nunca todo como FTEE05", async () => {
+      const r = await reconocer(variante(), iaQueNoSabe());
+      expect(codigos(r)).toEqual([null]);
+      expect(r.reservas[0].motivos).toContain(`No se reconoce el tour '${nombres.perito}'`);
+    });
+
+    it("si el código del mail no sale de ningún tour, va a revisión", async () => {
+      const ia = vi.fn<ProponerProducto>(async ({ pedido }) => ({
+        resultado: { tipo: "respuesta", codigo: pedido.nombre === nombres.chalten ? "FTEE01" : (porCercania[pedido.nombre] ?? null), confianza: 0.95, motivo: "parecido" },
+        llamada: null,
+        costo: 0,
+      }));
+      const r = await reconocer(variante(), ia);
+      expect(codigos(r)).toEqual([null]);
+      expect(r.reservas[0].motivos[0]).toMatch(/El mail dice FTEE05, pero los tours dan IGRE01 \+ FTEE01 \+ FTEE01 \+ USHE07 \+ IGRT01/);
+    });
+  });
+
   it("un vuelo (LA156) o un registro (HRB 203540) no son códigos", async () => {
     const r = await reconocer(original("C"));
     expect(r.reservas.every((x) => x.origen !== "codigo")).toBe(true);
