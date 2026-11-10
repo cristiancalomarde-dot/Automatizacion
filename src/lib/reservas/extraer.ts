@@ -31,7 +31,8 @@ export type { MailParaLeer } from "./preparar-mail";
 /** v4 (2026-10-22, M3-13): el formato de Adventure360, "TBC" queda vacío y las elecciones del pasajero van en pedidos especiales. */
 /** v5 (2026-10-28, M3-30): las imágenes del mail son parte del mail (la marca [imagen N] dice dónde estaban). */
 /** v6 (2026-11-01, M3-43): el pasaporte y el teléfono de cada pasajero, solo si están escritos en el cuerpo del mail. */
-export const VERSION_INSTRUCCIONES = "lectura-mail.v6";
+/** v7 (2026-11-10, M3-53): Journaway, "Please book the following hotels" los pide HI Travel; "List of all hotels" son los de la agencia. */
+export const VERSION_INSTRUCCIONES = "lectura-mail.v7";
 export type ClienteMensajesIA = Pick<Anthropic, "messages">;
 
 let instruccionesCache: string | null = null;

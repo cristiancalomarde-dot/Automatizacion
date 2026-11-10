@@ -177,6 +177,26 @@ describe("mail D (SPAP05)", () => {
     for (const h of ["Hub Providencia", "Fauna", "MET Hotel", "Sonesta", "Night Bus Peru", "Viza", "Saska"]) expect(aPedir).not.toContain(h);
   });
 
+  it("M3-53: los Tayka y el bus Uyuni – La Paz nunca son hoteles de la agencia, aunque la IA los ponga ahí (mail 66925083976)", async () => {
+    const v = original("D");
+    const hotel = (nombre: string, entrada: string, salida: string) => ({ nombre, fecha_entrada: entrada, fecha_salida: salida, confianza: 0.95 });
+    const ficha = {
+      ...v.ficha,
+      hoteles_agencia: [
+        hotel("Tayka del Desierto Hotel", "2026-10-15", "2026-10-16"),
+        hotel("Tayka del Sal Hotel", "2026-10-16", "2026-10-17"),
+        hotel("Night Bus Uyuni – La Paz", "2026-10-17", "2026-10-18"),
+        hotel("Hotel Cumbres San Pedro de Atacama", "2026-10-11", "2026-10-15"),
+        hotel("Night Bus Peru", "2026-10-20", "2026-10-21"),
+      ],
+    };
+    const { armadas } = await armar({ texto: v.texto, ficha });
+    expect(armadas[0].entrada.hotelesAgencia).toEqual([
+      { nombre: "Hotel Cumbres San Pedro de Atacama", desde: "2026-10-11", hasta: "2026-10-15" },
+      { nombre: "Night Bus Peru", desde: "2026-10-20", hasta: "2026-10-21" },
+    ]);
+  });
+
   it("fila 14: el aviso de los pasaportes, sin mandarlos a la IA", async () => {
     const { armadas } = await de("D");
     expect(armadas[0].entrada.notas).toContain("Trae adjuntos: pasaportes (no se leen)");

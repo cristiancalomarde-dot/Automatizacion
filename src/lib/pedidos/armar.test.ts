@@ -664,6 +664,19 @@ describe("armarPedidos — M3-38: el traslado San Pedro → Hito Cajón va dentr
     expect(lineaPickUp(p.cuerpo)).toBe("Pick up: Hotel Don Raul");
   });
 
+  it("M3-53: con el hotel de San Pedro de la agencia (66925083976, Hotel Cumbres), la excursión y el Overland lo dicen y los Tayka se piden", () => {
+    const cumbres = { nombre: "Hotel Cumbres San Pedro de Atacama", desde: "2027-05-22", hasta: "2027-05-26" };
+    const r = armarSpap("SPAP05", { pickUpOverland: null, pickUpSanPedro: null, hotelesAgencia: [cumbres] });
+    const p = delOverland(r);
+    expect(lineaPickUp(p.cuerpo)).toBe("Pick up: Hotel Cumbres San Pedro de Atacama");
+    expect(p.cuerpo).toContain("Alojamiento: Tayka del Desierto");
+    expect(p.cuerpo).toContain("Alojamiento: Tayka de Sal");
+    const tatio = r.pedidos.find((x) => x.cuerpo.includes("El Tatio"))!;
+    expect(tatio.cuerpo).toContain("Pick up y drop off: Hotel Cumbres San Pedro de Atacama");
+    expect(tatio.cuerpo).not.toContain("Les pasamos el alojamiento para el pick up");
+    expect(JSON.stringify(r)).not.toMatch(/lo reserva la agencia/);
+  });
+
   it("M3-41 #2/#4: Petzold (el mail no trae el hotel de San Pedro) → a confirmar (sin nombrar a la agencia, M3-42), con el pendiente y sin nombre de hotel", () => {
     const casos: ConSanPedro[] = [{}, { pickUpOverland: "Tayka del Desierto Hotel" }, { pickUpOverland: "Tayka del Desierto Hotel", pickUpSanPedro: null }];
     for (const con of casos) {

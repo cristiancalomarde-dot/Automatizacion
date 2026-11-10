@@ -172,7 +172,12 @@ export async function armarJournaway(
 
   // Lo mismo para todas las reservas del mail.
   const tripNumber = cuerpo.tripNumber ?? /\btrip\s*:?\s*(\d+)/i.exec(ficha.numero_reserva.valor ?? "")?.[1] ?? null;
-  const hotelesAgencia: HotelDeLaAgencia[] = ficha.hoteles_agencia.map((h) => ({ nombre: h.nombre, desde: h.fecha_entrada, hasta: h.fecha_salida }));
+  // M3-53: un Tayka o el bus Uyuni – La Paz es parte del Overland (lo pide HI Travel), aunque la IA lo ponga como hotel de la agencia.
+  const senales = deps.journaway.senales;
+  const delOverland = (nombre: string) => [...senales.hotelesTayka, ...senales.partesDe.map((p) => p.clave)].some((c) => normal(nombre).includes(c));
+  const hotelesAgencia: HotelDeLaAgencia[] = ficha.hoteles_agencia
+    .filter((h) => !delOverland(h.nombre))
+    .map((h) => ({ nombre: h.nombre, desde: h.fecha_entrada, hasta: h.fecha_salida }));
   const notasDelMail: string[] = [];
   if (ficha.todos_hoteles_agencia.valor && hotelesAgencia.length === 0) notasDelMail.push(N.todosLosHoteles);
   if (cuerpo.pasaportes || ficha.adjuntos_no_leidos.length) notasDelMail.push(N.pasaportes);
