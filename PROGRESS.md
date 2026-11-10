@@ -3,6 +3,12 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
 
 # Dónde retomar
 
+- **2026-11-10: M3-52 cerrada (Journaway, Tayka = SPAP05).** Código en `0ad733d`. Con OK del owner: `importar:journaway`
+  (3 códigos nuevos, nada más tocado) y relectura del mail 17080 (US$ 0.03 de IA). La reserva 66925083976 vieja
+  (`ffb7faeb-…`) quedó descartada con las explicaciones del owner en su historial; la nueva (`bfa479c1-…`) entró SPAP05,
+  recibida, sin motivos. El selector de producto para Journaway queda para después (JW va a mandar nuestros códigos).
+  Sigue abierto lo de M3-51 (vuelos y pedido especial de BR18 en DK1598967).
+
 - **2026-11-07: BR20 asignado a DK1598967 por el owner; ajustes publicados (`436dcea`) y cargados con su OK.** En BR20 se
   anula el opcional "Transffers Campo Grande - Bonito - Campo Grande" de COMPBR06 (se llega a Bonito en bus; a Pantanal y
   Campo Grande lleva Agmar). Los pedidos de una reserva salen por su primera fecha (a igual fecha, el orden del armado).
