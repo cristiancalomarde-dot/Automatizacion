@@ -328,8 +328,13 @@ export async function reconocerJournaway(ficha: FichaLectura, texto: string, con
     const s = ctx.senales.partesDe.find((x) => normal(nombre).includes(x.clave));
     return s ? (porCodigo.get(s.codigo) ?? null) : null;
   };
+  // M3-54: "Shared Transfer: IGU - <el hotel>": el comienzo dice el producto.
+  const empiezaCon = (nombre: string) => {
+    const s = ctx.senales.empiezaCon.find((x) => normal(nombre).startsWith(x.clave));
+    return s ? (porCodigo.get(s.codigo) ?? null) : null;
+  };
   const tours: TourJournaway[] = unaFilaPorServicio(ficha.productos, ficha.pax.valor).map((p, indice) => {
-    const producto = nombres.get(limpiarNombreJournaway(p.nombre)) ?? parteDe(p.nombre);
+    const producto = nombres.get(limpiarNombreJournaway(p.nombre)) ?? parteDe(p.nombre) ?? empiezaCon(p.nombre);
     return {
       indice,
       nombre: p.nombre,

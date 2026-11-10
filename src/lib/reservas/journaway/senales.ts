@@ -15,6 +15,8 @@ import type { CatalogoParaEmparejar } from "../emparejar/catalogo";
  * - `nota_tour`: una nota para la reserva cuando el tour dice ese texto y es ese producto.
  * - `parte_de` (M3-30): un renglón del mail cuyo nombre dice ese texto es parte de ese producto
  *   (los hoteles Tayka y el bus nocturno Uyuni - La Paz son parte del Overland): no se pide aparte.
+ * - `empieza_con` (M3-54): un renglón cuyo nombre empieza con ese texto es ese producto; lo que sigue
+ *   cambia en cada mail ("Shared Transfer: IGU - <el hotel>" es IGRT01).
  *
  * Solo lee y valida. Un código que no está en el catálogo frena con un
  * mensaje claro antes de procesar el mail (`verificarSenales`).
@@ -23,7 +25,7 @@ import type { CatalogoParaEmparejar } from "../emparejar/catalogo";
 export const ARCHIVO_SENALES_JOURNAWAY = "journaway-senales.csv";
 const RUTA = `data/${ARCHIVO_SENALES_JOURNAWAY}`;
 
-const SENALES = ["hotel_tayka", "dia_overland", "familia_tayka", "titulo_noches", "aeropuerto", "nota_tour", "parte_de"] as const;
+const SENALES = ["hotel_tayka", "dia_overland", "familia_tayka", "titulo_noches", "aeropuerto", "nota_tour", "parte_de", "empieza_con"] as const;
 type Senal = (typeof SENALES)[number];
 
 export interface SenalesJournaway {
@@ -37,6 +39,8 @@ export interface SenalesJournaway {
   notas: Array<{ clave: string; codigo: string; nota: string }>;
   /** M3-30: `clave` normalizada (sin acentos, en minúscula). */
   partesDe: Array<{ clave: string; codigo: string }>;
+  /** M3-54: `clave` normalizada (sin acentos, en minúscula). */
+  empiezaCon: Array<{ clave: string; codigo: string }>;
   /** Fila del CSV de cada código, para el mensaje de error. */
   filas: Array<{ fila: number; codigos: string[] }>;
 }
@@ -60,6 +64,7 @@ export function leerSenalesJournaway(texto: string): SenalesJournaway {
     aeropuertos: [],
     notas: [],
     partesDe: [],
+    empiezaCon: [],
     filas: [],
   };
   leerCsv(texto).forEach((r, i) => {
@@ -104,6 +109,9 @@ export function leerSenalesJournaway(texto: string): SenalesJournaway {
         break;
       case "parte_de":
         s.partesDe.push({ clave: normal(valor), codigo: unCodigo() });
+        break;
+      case "empieza_con":
+        s.empiezaCon.push({ clave: normal(valor), codigo: unCodigo() });
         break;
     }
   });

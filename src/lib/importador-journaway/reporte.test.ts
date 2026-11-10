@@ -63,7 +63,8 @@ const RAIZ = resolve(__dirname, "..", "..", "..");
     expect(seccion("Lo que se hace a mano")).toMatch(/Transvip.*SPAT01/);
     const nombres = seccion("Los nombres de Journaway");
     expect(nombres).toContain("San Pedro de Atacama: Tour through the Moon Valley");
-    expect(nombres).toMatch(/Sin ningún nombre de mail todavía[\s\S]*FTEE01/);
+    // FTEE01 ya tiene uno (M3-54); FTEE02 todavía no.
+    expect(nombres).toMatch(/Sin ningún nombre de mail todavía[\s\S]*FTEE02/);
     expect(nombres.split("Sin ningún nombre de mail todavía")[1]).not.toContain("SPAE03");
   });
 

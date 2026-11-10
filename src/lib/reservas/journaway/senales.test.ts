@@ -33,6 +33,8 @@ describe("data/journaway-senales.csv", () => {
       { clave: "tayka de sal", codigo: "UYUO01" },
       { clave: "night bus uyuni", codigo: "UYUO01" },
     ]);
+    // M3-54: el traslado de Iguazú lleva el hotel al final (67734240405).
+    expect(s.empiezaCon).toEqual([{ clave: "shared transfer: igu -", codigo: "IGRT01" }]);
   });
 
   it("todos sus códigos están en el catálogo", () => {
