@@ -85,7 +85,7 @@ const porAntiguedad = (a: ReservaExistente, b: ReservaExistente) => a.created_at
 
 /**
  * Filas 3, 6, 7, 8 y 10. `existentes` puede traer de todo: acá se filtra por
- * agencia y por prueba/real, así que nunca se cruzan.
+ * agencia, por prueba/real y sin las descartadas (M3-55), así que nunca se cruzan.
  */
 export function decidirPedido(
   pedido: PedidoIntercambio,
@@ -93,7 +93,8 @@ export function decidirPedido(
   opciones: { ahora: Date; diasMarcaBlanda?: number },
 ): DecisionIntercambio {
   const mias = existentes
-    .filter((r) => r.agencia === pedido.agencia && r.de_prueba === pedido.dePrueba)
+    // M3-55: una descartada ya no es la reserva; no recibe mails ni marca duplicadas.
+    .filter((r) => r.agencia === pedido.agencia && r.de_prueba === pedido.dePrueba && r.estado !== "descartada")
     .sort(porAntiguedad);
   const misma = pedido.bookingId ? mias.filter((r) => r.booking_id === pedido.bookingId) : [];
 

@@ -170,6 +170,23 @@ describe("fila 10: las de prueba y las reales no se cruzan", () => {
   });
 });
 
+describe("M3-55: las descartadas no cuentan", () => {
+  // 66925083976: dos relecturas dejaron 2 descartadas; el "RE:" de Journaway pidiendo confirmación iba a la vigente.
+  const jw = (c: Partial<ReservaExistente> = {}) => reserva({ agencia: "Journaway", booking_id: "66925083976", ...c });
+  const respuesta = pedido({ agencia: "Journaway", bookingId: "66925083976", productoId: null, claveAgencia: null, fechaInicio: null, pax: null });
+  it("Journaway con 2 descartadas y 1 vigente → se suma a la vigente, no 'no se sabe a cuál de las 3'", () => {
+    const vigente = jw();
+    const d = decidir(respuesta, [jw({ estado: "descartada" }), jw({ estado: "descartada" }), vigente]);
+    expect(d).toEqual({ tipo: "sumar_a", reservaId: vigente.id });
+  });
+  it("solo una descartada con ese número → reserva nueva, sin enlazar a la descartada", () => {
+    expect(decidir(respuesta, [jw({ estado: "descartada" })])).toEqual({ tipo: "nueva", mismaReferencia: [] });
+  });
+  it("una descartada parecida no marca 'posible duplicada'", () => {
+    expect(decidir(pedido({ bookingId: "DK9999999" }), [reserva({ estado: "descartada" })]).tipo).toBe("nueva");
+  });
+});
+
 // --- completar sin pisar ---------------------------------------------------------------
 
 const vuelo = (v: Partial<VueloIA>): VueloIA => ({

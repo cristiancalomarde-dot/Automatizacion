@@ -3,6 +3,18 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
 
 # Dónde retomar
 
+- **2026-11-11: M3-55 cerrada (las descartadas no reciben mails).** El "RE:" de Journaway de 66925083976 (Sara pregunta
+  si los hoteles están confirmados) contó las 2 descartadas, dijo "no se sabe a cuál de las 3" y creó una reserva vacía
+  (`50fdde78-…`) que, al resolver los motivos, quedó "recibida". Con OK del owner pasó a descartada; ahora un mail así va
+  a la única vigente. Suite: src 2421/2421; tests/ 100 archivos en verde. 67734240405: el owner confirmó que está bien
+  y los servicios ya están pedidos.
+  - **Sigue: ARBR10** (TourRadar 1396568, `a2bf2e08-…`, para revisión, 1 pax, 23/1/2027, Hostel Shared Room). El owner
+    dejó el Word en `Insumos/ARBR10 Buenos Aires to Rio with Paraty and Ilha Grande … .docx`: días 1-11 como ARBR23
+    (sin el traslado de Río), días 12-17 como BR03 (Paraty 2, Ilha Grande 3, al aeropuerto de Río). Investigar con el
+    Excel, un bloque de preguntas, en seco y carga con OK.
+  - **URL con hitravel:** el owner tiene que elegir el nombre (propuesto `reservas.hitravel.com.ar`); después, CNAME en
+    Hostmar y la URL nueva en Supabase.
+
 - **2026-11-10 (noche): M3-54 cerrada (Journaway, un código para un solo tour).** `ac97736` y `0a829b6`. 67734240405
   traía solo FTEE05 y entró toda como FTEE05; ahora cada tour se reconoce por nombre, por cómo empieza
   (`empieza_con`: "Shared Transfer: IGU - …" = IGRT01) o por la IA. Nombres del Perito Moreno (FTEE01) y el Chaltén
