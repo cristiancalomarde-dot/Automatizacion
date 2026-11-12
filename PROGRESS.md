@@ -3,6 +3,12 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
 
 # Dónde retomar
 
+- **2026-11-12: 66925083976 pasó a SPAP06** (JW lo confirmó: 5 noches en San Pedro con las 4 actividades del paquete).
+  Con OK del owner (el script lo corrió él; el clasificador bloquea las escrituras en la real): `0fb1b57e-…` con SPAP06,
+  Hito Cajón el 19, Overland 19-22, fin el 22; pedidos rearmados (Horizonte Atacama con las 4 actividades del 14 al 17;
+  Imperio Inca con los Tayka 19 y 20 y el bus el 21) + 1 tarea. Falta que el owner los revise y envíe. M3-55 (`1e12968`)
+  está en el clon sin publicar: el push también lo bloquea el clasificador.
+
 - **2026-11-11: M3-55 cerrada (las descartadas no reciben mails).** El "RE:" de Journaway de 66925083976 (Sara pregunta
   si los hoteles están confirmados) contó las 2 descartadas, dijo "no se sabe a cuál de las 3" y creó una reserva vacía
   (`50fdde78-…`) que, al resolver los motivos, quedó "recibida". Con OK del owner pasó a descartada; ahora un mail así va
