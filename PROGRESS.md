@@ -18,6 +18,13 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
     dejó el Word en `Insumos/ARBR10 Buenos Aires to Rio with Paraty and Ilha Grande … .docx`: días 1-11 como ARBR23
     (sin el traslado de Río), días 12-17 como BR03 (Paraty 2, Ilha Grande 3, al aeropuerto de Río). Investigar con el
     Excel, un bloque de preguntas, en seco y carga con OK.
+    **2026-11-12: preguntas hechas, sin respuesta (el owner tuvo que reiniciar).** ARBR10 NO está en RutasenBus (hoja
+    "Tours 2027"). 1) ¿el owner agrega el bloque (como ARBR23: `ARBR10` / `OD018 · OD010A · OD010B · OD032 · COMPBR02
+    · COMPBR11` / precios netos) o se carga solo desde el Word (pieza nueva)? 2) Iguazú 1 noche Puerto Iguazú + 2 Foz;
+    traslados (terminal Pto. Iguazú, a Foz el día 6, Rodoviaria Foz el día 8) ¿Cuenca del Plata? 3) Sin City Tour ni
+    Tango en BUE, sin Big Dude ni traslado de llegada en Río, sin traslado Río → aeropuerto (sale de Ilha Grande con
+    Paraty Tours, como BR03). 4) Solo Hostel (Dorm/DBL/SGL). 5) Blackouts como ARBR23 (llega a Río el día 9). Nombre
+    TourRadar "Buenos Aires to Rio with Paraty and Ilha Grande (17 Days)" → ARBR10.
   - **URL con hitravel:** el owner tiene que elegir el nombre (propuesto `reservas.hitravel.com.ar`); después, CNAME en
     Hostmar y la URL nueva en Supabase.
 
