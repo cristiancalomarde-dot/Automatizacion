@@ -3,6 +3,14 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
 
 # Dónde retomar
 
+- **2026-11-13: M3-56 publicada (el Overland se pide siempre en español; el guía en inglés es opcional aparte).** El owner
+  rearma los pedidos de DK1597513 antes de enviar el de Imperio Inca. Subdominio elegido: `reservas.hitravel.com.ar`
+  (pasos: dominio en Vercel, CNAME en Hostmar, URL en Supabase; el owner necesita ayuda paso a paso, Hostmar le es ajeno).
+  - **ARBR10, respuestas parciales del owner:** validez desde 1/7/2026; Selina Paraty cerró (Paraty como BR03); Ilha
+    Grande SIN desayuno (choca con DECISIONS de BR03: Holandes da desayuno; preguntado si cambia también BR03). El Excel
+    `Insumos/ARBR10-BUE to Rio … 2027.xlsx` es la cotización JYSK de 2022 (JY1163672), no un bloque de RutasenBus.
+    Siguen abiertas las preguntas 1-5 de abajo (la 1: agrega el bloque en "Tours 2027" o pieza nueva desde el Word).
+
 - **2026-11-12: 66925083976 pasó a SPAP06** (JW lo confirmó: 5 noches en San Pedro con las 4 actividades del paquete).
   Con OK del owner (el script lo corrió él; el clasificador bloquea las escrituras en la real): `0fb1b57e-…` con SPAP06,
   Hito Cajón el 19, Overland 19-22, fin el 22; pedidos rearmados (Horizonte Atacama con las 4 actividades del 14 al 17;
