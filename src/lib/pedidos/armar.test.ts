@@ -579,6 +579,20 @@ describe("armarPedidos — Journaway: excursiones con entrada (owner, 2026-10-19
     const p = ok(armarPedidos(journaway(igre01), conEntradas(catalogoCon([igre01])), plantilla)).pedidos[0];
     expect(p.cuerpo).not.toMatch(/entradas/i);
   });
+
+  // M3-56 (owner, 2026-11-13, DK1597513): el Overland, regular o privado, nunca es en inglés.
+  it("M3-56: el Overland regular sin 'habla hispana' se pide en español", () => {
+    const uyuo = producto("prod-UYUO02", "UYUO02", [servicio({ productoId: "prod-UYUO02", tipo: "excursion", descripcion: "Overland San Pedro de Atacama to Uyuni, regular, dorm", bookingSupplier: P.imperio })], { destino: "UYU" });
+    const p = ok(armarPedidos(journaway(uyuo), conEntradas(catalogoCon([uyuo])), plantilla)).pedidos[0];
+    expect(p.cuerpo).toContain("Idioma: español");
+    expect(p.cuerpo).not.toContain("Idioma: inglés");
+  });
+
+  it("M3-56: una excursión común sin señal sigue en inglés", () => {
+    const spae09 = excursionSuelta("SPAE09", "Valle de la Luna Tour", "SPA");
+    const p = ok(armarPedidos(journaway(spae09), conEntradas(catalogoCon([spae09])), plantilla)).pedidos[0];
+    expect(p.cuerpo).toContain("Idioma: inglés");
+  });
 });
 
 describe("armarPedidos — M3-38: el traslado San Pedro → Hito Cajón va dentro del Overland", () => {

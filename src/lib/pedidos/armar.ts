@@ -834,7 +834,8 @@ class Armado {
     const incluye = (s.descripcion ?? "").match(INCLUYE_TRASLADOS);
     if (incluye) return this.paqueteConTraslados(b, s, nombre, incluye[1], regular, `${s.descripcion ?? ""} ${nombre}`);
 
-    const idioma = EN_ESPANOL.test(s.descripcion ?? "") ? "español" : "inglés";
+    // M3-56 (owner, 2026-11-13): el Overland, regular o privado, nunca es en inglés (el guía en inglés va aparte).
+    const idioma = EN_ESPANOL.test(s.descripcion ?? "") || esOverland(`${nombre} ${s.descripcion ?? ""}`) ? "español" : "inglés";
     const { tx, idioma: id } = this;
     const renglones = [`${tx.excursion}: ${nombre}`];
     const avisos: string[] = [];
