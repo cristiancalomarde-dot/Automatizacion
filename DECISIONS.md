@@ -6,6 +6,11 @@ Formato mínimo por entrada: qué decisión, por qué, alternativa rechazada, co
 
 # Decisiones de diseño
 
+## 2026-11-17: El Overland Tayka (UYUO01) termina el día 3; el bus va aparte esa noche
+- **Decisión:** la parte del Overland y el pedido a Imperio Inca dicen "Hasta" el día 3 (el cruce del salar). El bus nocturno Uyuni → La Paz sale esa misma noche y figura como renglón aparte con su fecha; no se estira el Overland hasta que llega el bus.
+- **Razón:** lo confirmó el owner ("el día 3 del Overland, cuando hacen el cruce del salar, se toman el bus de UYU a LPB, de noche"). Así salían ya Petzold y las demás.
+- **Alternativa rechazada:** que el Overland llegue hasta el día en que el bus llega a La Paz.
+
 ## 2026-11-03: BR03 y BR04 (M3-48): orden de hostels, Che Lagarto como tarea y desayuno
 - **Decisión:** Paraty se pide Che Lagarto → Casa do Rio → Casa Viva → Agatha, e Ilha Grande Holandes → Che Lagarto. Che Lagarto sale como tarea "Reservar a mano", sin mail. Casa do Rio, Casa Viva y Hostel Agatha van a `data/alojamientos-sin-desayuno.csv`; Che Lagarto y Holandes dan desayuno.
 - **Razón:** lo decidió el owner. Che Lagarto se reserva en su sistema online y no tiene casilla. El orden de Paraty se indica con filas en `hostel-segun-habitacion.csv`, sin tocar el Excel y sin código nuevo.

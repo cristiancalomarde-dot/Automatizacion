@@ -7,7 +7,7 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
   producto (JW cambió los nombres) y el pedido a Imperio Inca salió con 4 Overland. Corregida a mano a pedido del owner
   (SPAP05, partes del paquete, Overland 27→30, pick up Don Raúl) y pedidos rearmados: el owner los revisó y envió.
   Ahora en un mail Tayka los tours se reconocen por palabra clave (`clave_tayka`) y el paquete queda como producto aunque
-  haya motivos. Abierto menor: la parte del Overland va hasta el día 3 (como Petzold), no hasta que llega el bus.
+  haya motivos. El Overland va hasta el día 3 y el bus va aparte esa noche (owner, DECISIONS).
 
 - **2026-11-13: M3-56 publicada (el Overland se pide siempre en español; el guía en inglés es opcional aparte).** El owner
   rearma los pedidos de DK1597513 antes de enviar el de Imperio Inca. Subdominio elegido: `reservas.hitravel.com.ar`
