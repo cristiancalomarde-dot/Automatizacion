@@ -15,6 +15,7 @@ import {
   type Variante,
 } from "../../../../tests/fixtures/journaway/fichas";
 import { catalogoJournawayDePrueba } from "../../../../tests/fixtures/journaway/catalogo";
+import { armarJournaway } from "./armar";
 import { reconocerJournaway, type ContextoJournaway } from "./reconocer";
 import { leerSenalesJournaway } from "./senales";
 
@@ -257,14 +258,14 @@ describe("fila 6 — los hoteles Tayka llevan a SPAP05 o SPAP06", () => {
 
   it("sin Siloli: revisión con 'falta el día 2 del Overland'", async () => {
     const r = await reconocer(sinTour(original("D"), "Siloli"));
-    expect(r.reservas[0].producto).toBeNull();
+    expect(r.reservas[0].producto?.codigo).toBe("SPAP05"); // M3-57: un Tayka nunca queda sin producto; los motivos siguen
     expect(r.reservas[0].motivos).toContain("Falta el día 2 del Overland");
   });
 
-  it("sin el Tatio: revisión con 'falta … Tatio para SPAP05', y no se elige SPAP05 igual", async () => {
+  it("sin el Tatio: revisión con 'falta … Tatio para SPAP05'; M3-57: con SPAP05 igual (un Tayka nunca queda sin producto)", async () => {
     const r = await reconocer(sinTour(original("D"), "Tatio"));
     expect(r.reservas).toHaveLength(1);
-    expect(r.reservas[0].producto).toBeNull();
+    expect(r.reservas[0].producto?.codigo).toBe("SPAP05"); // M3-57: un Tayka nunca queda sin producto; los motivos siguen
     expect(r.reservas[0].motivos.join(" ")).toMatch(/Falta .*Tatio.* para SPAP05/);
     expect(r.reservas[0].sugerencia?.codigo).toBe("SPAP05");
   });
@@ -289,7 +290,7 @@ describe("fila 7 — el título como tercera señal", () => {
     for (const t of ["Astronomy", "Moon Valley", "Quepiaco", "Tatio", "LA148"]) v = sinTour(v, t);
     v = { ...v, ficha: { ...v.ficha, vuelos: v.ficha.vuelos.filter((x) => x.numero !== "LA148") } };
     const r = await reconocer(v);
-    expect(r.reservas[0].producto).toBeNull();
+    expect(r.reservas[0].producto?.codigo).toBe("SPAP05"); // M3-57: un Tayka nunca queda sin producto; los motivos siguen
     expect(r.reservas[0].motivos.join(" ")).toMatch(/Falta .* para SPAP05/);
   });
 });
@@ -312,12 +313,143 @@ describe("M3-52 — Tayka: SPAP05 salvo que las fechas digan otra cosa (owner 20
     expect(r.reservas[0].motivos).toEqual([]);
   });
 
-  it("sin el día 1 del Overland, las noches no se cuentan desde los otros días: se sugiere SPAP05, no SPAP06", async () => {
+  it("sin el día 1 del Overland, las noches no se cuentan desde los otros días: SPAP05, no SPAP06 (M3-57: con producto)", async () => {
     // Como en 66925083976: Siloli corrido un día; contado desde ahí daba 5 noches (SPAP06).
     const r = await reconocer(overlandCorrido(sinTour(original("D"), "Sol de Mañana"), 1));
-    expect(r.reservas[0].producto).toBeNull();
+    expect(r.reservas[0].producto?.codigo).toBe("SPAP05"); // M3-57: un Tayka nunca queda sin producto; los motivos siguen
     expect(r.reservas[0].sugerencia?.codigo).toBe("SPAP05");
     expect(r.reservas[0].motivos).toContain("Falta el día 1 del Overland");
     expect(r.reservas[0].motivos.join(" ")).not.toMatch(/SPAP06|noches/);
+  });
+});
+
+// --- M3-57: un Overland en Taykas es siempre SPAP05 o SPAP06 (owner 2026-11-17) ---------------------
+
+/** Los 12 renglones de 68032580478 (`datos_extraidos.productos`): 2 pax, LA392 llega a Calama el 23.01.2027. */
+const R68 = {
+  desierto: "Tayka del Desierto Hotel",
+  sal: "Tayka del Sal Hotel",
+  bus: "Night Bus Uyuni - La Paz",
+  astronomy: "San Pedro de Atacama: Astronomy Tour in the Atacama Desert",
+  moon: "San Pedro de Atacama: Moon Valley Tour",
+  quepiaco: "San Pedro de Atacama: Quepiaco River, Monjes de la Pacana & Salt Flats Tour",
+  tatio: "San Pedro de Atacama: El Tatio Geysers Tour",
+  dia1: "From San Pedro: Sol de Mañana Geysers, Licancabur Volcano & Laguna Colorada Tour",
+  dia2: "Siloli: Full-Day Tour to the Siloli Desert & Black Lagoon",
+  dia3: "Salar de Uyuni: Full-Day Tour to Uyuni",
+  traslado: "Shared Transport: CJC - Accom. San Pedro de Atacama",
+} as const;
+
+function renglon68(nombre: string, inicio: string, fin: string | null = null) {
+  return { nombre, codigo: null, fecha_inicio: inicio, fecha_fin: fin, noches: null, habitacion: null, punto_recogida: null, opcionales: [], confianza: 1 };
+}
+
+/** La ficha de 68032580478; `corrido` mueve los 3 días del Overland (y sus noches) un día. */
+function ficha68(corrido = 0, sinRenglon: string | null = null) {
+  const d = (dia: number) => `2027-01-${String(dia + corrido).padStart(2, "0")}`;
+  const productos = [
+    renglon68(R68.desierto, d(27), d(28)),
+    renglon68(R68.sal, d(28), d(29)),
+    renglon68(R68.bus, d(29), d(30)),
+    renglon68(R68.astronomy, "2027-01-23"),
+    renglon68(R68.moon, "2027-01-24"),
+    renglon68(R68.quepiaco, "2027-01-25"),
+    renglon68(R68.tatio, "2027-01-26"),
+    renglon68(R68.dia1, d(27)),
+    renglon68(R68.dia2, d(28)),
+    renglon68(R68.dia3, d(29)),
+    renglon68(R68.traslado, "2027-01-23"),
+    renglon68(R68.traslado, "2027-01-23"),
+  ].filter((p) => p.nombre !== sinRenglon);
+  const base = casoJournaway("D").ficha;
+  return {
+    ...base,
+    titulo_paquete: { valor: null, confianza: 0 },
+    productos,
+    pax: { valor: 2, confianza: 1 },
+    vuelos: [
+      { numero: "LA392", aerolinea: "LATAM Airlines Group", origen: "SCL", destino: "CJC", fecha_salida: "2027-01-23", hora_salida: "07:00", fecha_llegada: "2027-01-23", hora_llegada: "09:08", confianza: 1 },
+    ],
+    hoteles_agencia: [
+      { nombre: "Don Raúl", fecha_entrada: "2027-01-23", fecha_salida: "2027-01-27", confianza: 1 },
+      { nombre: "MET Hotel", fecha_entrada: "2027-01-30", fecha_salida: "2027-01-31", confianza: 1 },
+    ],
+  };
+}
+
+describe("M3-57 — en un mail Tayka cada tour se reconoce por su palabra clave (68032580478)", () => {
+  it("fila 1: los 12 renglones dan SPAP05 sin motivos y sin IA; cada tour con su código", async () => {
+    const ia = iaQueNoSabe();
+    const r = await reconocerJournaway(ficha68(), "", contexto(ia));
+    expect(ia).not.toHaveBeenCalled();
+    expect(codigos(r)).toEqual(["SPAP05"]);
+    const [reserva] = r.reservas;
+    expect(reserva.motivos).toEqual([]);
+    expect(reserva.paquete?.codigo).toBe("SPAP05");
+    const codigoDe = (nombre: string) => reserva.tours.find((t) => t.nombre === nombre)?.producto?.codigo;
+    expect([R68.astronomy, R68.moon, R68.quepiaco, R68.tatio, R68.dia1, R68.dia2, R68.dia3].map(codigoDe)).toEqual([
+      "SPAE01",
+      "SPAE03",
+      "SPAE05",
+      "SPAE04",
+      "UYUO01",
+      "UYUO01",
+      "UYUO01",
+    ]);
+  });
+
+  it("fila 1: las 7 partes del paquete con sus fechas (un solo Overland)", async () => {
+    const { catalogo, journaway, detalle } = catalogoJournawayDePrueba();
+    const ficha = ficha68();
+    const { piezas } = await armarJournaway(ficha, { catalogo, journaway: { catalogo: journaway, senales }, detalle }, null);
+    expect(piezas).toHaveLength(1);
+    const porId = new Map(catalogo.productos.map((x) => [x.id, x.codigo]));
+    expect(piezas[0].componentes.map((c) => [porId.get(c.productoId!), c.fechaInicio, c.fechaFin])).toEqual([
+      ["SPAT01", "2027-01-23", "2027-01-23"],
+      ["SPAE01", "2027-01-23", "2027-01-23"],
+      ["SPAE03", "2027-01-24", "2027-01-24"],
+      ["SPAE05", "2027-01-25", "2027-01-25"],
+      ["SPAE04", "2027-01-26", "2027-01-26"],
+      ["SPAT02", "2027-01-27", "2027-01-27"],
+      ["UYUO01", "2027-01-27", "2027-01-29"],
+    ]);
+  });
+
+  it("fila 1: en un mail que no es Tayka la palabra clave no cambia nada", async () => {
+    const v = renombrado(original("C"), SAN_PEDRO.moon, "San Pedro de Atacama: Moon Valley Excursion");
+    const r = await reconocer(v);
+    expect(r.reservas[0].producto).toBeNull();
+    expect(r.reservas[0].motivos).toEqual(["No se reconoce el tour 'San Pedro de Atacama: Moon Valley Excursion'"]);
+  });
+
+  it("fila 3: con el Overland corrido un día (Sol de Mañana el 28) son 5 noches: SPAP06", async () => {
+    const r = await reconocerJournaway(ficha68(1), "", contexto(iaQueNoSabe()));
+    expect(codigos(r)).toEqual(["SPAP06"]);
+  });
+});
+
+describe("M3-57 fila 2 — un Tayka nunca queda sin producto", () => {
+  it("un renglón que no se reconoce (Night Bus Peru): SPAP05 con su paquete, y el motivo sigue", async () => {
+    const ficha = ficha68();
+    const conPeru = { ...ficha, productos: [renglon68("Night Bus Peru", "2027-02-02", "2027-02-03"), ...ficha.productos] };
+    const ia = iaQueNoSabe();
+    const r = await reconocerJournaway(conPeru, "", contexto(ia));
+    expect(ia).not.toHaveBeenCalled();
+    expect(codigos(r)).toEqual(["SPAP05"]);
+    expect(r.reservas[0].paquete?.codigo).toBe("SPAP05");
+    expect(r.reservas[0].motivos).toEqual(["Journaway pide 'Night Bus Peru' (02.02–03.02), que no es parte de SPAP05: consultarlo con Journaway"]);
+  });
+
+  it("con motivos del paquete (falta el Tatio) el producto y el paquete quedan, y las partes salen del paquete", async () => {
+    const { catalogo, journaway, detalle } = catalogoJournawayDePrueba();
+    const ficha = ficha68(0, R68.tatio);
+    const r = await reconocerJournaway(ficha, "", contexto(iaQueNoSabe()));
+    expect(codigos(r)).toEqual(["SPAP05"]);
+    expect(r.reservas[0].paquete?.codigo).toBe("SPAP05");
+    expect(r.reservas[0].motivos.join(" ")).toMatch(/Falta .*SPAE04.* para SPAP05/);
+    const { piezas } = await armarJournaway(ficha, { catalogo, journaway: { catalogo: journaway, senales }, detalle }, null);
+    const porId = new Map(catalogo.productos.map((x) => [x.id, x.codigo]));
+    expect(piezas[0].componentes.map((c) => porId.get(c.productoId!))).toEqual(["SPAT01", "SPAE01", "SPAE03", "SPAE05", "SPAE04", "SPAT02", "UYUO01"]);
+    expect(piezas[0].motivos.join(" ")).toMatch(/Falta .*SPAE04/);
   });
 });

@@ -17,6 +17,8 @@ import type { CatalogoParaEmparejar } from "../emparejar/catalogo";
  *   (los hoteles Tayka y el bus nocturno Uyuni - La Paz son parte del Overland): no se pide aparte.
  * - `empieza_con` (M3-54): un renglón cuyo nombre empieza con ese texto es ese producto; lo que sigue
  *   cambia en cada mail ("Shared Transfer: IGU - <el hotel>" es IGRT01).
+ * - `clave_tayka` (M3-57): en un mail Tayka, un renglón cuyo nombre contiene ese texto es ese producto
+ *   (y, para el Overland, ese `dia`): Journaway cambia los nombres de un mail a otro ("Full-Day", "… Tour").
  *
  * Solo lee y valida. Un código que no está en el catálogo frena con un
  * mensaje claro antes de procesar el mail (`verificarSenales`).
@@ -25,7 +27,7 @@ import type { CatalogoParaEmparejar } from "../emparejar/catalogo";
 export const ARCHIVO_SENALES_JOURNAWAY = "journaway-senales.csv";
 const RUTA = `data/${ARCHIVO_SENALES_JOURNAWAY}`;
 
-const SENALES = ["hotel_tayka", "dia_overland", "familia_tayka", "titulo_noches", "aeropuerto", "nota_tour", "parte_de", "empieza_con"] as const;
+const SENALES = ["hotel_tayka", "dia_overland", "familia_tayka", "titulo_noches", "aeropuerto", "nota_tour", "parte_de", "empieza_con", "clave_tayka"] as const;
 type Senal = (typeof SENALES)[number];
 
 export interface SenalesJournaway {
@@ -41,6 +43,8 @@ export interface SenalesJournaway {
   partesDe: Array<{ clave: string; codigo: string }>;
   /** M3-54: `clave` normalizada (sin acentos, en minúscula). */
   empiezaCon: Array<{ clave: string; codigo: string }>;
+  /** M3-57: `clave` normalizada; `dia`, el día del Overland (null si no es el Overland). */
+  clavesTayka: Array<{ clave: string; codigo: string; dia: number | null }>;
   /** Fila del CSV de cada código, para el mensaje de error. */
   filas: Array<{ fila: number; codigos: string[] }>;
 }
@@ -65,6 +69,7 @@ export function leerSenalesJournaway(texto: string): SenalesJournaway {
     notas: [],
     partesDe: [],
     empiezaCon: [],
+    clavesTayka: [],
     filas: [],
   };
   leerCsv(texto).forEach((r, i) => {
@@ -113,6 +118,12 @@ export function leerSenalesJournaway(texto: string): SenalesJournaway {
       case "empieza_con":
         s.empiezaCon.push({ clave: normal(valor), codigo: unCodigo() });
         break;
+      case "clave_tayka": {
+        const dia = (r.dia ?? "").trim() ? Number((r.dia ?? "").trim()) : null;
+        if (dia !== null && (!Number.isInteger(dia) || dia < 1)) throw error("el día del Overland va como 1, 2 o 3");
+        s.clavesTayka.push({ clave: normal(valor), codigo: unCodigo(), dia });
+        break;
+      }
     }
   });
   return s;

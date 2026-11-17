@@ -131,6 +131,8 @@ interface DecisionTayka {
   /** El paquete que dan los tours (aunque vaya a revisión) y las noches, para el código del mail. */
   paquete: PaqueteJournaway | null;
   noches: number | null;
+  /** Sin motivos del paquete (los de renglones ajenos no cuentan): el paquete cierra. */
+  completo: boolean;
 }
 
 function armarTayka(tours: TourJournaway[], ctx: Contexto): DecisionTayka {
@@ -151,11 +153,13 @@ function armarTayka(tours: TourJournaway[], ctx: Contexto): DecisionTayka {
   const motivos: string[] = [];
   const notas: string[] = [];
 
-  // Los 3 días del Overland, por su nombre (cada día puede tener varios: en inglés y en alemán, M3-30).
+  // Los 3 días del Overland, por su nombre (cada día puede tener varios: en inglés y en alemán, M3-30)
+  // o por su palabra clave (M3-57: "Siloli", "Tour to Uyuni").
   const fechaDia = new Map<number, string | null>();
   for (const dia of [...new Set(s.diasOverland.map((d) => d.dia))].sort((a, b) => a - b)) {
     const nombres = s.diasOverland.filter((d) => d.dia === dia).map((d) => d.limpio);
-    const t = overland.find((x) => nombres.includes(limpiarNombreJournaway(x.nombre)));
+    const claves = s.clavesTayka.filter((c) => c.dia === dia).map((c) => c.clave);
+    const t = overland.find((x) => nombres.includes(limpiarNombreJournaway(x.nombre)) || claves.some((c) => normal(x.nombre).includes(c)));
     if (t) fechaDia.set(dia, t.fecha);
     else motivos.push(M.faltaDiaOverland(dia));
   }
@@ -213,10 +217,14 @@ function armarTayka(tours: TourJournaway[], ctx: Contexto): DecisionTayka {
   const deAjenos = ajenos.map((t) => (elegido ? M.noEsParte(t.nombre, t.fecha, t.fechaFin ?? null, elegido.codigo) : M.tourNoReconocido(t.nombre)));
 
   const propios = tours.filter((t) => overland.includes(t) || sanPedro.includes(t) || traslados.includes(t));
-  const principal = motivos.length
-    ? revision(propios, [...motivos, ...deAjenos], { notas, sugerencia: elegido ? productoDe(ctx, elegido) : null })
-    : reserva(propios, { producto: productoDe(ctx, elegido!), paquete: elegido, notas, motivos: deAjenos });
-  return { reservas: [principal, ...sueltos.map((t) => sueltoOPaquete([t], ctx))], paquete: elegido, noches };
+  // M3-57 (owner 2026-11-17): un Tayka con paquete elegido lleva ese producto y su paquete aunque queden motivos
+  // (sigue en revisión): las partes salen del paquete (un solo Overland), no renglón por renglón.
+  const principal = !motivos.length
+    ? reserva(propios, { producto: productoDe(ctx, elegido!), paquete: elegido, notas, motivos: deAjenos })
+    : elegido
+      ? reserva(propios, { producto: productoDe(ctx, elegido), paquete: elegido, notas, motivos: [...motivos, ...deAjenos], sugerencia: productoDe(ctx, elegido) })
+      : revision(propios, [...motivos, ...deAjenos], { notas, sugerencia: null });
+  return { reservas: [principal, ...sueltos.map((t) => sueltoOPaquete([t], ctx))], paquete: elegido, noches, completo: !motivos.length };
 }
 
 function productoDe(ctx: Contexto, p: PaqueteJournaway): ProductoDeLista {
@@ -246,7 +254,7 @@ function armarDesdeTours(tours: TourJournaway[], ctx: Contexto): Armado {
   if (tours.length === 0) return { reservas: [revision([], [M.sinTours])], productos: null, tayka: null };
   if (esTayka(tours, ctx)) {
     const tayka = armarTayka(tours, ctx);
-    const ok = tayka.reservas.every((r) => r.producto);
+    const ok = tayka.completo && tayka.reservas.every((r) => r.producto);
     return { reservas: tayka.reservas, productos: ok ? tayka.reservas.map((r) => r.producto!) : null, tayka };
   }
   if (tours.length === 1) {
@@ -346,6 +354,15 @@ export async function reconocerJournaway(ficha: FichaLectura, texto: string, con
       confianza: producto ? 1 : null,
     };
   });
+  // M3-57 (owner 2026-11-17): en un mail Tayka, lo que no está por su nombre se reconoce por su palabra clave
+  // ("Siloli", "Tatio"): Journaway cambia los nombres de un mail a otro. Antes de la IA y de los "ajenos".
+  if (esTayka(tours, ctx)) {
+    for (const t of tours.filter((x) => !x.producto)) {
+      const s = ctx.senales.clavesTayka.find((c) => normal(t.nombre).includes(c.clave));
+      const producto = s ? (porCodigo.get(s.codigo) ?? null) : null;
+      if (producto) Object.assign(t, { producto, origen: "nombre", confianza: 1 });
+    }
+  }
 
   // Fila 1: nuestro código, primero (en el texto o en lo que la IA copió como código del tour).
   const codigos = codigosDelMail([texto, ...ficha.productos.map((p) => p.codigo ?? "")].join("\n"), ctx.catalogo);

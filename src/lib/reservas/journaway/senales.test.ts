@@ -37,6 +37,27 @@ describe("data/journaway-senales.csv", () => {
     expect(s.empiezaCon).toEqual([{ clave: "shared transfer: igu -", codigo: "IGRT01" }]);
   });
 
+  it("M3-57: las palabras clave de un mail Tayka, con el día del Overland", () => {
+    const s = leerSenalesJournaway(TEXTO);
+    expect(s.clavesTayka.map((c) => [c.clave, c.codigo, c.dia])).toEqual([
+      ["sol de manana", "UYUO01", 1],
+      ["sol de manana geysire", "UYUO01", 1],
+      ["siloli", "UYUO01", 2],
+      ["tour to uyuni", "UYUO01", 3],
+      ["tour nach uyuni", "UYUO01", 3],
+      ["astronom", "SPAE01", null],
+      ["moon valley", "SPAE03", null],
+      ["quepiaco", "SPAE05", null],
+      ["tatio", "SPAE04", null],
+    ]);
+  });
+
+  it("M3-57: una palabra clave con un código que no existe frena; un día que no es número, también", () => {
+    const roto = leerSenalesJournaway(TEXTO.replace("clave_tayka,Tatio,SPAE04", "clave_tayka,Tatio,SPAE99"));
+    expect(() => verificarSenales(roto, catalogoJournawayDePrueba().catalogo)).toThrow(/el código SPAE99 no está en el catálogo/);
+    expect(() => leerSenalesJournaway(TEXTO.replace("clave_tayka,Siloli,UYUO01,2", "clave_tayka,Siloli,UYUO01,dos"))).toThrow(/el día del Overland/);
+  });
+
   it("todos sus códigos están en el catálogo", () => {
     expect(() => verificarSenales(leerSenalesJournaway(TEXTO), catalogoJournawayDePrueba().catalogo)).not.toThrow();
   });

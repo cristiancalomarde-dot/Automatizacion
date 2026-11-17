@@ -702,6 +702,42 @@ describe("armarPedidos — M3-38: el traslado San Pedro → Hito Cajón va dentr
     expect(JSON.stringify(r.pedidos)).not.toContain("Fauna");
   });
 
+  it("M3-57 fila 4: 68032580478 (SPAP05, Don Raúl 23→27): un solo Overland con pick up en Don Raúl, 2 Tayka y 1 bus", () => {
+    const spap = producto("prod-m357-SPAP05", "SPAP05", [], {
+      esTour: true,
+      componentes: [componente("c-tatio", 5, 4, 0, spae04), componente("c-trf", 6, 5, 0, spat02), componente("c-uyu", 7, 5, 2, uyuo01)],
+    });
+    const r = ok(
+      armarPedidos(
+        reserva({
+          agencia: "Journaway",
+          habitacion: "1 DBL",
+          productoId: spap.id,
+          fechaInicio: "2027-01-23",
+          fechaFin: "2027-01-29",
+          hotelesAgencia: [
+            { nombre: "Don Raúl", desde: "2027-01-23", hasta: "2027-01-27" },
+            { nombre: "MET Hotel", desde: "2027-01-30", hasta: "2027-01-31" },
+          ],
+          partes: [
+            parte({ id: "e", orden: 5, tipo: "paquete", productoId: spae04.id, productoComponenteId: "c-tatio", fechaInicio: "2027-01-26", fechaFin: "2027-01-26" }),
+            parte({ id: "t", orden: 6, tipo: "paquete", productoId: spat02.id, productoComponenteId: "c-trf", fechaInicio: "2027-01-27", fechaFin: "2027-01-27" }),
+            parte({ id: "u", orden: 7, tipo: "paquete", productoId: uyuo01.id, productoComponenteId: "c-uyu", fechaInicio: "2027-01-27", fechaFin: "2027-01-29", pickUp: "Tayka del Desierto Hotel" }),
+          ],
+        }),
+        catalogoCon([spap, spat02, uyuo01, spae04]),
+        plantilla,
+      ),
+    );
+    const p = delOverland(r);
+    expect(lineaPickUp(p.cuerpo)).toBe("Pick up: Don Raúl");
+    expect(p.cuerpo.match(/Excursión: Overland/g)).toHaveLength(1);
+    expect(p.cuerpo.match(/Alojamiento: Tayka/g)).toHaveLength(2);
+    expect(p.cuerpo.match(/Bus: /g)).toHaveLength(1);
+    expect(p.cuerpo).toContain("Desde: 27 ene 2027 · Hasta: 29 ene 2027");
+    expect(r.pedidos.filter((x) => x.cuerpo.includes("Overland"))).toHaveLength(1);
+  });
+
   it("M3-41 #2/#4: Petzold (el mail no trae el hotel de San Pedro) → a confirmar (sin nombrar a la agencia, M3-42), con el pendiente y sin nombre de hotel", () => {
     const casos: ConSanPedro[] = [{}, { pickUpOverland: "Tayka del Desierto Hotel" }, { pickUpOverland: "Tayka del Desierto Hotel", pickUpSanPedro: null }];
     for (const con of casos) {
