@@ -3,6 +3,12 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
 
 # Dónde retomar
 
+- **2026-11-19: M3-59 publicada (JW en holandés y el traslado de Calama con el hotel) y Buzios Transfers a mano (M3-60).**
+  68296867683 se relee con OK del owner (uid 17455). Buzios: equivalencia cargada y el traslado de OD032 con
+  `reserva_manual` en la real (solo esa fila; el próximo `importar:productos` lo deja igual por la equivalencia). El
+  borrador a Buzios de 1397791 desaparece con "Volver a armar". **Fischer (TR 1256663) = AR11** (owner): AR11 no está en el
+  catálogo; cargarlo desde "Multi Destination Independent Tours" junto con ARBR10 (ya reservada a mano, no apura).
+
 - **2026-11-19: M3-58 publicada (el paseo en escuna sale sin idioma).** UK1594935 y DK1598967 ya se enviaron con
   "Idioma: inglês"; el borrador de 1397791 lo rearma el owner. Al mediodía entra un SPAP01 de JW con los tours en
   holandés y sin nuestros códigos: revisar cómo lo leyó la IA y, con OK, cargar los nombres en holandés.
