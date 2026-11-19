@@ -593,6 +593,14 @@ describe("armarPedidos — Journaway: excursiones con entrada (owner, 2026-10-19
     const p = ok(armarPedidos(journaway(spae09), conEntradas(catalogoCon([spae09])), plantilla)).pedidos[0];
     expect(p.cuerpo).toContain("Idioma: inglés");
   });
+
+  // M3-58 (owner, 2026-11-19, UK1594935): el paseo en escuna no es un tour guiado: no se pide idioma.
+  it("M3-58: el paseo en escuna sale sin idioma", () => {
+    const escuna = excursionSuelta("PTYE01", "Excursion Scuna Netuno 10.30 hs Islas paradisiacas", "PTY");
+    const p = ok(armarPedidos(journaway(escuna), conEntradas(catalogoCon([escuna])), plantilla)).pedidos[0];
+    expect(p.cuerpo).toMatch(/Servicio: regular\n/);
+    expect(p.cuerpo).not.toMatch(/Idioma:/);
+  });
 });
 
 describe("armarPedidos — M3-38: el traslado San Pedro → Hito Cajón va dentro del Overland", () => {

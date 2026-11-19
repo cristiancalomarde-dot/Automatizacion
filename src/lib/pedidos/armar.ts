@@ -117,6 +117,8 @@ const HORA_EN_EL_NOMBRE = /\b\d{1,2}[.:]\d{2}\s*hs\b/i;
 const SALIDA_A_LA_RODOVIARIA = /transfer out a la (Rodoviaria de Foz \(bus [^)]*\))/i;
 /** El servicio se hace en español (el Overland de Imperio Inca: "chofer de habla hispana, sin guía en inglés"). */
 const EN_ESPANOL = /habla hispana|spanish[- ]speaking|sin gu[ií]a en ingl[eé]s/i;
+/** M3-58: el paseo en escuna (barco por las islas) no tiene guía: sin idioma. */
+const ESCUNA = /\be?scuna\b|\bschooner\b/i;
 /** Una excursión de varios días ("3 días en jeep", "3 days"). */
 const VARIOS_DIAS = /\b([2-9])\s*(d[ií]as|days)\b/i;
 const PIDE_TRASLADO = /transfer|traslado|pick ?up/i;
@@ -852,7 +854,9 @@ class Armado {
     }
     // Solo Journaway: las excursiones de la lista van con las entradas a los parques (owner, 2026-10-19).
     const entradas = this.esDeJournaway() && llevaEntradas(this.catalogo.entradas ?? [], b.codigo, `${nombre} ${s.descripcion ?? ""}`);
-    renglones.push(`${tx.servicio}: ${traducir(tx.regular, regular)} · ${tx.idioma}: ${traducir(tx.idiomas, idioma)}${entradas ? ` · ${tx.conEntradas}` : ""}`);
+    // M3-58 (owner, 2026-11-19): el paseo en escuna no es un tour guiado; el idioma no se pide.
+    const sinIdioma = ESCUNA.test(`${nombre} ${s.descripcion ?? ""}`);
+    renglones.push(`${tx.servicio}: ${traducir(tx.regular, regular)}${sinIdioma ? "" : ` · ${tx.idioma}: ${traducir(tx.idiomas, idioma)}`}${entradas ? ` · ${tx.conEntradas}` : ""}`);
     const punto = this.puntoDeEncuentro(b, s, nombre);
     // M3-25 (owner, 2026-10-27): la excursión "sin transfer" (el Beagle de OD022, "no transfer to port") no lleva pick up.
     // M3-51 (owner, 2026-11-06): si el componente trae su propio traslado a las excursiones, el pick up no es del proveedor.

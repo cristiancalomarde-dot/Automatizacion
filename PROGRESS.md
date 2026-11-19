@@ -3,6 +3,10 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
 
 # Dónde retomar
 
+- **2026-11-19: M3-58 publicada (el paseo en escuna sale sin idioma).** UK1594935 y DK1598967 ya se enviaron con
+  "Idioma: inglês"; el borrador de 1397791 lo rearma el owner. Al mediodía entra un SPAP01 de JW con los tours en
+  holandés y sin nuestros códigos: revisar cómo lo leyó la IA y, con OK, cargar los nombres en holandés.
+
 - **2026-11-17: M3-57 publicada (un Overland en Taykas es siempre SPAP05/06).** 68032580478 (`01694eac-…`) entró sin
   producto (JW cambió los nombres) y el pedido a Imperio Inca salió con 4 Overland. Corregida a mano a pedido del owner
   (SPAP05, partes del paquete, Overland 27→30, pick up Don Raúl) y pedidos rearmados: el owner los revisó y envió.
