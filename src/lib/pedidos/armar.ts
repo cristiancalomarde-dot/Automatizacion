@@ -119,6 +119,8 @@ const SALIDA_A_LA_RODOVIARIA = /transfer out a la (Rodoviaria de Foz \(bus [^)]*
 const EN_ESPANOL = /habla hispana|spanish[- ]speaking|sin gu[ií]a en ingl[eé]s/i;
 /** M3-58: el paseo en escuna (barco por las islas) no tiene guía: sin idioma. */
 const ESCUNA = /\be?scuna\b|\bschooner\b/i;
+/** M3-61: el City Tour de Buenos Aires (Grupo Summa) tiene versión clásica y premium: se pide la clásica. */
+const CITY_TOUR_CLASICO = new Set(["OD018", "OD020"]);
 /** Una excursión de varios días ("3 días en jeep", "3 days"). */
 const VARIOS_DIAS = /\b([2-9])\s*(d[ií]as|days)\b/i;
 const PIDE_TRASLADO = /transfer|traslado|pick ?up/i;
@@ -870,6 +872,8 @@ class Armado {
         : this.esOverlandConTayka(b, `${nombre} ${s.descripcion ?? ""}`)
           ? this.pickUpDelOverland(b, desde)
           : this.pickUp(b, variosDias ? desde : (fecha ?? desde), !variosDias);
+    // M3-61 (owner, 2026-11-19): si no se aclara, Grupo Summa siempre pregunta si es el clásico o el premium.
+    if (CITY_TOUR_CLASICO.has(b.codigo) && /city tour/i.test(nombre)) renglones.push(tx.versionClasica);
     if (pickUp.renglon) renglones.push(pickUp.renglon);
     const resumen = variosDias ? rangoCorto(desde!, hasta!) : fecha ? `${fechaCorta(fecha)}${momento}` : "fecha a coordinar";
     const tour: TourDeFicha = {

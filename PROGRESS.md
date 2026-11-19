@@ -3,6 +3,9 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
 
 # Dónde retomar
 
+- **2026-11-19: M3-61 publicada (el City Tour de OD018 y OD020 va a Grupo Summa como "Versión: clásica (no premium)").**
+  Los borradores sin enviar lo toman con "Volver a armar".
+
 - **2026-11-19: M3-59 publicada (JW en holandés y el traslado de Calama con el hotel) y Buzios Transfers a mano (M3-60).**
   68296867683 se relee con OK del owner (uid 17455). Buzios: equivalencia cargada y el traslado de OD032 con
   `reserva_manual` en la real (solo esa fila; el próximo `importar:productos` lo deja igual por la equivalencia). El

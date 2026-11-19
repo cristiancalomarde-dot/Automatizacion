@@ -36,6 +36,8 @@ export interface TextosDelPedido {
   idioma: string;
   idiomas: Readonly<Record<string, string>>;
   conEntradas: string;
+  /** M3-61: el City Tour de Grupo Summa, en su versión clásica. */
+  versionClasica: string;
   puntoDeEncuentro: (punto: string) => string;
   pickUpYDropOff: string;
   alojamientoAConfirmar: string;
@@ -89,6 +91,7 @@ const ES: TextosDelPedido = {
   idioma: "Idioma",
   idiomas: {},
   conEntradas: "Con entradas",
+  versionClasica: "Versión: clásica (no premium)",
   puntoDeEncuentro: (punto) => `Punto de encuentro: ${punto} (el pasajero va directo)`,
   pickUpYDropOff: "Pick up y drop off",
   alojamientoAConfirmar: "alojamiento a confirmar",
@@ -136,6 +139,7 @@ const PT: TextosDelPedido = {
   idioma: "Idioma",
   idiomas: { español: "espanhol", inglés: "inglês" },
   conEntradas: "Com ingressos",
+  versionClasica: "Versão: clássica (não premium)",
   puntoDeEncuentro: (punto) => `Ponto de encontro: ${punto} (o passageiro vai direto)`,
   pickUpYDropOff: "Pick up e drop off",
   alojamientoAConfirmar: "hospedagem a confirmar",

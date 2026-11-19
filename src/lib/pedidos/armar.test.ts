@@ -601,6 +601,16 @@ describe("armarPedidos — Journaway: excursiones con entrada (owner, 2026-10-19
     expect(p.cuerpo).toMatch(/Servicio: regular\n/);
     expect(p.cuerpo).not.toMatch(/Idioma:/);
   });
+
+  // M3-61 (owner, 2026-11-19): Grupo Summa tiene City Tour clásico y premium; se pide el clásico.
+  it("M3-61: el City Tour de OD018 se pide en versión clásica; otra excursión no", () => {
+    const city = excursionSuelta("OD018", "City Tour", "BUE");
+    const p = ok(armarPedidos(journaway(city), conEntradas(catalogoCon([city])), plantilla)).pedidos[0];
+    expect(p.cuerpo).toMatch(/Versión: clásica \(no premium\)/);
+    const tango = excursionSuelta("OD018", "Tango Show with dinner", "BUE");
+    const q = ok(armarPedidos(journaway(tango), conEntradas(catalogoCon([tango])), plantilla)).pedidos[0];
+    expect(q.cuerpo).not.toMatch(/clásica/);
+  });
 });
 
 describe("armarPedidos — M3-38: el traslado San Pedro → Hito Cajón va dentro del Overland", () => {
