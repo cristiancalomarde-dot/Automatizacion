@@ -266,7 +266,10 @@ function armarDesdeTours(tours: TourJournaway[], ctx: Contexto): Armado {
   const deAlgunPaquete = new Set(paquetes.flatMap(excursionesDe));
   let enPaquete = tours.filter((t) => deAlgunPaquete.has(t.producto!.id));
   if (enPaquete.length < 2) enPaquete = [];
-  const sueltos = tours.filter((t) => !enPaquete.includes(t)).map((t) => sueltoOPaquete([t], ctx));
+  // M3-59: el traslado del paquete escrito como un renglón ("Shared Transport: CJC - Don Raúl") va con el paquete que lo tiene.
+  const esTrasladoDe = (t: TourJournaway, p: PaqueteJournaway) => p.partes.some((x) => x.esTraslado && x.productoId === t.producto?.id);
+  const trasladosEscritos = enPaquete.length ? tours.filter((t) => !enPaquete.includes(t) && paquetes.some((p) => esTrasladoDe(t, p))) : [];
+  const sueltos = tours.filter((t) => !enPaquete.includes(t) && !trasladosEscritos.includes(t)).map((t) => sueltoOPaquete([t], ctx));
   const reservas = [...sueltos];
 
   if (enPaquete.length) {
@@ -305,6 +308,11 @@ function armarDesdeTours(tours: TourJournaway[], ctx: Contexto): Armado {
     } else {
       reservas.push(revision(enPaquete, [M.ningunPaquete]));
     }
+    for (const t of trasladosEscritos) {
+      const conEse = reservas.find((r) => r.paquete && esTrasladoDe(t, r.paquete));
+      if (conEse) conEse.tours.push(t);
+      else reservas.push(sueltoOPaquete([t], ctx));
+    }
   }
   reservas.sort(porPrimerTour);
   const ok = reservas.every((r) => r.producto);
@@ -341,8 +349,13 @@ export async function reconocerJournaway(ficha: FichaLectura, texto: string, con
     const s = ctx.senales.empiezaCon.find((x) => normal(nombre).startsWith(x.clave));
     return s ? (porCodigo.get(s.codigo) ?? null) : null;
   };
+  // M3-59: "Shared Transport: <el hotel> - CJC": el final dice el producto.
+  const terminaCon = (nombre: string) => {
+    const s = ctx.senales.terminaCon.find((x) => normal(nombre).endsWith(x.clave));
+    return s ? (porCodigo.get(s.codigo) ?? null) : null;
+  };
   const tours: TourJournaway[] = unaFilaPorServicio(ficha.productos, ficha.pax.valor).map((p, indice) => {
-    const producto = nombres.get(limpiarNombreJournaway(p.nombre)) ?? parteDe(p.nombre) ?? empiezaCon(p.nombre);
+    const producto = nombres.get(limpiarNombreJournaway(p.nombre)) ?? parteDe(p.nombre) ?? empiezaCon(p.nombre) ?? terminaCon(p.nombre);
     return {
       indice,
       nombre: p.nombre,

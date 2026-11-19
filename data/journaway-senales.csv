@@ -29,3 +29,5 @@ clave_tayka,Astronom,SPAE01,,"M3-57: el Astronomy Tour de San Pedro (también As
 clave_tayka,Moon Valley,SPAE03,,"M3-57: 68032580478 lo escribió ""Moon Valley Tour"""
 clave_tayka,Quepiaco,SPAE05,,"M3-57: 68032580478 lo escribió ""Quepiaco River, Monjes de la Pacana & Salt Flats Tour"""
 clave_tayka,Tatio,SPAE04,,"M3-57: 68032580478 lo escribió ""El Tatio Geysers Tour"""
+empieza_con,Shared Transport: CJC -,SPAT01,,"M3-59: el shuttle de llegada de Calama; después del guion va el hotel, que cambia (68296867683, owner 2026-11-19)"
+termina_con,- CJC,SPAT01,,"M3-59: el shuttle de salida a Calama; antes del guion va el hotel (""Shared Transport: Don Raúl - CJC"")"

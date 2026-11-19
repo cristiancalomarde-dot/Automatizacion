@@ -453,3 +453,53 @@ describe("M3-57 fila 2 — un Tayka nunca queda sin producto", () => {
     expect(piezas[0].motivos.join(" ")).toMatch(/Falta .*SPAE04/);
   });
 });
+
+// --- M3-59: los tours en holandés y el traslado con el hotel (68296867683, owner 2026-11-19) -------------
+
+function ficha682() {
+  const base = casoJournaway("D").ficha;
+  return {
+    ...base,
+    titulo_paquete: { valor: null, confianza: 0 },
+    pax: { valor: 2, confianza: 1 },
+    productos: [
+      renglon68("San Pedro de Atacama: astronomietour in de Atacama-woestijn", "2027-04-08"),
+      renglon68("San Pedro de Atacama: tour door de Maanvallei", "2027-04-09"),
+      renglon68("San Pedro de Atacama: tour naar de Rainbow Valley", "2027-04-09"),
+      renglon68("San Pedro de Atacama: tour naar de Tatio-geisers", "2027-04-10"),
+      renglon68("Shared Transport: CJC - Don Raúl", "2027-04-08"),
+      renglon68("Shared Transport: Don Raúl - CJC", "2027-04-11"),
+    ],
+    vuelos: [
+      { numero: "LA140", aerolinea: "LATAM Airlines Group", origen: "SCL", destino: "CJC", fecha_salida: "2027-04-08", hora_salida: null, fecha_llegada: "2027-04-08", hora_llegada: null, confianza: 1 },
+      { numero: "LA149", aerolinea: "LATAM Airlines Group", origen: "CJC", destino: "SCL", fecha_salida: "2027-04-11", hora_salida: null, fecha_llegada: "2027-04-11", hora_llegada: null, confianza: 1 },
+    ],
+    hoteles_agencia: [{ nombre: "Don Raúl", fecha_entrada: "2027-04-08", fecha_salida: "2027-04-11", confianza: 1 }],
+  };
+}
+
+describe("M3-59 — SPAP01 en holandés y el traslado con el nombre del hotel (68296867683)", () => {
+  it("los 6 renglones dan SPAP01 sin motivos y sin IA", async () => {
+    const ia = iaQueNoSabe();
+    const r = await reconocerJournaway(ficha682(), "", contexto(ia));
+    expect(ia).not.toHaveBeenCalled();
+    expect(codigos(r)).toEqual(["SPAP01"]);
+    expect(r.reservas[0].motivos).toEqual([]);
+    expect(r.reservas[0].tours.map((t) => t.producto?.codigo)).toEqual(["SPAE01", "SPAE03", "SPAE02", "SPAE04", "SPAT01", "SPAT01"]);
+  });
+
+  it("las partes son las de SPAP01, con el traslado del 8 y los tours en sus días", async () => {
+    const { catalogo, journaway, detalle } = catalogoJournawayDePrueba();
+    const { piezas } = await armarJournaway(ficha682(), { catalogo, journaway: { catalogo: journaway, senales }, detalle }, null);
+    expect(piezas).toHaveLength(1);
+    const porId = new Map(catalogo.productos.map((x) => [x.id, x.codigo]));
+    expect(piezas[0].productoId && porId.get(piezas[0].productoId)).toBe("SPAP01");
+    expect(piezas[0].componentes.map((c) => [porId.get(c.productoId!), c.fechaInicio])).toEqual([
+      ["SPAT01", "2027-04-08"],
+      ["SPAE01", "2027-04-08"],
+      ["SPAE02", "2027-04-09"],
+      ["SPAE03", "2027-04-09"],
+      ["SPAE04", "2027-04-10"],
+    ]);
+  });
+});

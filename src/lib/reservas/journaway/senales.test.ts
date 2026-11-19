@@ -34,7 +34,12 @@ describe("data/journaway-senales.csv", () => {
       { clave: "night bus uyuni", codigo: "UYUO01" },
     ]);
     // M3-54: el traslado de Iguazú lleva el hotel al final (67734240405).
-    expect(s.empiezaCon).toEqual([{ clave: "shared transfer: igu -", codigo: "IGRT01" }]);
+    expect(s.empiezaCon).toEqual([
+      { clave: "shared transfer: igu -", codigo: "IGRT01" },
+      // M3-59: el shuttle de Calama con el hotel (68296867683).
+      { clave: "shared transport: cjc -", codigo: "SPAT01" },
+    ]);
+    expect(s.terminaCon).toEqual([{ clave: "- cjc", codigo: "SPAT01" }]);
   });
 
   it("M3-57: las palabras clave de un mail Tayka, con el día del Overland", () => {
