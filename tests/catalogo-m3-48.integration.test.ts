@@ -260,7 +260,11 @@ function ficha(): FichaLectura {
       const { pedidos, tareas } = await cargarPedidos(admin, reservaId);
       expect(pedidos.filter((p) => p.sin_destinatario).map((p) => p.proveedores.join())).toEqual([]);
       expect(pedidos.some((p) => /lagarto/i.test(p.proveedores.join(" ")))).toBe(false);
-      expect(tareas.filter((x) => x.tipo === "reservar_a_mano").map((x) => x.texto)).toEqual(["Reservar a mano en Che Lagarto: Che Lagarto (dorm compartido), IN 1 jun 2027, OUT 3 jun 2027. Si no hay lugar: Casa do Rio, Casa Viva, Agatha"]);
+      // M3-60: Buzios Transfers también se reserva a mano (por su sistema), como Che Lagarto.
+      expect(tareas.filter((x) => x.tipo === "reservar_a_mano").map((x) => x.texto)).toEqual([
+        "Reservar a mano en Che Lagarto: Che Lagarto (dorm compartido), IN 1 jun 2027, OUT 3 jun 2027. Si no hay lugar: Casa do Rio, Casa Viva, Agatha",
+        "Reservar a mano en Buzios Transfers: traslado de salida Transfer Cabanacopa Hostel - Aeropuerto GIG, 9 jun 2027 · Vuelo pendiente",
+      ]);
     });
 
     it("Ilha Grande: Holandes recibe el mail en portugués, con desayuno y sus 3 noches", async () => {
@@ -301,8 +305,9 @@ function ficha(): FichaLectura {
       expect(estadia("hostelsbambu@gmail.com")).toBe("IN: 26 mai 2027\nOUT: 29 mai 2027 (3 noites)");
       expect(estadia("perez@local55.com")).toBe("IN: 6 jun 2027\nOUT: 9 jun 2027 (3 noites)");
       expect(tareas.filter((x) => x.tipo === "whatsapp").map((x) => x.texto)).toEqual([expect.stringMatching(/Fujima Hostel .*IN 30 may 2027, OUT 1 jun 2027/)]);
-      const out = pedidos.find((p) => p.destinatarios.includes("buziostransfer@hotmail.com"))!.cuerpo;
-      expect(out).toContain("Transfer de saída: Transfer Cabanacopa Hostel - Aeropuerto GIG\nData: 9 jun 2027");
+      // M3-60: el traslado de salida de Buzios ya no va por mail: es tarea, con su fecha.
+      expect(pedidos.some((p) => p.destinatarios.includes("buziostransfer@hotmail.com"))).toBe(false);
+      expect(tareas.some((x) => x.tipo === "reservar_a_mano" && /Buzios Transfers: traslado de salida Transfer Cabanacopa Hostel - Aeropuerto GIG, 9 jun 2027/.test(x.texto))).toBe(true);
       const foz = pedidos.find((p) => p.destinatarios.includes("reservas8@cuencadelplata.com"))!.cuerpo;
       expect(foz).toMatch(/TRF OUT: 29 may 2027 · Rodoviaria de Foz \(bus a São Paulo Barra Funda\) · Pick up: /);
       expect(foz).not.toMatch(/TRF OUT:[^\n]*pendiente/);

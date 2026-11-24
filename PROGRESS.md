@@ -3,6 +3,9 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
 
 # Dónde retomar
 
+- **2026-11-24: M3-62, OD037 cargado en la real** (paquete, equivalencia Rio Carioca, nombre Kilroy). DK1596603
+  releída (US$ 0,06 en dos lecturas): OD037 · recibida, se pide Hostel (owner: si no hay lugar, pasar a hotel a mano).
+
 - **2026-11-19: M3-61 publicada (el City Tour de OD018 y OD020 va a Grupo Summa como "Versión: clásica (no premium)").**
   Los borradores sin enviar lo toman con "Volver a armar".
 

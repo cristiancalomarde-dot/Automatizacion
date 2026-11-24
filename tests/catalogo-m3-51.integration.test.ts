@@ -289,7 +289,6 @@ function ficha(): FichaLectura {
         "reservas@paratytours.com.br",
         "reservas@holandeshostel.com.br",
         "perez@local55.com",
-        "buziostransfer@hotmail.com",
       ]);
       expect(pedidos.filter((p) => p.sin_destinatario)).toEqual([]);
       for (const p of pedidos) expect(p.asunto, p.destinatarios.join()).toMatch(/ x 2 /);
@@ -310,6 +309,7 @@ function ficha(): FichaLectura {
       ]);
       expect(tareas.filter((t) => t.tipo === "reservar_a_mano").map((t) => t.texto)).toEqual([
         "Reservar a mano en Che Lagarto: Che Lagarto (doble), IN 2 mar 2027, OUT 4 mar 2027. Si no hay lugar: Casa do Rio, Casa Viva, Agatha",
+        expect.stringMatching(/^Reservar a mano en Buzios Transfers: traslado de salida Transfer Cabanacopa Hostel - Aeropuerto GIG, 10 mar 2027/),
       ]);
     });
 
@@ -352,8 +352,10 @@ function ficha(): FichaLectura {
       expect(cuerpo.match(/Transfer: /g)).toHaveLength(2);
     });
 
-    it("Río: el traslado de Buzios es la salida al aeropuerto GIG", () => {
-      expect(de("buziostransfer@hotmail.com")[0].cuerpo).toContain("Transfer de saída: Transfer Cabanacopa Hostel - Aeropuerto GIG\nData: 10 mar 2027");
+    // M3-60: Buzios Transfers se reserva a mano por su sistema: sin mail, la salida a GIG queda como tarea.
+    it("Río: el traslado de Buzios (salida al aeropuerto GIG) es tarea, sin mail", () => {
+      expect(de("buziostransfer@hotmail.com")).toEqual([]);
+      expect(tareas.some((t) => t.tipo === "reservar_a_mano" && /Buzios Transfers: traslado de salida Transfer Cabanacopa Hostel - Aeropuerto GIG, 10 mar 2027/.test(t.texto))).toBe(true);
     });
   });
 });
