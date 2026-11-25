@@ -3,6 +3,10 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
 
 # Dónde retomar
 
+- **2026-11-25: M3-63, ARCH27 cargado en la real**; DK1603956 releída (US$ 0,02): ARCH27 · recibida. Además, el mail
+  nuevo de Horizonte Atacama (reservas@horizonteturismo.com) se cargó desde el Excel del Drive y se cambió en los 14
+  pedidos guardados; el equipo reenvía los 7 ya enviados (al mail viejo no llegaba nada).
+
 - **2026-11-24: M3-62, OD037 cargado en la real** (paquete, equivalencia Rio Carioca, nombre Kilroy). DK1596603
   releída (US$ 0,06 en dos lecturas): OD037 · recibida, se pide Hostel (owner: si no hay lugar, pasar a hotel a mano).
 

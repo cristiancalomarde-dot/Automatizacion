@@ -200,6 +200,8 @@ describe("el motivo que ve el operativo (spec M1-10)", () => {
       "BR20 · COMPBR06 · Se llega a Bonito en bus desde Dourados; a Pantanal y a Campo Grande lleva Agmar (ODBR50).",
       "BR20 · COMPBR02 · Se pide por tramos, cada uno con su día (servicios del tour).",
       "BR20 · OD032 · En este tour el traslado es de salida, del alojamiento al aeropuerto de Río.",
+      // M3-63: como ARCH31
+      "ARCH27 · OD017 · Llega a Puerto Natales en bus desde El Calafate.",
     ]);
     for (const x of REAL) expect(x.motivo).not.toMatch(INTERNO);
     for (const tour of Object.keys(SECUENCIAS)) {

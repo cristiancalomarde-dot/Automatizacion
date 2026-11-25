@@ -56,6 +56,8 @@ describe("tramos-con-proveedor.csv (spec M1-05 §3 #6)", () => {
       ["BR20", "SAO", "PRY", "Plataforma10", false],
       ["BR20", "PRY", "ILH", "Paraty Tours", false],
       ["BR20", "ILH", "RIO", "Paraty Tours", false],
+      // M3-63: ARCH27 sale de Puerto Natales como ARCH31.
+      ["ARCH27", "PNT", "PUQ", "Kupos.cl", false],
     ]);
     // M1-07 #3: Transvip queda solo como traslado del aeropuerto de Calama (en OD030), no en 5C01.
     expect(texto).not.toMatch(/transvip/i);
