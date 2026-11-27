@@ -503,3 +503,30 @@ describe("M3-59 — SPAP01 en holandés y el traslado con el nombre del hotel (6
     ]);
   });
 });
+
+describe("M3-64 — Iguazú por sus palabras: Journaway cambia el nombre en cada mail (63041086872)", () => {
+  const conNombre = (letra: "A" | "B", nombre: string) => {
+    const base = casoJournaway(letra).ficha;
+    return { ...base, productos: [{ ...base.productos[0], nombre }] };
+  };
+  it("un nombre del lado argentino que no está cargado da IGRE01, sin IA y con la nota de half-day", async () => {
+    const ia = iaQueNoSabe();
+    const r = await reconocerJournaway(conNombre("A", "From Foz do Iguaçu: Half-day tour to the Argentine side of the Iguassu Falls"), "", contexto(ia));
+    expect(ia).not.toHaveBeenCalled();
+    expect(codigos(r)).toEqual(["IGRE01"]);
+    expect(r.reservas[0].motivos).toEqual([]);
+    expect(r.reservas[0].notas).toContain("Journaway lo llama half-day; es el full day");
+  });
+  it("uno del lado brasileño da IGRE02, sin IA", async () => {
+    const ia = iaQueNoSabe();
+    const r = await reconocerJournaway(conNombre("B", "Halbtagestour zur brasilianischen Seite der Iguaçu-Fälle"), "", contexto(ia));
+    expect(ia).not.toHaveBeenCalled();
+    expect(codigos(r)).toEqual(["IGRE02"]);
+  });
+  it("los dos lados en un renglón no se adivinan: va a la IA", async () => {
+    const ia = iaQueNoSabe();
+    const r = await reconocerJournaway(conNombre("A", "Iguazú Falls: both sides, Argentine and Brazilian"), "", contexto(ia));
+    expect(ia).toHaveBeenCalledTimes(1);
+    expect(r.reservas[0].producto).toBeNull();
+  });
+});

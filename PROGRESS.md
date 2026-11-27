@@ -3,6 +3,7 @@ El estado pieza por pieza NO va acá: vive en la tabla del plan (docs/sdd/roadma
 
 # Dónde retomar
 
+- **2026-11-27: M3-64, Iguazú por sus palabras.** La Journaway 63041086872 no reconocía IGRE01 (tercera forma de escribirlo): se sumó el nombre y se releyó el mail (US$ 0,02), que quedó como IGRE01 · recibida. Con la señal `palabras`, cualquier nombre nuevo del lado argentino o brasileño entra solo. Para otro destino que cambie: sumar una fila `palabras`.
 - **2026-11-25: M3-63, ARCH27 cargado en la real**; DK1603956 releída (US$ 0,02): ARCH27 · recibida. Además, el mail
   nuevo de Horizonte Atacama (reservas@horizonteturismo.com) se cargó desde el Excel del Drive y se cambió en los 14
   pedidos guardados; el equipo reenvía los 7 ya enviados (al mail viejo no llegaba nada).

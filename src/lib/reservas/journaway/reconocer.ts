@@ -8,7 +8,7 @@ import type { OrigenEmparejado } from "../tipos";
 import { codigosDelMail } from "./codigo";
 import { MOTIVOS_JOURNAWAY as M, NOTAS_JOURNAWAY as N } from "./motivos";
 import { combinarPaquetes, excursionesDe, repartirTours } from "./paquete";
-import { compacto, normal, type SenalesJournaway } from "./senales";
+import { compacto, normal, porPalabras, type SenalesJournaway } from "./senales";
 import type { CatalogoJournaway, PaqueteJournaway, ReservaJournaway, ResultadoJournaway, TourJournaway } from "./tipos";
 
 /**
@@ -354,8 +354,13 @@ export async function reconocerJournaway(ficha: FichaLectura, texto: string, con
     const s = ctx.senales.terminaCon.find((x) => normal(nombre).endsWith(x.clave));
     return s ? (porCodigo.get(s.codigo) ?? null) : null;
   };
+  // M3-64 (owner 2026-11-27): Journaway escribe Iguazú distinto en cada mail; las palabras dicen el lado.
+  const palabras = (nombre: string) => {
+    const codigo = porPalabras(nombre, ctx.senales);
+    return codigo ? (porCodigo.get(codigo) ?? null) : null;
+  };
   const tours: TourJournaway[] = unaFilaPorServicio(ficha.productos, ficha.pax.valor).map((p, indice) => {
-    const producto = nombres.get(limpiarNombreJournaway(p.nombre)) ?? parteDe(p.nombre) ?? empiezaCon(p.nombre) ?? terminaCon(p.nombre);
+    const producto = nombres.get(limpiarNombreJournaway(p.nombre)) ?? parteDe(p.nombre) ?? empiezaCon(p.nombre) ?? terminaCon(p.nombre) ?? palabras(p.nombre);
     return {
       indice,
       nombre: p.nombre,

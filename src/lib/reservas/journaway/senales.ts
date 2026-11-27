@@ -21,6 +21,10 @@ import type { CatalogoParaEmparejar } from "../emparejar/catalogo";
  *   cambia en cada mail ("Shared Transport: <el hotel> - CJC" es SPAT01).
  * - `clave_tayka` (M3-57): en un mail Tayka, un renglón cuyo nombre contiene ese texto es ese producto
  *   (y, para el Overland, ese `dia`): Journaway cambia los nombres de un mail a otro ("Full-Day", "… Tour").
+ * - `palabras` (M3-64): un renglón cuyo nombre tiene todas esas palabras es ese producto, en cualquier mail.
+ *   Grupos separados por " + "; dentro de un grupo, alternativas con "|"; un grupo con "!" adelante no
+ *   tiene que aparecer ("igua + argentin + falls|side + !transfer" es IGRE01). Si dos productos
+ *   coinciden, no vale ninguno.
  *
  * Solo lee y valida. Un código que no está en el catálogo frena con un
  * mensaje claro antes de procesar el mail (`verificarSenales`).
@@ -29,7 +33,7 @@ import type { CatalogoParaEmparejar } from "../emparejar/catalogo";
 export const ARCHIVO_SENALES_JOURNAWAY = "journaway-senales.csv";
 const RUTA = `data/${ARCHIVO_SENALES_JOURNAWAY}`;
 
-const SENALES = ["hotel_tayka", "dia_overland", "familia_tayka", "titulo_noches", "aeropuerto", "nota_tour", "parte_de", "empieza_con", "termina_con", "clave_tayka"] as const;
+const SENALES = ["hotel_tayka", "dia_overland", "familia_tayka", "titulo_noches", "aeropuerto", "nota_tour", "parte_de", "empieza_con", "termina_con", "clave_tayka", "palabras"] as const;
 type Senal = (typeof SENALES)[number];
 
 export interface SenalesJournaway {
@@ -49,6 +53,8 @@ export interface SenalesJournaway {
   terminaCon: Array<{ clave: string; codigo: string }>;
   /** M3-57: `clave` normalizada; `dia`, el día del Overland (null si no es el Overland). */
   clavesTayka: Array<{ clave: string; codigo: string; dia: number | null }>;
+  /** M3-64: cada grupo, sus alternativas normalizadas; `no`: el grupo no tiene que aparecer. */
+  palabras: Array<{ grupos: Array<{ no: boolean; alternativas: string[] }>; codigo: string }>;
   /** Fila del CSV de cada código, para el mensaje de error. */
   filas: Array<{ fila: number; codigos: string[] }>;
 }
@@ -75,6 +81,7 @@ export function leerSenalesJournaway(texto: string): SenalesJournaway {
     empiezaCon: [],
     terminaCon: [],
     clavesTayka: [],
+    palabras: [],
     filas: [],
   };
   leerCsv(texto).forEach((r, i) => {
@@ -132,9 +139,31 @@ export function leerSenalesJournaway(texto: string): SenalesJournaway {
         s.clavesTayka.push({ clave: normal(valor), codigo: unCodigo(), dia });
         break;
       }
+      case "palabras": {
+        const grupos = valor.split("+").map((g) => {
+          const no = g.trim().startsWith("!");
+          const alternativas = g.replace("!", "").split("|").map(normal).filter(Boolean);
+          if (!alternativas.length) throw error("un grupo de palabras vacío (separar con + y las alternativas con |)");
+          return { no, alternativas };
+        });
+        if (!grupos.some((g) => !g.no)) throw error("falta al menos una palabra que tenga que aparecer");
+        s.palabras.push({ grupos, codigo: unCodigo() });
+        break;
+      }
     }
   });
   return s;
+}
+
+/** M3-64: el único producto cuyas palabras están todas en el nombre; si coinciden dos (o ninguno), null. */
+export function porPalabras(nombre: string, s: SenalesJournaway): string | null {
+  const n = normal(nombre);
+  const codigos = new Set(
+    s.palabras
+      .filter((p) => p.grupos.every((g) => g.alternativas.some((a) => n.includes(a)) !== g.no))
+      .map((p) => p.codigo),
+  );
+  return codigos.size === 1 ? [...codigos][0] : null;
 }
 
 /** Todos los códigos de las señales están en el catálogo; si no, frena con la fila. */

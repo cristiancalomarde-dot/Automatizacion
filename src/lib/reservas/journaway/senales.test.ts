@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { catalogoJournawayDePrueba } from "../../../../tests/fixtures/journaway/catalogo";
-import { leerSenalesJournaway, verificarSenales } from "./senales";
+import { leerSenalesJournaway, porPalabras, verificarSenales } from "./senales";
 
 /** Las señales de Journaway (`data/journaway-senales.csv`, editable por el owner). */
 
@@ -77,5 +77,32 @@ describe("data/journaway-senales.csv", () => {
   it("una señal desconocida o un día del Overland sin número fallan al leer", () => {
     expect(() => leerSenalesJournaway(`${TEXTO}otra_cosa,x,,,\n`)).toThrow(/señal «otra_cosa» desconocida/);
     expect(() => leerSenalesJournaway(TEXTO.replace("UYUO01,1,", "UYUO01,,"))).toThrow(/falta el día/);
+  });
+});
+
+describe("M3-64: las palabras de Iguazú (owner 2026-11-27)", () => {
+  const s = leerSenalesJournaway(TEXTO);
+  it.each([
+    ["From Foz do Iguaçu: Half-day tour to the Argentine side of the Iguazu Falls", "IGRE01"],
+    ["Full-day tour to the Argentinian Iguassu Falls", "IGRE01"],
+    ["Foz do Iguaçu: Ganztägige Tour zur argentinischen Seite der Iguazú-Wasserfälle", "IGRE01"],
+    ["Cataratas do Iguaçu: lado argentino", "IGRE01"],
+    ["From Puerto Iguazú: Half-day tour to the Brazilian side of the Iguaçu Falls", "IGRE02"],
+    ["Halbtagestour zur brasilianischen Seite der Iguaçu-Fälle", "IGRE02"],
+  ])("«%s» es %s", (nombre, codigo) => {
+    expect(porPalabras(nombre, s)).toBe(codigo);
+  });
+  it.each([
+    "Shared Transfer: Argentine side hotel - Iguazu Falls airport",
+    "Package 2: Iguazú Falls, Argentine side + transfers",
+    "Iguazú Falls: both sides, Argentine and Brazilian",
+    "Argentine side of the Falls",
+    "Jesuit Ruins and Wanda Mines",
+  ])("«%s» no es ninguno", (nombre) => {
+    expect(porPalabras(nombre, s)).toBeNull();
+  });
+  it("un grupo vacío o solo con «!» frena con la fila", () => {
+    expect(() => leerSenalesJournaway("senal,texto,codigos,dia,nota\npalabras,igua + ,IGRE01,,\n")).toThrow(/fila 2: un grupo de palabras vacío/);
+    expect(() => leerSenalesJournaway("senal,texto,codigos,dia,nota\npalabras,!transfer,IGRE01,,\n")).toThrow(/fila 2: falta al menos una palabra/);
   });
 });

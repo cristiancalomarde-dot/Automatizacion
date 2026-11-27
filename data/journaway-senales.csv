@@ -32,3 +32,6 @@ clave_tayka,Quepiaco,SPAE05,,"M3-57: 68032580478 lo escribió ""Quepiaco River, 
 clave_tayka,Tatio,SPAE04,,"M3-57: 68032580478 lo escribió ""El Tatio Geysers Tour"""
 empieza_con,Shared Transport: CJC -,SPAT01,,"M3-59: el shuttle de llegada de Calama; después del guion va el hotel, que cambia (68296867683, owner 2026-11-19)"
 termina_con,- CJC,SPAT01,,"M3-59: el shuttle de salida a Calama; antes del guion va el hotel (""Shared Transport: Don Raúl - CJC"")"
+palabras,igua + argentin + fall|side|seite|wasserf|catarata|lado|kant|waterval + !transfer|transport|shuttle|traslado|package|paket|paquete|pakket,IGRE01,,"M3-64 (owner 2026-11-27): Journaway escribe el lado argentino distinto en cada mail (67306527407, 63041086872); en inglés, alemán, portugués u holandés"
+palabras,igua + brazil|brasil + fall|side|seite|wasserf|catarata|lado|kant|waterval + !transfer|transport|shuttle|traslado|package|paket|paquete|pakket,IGRE02,,"M3-64: lo mismo para el lado brasileño"
+nota_tour,Half-day,IGRE01,,"Journaway lo llama half-day; es el full day"
